@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 
-import { type ReadOptions, readJson } from "./client.ts";
+import { type ReadOptions, cacheOf, kept, readJson } from "./client.ts";
 
 const Listing = z.looseObject({ sources: z.array(z.looseObject({ id: z.string(), title: z.string() })) });
 
@@ -13,23 +13,15 @@ const FlagMeanings = z.looseObject({ values: z.record(z.string(), z.string()), c
 const SourceDetail = z.looseObject({
   id: z.string(),
   title: z.string(),
+  /** The form its catalogue writes a designation in, such as `PGC {identifier}`. */
+  designation: z.looseObject({ form: z.string() }).nullable().optional(),
   /** What each value of each flag column means, by column, where the definition gives meanings. */
   flags: z.record(z.string(), FlagMeanings).optional(),
 });
 export type SourceDetail = z.infer<typeof SourceDetail>;
 
-const titles = new Map<number, Promise<ReadonlyMap<string, string>>>();
-const details = new Map<string, Promise<SourceDetail>>();
-
-/** Keeps `promise` under `key` in `cache` until it fails. */
-function kept<K, V>(cache: Map<K, Promise<V>>, key: K, read: () => Promise<V>): Promise<V> {
-  const found = cache.get(key) ?? read();
-  if (!cache.has(key)) {
-    cache.set(key, found);
-    found.catch(() => cache.delete(key));
-  }
-  return found;
-}
+const titles = cacheOf<number, ReadonlyMap<string, string>>();
+const details = cacheOf<string, SourceDetail>();
 
 /** Each source of `release`, its title by its id. */
 export function sourceTitles(release: number, options: ReadOptions = {}): Promise<ReadonlyMap<string, string>> {
@@ -43,9 +35,3 @@ export function sourceTitles(release: number, options: ReadOptions = {}): Promis
 export function sourceDetail(id: string, release: number, options: ReadOptions = {}): Promise<SourceDetail> {
   return kept(details, `${release}:${id}`, () => readJson(`/v1/sources/${encodeURIComponent(id)}`, SourceDetail, { ...options, release }));
 }
-
-/** Forgets every source read, as a test begins. */
-export const forgetSources = (): void => {
-  titles.clear();
-  details.clear();
-};

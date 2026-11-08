@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { manifestOf } from "../test/fixtures.ts";
 import { HIP_32754, HIP_32754_SOURCES } from "../test/records.ts";
-import { decText, flagsOf, galacticOf, mergedDesignations, raText, relationText } from "./recordText.ts";
+import { decText, flagsOf, galacticOf, galacticText, masText, mergedDesignations, raText, relationText } from "./recordText.ts";
 
 describe("the record in words", () => {
   it("writes right ascension and declination in sexagesimal, carrying a rounded 60", () => {
@@ -47,5 +47,23 @@ describe("the record in words", () => {
     expect(relationText(["member_of"])).toBe("A member of the group");
     expect(relationText(["dominant_member", "member"])).toBe("The group's dominant galaxy");
     expect(relationText(["member"])).toBe("A member of this group");
+  });
+
+  it("writes a position's error without exponents, and a longitude that rounds to 360 as 0", () => {
+    expect(masText(1500)).toBe("± 1,500 mas");
+    expect(masText(0.0101)).toBe("± 0.01 mas");
+    expect(masText(null)).toBe("no uncertainty reported");
+    expect(galacticText({ l: 359.99996, b: -0.5 })).toBe("l 0.0000°, b −0.5000°");
+  });
+
+  it("merges only designations in a catalogue's form across sources, not two sources' bare numbers", () => {
+    const record = {
+      ...HIP_32754,
+      designations: [
+        { source: "cosmicflows-4-galaxies", identifier: "2557" },
+        { source: "some-catalogue", identifier: "2557" },
+      ],
+    };
+    expect(mergedDesignations(record).map((d) => d.sources)).toEqual([["cosmicflows-4-galaxies"], ["some-catalogue"]]);
   });
 });

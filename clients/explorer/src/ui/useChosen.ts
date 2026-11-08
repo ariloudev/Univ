@@ -81,14 +81,22 @@ export function useChosen(release: number, world: World | undefined) {
       ready(request.record);
       return;
     }
-    const abort = new AbortController();
+    // The read is shared with the hover label and not cancelled: an answer to a request since
+    // replaced or closed is set aside.
+    let live = true;
     setChosen({ kind: "loading", id: request.id });
     recordOf(request.id, release)
-      .then((found) => (found.kind === "object" ? ready(found.record) : setChosen({ kind: "choices", choices: found })))
+      .then((found) => {
+        if (!live) return;
+        if (found.kind === "object") ready(found.record);
+        else setChosen({ kind: "choices", choices: found });
+      })
       .catch((error: unknown) => {
-        if (!abort.signal.aborted) setChosen(failure(request.id, error));
+        if (live) setChosen(failure(request.id, error));
       });
-    return () => abort.abort();
+    return () => {
+      live = false;
+    };
   }, [request, release, world]);
   /** Chooses object `id`, or none; choosing the object already chosen reads nothing again. */
   const choose = useCallback((id: number | undefined, options: ChooseOptions = {}) => {

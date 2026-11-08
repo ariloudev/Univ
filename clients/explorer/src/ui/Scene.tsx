@@ -82,7 +82,7 @@ export function Scene({
   const structures = useStructures(release, world, rotations, structureId, hidden.structure);
   const { detail, inside } = useCulledStructure(world, domains, rotations, structures, structureChoice);
   const choices = useMemo(() => choicesOf(domains, structures.list), [domains, structures.list]);
-  const context = useRecordContext(release, chosen, rotations, structures, {
+  const context = useRecordContext(release, rotations, structures, {
     structure: (id) => selection.structureById(id),
     object: (id, options) => selection.object(id, options),
   });

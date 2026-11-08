@@ -4,8 +4,12 @@
 
 import type { ObjectRecord, Relation } from "../api/objects.ts";
 import type { SourceDetail } from "../api/sources.ts";
+import { figures } from "../scene/format.ts";
 import { lonLat } from "../scene/graticule.ts";
 import { type Mat3, apply } from "../scene/vec.ts";
+
+/** `text` with its sign: a minus for a negative value and a plus otherwise. */
+const signed = (negative: boolean, text: string): string => `${negative ? "−" : "+"}${text}`;
 
 type Entry = ObjectRecord["entries"][number];
 
@@ -13,17 +17,33 @@ type Entry = ObjectRecord["entries"][number];
 export const designationText = (d: { designation?: string | null | undefined; identifier: string }): string => d.designation ?? d.identifier;
 
 /** The object's designations, each written once with every source that gives it, in the
- * record's order. */
+ * record's order. Only a designation in its catalogue's form is merged across sources: a bare
+ * identifier is one source's own number, which another catalogue may give another object. */
 export function mergedDesignations(record: ObjectRecord): { text: string; sources: string[] }[] {
-  const merged = new Map<string, string[]>();
+  const merged = new Map<string, { text: string; sources: string[] }>();
   for (const d of record.designations) {
-    const text = designationText(d);
-    const sources = merged.get(text) ?? [];
-    if (!sources.includes(d.source)) sources.push(d.source);
-    merged.set(text, sources);
+    const key = d.designation ?? `${d.source}\u0000${d.identifier}`;
+    const found = merged.get(key) ?? { text: designationText(d), sources: [] };
+    if (!found.sources.includes(d.source)) found.sources.push(d.source);
+    merged.set(key, found);
   }
-  return [...merged].map(([text, sources]) => ({ text, sources }));
+  return [...merged.values()];
 }
+
+/** A galactic longitude and latitude, degrees to four decimals, the longitude 0 to 360 after its
+ * rounding. */
+export function galacticText({ l, b }: { l: number; b: number }): string {
+  const lon = (Math.round(l * 1e4) / 1e4) % 360;
+  return `l ${lon.toFixed(4)}°, b ${signed(b < 0, `${Math.abs(b).toFixed(4)}°`)}`;
+}
+
+/** A sky position's published error in milliarcseconds, to two figures. */
+export const masText = (mas: number | null | undefined): string => (mas === null || mas === undefined ? "no uncertainty reported" : `± ${figures(mas, 2)} mas`);
+
+/** The designation `identifier` in the form its source's catalogue writes it, where the record of
+ * that source gives one. */
+export const formedAs = (identifier: string, detail: SourceDetail | undefined): string =>
+  detail?.designation?.form.replace("{identifier}", identifier) ?? identifier;
 
 /** `value` split into whole units, sixtieths and the sixtieths of those, the last to `places`
  * decimals, carried where it rounds up to 60. */
@@ -49,7 +69,7 @@ export function raText(deg: number): string {
  * with its sign. */
 export function decText(deg: number): string {
   const [d, m, s] = sexagesimal(Math.abs(deg), 1);
-  return `${deg < 0 ? "−" : "+"}${two(d)}° ${two(m)}′ ${secondsText(s, 1)}″`;
+  return signed(deg < 0, `${two(d)}° ${two(m)}′ ${secondsText(s, 1)}″`);
 }
 
 /** The galactic longitude and latitude, degrees, of ICRS `ra` and `dec`, through the rotation

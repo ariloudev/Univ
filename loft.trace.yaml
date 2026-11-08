@@ -1264,6 +1264,9 @@ links:
     reviewed: e653fb49f10368edaa934402d72a2115a7799ebd33f395e3bddd7ebcde2c418d
     tests:
       - file: "crates/univ-ingest/tests/name_sources.rs"
+        name: "a_researched_star_is_named_by_its_file"
+        body: 6ce5fa8a75d34c3848dd004d563f7adef599374ce44788365430ae08217aac23
+      - file: "crates/univ-ingest/tests/name_sources.rs"
         name: "an_iau_name_joins_the_star_its_hip_number_names_and_attaches_as_its_name"
         body: 2e8cb4a5f77b9a194636e377975a3d23c02d69a7ba5fe6be5376aff40050eaa7
       - file: "crates/univ-ingest/tests/name_sources.rs"
@@ -2195,7 +2198,7 @@ links:
     tests:
       - file: "crates/univ-api/src/objects/record_tests.rs"
         name: "the_record_lists_its_names_apart_from_its_designations"
-        body: de801a0dd0c9b398e83ac4530e126c78958baa62499a18745c3113ecc88895a2
+        body: 9d6155c238f54af87ac9f9248921f064cd955297874df482216024eb533c0101
   - node: 01a19f1e-d177-716d-b124-3d100d0beecf
     reviewed: 010d973c914b9061d052f80b5665a9d9f30250a1248dde808706bf8fb4295da4
     tests:
@@ -4397,7 +4400,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/names.test.tsx"
         name: "names a structure in italic in the hover label, and an object in upright type there and in its panel"
-        body: 402da028736f122d812d83cbf2bd66664b7a4f68de1c8571d702c2e52efc8a0e
+        body: c9a83f1a0d1480992ae15245ce2faf1fca5b8477dfeada6318331e0ae8a69644
   - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
     reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
     tests:
@@ -4449,18 +4452,51 @@ links:
       - file: "clients/explorer/src/scene/pick.test.ts"
         name: "finds the point under the pointer, across batches"
         body: 37f02fcb621ce6620054c55f7a57f43067e7079259e99239af4c80c72c60e157
+  - node: 01a1b7d7-c032-73ad-803e-b0f94a6148dc
+    reviewed: 419cae24d7946156e0111144d2faf45227719e67a1882aa9ec85a20c52943fbc
+    tests:
+      - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
+        name: "names the object from its record once the pointer has rested on it for 0.3 seconds, in place of its id"
+        body: 27cfed5b0af8405772e0da751bd883a5cc02e1becd1ea5a1885fc4183dfa53b7
+      - file: "clients/explorer/src/ui/SceneOverlay.test.tsx"
+        name: "reads nothing for a point the pointer passes over"
+        body: 412b110fae2661a0f81cb31acff7bbeaf7c1e533d437fa12e6e493e8192a3916
+  - node: 01a1a6b2-b217-764e-93d0-da89ee4e3c67
+    reviewed: 53740d419e9a2a0cee8ef3bfdfced9fae2f8796db35ac798a7ddbc83fab62105
+    tests:
+      - file: "clients/explorer/src/api/objects.test.ts"
+        name: "is a proper name or a designation in its catalogue's form where the record gives one"
+        body: 0900dc071c93eb41a2ba1f460ecc0726e7bc170af51fbab925b9ebea0bf86677
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "is headed by the name the object was found by, with its id beside it"
+        body: eecae235cb90df636a321bf44d9b9c154112754adb3836d0ee65b27919585268
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "is headed, when opened from the view, by the first proper name its sources give, or else its first designation in its catalogue's form"
+        body: a1fd76a3e77c0dc86e8216b630be2d8749e089650a8285b64f9844cc14116558
   - node: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
     reviewed: b50e335a6ecb06d3274361f87e0018abb49a097f3871c3fd20358cbc762dd372
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "names a galaxy group as such, and the scale domain of every object, not \"body\""
         body: 5314d46ab79d66492161d895a945bad596c2c3bc163cb9308957ae0b55866310
+  - node: 01a1a497-e843-728a-bce8-3fe7201a1670
+    reviewed: 123d1046969fd74240cb4d9ea151cbc56ff4207af2c8f30c4f9b6e0efcbfb578
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives each designation in its catalogue's form once, with the titles of every source that gives it"
+        body: dfa3190ac0c51f33533849e463ba6cde31324ff5b09ce4e66684be422c26a187
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the proper names apart from the designations, and no second name an entry gives"
+        body: 4e6a1a5dd5ac428aacbdb2fcbc3a26dc84d522c81db364bea48905a7fd6bd613
+      - file: "clients/explorer/src/ui/recordText.test.ts"
+        name: "merges designations by their text, keeping each source"
+        body: 6386a2d8f32a88258bba3dd470315214eafecf4c3d671decae10ce8479f39b3a
   - node: 01a1a497-e843-728a-bce8-3fe8c93208cf
     reviewed: 7e219d474557c0e3d47ae541ae9bf570a405ba2759f7df8620c362dbdea790c6
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives the preferred distance with its uncertainty, kind, source and rule"
-        body: 45e332dd75badd1ae771885894420a845145efbedc8b1802f8a9641a29513f7d
+        body: d48ec37b8a59649e051192b3e7c7dbb50b29cc76d894dbb7a1ba16bc8e907580
       - file: "clients/explorer/src/ui/text.test.ts"
         name: "give the preferred distance with its fractional uncertainty, also as a distance"
         body: db01b1ebebf048eec7ca7d86ff9caac5a7d2c285b561a54b27c04f4fc618b3b2
@@ -4514,7 +4550,70 @@ links:
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "names the papers of a researched entry"
-        body: 5fcf382c89971b8e739cf816c83c824d01a915bd5c1c77eb0ec433ecba5c7097
+        body: d68b782bbbbdf920f7742cf1d6c2ca694cdb9b16cd4146a9d185aa9ef5110a7e
+  - node: 01a1b7d7-c032-73ad-803e-b0fa7a60e532
+    reviewed: 563cee2d78eb4c17d541e67bbcd9133c9bddf59f7573f19b74f5262ae20c3ecd
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the sky position as right ascension and declination and as galactic longitude and latitude, each with frame and epoch"
+        body: 1de1816a6ceb42d2fb6c4bd802377be706c888ba40a952c62d69d2c25fd93ecc
+      - file: "clients/explorer/src/ui/recordText.test.ts"
+        name: "writes right ascension and declination in sexagesimal, carrying a rounded 60"
+        body: c00203bd2603d6c3bb489623837ceaa4c0a78a58d6660f756364a7e395ae80ae
+      - file: "clients/explorer/src/ui/recordText.test.ts"
+        name: "turns an ICRS position into galactic longitude and latitude by the release's rotation"
+        body: 34d3d6ae35593b9cf2a7355ae2171f5b8e6ebdc22ed363c30f824d3fd3be6949
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "reads an object's record as a gazetteer entry: on the sky, its catalogues, and each value marked with its kind"
+        body: d93749e37df4ad3c6b243bc03a66fd3241fcac37d31109ebf194acb68dfc561c
+  - node: 01a1b7d7-c032-73ad-803e-b0fb367dbf6d
+    reviewed: 5052b40214dc41e4a2fc587218724be3c5788ff12ed1ae6ce16d8b06b2bb52c7
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives each magnitude with its band, uncertainty, kind of value and source"
+        body: e3d36768cd7081f31c74cad70cf41db3cbda8bc094b653cc5e1803f8f516bce9
+  - node: 01a1b7d7-c032-73ad-803e-b0fc825b2931
+    reviewed: b7b37a674b70774a6e63f8418f5a00275866f9769c443e6372a52d07c8545153
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives the proper motion, radial velocity and redshift with uncertainty, kind of value and source"
+        body: 885f395959330c3dc7bf643ecd38db814d7b1ebf3155f6bc5d06121a811e42b3
+  - node: 01a1b7d7-c032-73ad-803e-b0fdf7abeef3
+    reviewed: e1fba182eeca608335377160b4aa954d7f8b640bd9c590ebda1b29a9f5a8cea3
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "offers the objects a group's designation leads to, and says when it leads to none"
+        body: 4df943b3b74a059690557d2b7e2d290fa013ea19373c22c29888cd5ccc1cd6bb
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "names the group the object belongs to, in its catalogue's form, to choose"
+        body: 4c53dbe75c70e9c25f6134d66f5e249a0fa0be20bcf154c13b571f7288178658
+      - file: "clients/explorer/src/ui/recordText.test.ts"
+        name: "words how the object stands to a group"
+        body: 9d7066464b4aed4c007db90bd9c34ba3d443e3e2d2d9973a4f1799e4c6f3289a
+  - node: 01a1b7d7-c032-73ad-803e-b0fe29efa362
+    reviewed: 7edef1380c872fe32de373a65d1ac6895cb9ad2fbff04a6a7e487043cd7c94b8
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "names each structure whose volume holds the object, to choose"
+        body: 42e1324148d09259554ad434836bc966b22b5b5d3ce9c731ee52b11036ed0f97
+  - node: 01a1b7d7-c032-73ad-803e-b0ffeb6df712
+    reviewed: 93eb8795cafb8ef7714a79100525e716fb833ee552ae777badf18cfc4a7f8ba6
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives each flag of each entry with the meaning its source gives that value, or the value alone"
+        body: 4c354af187e8bd6a64eb23c53b66630e0fe8972dcc857d4be523a1e86bc03c4c
+      - file: "clients/explorer/src/ui/recordText.test.ts"
+        name: "gives each flag its meaning where its source gives one"
+        body: 73a6ca3be3650743336216dc2d06ad7280d8390137e2e31c6281233654f4388a
+  - node: 01a1b7d7-c032-73ad-803e-b1003b3339be
+    reviewed: 34e44eded82c0e915987b37addfbe5f4510329ac505ab15f6db7a2b57db855eb
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "marks each value with the symbol of its kind of value that the key shows"
+        body: 1cc53a0d31f11384a8faffbcddd5eda5985a11a819b44da08d60e38cf544e76e
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "reads an object's record as a gazetteer entry: on the sky, its catalogues, and each value marked with its kind"
+        body: d93749e37df4ad3c6b243bc03a66fd3241fcac37d31109ebf194acb68dfc561c
   - node: 01a1a497-e843-728a-bce8-3febf4df9871
     reviewed: bca7d8b112819f648054c466978ba0a83c9a97cb103d987537d411ecf16209af
     tests:

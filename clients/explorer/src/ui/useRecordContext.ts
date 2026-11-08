@@ -1,24 +1,22 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
-import { search } from "../api/objects.ts";
+import { type ObjectRecord, search } from "../api/objects.ts";
 import type { Rotations } from "../api/schemas.ts";
 import { inside, volumeOf } from "../scene/volume.ts";
+import type { Vec3 } from "../scene/vec.ts";
 import type { RecordContext } from "./ObjectPanel.tsx";
-import type { ChooseOptions, ChosenObject } from "./useChosen.ts";
+import type { ChooseOptions } from "./useChosen.ts";
 import type { Structures } from "./useStructures.ts";
-import { useSources } from "./useSources.ts";
 
-/** What the object's panel reads besides the record of `chosen` in `release`: the release's
- * sources, the rotation to galactic axes, the structures whose volume holds a place, and the ways
- * to choose a structure, or an object by the designation its source gives it. */
+/** What the object's panel reads besides the record in `release`: the rotation to galactic axes,
+ * the structures whose volume holds a place, and the ways to choose a structure, or an object by
+ * the designation its source gives it. */
 export function useRecordContext(
   release: number,
-  chosen: ChosenObject,
   rotations: Rotations | undefined,
   structures: Structures,
   choose: { structure: (id: string) => void; object: (id: number, options: ChooseOptions) => void },
 ): RecordContext {
-  const sources = useSources(release, chosen.kind === "ready" ? chosen.record : undefined);
   // Each structure's volume, once the structures and the release's rotations are read.
   const volumes = useMemo(
     () =>
@@ -30,17 +28,15 @@ export function useRecordContext(
           }),
     [structures.details, rotations],
   );
+  const holding = useCallback((place: Vec3) => volumes.filter((v) => inside(v.volume, ...place)).map(({ id, name }) => ({ id, name })), [volumes]);
   return {
-    sources,
+    release,
     toGalactic: rotations?.to_galactic,
-    holding: (place) => volumes.filter((v) => inside(v.volume, ...place)).map(({ id, name }) => ({ id, name })),
+    holding,
     onChooseStructure: choose.structure,
-    onChooseDesignation: (source, identifier) => {
-      search(`${source}:${identifier}`, { release })
-        .then((found) => {
-          if (found.kind === "object") choose.object(found.record.id, { record: found.record, fly: true });
-        })
-        .catch(() => undefined);
+    find: (source, identifier) => search(`${source}:${identifier}`, { release }),
+    onChooseObject: (id: number, record?: ObjectRecord) => {
+      choose.object(id, { record, fly: true });
     },
   };
 }

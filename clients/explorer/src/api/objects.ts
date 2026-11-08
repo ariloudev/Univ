@@ -4,7 +4,7 @@
 import { z } from "zod";
 
 import { toMpc } from "../scene/units.ts";
-import { ApiError, type ReadOptions, read } from "./client.ts";
+import { ApiError, type ReadOptions, cacheOf, kept, read } from "./client.ts";
 
 const Uncertainty = z.looseObject({
   form: z.string(),
@@ -139,7 +139,11 @@ const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
  * as `record` spells it; none where it has none. */
 export function nameOf(record: ObjectRecord, text: string): string | undefined {
   const key = nameKey(text);
-  const spellings = [...record.entries.flatMap((e) => (e.name === null ? [] : [e.name])), ...record.designations.map((d) => d.identifier)];
+  const spellings = [
+    ...(record.names ?? []).map((n) => n.name),
+    ...record.entries.flatMap((e) => (e.name === null ? [] : [e.name])),
+    ...record.designations.flatMap((d) => (d.designation === null || d.designation === undefined ? [d.identifier] : [d.designation, d.identifier])),
+  ];
   return spellings.find((s) => nameKey(s) === key);
 }
 
@@ -179,25 +183,11 @@ export async function search(query: string, options: ReadOptions = {}): Promise<
 
 /** The records read most recently, by release and id: the hover label and the panel share them,
  * so a point rested on and then chosen is read once. One that fails is read again next time. */
-const RECENT = 64;
-const recent = new Map<string, Promise<Exclude<Found, { kind: "none" }>>>();
+const recent = cacheOf<string, Exclude<Found, { kind: "none" }>>();
 
-/** Object `id` of `release`, read once while it is among the `RECENT` read last. */
-export function recordOf(id: number, release: number): Promise<Exclude<Found, { kind: "none" }>> {
-  const key = `${release}:${id}`;
-  const found = recent.get(key) ?? objectOf(id, { release });
-  recent.delete(key);
-  recent.set(key, found);
-  found.catch(() => recent.delete(key));
-  const oldest = recent.keys().next().value;
-  if (recent.size > RECENT && oldest !== undefined) recent.delete(oldest);
-  return found;
-}
-
-/** Forgets every record read, as a test begins. */
-export const forgetRecords = (): void => {
-  recent.clear();
-};
+/** Object `id` of `release`, read once while it is among the 64 read last. */
+export const recordOf = (id: number, release: number): Promise<Exclude<Found, { kind: "none" }>> =>
+  kept(recent, `${release}:${id}`, () => objectOf(id, { release }), 64);
 
 /** The object's ICRS position in megaparsecs; none for an object with no distance. */
 export function placeOf(record: ObjectRecord): [number, number, number] | undefined {

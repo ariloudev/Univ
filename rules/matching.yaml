@@ -213,6 +213,11 @@ names:
       The Name column of McConnachie 2012 (AJ 144, 4) is each Local Group galaxy's common name,
       such as LMC, Andromeda or Canis Major. The UNGC Name column mixes common names with catalogue
       designations (UGC12894, ESO409-015) and is kept as designations only.
+  - source: researched-star-distances
+    field: name
+    basis: >-
+      Each researched star file names its star in its name field (stars/*.yaml), as the papers it
+      cites call it, such as Betelgeuse, a Lupi or 18 Aquilae.
   - source: iau-star-names
     field: name
     separator: ","

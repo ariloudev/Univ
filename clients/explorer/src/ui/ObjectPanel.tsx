@@ -1,26 +1,38 @@
-import type { Vec3 } from "../scene/vec.ts";
-import type { Mat3 } from "../scene/vec.ts";
+import type { Found, ObjectRecord } from "../api/objects.ts";
+import type { Mat3, Vec3 } from "../scene/vec.ts";
 import { RecordBody } from "./RecordSections.tsx";
 import { headingOf } from "./text.ts";
 import type { ChosenObject } from "./useChosen.ts";
-import { NO_SOURCES, type Sources } from "./useSources.ts";
+import type { Sources } from "./useSources.ts";
 
-/** What the panel reads besides the record: the release's sources, the rotation to galactic
- * axes, the structures holding a place, and the ways to choose what it names. */
+/** What the panel reads besides the record: its release and that release's sources, the
+ * rotation to galactic axes, the structures holding a place, and the ways to choose what it
+ * names. */
 export interface RecordContext {
-  sources: Sources;
+  release: number;
+  /** The release's sources where they are known already; the panel reads them otherwise. */
+  sources?: Sources | undefined;
   /** The rotation from the ICRS to galactic axes, once the release's manifests give it. */
   toGalactic: Mat3 | undefined;
   /** The structures of the release whose volume holds `place`, ICRS megaparsecs. */
   holding: (place: Vec3) => { id: string; name: string }[];
   onChooseStructure: (id: string) => void;
-  /** Chooses the object that `source` names `identifier`. */
-  onChooseDesignation: (source: string, identifier: string) => void;
+  /** Looks up the object that `source` names `identifier`. */
+  find: (source: string, identifier: string) => Promise<Found>;
+  /** Chooses object `id`, its record given where it is read already. */
+  onChooseObject: (id: number, record?: ObjectRecord) => void;
 }
 
 const none = () => undefined;
 
-export const NO_CONTEXT: RecordContext = { sources: NO_SOURCES, toGalactic: undefined, holding: () => [], onChooseStructure: none, onChooseDesignation: none };
+export const NO_CONTEXT: RecordContext = {
+  release: 0,
+  toGalactic: undefined,
+  holding: () => [],
+  onChooseStructure: none,
+  find: (source, identifier) => Promise.resolve({ kind: "none", query: `${source}:${identifier}` }),
+  onChooseObject: none,
+};
 
 interface ObjectPanelProps {
   chosen: ChosenObject;

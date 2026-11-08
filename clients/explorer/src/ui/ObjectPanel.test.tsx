@@ -5,8 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ANDROMEDA, BETELGEUSE, UNTYPED_STAR } from "../test/objects.ts";
 import { ANDROMEDA_GROUPED, HIP_32754, HIP_32754_SOURCES, M42 } from "../test/records.ts";
 import { manifestOf } from "../test/fixtures.ts";
-import { NO_CONTEXT, type RecordContext } from "./ObjectPanel.tsx";
-import { ObjectPanel } from "./ObjectPanel.tsx";
+import { NO_CONTEXT, ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 
 const close = () => undefined;
 
@@ -158,7 +157,7 @@ describe("the chosen object's record, as a gazetteer entry", () => {
     expect(items.some((t) => t?.startsWith("32754 "))).toBe(false);
   });
 
-  it("gives the proper names apart, and an entry's names only where they are not among them", () => {
+  it("gives the proper names apart from the designations, and no second name an entry gives", () => {
     ready(M42);
     const items = [...screen.getByTestId("names").querySelectorAll("li")].map((li) => li.textContent);
     expect(items.slice(0, 2)).toEqual(["Great Orion Nebula (OpenNGC)", "Orion Nebula (OpenNGC)"]);
@@ -169,7 +168,7 @@ describe("the chosen object's record, as a gazetteer entry", () => {
   it("gives the sky position as right ascension and declination and as galactic longitude and latitude, each with frame and epoch", () => {
     ready(HIP_32754);
     const sky = screen.getByTestId("sky").textContent ?? "";
-    expect(sky).toContain("RA 06h 49m 49.73s, Dec +55° 52′ 52.9″ (ICRS, epoch J2016, ± 0.010 mas)");
+    expect(sky).toContain("RA 06h 49m 49.73s, Dec +55° 52′ 52.9″ (ICRS, epoch J2016, ± 0.01 mas)");
     // l and b as the ESA 1997 pole (α 192.85948°, δ +27.12825°, l of the celestial pole 122.93192°)
     // gives them for that position, worked out apart from the explorer.
     expect(sky).toContain("l 160.1451°, b +21.9622° (galactic, from that position, epoch J2016)");
@@ -193,12 +192,28 @@ describe("the chosen object's record, as a gazetteer entry", () => {
     expect(screen.getAllByTestId("motion")[1]?.textContent).toContain("Redshift -585 kilometre per second, no uncertainty reported, z = -0.001951");
   });
 
-  it("names the group the object belongs to, to choose", async () => {
+  it("names the group the object belongs to, in its catalogue's form, to choose", async () => {
     const chosen = vi.fn();
-    ready(ANDROMEDA_GROUPED, context({ onChooseDesignation: chosen }));
-    expect(screen.getByTestId("groups").textContent).toBe("GroupsThe dominant galaxy of the group 2557 (Cosmicflows-4 groups)");
+    const find = vi.fn(() => Promise.resolve({ kind: "object" as const, record: { ...ANDROMEDA_GROUPED, id: 9, kind: "galaxy_group" } }));
+    const pgc = { id: "cosmicflows-4", title: "Cosmicflows-4 groups", designation: { form: "PGC {identifier}" } };
+    ready(ANDROMEDA_GROUPED, context({ find, onChooseObject: chosen, sources: { titles: TITLES, details: new Map([["cosmicflows-4", pgc]]) } }));
+    expect(screen.getByTestId("groups").textContent).toBe("GroupsThe dominant galaxy of the group PGC 2557 (Cosmicflows-4 groups)");
+    await userEvent.click(screen.getByRole("button", { name: "PGC 2557" }));
+    expect(find).toHaveBeenCalledWith("cosmicflows-4", "2557");
+    expect(chosen).toHaveBeenCalledWith(9, expect.objectContaining({ id: 9 }));
+  });
+
+  it("offers the objects a group's designation leads to, and says when it leads to none", async () => {
+    const chosen = vi.fn();
+    const choices = { kind: "choices" as const, query: "cosmicflows-4:2557", objects: [{ id: 9, names: [] }, { id: 10, names: [] }] };
+    ready(ANDROMEDA_GROUPED, context({ find: () => Promise.resolve(choices), onChooseObject: chosen }));
     await userEvent.click(screen.getByRole("button", { name: "2557" }));
-    expect(chosen).toHaveBeenCalledWith("cosmicflows-4", "2557");
+    expect(await screen.findByText(/It names 2 objects/)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "#10" }));
+    expect(chosen).toHaveBeenCalledWith(10);
+    ready(ANDROMEDA_GROUPED, context({ find: () => Promise.resolve({ kind: "none" as const, query: "" }) }));
+    await userEvent.click(screen.getAllByRole("button", { name: "2557" })[1] as HTMLElement);
+    expect(await screen.findByText("No object of this release carries it.")).toBeTruthy();
   });
 
   it("names each structure whose volume holds the object, to choose", async () => {

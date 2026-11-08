@@ -24,6 +24,15 @@ blocks:
         title: "Explorer reads designations, names, flags, relations and sources"
         detail: "`api/objects.ts` reads the new members and caches records; `api/sources.ts` reads titles and source records. Done when the api tests pass."
         state: active
+      - key: 01a1b879-8dc4-7441-8143-7224ec13f8cc
+        at: 2026-11-08T00:05:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Explorer reads designations, names, flags, relations and sources"
+        detail: "`api/objects.ts` reads the new members and keeps the 64 records read last; `api/sources.ts` reads titles and source records. Done: the tests pass."
+        state: done
   - key: 01a1b872-5ba6-7045-9999-cebeefcfe292
     id: t4-panel
     kind: task
@@ -37,6 +46,15 @@ blocks:
         title: "Object panel as a gazetteer entry"
         detail: "Heading, merged designations, sky position (RA/Dec and l/b), brightness, motion and redshift, groups, structures holding it, catalogues with flag meanings, papers; each value with its kind mark. Done when the panel tests pass for a star, a galaxy in a group and a sky-only object."
         state: open
+      - key: 01a1b879-8dc4-7441-8143-72259753c045
+        at: 2026-11-08T00:05:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Object panel as a gazetteer entry"
+        detail: "Heading, merged designations, sky position (RA/Dec and l/b), distance, brightness, motion and redshift, groups, structures holding it, catalogues with flag meanings, papers; each value with its kind mark. Done: the panel tests pass for HIP 32754, Andromeda in its group and M42."
+        state: done
   - key: 01a1b872-5ba6-7045-9999-cebf0d751997
     id: t4-hover
     kind: task
@@ -50,6 +68,15 @@ blocks:
         title: "Hover label names the object after 0.3 s"
         detail: "Done when the fake-timer hover test passes."
         state: open
+      - key: 01a1b879-8dc4-7441-8143-72267b46305c
+        at: 2026-11-08T00:05:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Hover label names the object after 0.3 s"
+        detail: "Done: the fake-timer hover tests pass."
+        state: done
   - key: 01a1b872-5ba6-7045-9999-cec02885570a
     id: t4-review
     kind: task
@@ -63,3 +90,12 @@ blocks:
         title: "Wave-end review, gate and integration"
         detail: "/simplify and /code-review in parallel, fixes, then the full gate and integration."
         state: open
+      - key: 01a1b879-8dc4-7441-8143-7227cc1c1275
+        at: 2026-11-08T00:05:36Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Wave-end review, gate and integration"
+        detail: "/simplify and /code-review in parallel, fixes, then the full gate and integration."
+        state: active

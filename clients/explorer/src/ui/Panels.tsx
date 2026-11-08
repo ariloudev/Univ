@@ -4,7 +4,8 @@ import { Swatch } from "./Swatch.tsx";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance } from "../scene/format.ts";
-import { KINDS, KIND_MARKS, POINT_CSS } from "../scene/kinds.ts";
+import { KINDS, POINT_CSS } from "../scene/kinds.ts";
+import { Mark } from "./Mark.tsx";
 import { GREY_CSS, KEY_TEMPERATURES, STAR_GRADIENT } from "../scene/starColour.ts";
 import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
 import type { Controller } from "../scene/controller.ts";
@@ -102,8 +103,8 @@ export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => 
           {stars.toLocaleString("en-GB")} stars
         </span>
         {kinds.map(([kind, count]) => (
-          <span key={kind} className="flex items-center gap-1">
-            <span style={{ color: POINT_CSS }}>{KIND_MARKS[kind]}</span>
+          <span key={kind} className="flex items-center">
+            <Mark kind={kind} />
             {kind} {count.toLocaleString("en-GB")}
           </span>
         ))}
@@ -157,9 +158,7 @@ function Key({ catalogue }: { catalogue: Tally }) {
       <ul data-testid="key">
         {kinds.map(([kind, count]) => (
           <li key={kind}>
-            <span aria-hidden="true" className="mr-1.5" style={{ color: POINT_CSS }}>
-              {KIND_MARKS[kind]}
-            </span>
+            <Mark kind={kind} />
             {kind}: {count.toLocaleString("en-GB")} points
           </li>
         ))}
