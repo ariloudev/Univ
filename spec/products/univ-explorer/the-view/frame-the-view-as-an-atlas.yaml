@@ -87,7 +87,7 @@ requirements:
       shall: "give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it."
     criteria:
       - key: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-        name: "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search, the checkbox \"Only what lies inside\" while a structure drawn as a volume is chosen, and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+        name: "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid, the distance rings and the structures' outlines, the search, the checkbox \"Only what lies inside\" while a structure drawn as a volume is chosen, and the level-of-detail switch, in one line no taller than 40 CSS pixels."
       - key: 01a1b7f5-f51b-71f9-80de-cd251f348c42
         name: "A rail along the left edge, no wider than 52 CSS pixels, opens the view's controls, the groups of what is drawn and the list of structures, each as a drawer, and holds the button that returns to Earth."
       - key: 01a1b7f5-f51b-71f9-80de-cd2646cc3c6c
