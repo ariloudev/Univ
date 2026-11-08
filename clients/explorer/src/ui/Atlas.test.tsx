@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { structureDetail } from "../test/structures.ts";
@@ -11,6 +11,8 @@ import type { DrawerName } from "./Rail.tsx";
 import { NOTHING_HIDDEN, hiddenInAddress } from "./hidden.ts";
 import type { ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
+
+const PLANCK_2018 = { name: "Planck 2018", hubble_constant: 67.66, omega_matter: 0.3111 };
 
 const KBC = { id: "kbc-void", name: "KBC void", kind: "void", scale_domain: "cosmic_web" };
 
@@ -30,10 +32,11 @@ interface Shown {
   chosen?: ChosenObject;
   hidden?: typeof NOTHING_HIDDEN;
   shown?: typeof structures.shown;
+  inside?: Selection["inside"];
 }
 
-function selectionOf({ structure, chosen = { kind: "none" } }: Shown): Selection {
-  return { chosen, structure, approximate: false, inside: undefined, object: none, structureById: none, close: none };
+function selectionOf({ structure, chosen = { kind: "none" }, inside }: Shown): Selection {
+  return { chosen, structure, approximate: false, inside, object: none, structureById: none, close: none };
 }
 
 /** The page and the view of `shown`, the page keeping the top bar's place and the drawer, as the
@@ -47,7 +50,7 @@ function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Sh
       <Atlas
         world={world}
         release={7}
-        cosmology="Planck 2018"
+        cosmology={PLANCK_2018}
         place={{ topBar, drawer, onDrawer: setDrawer }}
         structures={{ ...structures, shown: shown.shown ?? structures.shown }}
         selection={selectionOf(shown)}
@@ -165,6 +168,22 @@ describe("the explorer laid out as an atlas", () => {
     expect(within(record).getByRole("region", { name: "The chosen structure" }).textContent).toContain("KBC void");
     rerender({ chosen: STAR });
     expect(within(screen.getByRole("complementary", { name: "The record" })).getByRole("region", { name: "The chosen object" })).toBeTruthy();
+  });
+
+  it("offers \"Only what lies inside\" in the top bar beside the level-of-detail switch while a structure drawn as a volume is chosen, and not in the record", async () => {
+    const set = vi.fn();
+    const { rerender } = show({ structure: structures.details.get("kbc-void") });
+    expect(screen.queryByRole("checkbox", { name: "Only what lies inside" })).toBeNull();
+    rerender({ structure: structures.details.get("kbc-void"), inside: { on: false, approximate: false, set } });
+    const box = within(screen.getByRole("banner")).getByRole<HTMLInputElement>("checkbox", { name: "Only what lies inside" });
+    expect(box.checked).toBe(false);
+    // The last of the view's parts of the top bar, so beside the switch the page puts after them.
+    const lod = within(screen.getByRole("banner")).getByText("Level of detail");
+    expect(box.compareDocumentPosition(lod) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(screen.getByRole("banner")).getByRole("search").compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(screen.getByRole("complementary", { name: "The record" })).queryByRole("checkbox")).toBeNull();
+    await userEvent.click(box);
+    expect(set).toHaveBeenCalledWith(true);
   });
 
   it("folds the record to the window's edge when asked, and opens it again for the next thing chosen", async () => {

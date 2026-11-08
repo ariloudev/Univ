@@ -17,7 +17,7 @@ async function centreOf(locator: Locator): Promise<{ x: number; y: number }> {
 async function find(page: Page, name: string): Promise<void> {
   await page.getByRole("textbox", { name: /Find an object/ }).fill(name);
   await page.getByRole("button", { name: "Find" }).click();
-  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
+  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("lede")).toBeVisible();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -94,7 +94,7 @@ test("centres the view on a point clicked, keeping the distance, with the grid a
   const distance = page.getByTestId("distance");
   const before = (await distance.textContent()) ?? "";
   await page.mouse.click(found.x, found.y);
-  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toBeVisible();
+  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("lede")).toBeVisible();
   // The ring drawn over the chosen object, centred on it (its box's corner is at the object), at
   // the centre of the view as it now stands, narrowed by the record opened beside it.
   const mark = page.getByTestId("chosen-mark").locator("span");
@@ -113,16 +113,23 @@ test("finds an object by designation, and says when nothing is found", async ({ 
   const search = page.getByRole("textbox", { name: /Find an object/ });
   await search.fill("mcconnachie-2012:Sagittarius dSph");
   await page.getByRole("button", { name: "Find" }).click();
-  await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("names")).toContainText("Sagittarius dSph");
+  await expect(page.getByRole("region", { name: "The chosen object" }).getByRole("heading").first()).toContainText("Sagittarius dSph");
   await search.fill("No such thing anywhere");
   await page.getByRole("button", { name: "Find" }).click();
   await expect(page.getByText("Nothing found for “No such thing anywhere”.")).toBeVisible();
 });
 
-test("lists the release's structures and reads one", async ({ page }) => {
+test("lists the release's structures and reads one, culling the view to it from the top bar", async ({ page }) => {
   await page.getByRole("button", { name: "Structures" }).click();
-  await page.getByTestId("structures").getByRole("button").first().click();
-  await expect(page.getByRole("region", { name: "The chosen structure" }).getByTestId("structure-kind")).toBeVisible();
+  await page.getByTestId("structures").getByRole("button", { name: /^Bootes Void/ }).click();
+  const panel = page.getByRole("region", { name: "The chosen structure" });
+  await expect(panel.getByTestId("structure-kind")).toBeVisible();
+  await expect(panel.getByTestId("lede")).toBeVisible();
+  const inside = page.getByRole("banner").getByRole("checkbox", { name: "Only what lies inside" });
+  await expect(inside).not.toBeChecked();
+  await expect(panel.getByTestId("structure-inside")).toHaveCount(0);
+  await inside.check();
+  await expect(panel.getByTestId("structure-inside")).toBeVisible();
 });
 
 test("chooses a structure by the name it shows in the view, and still zooms over it", async ({ page }) => {
@@ -303,8 +310,11 @@ test("opens a drawer and the record over the view below 1,024 pixels, and closes
 test("reads an object's record as a gazetteer entry: on the sky, its catalogues, and each value marked with its kind", async ({ page }) => {
   await find(page, "canis MAJOR");
   const panel = page.getByRole("region", { name: "The chosen object" });
-  await expect(panel.getByTestId("sky")).toContainText(/RA \d{2}h \d{2}m [\d.]+s, Dec [+−]\d{2}° \d{2}′ [\d.]+″/);
-  await expect(panel.getByTestId("sky")).toContainText(/l [\d.]+°, b [+−][\d.]+°/);
+  await expect(panel.getByTestId("record-position")).toContainText(/\d{2}h \d{2}m [\d.]+s, [+−]\d{2}° \d{2}′ [\d.]+″/);
+  await expect(panel.getByTestId("record-position")).toContainText(/l, b[\d.]+°, [+−][\d.]+°/);
+  await expect(panel.getByTestId("catalogues-summary")).toBeVisible();
+  await expect(panel.getByTestId("record-distance").locator("[data-kind]").first()).toBeVisible();
+  await panel.getByText("Show every name, value and flag, with the papers").click();
   await expect(panel.getByTestId("catalogues")).toBeVisible();
-  await expect(panel.getByTestId("preferred").locator("[data-kind]").first()).toBeVisible();
+  await expect(panel.getByTestId("sky")).toContainText(/RA \d{2}h \d{2}m [\d.]+s, Dec [+−]\d{2}° \d{2}′ [\d.]+″/);
 });

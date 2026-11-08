@@ -35,13 +35,61 @@ export type Geometry = z.infer<typeof Geometry>;
 
 const Shape = z.looseObject({ frame: z.string(), unit: z.string(), geometry: Geometry });
 
+/** Where in its paper a value is printed, and the words. */
+const Cite = z.looseObject({ paper: z.string(), locator: z.looseObject({ quote: z.string().optional() }).nullable().optional() });
+
 const Cited = z.looseObject({
   kind: z.string().optional(),
   quantity: z.looseObject({ value: z.unknown(), unit: z.string().optional(), uncertainty: z.unknown().optional() }).optional(),
-  cite: z.looseObject({ paper: z.string() }).nullable().optional(),
+  cite: Cite.nullable().optional(),
+  /** The value as its paper printed it, where that differs from the value given. */
+  as_published: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
 });
+export type Cited = z.infer<typeof Cited>;
 
 const Paper = z.looseObject({ id: z.string(), reference: z.string(), title: z.string().optional() });
+
+/** A bound in depth: a velocity cz, or a distance. */
+const Depth = z.looseObject({ velocity: Cited.optional(), distance: Cited.optional() });
+
+/** The record's geometry as published, as far as the panel reads it: a box on the sky between two
+ * depths, a primitive about a centre, or members. */
+const RecordGeometry = z.looseObject({
+  SkyRegion: z
+    .looseObject({
+      frame: z.string(),
+      /** Its longitude and latitude ranges, or its centre and its size along each. */
+      lon: z.array(Cited).optional(),
+      lat: z.array(Cited).optional(),
+      centre: z.array(Cited).optional(),
+      size: z.array(Cited).optional(),
+      near: Depth.nullable().optional(),
+      far: Depth.nullable().optional(),
+    })
+    .optional(),
+  Primitive: z.looseObject({ centre: z.looseObject({ form: z.string() }).optional(), size: z.record(z.string(), Cited).optional() }).optional(),
+});
+
+/** Its published position: on the sky, with its depth where published, or as Cartesian velocities. */
+const RecordPosition = z.looseObject({
+  frame: z.string(),
+  lon: Cited.nullable().optional(),
+  lat: Cited.nullable().optional(),
+  radial: Depth.nullable().optional(),
+  x: Cited.optional(),
+  y: Cited.optional(),
+  z: Cited.optional(),
+});
+
+/** A value whose paper assumed another Hubble constant, and that value in the release cosmology. */
+const Rescaled = z.looseObject({
+  value: z.string(),
+  native: z.looseObject({ value: z.number(), unit: z.string(), hubble_constant: z.number() }),
+  rescaled: z.looseObject({ value: z.number() }),
+});
+
+const Member = z.looseObject({ member: z.string().optional(), distance_mpc: z.number(), redshift: z.number().optional() });
 
 const StructureDetail = z.looseObject({
   id: z.string(),
@@ -63,12 +111,24 @@ const StructureDetail = z.looseObject({
     })
     .nullable()
     .optional(),
+  // What only the record panel reads is let go where it takes a shape the explorer does not know,
+  // so that a structure is drawn whatever its record holds.
   record: z.looseObject({
+    alternative_names: z.array(z.string()).nullable().optional().catch(undefined),
+    notes: z.string().nullable().optional().catch(undefined),
+    disputes: z.array(z.looseObject({ cite: Cite, claim: z.string().optional() })).nullable().optional().catch(undefined),
+    geometry: RecordGeometry.nullable().optional().catch(undefined),
+    position: RecordPosition.nullable().optional().catch(undefined),
     papers: z.array(Paper).optional(),
     values: z.record(z.string(), Cited).optional(),
   }),
+  rescaled: z.array(Rescaled).nullable().optional().catch(undefined),
+  members: z.looseObject({ placed_from_file: z.array(Member).optional() }).nullable().optional().catch(undefined),
 });
 export type StructureDetail = z.infer<typeof StructureDetail>;
+
+/** A structure's record as Univ Server gives it, read and checked. */
+export const readStructure = (raw: unknown): StructureDetail => StructureDetail.parse(raw);
 
 /** Every structure of `release`, page after page. */
 export async function structuresOf(release: number, options: ReadOptions = {}): Promise<StructureSummary[]> {

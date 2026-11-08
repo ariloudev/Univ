@@ -42,6 +42,9 @@ export function shortDistance(mpc: number): string {
   return inUnits(mpc * 1e6, PC_UNITS);
 }
 
+/** A distance given in megaparsecs, in light-years, in the unit that suits it. */
+export const lightYears = (mpc: number): string => inUnits(mpc * 1e6 * LY_PER_PC, LY_UNITS);
+
 /** A distance given in megaparsecs, in the parsec unit that suits it, with light-years beside. */
 export function formatDistance(mpc: number): string {
   const pc = mpc * 1e6;

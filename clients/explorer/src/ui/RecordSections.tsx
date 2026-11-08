@@ -1,6 +1,6 @@
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useState } from "react";
 
-import { type Found, type ObjectRecord, distancesOf, placeOf } from "../api/objects.ts";
+import { type Found, type ObjectRecord, distancesOf } from "../api/objects.ts";
 import { Mark } from "./Mark.tsx";
 import type { RecordContext } from "./ObjectPanel.tsx";
 import {
@@ -8,7 +8,7 @@ import {
   designationText,
   flagsOf,
   formedAs,
-  galacticOf,
+  skyOf,
   galacticText,
   masText,
   namesAndDesignations,
@@ -24,7 +24,7 @@ import { type Sources, useSources } from "./useSources.ts";
 const SHOWN = 6;
 
 /** What each part reads: the record, its context, and the release's sources. */
-interface PartProps {
+export interface PartProps {
   record: ObjectRecord;
   context: RecordContext;
   sources: Sources;
@@ -84,7 +84,9 @@ function Choose({ onClick, italic, children }: { onClick: () => void; italic?: b
   );
 }
 
-/** The record of a ready object: what is known of it, part by part. */
+/** The whole record of a ready object, as its panel's link opens it: every name, value, catalogue
+ * entry with its flags, and paper. Its groups and the structures it lies inside the panel shows
+ * itself. */
 export function RecordBody({ record, context }: { record: ObjectRecord; context: RecordContext }) {
   const read = useSources(context.release, context.sources === undefined ? record : undefined);
   const props: PartProps = { record, context, sources: context.sources ?? read };
@@ -98,8 +100,6 @@ export function RecordBody({ record, context }: { record: ObjectRecord; context:
       <Distance {...props} />
       <Values {...props} />
       <Star {...props} />
-      <Groups {...props} />
-      <Inside {...props} />
       <Catalogues {...props} />
       <Papers {...props} />
       <Frame record={record} />
@@ -137,10 +137,9 @@ const epochText = (epoch: number | null | undefined): string => (epoch === null 
 /** Where the object is on the sky: right ascension and declination, and galactic longitude and
  * latitude, each with its frame and epoch, and the entry the position is taken from. */
 function Sky({ record, context, sources }: PartProps) {
-  const sky = record.sky_position;
-  if (sky === null || sky === undefined || sky.ra === undefined || sky.dec === undefined) return null;
-  const galactic = context.toGalactic === undefined ? undefined : galacticOf(sky.ra, sky.dec, context.toGalactic);
-  const from = sky.entry === undefined ? undefined : record.entries[sky.entry];
+  const sky = skyOf(record, context.toGalactic);
+  if (sky === undefined) return null;
+  const { galactic, from } = sky;
   return (
     <Part title="On the sky" testid="sky">
       <ul className="space-y-0.5">
@@ -279,11 +278,23 @@ type Answer = { key: string } & ({ kind: "choices"; ids: number[] } | { kind: "n
 
 /** The groups the object belongs to, or the members of the group it is, each to choose: one that
  * leads to several objects offers them, and one that leads to none says so. */
-function Groups({ record, context, sources }: PartProps) {
+/** How a part is set: its heading, test id and lines. */
+type PartBox = (props: { title: string; testid: string; children: ReactNode }) => ReactNode;
+
+/** The groups the object belongs to or the members of a group, each to choose: under `title`, set
+ * by `box`, each source named by `name`. */
+export function Groups({
+  record,
+  context,
+  sources,
+  title: heading = "Groups",
+  box: Box = Part,
+  name,
+}: PartProps & { title?: string; box?: PartBox; name?: (source: string) => string }) {
   const [answer, setAnswer] = useState<Answer>();
   const related = relationsByOther(record);
   if (related.length === 0) return null;
-  const title = titleIn(sources);
+  const title = name ?? titleIn(sources);
   const choose = (source: string, identifier: string) => {
     const key = `${source}:${identifier}`;
     context
@@ -314,9 +325,9 @@ function Groups({ record, context, sources }: PartProps) {
     );
   });
   return (
-    <Part title="Groups" testid="groups">
+    <Box title={heading} testid="groups">
       <Folded items={items} />
-    </Part>
+    </Box>
   );
 }
 
@@ -348,34 +359,6 @@ function AnswerLine({ answer, onChoose }: { answer: Answer; onChoose: (id: numbe
         </p>
       );
   }
-}
-
-/** The structures of the release whose volume holds the object, each to choose. */
-function Inside({ record, context }: PartProps) {
-  const { holding: holdingOf } = context;
-  const holding = useMemo(() => {
-    const place = placeOf(record);
-    return place === undefined ? [] : holdingOf(place);
-  }, [record, holdingOf]);
-  if (holding.length === 0) return null;
-  return (
-    <Part title="Inside structures" testid="inside">
-      <ul className="space-y-0.5">
-        {holding.map((s) => (
-          <li key={s.id}>
-            <Choose
-              italic
-              onClick={() => {
-                context.onChooseStructure(s.id);
-              }}
-            >
-              {s.name}
-            </Choose>
-          </li>
-        ))}
-      </ul>
-    </Part>
-  );
 }
 
 /** Each catalogue entry of the object, with its flags and what their values mean. */

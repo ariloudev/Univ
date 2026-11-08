@@ -1,7 +1,6 @@
 import type { Found, ObjectRecord } from "../api/objects.ts";
 import type { Mat3, Vec3 } from "../scene/vec.ts";
-import { RecordBody } from "./RecordSections.tsx";
-import { headingOf } from "./text.ts";
+import { ObjectRecordPanel } from "./record/ObjectRecordPanel.tsx";
 import type { ChosenObject } from "./useChosen.ts";
 import type { Sources } from "./useSources.ts";
 
@@ -41,32 +40,25 @@ interface ObjectPanelProps {
   context?: RecordContext | undefined;
 }
 
-/** The chosen object's record, as a gazetteer gives an entry: its name, then what is known of
- * it, each value with its source and the mark of its kind. */
+/** The chosen object's record on the base of every record panel; or, while it is read, or where
+ * it was replaced or not read, what became of it. */
 export function ObjectPanel({ chosen, onChoose, onClose, context = NO_CONTEXT }: ObjectPanelProps) {
   if (chosen.kind === "none") return null;
+  if (chosen.kind === "ready") return <ObjectRecordPanel record={chosen.record} as={chosen.as} context={context} onClose={onClose} />;
   return (
     <section aria-label="The chosen object" className="space-y-3 p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="font-serif text-lg leading-snug">
-          {chosen.kind === "ready" ? (
-            <>
-              {headingOf(chosen.record, chosen.as)} <span className="font-sans text-sm text-dim">#{chosen.record.id}</span>
-            </>
-          ) : (
-            "Object"
-          )}
-        </h2>
+        <h2 className="font-serif text-lg leading-snug">Object</h2>
         <button type="button" onClick={onClose} className="text-dim hover:text-ink" aria-label="Close the object's panel">
           ×
         </button>
       </div>
-      <Body chosen={chosen} onChoose={onChoose} context={context} />
+      <Body chosen={chosen} onChoose={onChoose} />
     </section>
   );
 }
 
-function Body({ chosen, onChoose, context }: { chosen: Exclude<ChosenObject, { kind: "none" }>; onChoose: (id: number) => void; context: RecordContext }) {
+function Body({ chosen, onChoose }: { chosen: Exclude<ChosenObject, { kind: "none" | "ready" }>; onChoose: (id: number) => void }) {
   switch (chosen.kind) {
     case "choices":
       return (
@@ -91,7 +83,5 @@ function Body({ chosen, onChoose, context }: { chosen: Exclude<ChosenObject, { k
           Univ Server answered {chosen.status ?? "nothing"}: {chosen.title}
         </p>
       );
-    case "ready":
-      return <RecordBody record={chosen.record} context={context} />;
   }
 }

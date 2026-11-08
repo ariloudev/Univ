@@ -9,6 +9,8 @@ const Cosmology = z.object({
   hubble_constant: z.number(),
   omega_matter: z.number(),
 });
+/** A release's cosmology: its name, and the flat ΛCDM parameters its distances were made with. */
+export type Cosmology = z.infer<typeof Cosmology>;
 
 const ReleaseSummary = z.object({
   number: z.number().int(),

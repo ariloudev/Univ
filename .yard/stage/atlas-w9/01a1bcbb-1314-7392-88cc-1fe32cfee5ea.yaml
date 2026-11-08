@@ -10,6 +10,15 @@ versions:
     title: "Specify the record panels' redesign"
     goal: "The record's requirements describe the redesigned panels for objects and structures, and the cull's checkbox in the top bar, approved and committed"
     status: active
+  - key: 01a1bcc2-145c-728f-9935-504624e63ac5
+    at: 2026-11-08T20:03:18Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the record panels' redesign"
+    goal: "The record's requirements describe the redesigned panels for objects and structures, and the cull's checkbox in the top bar, approved and committed"
+    status: done
 blocks:
   - key: 01a1bcbb-1314-7392-88cc-1fe649386c32
     id: why
@@ -703,3 +712,184 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1bcbc-a2c9-7658-96f8-838495da0b10
+    id: plan-25-plan-silly-shimmying-lake-01a1bcbb-1314-7392-88cc-1fe32cfee5ea
+    kind: plan
+    versions:
+      - key: 01a1bcbc-a2c9-7658-96f8-83855120f507
+        at: 2026-11-08T19:57:21Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: the record panels redesigned (W9, `stage/atlas-w9`)"
+        markdown: |
+          # Build plan: the record panels redesigned (W9, `stage/atlas-w9`)
+
+          ## Context
+          The owner compared the record panel as built with the design they had chosen and found it far too wordy. It lists every value of every source with its full citation, in long-form units, as a flat list (images 16 and 17 of the session). Structures fare worst: raw value names, a repeated citation on every value, and a derivation path such as "geometry SkyRegion lon 0".
+
+          **The design:** 13 mockups built from real release-12 records are on the atlas options canvas (https://claude.ai/artifact/3K31gmVV3VYNc2BvN2Twao), and the owner approved them. Their source is `scratchpad/record-mock/gallery.html`.
+
+          **Owner's directions:**
+          - build one **base panel** with the common logic, which each specific panel reuses;
+          - move **"Only what lies inside"** out of the panel to the top bar, beside the level-of-detail switch.
+
+          **Spec:** approved in Yard and committed at e6f39cf.
+          - `read-an-object.yaml` gains seven criteria: the summary sentence; lines of label, value with a short source name, and kind mark; short source names; preferred values shown with everything behind one link; the distance dot plot; the redshift strip; and the BP−RP colour scale.
+          - `see-the-structures.yaml` gains six criteria: the summary sentence; the depth band; length bars; member ticks; the disputed callout; and papers named once with everything behind one link.
+          - Four cull criteria are reworded: the checkbox moves to the top bar, and the panel explains the cull only while it is on. The top bar criterion in `frame-the-view-as-an-atlas.yaml` now names the checkbox.
+
+          **Short source names:** a table in the explorer, falling back to the source's title. Moving it into the source definitions waits for release 13.
+
+          ## Architecture: `clients/explorer/src/ui/record/`
+
+          ### 1. The base panel (shared by both)
+          **`RecordPanel.tsx`** has the header, summary sentence, sections and full-record fold:
+          ```
+          RecordPanel({ label, title, italic, subtitle, lede, onClose, fullLabel, full, children })
+          ```
+          - `title`: Spectral 26 px, italic for a structure (the existing upright/italic criteria).
+          - `subtitle`: one grey line of other names and the id or kind.
+          - `lede`: the summary sentence.
+          - `children`: the sections.
+          - `full`: a function rendering the full record, mounted only once its link opens (the lazy pattern of `Folded` in `RecordSections.tsx`).
+          - The close button keeps the existing aria-labels: "Close the object's panel" and "Close the structure's panel".
+
+          **`parts.tsx`**, the pieces each panel uses:
+          - `Section(title, testid)`.
+          - `Rows` and `Row({label, value, source, kind})`: a 76 px / 1fr / 14 px grid, the source in grey, `Mark` (`ui/Mark.tsx`) for the kind.
+          - `Lead({figure, uncertainty, unit, aside, kind})`: the big figure line.
+          - `Note`.
+          - `Disputed({papers})`: the warn-tone callout.
+          - `Chooser`: an accent link that chooses an object or structure (from `Choose` in `RecordSections.tsx`).
+
+          **`charts.tsx`** holds thin SVG components (320 px wide) with no logic beyond drawing. Their geometry lives in **`chartGeometry.ts`**: `niceTicks(min, max, n)` and `linear(domain, range)`, both pure and tested. The dataviz mark specs apply: 2 px lines, ≥ 8 px dots with a 2 px panel-coloured ring, hairline grid, text in ink or dim (never in the data colour), and every SVG with `role="img"` and an `aria-label` carrying its values.
+          - `DotPlot(rows)`: distances with error bars; the preferred row in the accent, the others grey.
+          - `TickStrip(values, marks)`: many redshifts as cz, or member distances.
+          - `LengthBars(rows)`: one axis for each unit; a lower limit fades out at its end.
+          - `DepthBand(from, to, marks)`.
+          - `ColourScale(bpRp)`: on the gradient the view draws stars in (`scene/starColour.ts`).
+
+          **`names.ts`**:
+          - `sourceShort(id, title)`: the table of the release's 30 sources ("Gaia DR3", "Hipparcos 2007", "Bailer-Jones 2021", "Karachentsev 2013", "2MRS"…), falling back to `title`.
+          - `paperShort(reference)`: "Kraan-Korteweg et al. 2017", "Keenan, Barger & Cowie 2013", "Nadathur 2013", parsed as author list, year, rest. A first author with a trailing initial is handled.
+
+          **`scene/cosmology.ts`**: `comovingMpc(z, {hubble_constant, omega_matter})`, flat ΛCDM by Simpson's rule. This is the method the server's derivation names for structure velocities. The release cosmology comes from `api/schemas.ts` `Cosmology`; Atlas already holds the release summary.
+
+          ### 2. The object panel
+          `ObjectPanel.tsx` keeps its choices, loading and failed states. A ready record renders **`record/ObjectRecord.tsx`**: `RecordPanel` plus the sections below. Their data comes from the pure **`record/objectRecordText.ts`**:
+          - **lede** (`objectLede`): the noun as far as the record tells.
+            - A `galaxy_group` kind gives "a group of N galaxies".
+            - A published spectral type gives "an X-type star".
+            - Otherwise the noun comes from the first entry's source: a small table, for example erass1 gives "galaxy cluster or group" and the galaxy catalogues give "galaxy". Failing that, "object".
+            - Then the preferred distance (`scene/format.ts` `shortDistance`), "by its photometric redshift" when that is the preferred rank, and the domain (`natureOf` in `ui/text.ts`).
+            - "the brightest of its group" comes from a `dominant_member_of` relation.
+          - **Distance**: `Lead` of the preferred value, then a `DotPlot` when there is more than one distance or parallax.
+            - Each distance is plotted from `normalized`.
+            - A parallax is plotted at its inverse (1/ϖ, labelled), using `distancesOf` in `api/objects.ts`.
+            - A `Note` gives the rule (`words`) and the parallaxes as published.
+          - **Position**: RA, Dec and l, b rows (`raText`, `decText`, `galacticOf` in `recordText.ts`), then a `Note` with frame, epoch, uncertainty and source.
+          - **Brightness and colour**:
+            - the first magnitude of each band;
+            - the colour indices;
+            - the published types, or the estimated class (`starText.ts`);
+            - a `ColourScale` where a BP−RP index exists.
+          - **Motion** (proper motion, radial velocity) or **Velocity** (heliocentric and CMB rows, from each redshift's published frame).
+            - Proper motion is drawn as a total in mas/yr with its position angle. Both are derived from one source's μα* and μδ, so they are marked as from that source.
+            - A `TickStrip` appears where one source gives more than three redshifts (M31, Draco), marking another source's heliocentric velocity.
+          - **Members**, or the groups it belongs to: the existing `Groups` choose logic, moved into a shared hook.
+          - **Lies inside**: the existing `Inside` component.
+          - **"In N entries of M catalogues"**: a one-line summary, using short names, with counts by source.
+          - **Full record**: today's `RecordBody` sections, moved unchanged into `record/FullObjectRecord.tsx` (Names, every distance, values, star, groups, catalogues with flags, papers, frame). Their existing tests stay valid once the fold is opened.
+
+          ### 3. The structure panel
+          **`record/StructureRecord.tsx`** is `RecordPanel` plus sections drawn from the pure **`record/structureText.ts`**.
+
+          **`api/structures.ts`** is widened with loose zod schemas for what the panel reads:
+          - `record.alternative_names`, `status`, `notes`, `disputes` (`cite.paper`, `locator.quote`);
+          - `record.position` (lon, lat, radial velocity);
+          - `record.geometry.SkyRegion` (lon and lat pairs, near and far velocity or distance);
+          - `rescaled` (value pointer, native, rescaled);
+          - `members.placed_from_file` (`distance_mpc`, `redshift`).
+
+          The sections:
+          - **subtitle**: alternative names, kind, domain, and the status where it is "reconstructed" or "statistical claim".
+          - **lede**: kind, distance (the depth range, or the centre's distance from `centre`), and the longest length (rescaled).
+          - **Disputed**, above the values, naming each disputing paper (`paperShort`).
+          - **Depth**:
+            - From a sky region's near and far bounds. A velocity is converted with `comovingMpc(cz/c)`; a distance is rescaled through `rescaled` where it has an entry.
+            - Each km/s value the record gives within that range becomes a mark (Vela's W1 and W2).
+            - For a sphere about the observer, its radius instead (KBC).
+            - A member list gets a `TickStrip` of the members' distances instead (Huge-LQG).
+          - **On the sky**: the SkyRegion's lon and lat ranges in its frame (RA in hours for an equatorial frame), or the position's lon and lat.
+          - **Size**: Mpc lengths and km/s lengths each on their own axis.
+            - A lower limit is drawn open.
+            - A value with a `rescaled` entry is drawn rescaled, with "Published as … at H₀ = …" beneath.
+            - Labels come from value names in words, minus a leading "extent" (`words` in `ui/text.ts`).
+          - **Measures**: the other values as rows (dimensionless, degrees, and km/s not in a range), each with its paper where more than one paper is cited.
+          - **Existing notes** (the matched shape, extents, the flow symbol) are kept as one `Note`, reworded plainly. The cull's two notes appear only while the cull is on.
+          - **From**: the papers once, by `paperShort` with the rest of the reference grey.
+          - **Full record**: the notes, each value with its quote, and every paper in full.
+
+          ### 4. "Only what lies inside" in the top bar
+          - The `InsideCheckbox` moves from `StructuresPanel.tsx` into `TopBarParts` (`ui/Atlas.tsx`), after the search, so it sits beside the level-of-detail switch that `App.tsx` places last.
+          - It is a `SwitchBox`-styled checkbox shown only while `selection.inside` is defined.
+          - `inside.ts` and the address parameter are unchanged.
+          - `StructuresPanel.tsx` keeps `StructureList` only.
+
+          ## Tests (by criterion)
+          - **`chartGeometry.test.ts`**: tick rounding and scales.
+          - **`cosmology.test.ts`**: cz 16,000 km/s gives 233.5 Mpc under Planck 2018.
+          - **`names.test.ts`**: short names with their fallback, and `paperShort` for one, two and many authors.
+          - **`objectRecordText.test.ts`**, against the release-12 fixtures trimmed into `src/test/records/`:
+            - the summary sentence for a star, a galaxy group, an eRASS cluster and an unclassed object;
+            - dot rows, with the parallax inverted and labelled;
+            - the proper motion's total and position angle;
+            - when a strip appears.
+          - **`structureText.test.ts`**, against trimmed Vela, KBC, Great Attractor and Huge-LQG records:
+            - Vela's depth 233.5–348 Mpc, with W1 at 262.3 and W2 at 319.5;
+            - lengths rescaled, with lower limits open;
+            - member distances;
+            - disputes;
+            - a paper named once, or per value when several are cited.
+          - **`RecordPanel.test.tsx`**: the header, sentence and close; the full record mounts only once opened.
+          - **`ObjectPanel.test.tsx`** and **`StructuresPanel.test.tsx`**: the sections, rows with short names and marks, and the charts' aria-labels. The existing content tests open the full record first.
+          - **`Atlas.test.tsx`**: "Only what lies inside" is in the top bar, beside the level-of-detail switch, while a volume structure is chosen; it is not in the record.
+          - **e2e**: tests that read `names`, `catalogues` or `preferred` open the full record first. The structure test checks the top bar checkbox.
+
+          ## Wave end
+          1. `/simplify` and `/code-review` in parallel, then the fixes.
+          2. `cargo xtask check` once, then `cargo xtask integration` once.
+          3. Trace links for the 13 new criteria and the 5 reworded ones, accepted.
+          4. Screenshots of the six objects and seven structures on release 12, next to the mockups.
+          5. Yard Log closed and committed, merged `--no-ff` into product/atlas, product Yard updated.
+
+          Nothing is pushed, published or deployed.
+
+          ## Verification
+          - `pnpm check` (fallow keeps each function under its complexity limits, so long panels split into small sections).
+          - On release 12 locally (`cargo xtask explore`): each of the 13 mockup records compared side by side with its artboard.
+        planMode: true
+    responses:
+      - key: 01a1bcc1-ebdd-71fc-b05d-e971e979c711
+        at: 2026-11-08T20:03:07Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1bcc2-145c-728f-9935-50405fa208d4
+    id: spec-approved
+    kind: note
+    versions:
+      - key: 01a1bcc2-145c-728f-9935-50471eff44ea
+        at: 2026-11-08T20:03:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Approved and committed"
+        markdown: "The owner approved the change in Yard; it is committed at e6f39cf. The build plan was presented in plan mode and approved."
+        tone: success

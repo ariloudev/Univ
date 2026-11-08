@@ -62,7 +62,7 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
       <Scene
         key={release}
         release={release}
-        cosmology={shown?.cosmology.name ?? ""}
+        cosmology={shown?.cosmology}
         levelOfDetail={levelOfDetail[0]}
         place={{ topBar, drawer, onDrawer: setDrawer }}
       />

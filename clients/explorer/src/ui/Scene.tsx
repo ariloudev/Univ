@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 
-import type { Rotations } from "../api/schemas.ts";
+import type { Cosmology, Rotations } from "../api/schemas.ts";
 import type { StructureDetail } from "../api/structures.ts";
 import type { Domain } from "../catalogue/tiles.ts";
 
@@ -12,8 +12,7 @@ import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
-import { type StructureChoice, useStructureChoice } from "./inside.ts";
-import type { Inside } from "./StructuresPanel.tsx";
+import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 
 /** The structure `choice` names, and the cull to its volume, where it has one
@@ -57,7 +56,7 @@ export function Scene({
   place,
 }: {
   release: number;
-  cosmology: string;
+  cosmology: Cosmology | undefined;
   levelOfDetail: boolean;
   place: AtlasPlace;
 }) {

@@ -141,3 +141,17 @@ export function flagsOf(entry: Entry, detail: SourceDetail | undefined): { colum
     return { column, value, meaning: meanings?.values[value], cite: meanings?.cite };
   });
 }
+
+/** The object's sky position where it has one: right ascension and declination, galactic
+ * longitude and latitude where `toGalactic` is known, and the entry it is taken from. */
+export function skyOf(record: ObjectRecord, toGalactic: Mat3 | undefined) {
+  const sky = record.sky_position;
+  if (sky === null || sky === undefined || sky.ra === undefined || sky.dec === undefined) return undefined;
+  return {
+    ...sky,
+    ra: sky.ra,
+    dec: sky.dec,
+    galactic: toGalactic === undefined ? undefined : galacticOf(sky.ra, sky.dec, toGalactic),
+    from: sky.entry === undefined ? undefined : record.entries[sky.entry],
+  };
+}
