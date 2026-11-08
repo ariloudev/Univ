@@ -1,15 +1,16 @@
 import { act, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CHOSEN_CSS, STRUCTURE_CSS } from "../scene/kinds.ts";
 import { fakeWorld } from "../test/world.ts";
+import { HIP_32754 } from "../test/records.ts";
 import type { Overlay } from "./overlay.ts";
 import { HoverLabel, StructureNames } from "./SceneOverlay.tsx";
 
 describe("the label under the pointer", () => {
   it("names a structure and says a click reads it, and is gone when nothing is under the pointer", () => {
     const world = fakeWorld();
-    render(<HoverLabel world={world} />);
+    render(<HoverLabel world={world} release={7} />);
     expect(screen.queryByRole("tooltip")).toBeNull();
     act(() => world.hover.set({ x: 10, y: 20, name: { id: "kbc", centre: [0, 0, 0], text: "KBC void" } }));
     expect(screen.getByRole("tooltip").textContent).toBe("KBC void. Click to read the structure.");
@@ -36,5 +37,51 @@ describe("the structures' names", () => {
     expect(colour("kbc")).toBe(css(STRUCTURE_CSS));
     rerender(<StructureNames names={names} overlay={overlay} />);
     expect(colour("shapley")).toBe(css(STRUCTURE_CSS));
+  });
+});
+
+describe("the label of a point the pointer rests on", () => {
+  const fetch = vi.fn((..._args: unknown[]) => Promise.resolve(Response.json(HIP_32754)));
+  const point = { id: 17, domain: "stars", place: [0, 0, 0] as const, distanceMpc: 3.4683907e-5, source: "bailer-jones-2021", kind: "estimated" };
+  const rest = (ms: number) =>
+    act(async () => {
+      await vi.advanceTimersByTimeAsync(ms);
+    });
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    fetch.mockClear();
+    vi.stubGlobal("fetch", fetch);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it("names the object from its record once the pointer has rested on it for 0.3 seconds, in place of its id", async () => {
+    const world = fakeWorld();
+    render(<HoverLabel world={world} release={12} />);
+    act(() => world.hover.set({ x: 0, y: 0, point }));
+    expect(screen.getByRole("tooltip").textContent).toMatch(/^17 · stars · /);
+    // Before the rest is over, nothing is read.
+    await rest(299);
+    expect(fetch).not.toHaveBeenCalled();
+    await rest(1);
+    expect(fetch.mock.calls[0]?.[0]).toBe("/v1/objects/17?release=12");
+    expect(screen.getByRole("tooltip").textContent).toMatch(/^HIP 32754 · stars · /);
+    // Another point is named by its id until the pointer has rested on it too.
+    act(() => world.hover.set({ x: 0, y: 0, point: { ...point, id: 18 } }));
+    expect(screen.getByRole("tooltip").textContent).toMatch(/^18 · /);
+  });
+
+  it("reads nothing for a point the pointer passes over", async () => {
+    const world = fakeWorld();
+    render(<HoverLabel world={world} release={12} />);
+    act(() => world.hover.set({ x: 0, y: 0, point }));
+    await rest(200);
+    act(() => world.hover.set(undefined));
+    await rest(500);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

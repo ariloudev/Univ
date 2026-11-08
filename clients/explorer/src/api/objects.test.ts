@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { answer, fakeHttp } from "../test/http.ts";
+import { ANDROMEDA_GROUPED } from "../test/records.ts";
 import { ANDROMEDA } from "../test/objects.ts";
 import { type ObjectRecord, distancesOf, lookupPath, objectOf, placeOf, search } from "./objects.ts";
 
@@ -80,6 +81,15 @@ describe("the name an object was found by", () => {
     expect(await as(" andromeda ")).toBe("Andromeda");
     expect(await as("messier 031")).toBe("MESSIER031");
     expect(await as("M 31")).toBe("M 31");
+  });
+
+  it("is a proper name or a designation in its catalogue's form where the record gives one", async () => {
+    const as = async (query: string) => {
+      const found = await search(query, { http: http(200, ANDROMEDA_GROUPED) });
+      return found.kind === "object" ? found.as : "not found";
+    };
+    expect(await as("andromeda galaxy")).toBe("Andromeda Galaxy");
+    expect(await as("pgc2557")).toBe("PGC 2557");
   });
 
   it("is none for a lookup by id or by designation", async () => {

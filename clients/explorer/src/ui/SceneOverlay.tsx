@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
+
+import { recordOf } from "../api/objects.ts";
 import { CHOSEN_CSS, STRUCTURE_CSS } from "../scene/kinds.ts";
 import type { NameLabel, Overlay } from "./overlay.ts";
 import { useStore } from "./store.ts";
-import { pointText } from "./text.ts";
+import { headingOf, pointText } from "./text.ts";
 import type { World } from "./useWorld.ts";
 
 /** Earth, the ring's label and the chosen object's mark, kept over their places. */
@@ -43,9 +46,37 @@ export function StructureNames({ names, overlay, chosen }: { names: readonly Nam
   );
 }
 
-/** The label of what is under the pointer: a structure's name, which a click reads, or a point. */
-export function HoverLabel({ world }: { world: World }) {
+/** How long the pointer rests on a point before its label names it, milliseconds. */
+const REST_MS = 300;
+
+/** The name or first designation of object `id` of `release`, read from its record once the
+ * pointer has rested on it for `REST_MS`; none before, or for another object. */
+function useRestedName(id: number | undefined, release: number): string | undefined {
+  const [named, setNamed] = useState<{ id: number; name: string }>();
+  useEffect(() => {
+    if (id === undefined) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      recordOf(id, release)
+        .then((found) => {
+          if (live && found.kind === "object") setNamed({ id, name: headingOf(found.record) });
+        })
+        .catch(() => undefined);
+    }, REST_MS);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [id, release]);
+  return named !== undefined && named.id === id ? named.name : undefined;
+}
+
+/** The label of what is under the pointer: a structure's name, which a click reads, or a point,
+ * named from its record once the pointer has rested on it. */
+export function HoverLabel({ world, release }: { world: World; release: number }) {
   const hover = useStore(world.hover);
+  const point = hover !== undefined && "point" in hover ? hover.point : undefined;
+  const name = useRestedName(point?.id, release);
   if (hover === undefined) return null;
   return (
     <p role="tooltip" className="pointer-events-none absolute rounded bg-panel px-2 py-1 text-xs" style={{ left: hover.x + 12, top: hover.y + 12 }}>
@@ -54,7 +85,7 @@ export function HoverLabel({ world }: { world: World }) {
           <span className="font-serif italic">{hover.name.text}</span>. Click to read the structure.
         </>
       ) : (
-        pointText(hover.point)
+        pointText(hover.point, name)
       )}
     </p>
   );

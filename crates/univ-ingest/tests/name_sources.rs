@@ -411,3 +411,12 @@ fn every_cross_identifier_the_matching_rules_read_is_a_column_its_source_defines
     }
     assert!(checked >= 5, "{checked}");
 }
+
+#[test]
+fn a_researched_star_is_named_by_its_file() {
+    let mut star = with_ids(bare("researched-star-distances", "27989"), &[]);
+    star.name = Some("Betelgeuse".into());
+    let m = match_entries(&matching_rules(), vec![star]);
+    let o = object(&m, &designation("researched-star-distances", "27989"));
+    assert_eq!(names(o), [("researched-star-distances", "Betelgeuse")]);
+}

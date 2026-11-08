@@ -218,7 +218,11 @@ fn the_record_lists_its_names_apart_from_its_designations() {
         object(11)["names"],
         serde_json::json!([{"name": "Canis Major", "source": "mcconnachie-2012"}])
     );
-    assert_eq!(object(6)["names"], serde_json::json!([]));
+    // A researched star is named by its file.
+    assert_eq!(
+        object(6)["names"],
+        serde_json::json!([{"name": "HIP 1 (SIMULATED)", "source": "researched-star-distances"}])
+    );
 }
 
 #[test]

@@ -277,6 +277,7 @@ INSERT INTO designations VALUES(2,5,'35',4,NULL);
 INSERT INTO designations VALUES(2,5,'55',5,NULL);
 INSERT INTO designations VALUES(2,7,'1',6,NULL);
 INSERT INTO names VALUES(2,'canismajor',11,2,'Canis Major',NULL);
+INSERT INTO names VALUES(2,'hip1(simulated)',6,7,'HIP 1 (SIMULATED)',NULL);
 INSERT INTO names VALUES(2,'sagittariusdsph',12,2,'Sagittarius dSph',NULL);
 INSERT INTO names VALUES(2,'segue(i)',13,2,'Segue (I)',NULL);
 INSERT INTO names VALUES(2,'thegalaxy',14,2,'The Galaxy',NULL);

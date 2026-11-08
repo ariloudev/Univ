@@ -60,21 +60,24 @@ export const bandsText = (bands: string): string => bands.replace("-", "−");
 const colourText = (colour: { index: number; bands: string }): string =>
   `${bandsText(colour.bands)} ${colour.index.toFixed(2).replace("-", "−")}`;
 
-/** What the hover label says of a point: its id, scale domain, distance, the source and kind of
- * value of that distance, and its colour index where it has one. */
-export function pointText(point: ScenePoint): string {
+/** What the hover label says of a point: its id, or the `name` its record gives once read, its
+ * scale domain, distance, the source and kind of value of that distance, and its colour index
+ * where it has one. */
+export function pointText(point: ScenePoint, name?: string): string {
   const colour = point.colour === undefined ? "" : ` · ${colourText(point.colour)}`;
-  return `${point.id} · ${words(point.domain)} · ${formatDistance(point.distanceMpc)} · ${point.source} · ${point.kind}${colour}`;
+  return `${name ?? point.id} · ${words(point.domain)} · ${formatDistance(point.distanceMpc)} · ${point.source} · ${point.kind}${colour}`;
 }
 
-/** The heading of an object's panel: the name it was found by, else the first name its entries
- * give, else its first designation with its source. */
+/** The heading of an object's panel: the name it was found by, else the first proper name its
+ * sources give, else its first designation in its catalogue's form (or, where no form is known,
+ * with its source). A second name an entry gives, such as a Hipparcos number, heads nothing. */
 export function headingOf(record: ObjectRecord, foundAs?: string): string {
   if (foundAs !== undefined) return foundAs;
-  const named = record.entries.find((e) => e.name !== null)?.name ?? undefined;
-  if (named !== undefined) return named;
+  const proper = record.names?.[0]?.name;
+  if (proper !== undefined) return proper;
   const first = record.designations[0];
-  return first === undefined ? `Object ${record.id}` : `${first.identifier} (${first.source})`;
+  if (first === undefined) return `Object ${record.id}`;
+  return first.designation ?? `${first.identifier} (${first.source})`;
 }
 
 /** What the panel says an object is: a galaxy group where it is one, and its scale domain. */

@@ -30,7 +30,7 @@ describe("names, as atlases name areas and points", () => {
 
   it("names a structure in italic in the hover label, and an object in upright type there and in its panel", () => {
     const world = fakeWorld();
-    render(<HoverLabel world={world} />);
+    render(<HoverLabel world={world} release={7} />);
     act(() => world.hover.set({ x: 0, y: 0, name: { id: "kbc", centre: [0, 0, 0], text: "KBC void" } }));
     expect(italic(screen.getByText("KBC void"))).toBe(true);
     act(() => world.hover.set({ x: 0, y: 0, point: { id: 17, domain: "stars", place: [0, 0, 0], distanceMpc: 1e-5, source: "hipparcos-2007", kind: "measured" } }));
