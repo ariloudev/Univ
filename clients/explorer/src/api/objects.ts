@@ -51,7 +51,22 @@ const Position = z.looseObject({
   epoch: z.number(),
 });
 
-const SkyPosition = z.looseObject({ frame: z.string(), epoch: z.number().nullable().optional() });
+/** The object's preferred sky position: ICRS degrees at its epoch, from one entry. */
+const SkyPosition = z.looseObject({
+  frame: z.string(),
+  ra: z.number().optional(),
+  dec: z.number().optional(),
+  epoch: z.number().nullable().optional(),
+  entry: z.number().int().optional(),
+  uncertainty_mas: z.number().nullable().optional(),
+});
+
+/** A source and the identifier it gives. */
+const SourceIdentifier = z.looseObject({ source: z.string(), identifier: z.string() });
+
+/** How one object stands to another: a group to its dominant galaxy or a member, and back. */
+const Relation = z.looseObject({ kind: z.string(), entry: SourceIdentifier, other: SourceIdentifier, scheme: z.string(), identifier: z.string() });
+export type Relation = z.infer<typeof Relation>;
 
 const ObjectRecord = z.looseObject({
   release: z.number().int(),
@@ -61,14 +76,22 @@ const ObjectRecord = z.looseObject({
     z.looseObject({
       source: z.string(),
       identifier: z.string(),
+      /** Its identifier in its catalogue's form, where its source's definition gives one. */
+      designation: z.string().nullable().optional(),
       name: z.string().nullable(),
+      /** Its source's quality columns, by column, as published. */
+      flags: z.record(z.string(), z.unknown()).optional(),
       spectral_type: z.looseObject({ text: z.string(), kind_of_value: z.string() }).nullable().optional(),
       references: z
         .array(z.looseObject({ citation: z.string(), doi: z.string().nullable().optional(), bibcode: z.string().nullable().optional() }))
         .optional(),
     }),
   ),
-  designations: z.array(z.looseObject({ source: z.string(), identifier: z.string() })),
+  designations: z.array(SourceIdentifier.extend({ designation: z.string().nullable().optional() })),
+  /** Every common or proper name its sources give it, with the source. */
+  names: z.array(z.looseObject({ name: z.string(), source: z.string() })).optional(),
+  relations: z.array(Relation).optional(),
+  not_placed: z.string().nullable().optional(),
   measurements: z.array(Measurement),
   preferred: Preferred.nullable(),
   position: Position.nullable(),
@@ -153,6 +176,28 @@ export async function search(query: string, options: ReadOptions = {}): Promise<
     throw error;
   }
 }
+
+/** The records read most recently, by release and id: the hover label and the panel share them,
+ * so a point rested on and then chosen is read once. One that fails is read again next time. */
+const RECENT = 64;
+const recent = new Map<string, Promise<Exclude<Found, { kind: "none" }>>>();
+
+/** Object `id` of `release`, read once while it is among the `RECENT` read last. */
+export function recordOf(id: number, release: number): Promise<Exclude<Found, { kind: "none" }>> {
+  const key = `${release}:${id}`;
+  const found = recent.get(key) ?? objectOf(id, { release });
+  recent.delete(key);
+  recent.set(key, found);
+  found.catch(() => recent.delete(key));
+  const oldest = recent.keys().next().value;
+  if (recent.size > RECENT && oldest !== undefined) recent.delete(oldest);
+  return found;
+}
+
+/** Forgets every record read, as a test begins. */
+export const forgetRecords = (): void => {
+  recent.clear();
+};
 
 /** The object's ICRS position in megaparsecs; none for an object with no distance. */
 export function placeOf(record: ObjectRecord): [number, number, number] | undefined {

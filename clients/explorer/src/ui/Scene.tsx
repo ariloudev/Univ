@@ -11,6 +11,7 @@ import { useHidden } from "./hidden.ts";
 import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
+import { useRecordContext } from "./useRecordContext.ts";
 import { type StructureChoice, useStructureChoice } from "./inside.ts";
 import type { Inside } from "./StructuresPanel.tsx";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
@@ -81,7 +82,12 @@ export function Scene({
   const structures = useStructures(release, world, rotations, structureId, hidden.structure);
   const { detail, inside } = useCulledStructure(world, domains, rotations, structures, structureChoice);
   const choices = useMemo(() => choicesOf(domains, structures.list), [domains, structures.list]);
+  const context = useRecordContext(release, chosen, rotations, structures, {
+    structure: (id) => selection.structureById(id),
+    object: (id, options) => selection.object(id, options),
+  });
   const selection: Selection = {
+    context,
     chosen,
     structure: detail,
     inside,
@@ -119,7 +125,7 @@ export function Scene({
         />
         <Marks overlay={overlay} />
         <StructureNames names={structures.names} overlay={overlay} chosen={structureId} />
-        {world === undefined ? null : <HoverLabel world={world} />}
+        {world === undefined ? null : <HoverLabel world={world} release={release} />}
         {problem === undefined ? null : (
           <p role="alert" className="absolute inset-x-0 top-12 mx-auto w-fit rounded bg-panel px-3 py-2 text-warn">
             {problem}

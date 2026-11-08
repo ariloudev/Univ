@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
-import { ObjectPanel } from "./ObjectPanel.tsx";
+import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
 import { ScaleBar } from "./ScaleBar.tsx";
@@ -24,6 +24,8 @@ export interface Selection {
    * none where the structure has no volume to cull to. */
   inside: Inside | undefined;
   object: (id: number, options?: ChooseOptions) => void;
+  /** What the object's panel reads besides its record. */
+  context?: RecordContext;
   structureById: (id: string) => void;
   close: () => void;
 }
@@ -113,7 +115,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
         </section>
         {key === undefined ? null : (
           <Record key={key}>
-            <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} />
+            <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} context={selection.context} />
             {selection.structure === undefined ? null : (
               <StructurePanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} onClose={selection.close} />
             )}

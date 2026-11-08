@@ -231,3 +231,12 @@ test("opens a drawer and the record over the view below 1,024 pixels, and closes
   await page.getByRole("button", { name: "Close the object's panel" }).click();
   await expect(record).toBeHidden();
 });
+
+test("reads an object's record as a gazetteer entry: on the sky, its catalogues, and each value marked with its kind", async ({ page }) => {
+  await find(page, "canis MAJOR");
+  const panel = page.getByRole("region", { name: "The chosen object" });
+  await expect(panel.getByTestId("sky")).toContainText(/RA \d{2}h \d{2}m [\d.]+s, Dec [+−]\d{2}° \d{2}′ [\d.]+″/);
+  await expect(panel.getByTestId("sky")).toContainText(/l [\d.]+°, b [+−][\d.]+°/);
+  await expect(panel.getByTestId("catalogues")).toBeVisible();
+  await expect(panel.getByTestId("preferred").locator("[data-kind]").first()).toBeVisible();
+});

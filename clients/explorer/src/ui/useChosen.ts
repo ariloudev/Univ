@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "../api/client.ts";
-import { type Choices, type ObjectRecord, nameOf, objectOf, placeOf } from "../api/objects.ts";
+import { type Choices, type ObjectRecord, nameOf, recordOf, placeOf } from "../api/objects.ts";
 import { setInAddress } from "./address.ts";
 import type { World } from "./useWorld.ts";
 
@@ -83,7 +83,7 @@ export function useChosen(release: number, world: World | undefined) {
     }
     const abort = new AbortController();
     setChosen({ kind: "loading", id: request.id });
-    objectOf(request.id, { release, signal: abort.signal })
+    recordOf(request.id, release)
       .then((found) => (found.kind === "object" ? ready(found.record) : setChosen({ kind: "choices", choices: found })))
       .catch((error: unknown) => {
         if (!abort.signal.aborted) setChosen(failure(request.id, error));

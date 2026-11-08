@@ -1,0 +1,65 @@
+key: 01a1b872-5ba6-7045-9999-cebc0f35eb54
+id: w4
+versions:
+  - key: 01a1b872-5ba6-7045-9999-cec146fd2700
+    at: 2026-11-07T23:57:44Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4: object panel"
+    goal: "The object panel is headed by the object's name or best designation and gives its designations, sky position, brightness, motion and redshift, groups, the structures holding it and its flags with their meanings; the hover label names a point after 0.3 s"
+    status: active
+blocks:
+  - key: 01a1b872-5ba6-7045-9999-cebda162278b
+    id: t4-read
+    kind: task
+    versions:
+      - key: 01a1b872-5ba6-7045-9999-cec2c685f15f
+        at: 2026-11-07T23:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Explorer reads designations, names, flags, relations and sources"
+        detail: "`api/objects.ts` reads the new members and caches records; `api/sources.ts` reads titles and source records. Done when the api tests pass."
+        state: active
+  - key: 01a1b872-5ba6-7045-9999-cebeefcfe292
+    id: t4-panel
+    kind: task
+    versions:
+      - key: 01a1b872-5ba6-7045-9999-cec31598b209
+        at: 2026-11-07T23:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Object panel as a gazetteer entry"
+        detail: "Heading, merged designations, sky position (RA/Dec and l/b), brightness, motion and redshift, groups, structures holding it, catalogues with flag meanings, papers; each value with its kind mark. Done when the panel tests pass for a star, a galaxy in a group and a sky-only object."
+        state: open
+  - key: 01a1b872-5ba6-7045-9999-cebf0d751997
+    id: t4-hover
+    kind: task
+    versions:
+      - key: 01a1b872-5ba6-7045-9999-cec4019fdf84
+        at: 2026-11-07T23:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Hover label names the object after 0.3 s"
+        detail: "Done when the fake-timer hover test passes."
+        state: open
+  - key: 01a1b872-5ba6-7045-9999-cec02885570a
+    id: t4-review
+    kind: task
+    versions:
+      - key: 01a1b872-5ba6-7045-9999-cec545a11d37
+        at: 2026-11-07T23:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Wave-end review, gate and integration"
+        detail: "/simplify and /code-review in parallel, fixes, then the full gate and integration."
+        state: open
