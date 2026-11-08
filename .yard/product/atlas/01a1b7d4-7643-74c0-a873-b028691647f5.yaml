@@ -19,6 +19,15 @@ versions:
     title: "Object panel"
     goal: "The explorer's object panel leads with the best designation or name and shows sky position, brightness, motion and redshift, membership and explained flags"
     status: active
+  - key: 01a1b888-4f37-759e-a2ce-d8fc223c0dc5
+    at: 2026-11-08T00:21:43Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Object panel"
+    goal: "The explorer's object panel leads with the best designation or name and shows sky position, brightness, motion and redshift, membership and explained flags"
+    status: done
 blocks:
   - key: 01a1b7e5-22ce-727d-bcf2-72adf0673824
     id: t4-read
@@ -33,6 +42,15 @@ blocks:
         title: "Explorer reads designations, flags, relations, sources"
         detail: "`api/objects.ts` reads the new members, and `api/sources.ts` reads titles and source records; records are cached. Done when the api tests pass."
         state: open
+      - key: 01a1b888-4f37-759e-a2ce-d8f8c593cfb0
+        at: 2026-11-08T00:21:43Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Explorer reads designations, flags, relations, sources"
+        detail: "Done on stage/atlas-w4."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72ae5cb0c6ae
     id: t4-panel
     kind: task
@@ -46,6 +64,15 @@ blocks:
         title: "Object panel as a gazetteer entry"
         detail: "Heading, merged designations, and the Position, Brightness, Motion, Groups, Inside structures, Catalogues and Papers sections, each value with its kind mark. Done when ObjectPanel tests pass for a star, a galaxy and M42."
         state: open
+      - key: 01a1b888-4f37-759e-a2ce-d8f9b6cf4379
+        at: 2026-11-08T00:21:43Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Object panel as a gazetteer entry"
+        detail: "Done on stage/atlas-w4."
+        state: done
   - key: 01a1b7e5-22ce-727d-bcf2-72af39ba394d
     id: t4-hover
     kind: task
@@ -59,3 +86,25 @@ blocks:
         title: "Hover label names the object after 0.3 s"
         detail: "Done when the fake-timer hover test passes."
         state: open
+      - key: 01a1b888-4f37-759e-a2ce-d8fa145fae03
+        at: 2026-11-08T00:21:43Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Hover label names the object after 0.3 s"
+        detail: "Done on stage/atlas-w4."
+        state: done
+  - key: 01a1b888-4f37-759e-a2ce-d8f6ff2960ba
+    id: w4-merged
+    kind: note
+    versions:
+      - key: 01a1b888-4f37-759e-a2ce-d8fb7f4a450c
+        at: 2026-11-08T00:21:43Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W4 merged"
+        markdown: "stage/atlas-w4 merged at 6c86060 after the review fixes, the full gate and integration (12 explorer e2e tests). Its Yard Log notes two Univ Server questions for the owner: the `/v1` OpenAPI `relations` schema collision, and resolving relations and caching pinned reads on the server."
+        tone: success
