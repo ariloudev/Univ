@@ -28,6 +28,20 @@ requirements:
         name: "The panel is headed by the object's name: the name it was found by, or else the first proper name its sources give, or else the first designation of its record, in its catalogue's form, with its id beside it."
       - key: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
         name: "The panel names a galaxy group as such, and names the scale domain of every object."
+      - key: 01a1bcba-dd8e-750a-886c-c224b6290cc7
+        name: "The panel opens with a sentence saying what the object is, as far as its record tells, how far away its preferred distance puts it, and its scale domain."
+      - key: 01a1bcba-dd8e-750a-886c-c225087c12cf
+        name: "Each value in the panel's sections stands on one line of its label, the value with the short name of its source, and the mark of its kind of value, and each section gives its frame, epoch and provenance once, beneath its lines."
+      - key: 01a1bcba-dd8e-750a-886c-c226b8b0863f
+        name: "Each source is named by a short name in the panel's sections, or by its title where the explorer knows no short name, and by its title in the full record."
+      - key: 01a1bcba-dd8e-750a-886c-c227aa642e74
+        name: "The panel shows the preferred or first value of each quantity, and holds every name, designation, value, catalogue entry with its flags, and paper of the record under one link that opens them in full."
+      - key: 01a1bcba-dd8e-750a-886c-c22847d3d38d
+        name: "Where an object has more than one distance measurement, the panel draws them as dots on one axis of distance, each with its uncertainty and its source, the preferred one in the accent colour, a parallax at its inverse and labelled as such."
+      - key: 01a1bcba-dd8e-750a-886c-c229e5489bf9
+        name: "Where one source gives an object more than three redshifts, the panel draws them as ticks on one axis of velocity, with the velocity another source gives marked where one does."
+      - key: 01a1bcba-dd8e-750a-886c-c22aa107cee9
+        name: "The panel places a star's BP−RP colour index on the colour scale the view draws stars in."
       - key: 01a1a497-e843-728a-bce8-3fe7201a1670
         name: "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a name or designation that more than one source gives, or a designation that reads as one of the names, once, with all of them."
       - key: 01a1a497-e843-728a-bce8-3fe8c93208cf

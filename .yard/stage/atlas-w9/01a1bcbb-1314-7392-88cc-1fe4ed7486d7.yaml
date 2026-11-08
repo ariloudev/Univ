@@ -1,0 +1,12 @@
+key: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+id: build
+versions:
+  - key: 01a1bcbb-1314-7392-88cc-1fea08cb26a9
+    at: 2026-11-08T19:55:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "One base panel, object and structure panels on it"
+    goal: "A base record panel with the shared header, sentence, sections, rows, charts and fold, and the object and structure panels built on it"
+    status: planned

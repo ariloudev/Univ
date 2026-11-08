@@ -1,0 +1,705 @@
+key: 01a1bcbb-1314-7392-88cc-1fe32cfee5ea
+id: spec
+versions:
+  - key: 01a1bcbb-1314-7392-88cc-1fe995b6819c
+    at: 2026-11-08T19:55:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the record panels' redesign"
+    goal: "The record's requirements describe the redesigned panels for objects and structures, and the cull's checkbox in the top bar, approved and committed"
+    status: active
+blocks:
+  - key: 01a1bcbb-1314-7392-88cc-1fe649386c32
+    id: why
+    kind: note
+    versions:
+      - key: 01a1bcbb-1314-7392-88cc-1fec935fff72
+        at: 2026-11-08T19:55:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Why"
+        markdown: |-
+          The owner compared the record as built with the design they had chosen and found the built one much too wordy: every value of every source, with its full citation, in long-form units.
+
+          - **The design:** 13 mockups built from real release-12 records (6 objects, 7 structures) are on the atlas options canvas, and the owner approved them.
+          - **How to build it:** the owner asked for one base panel with the common logic, reused by each specific panel.
+          - **The checkbox:** "Only what lies inside" moves from the panel to the top bar, beside the level-of-detail switch.
+          - **Short source names:** a table in the explorer, falling back to the title. The proposal is to move it into the source definitions with release 13.
+  - key: 01a1bcbb-1314-7392-88cc-1fe78b676f84
+    id: spec-change
+    kind: loft
+    versions:
+      - key: 01a1bcbb-1314-7392-88cc-1fedb46d5bd5
+        at: 2026-11-08T19:55:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "Thirteen new criteria: seven for objects, six for structures. Five criteria are reworded: four about the cull (its checkbox moves to the top bar, and the panel explains the cull only while it is on) and the top bar criterion, which now names the checkbox. The content criteria still hold: every name, value, flag and paper stays in the panel, behind one link."
+        base: "product/atlas"
+        recorded:
+          commit: "f76ddc1f395624a2318242da4313119ae5185708"
+          branch: "stage/atlas-w9"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-08T19:55:39Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 18,
+              "graph.edges": 0,
+              "graph.nodes": 27,
+              "status.base.added": 13,
+              "status.base.changed": 5,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search, the checkbox \"Only what lies inside\" while a structure drawn as a volume is chosen, and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "words": {
+                    "after": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search, the checkbox \"Only what lies inside\" while a structure drawn as a volume is chosen, and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "before": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c224b6290cc7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel opens with a sentence saying what the object is, as far as its record tells, how far away its preferred distance puts it, and its scale domain.",
+                  "words": {
+                    "after": "The panel opens with a sentence saying what the object is, as far as its record tells, how far away its preferred distance puts it, and its scale domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c225087c12cf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each value in the panel's sections stands on one line of its label, the value with the short name of its source, and the mark of its kind of value, and each section gives its frame, epoch and provenance once, beneath its lines.",
+                  "words": {
+                    "after": "Each value in the panel's sections stands on one line of its label, the value with the short name of its source, and the mark of its kind of value, and each section gives its frame, epoch and provenance once, beneath its lines."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c226b8b0863f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each source is named by a short name in the panel's sections, or by its title where the explorer knows no short name, and by its title in the full record.",
+                  "words": {
+                    "after": "Each source is named by a short name in the panel's sections, or by its title where the explorer knows no short name, and by its title in the full record."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c227aa642e74",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel shows the preferred or first value of each quantity, and holds every name, designation, value, catalogue entry with its flags, and paper of the record under one link that opens them in full.",
+                  "words": {
+                    "after": "The panel shows the preferred or first value of each quantity, and holds every name, designation, value, catalogue entry with its flags, and paper of the record under one link that opens them in full."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22847d3d38d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where an object has more than one distance measurement, the panel draws them as dots on one axis of distance, each with its uncertainty and its source, the preferred one in the accent colour, a parallax at its inverse and labelled as such.",
+                  "words": {
+                    "after": "Where an object has more than one distance measurement, the panel draws them as dots on one axis of distance, each with its uncertainty and its source, the preferred one in the accent colour, a parallax at its inverse and labelled as such."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c229e5489bf9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where one source gives an object more than three redshifts, the panel draws them as ticks on one axis of velocity, with the velocity another source gives marked where one does.",
+                  "words": {
+                    "after": "Where one source gives an object more than three redshifts, the panel draws them as ticks on one axis of velocity, with the velocity another source gives marked where one does."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22aa107cee9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel places a star's BP−RP colour index on the colour scale the view draws stars in.",
+                  "words": {
+                    "after": "The panel places a star's BP−RP colour index on the colour scale the view draws stars in."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22b9a7cd9e8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel opens with a sentence saying what kind of structure it is, how far away it lies, and how large it is where its record gives a length.",
+                  "words": {
+                    "after": "The panel opens with a sentence saying what kind of structure it is, how far away it lies, and how large it is where its record gives a length."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22cfc5bc92f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel draws a structure's depth as a band on one axis of comoving distance, from its near bound to its far, with each velocity its record gives within them marked, a velocity placed at the comoving distance of z = cz/c under the release cosmology.",
+                  "words": {
+                    "after": "The panel draws a structure's depth as a band on one axis of comoving distance, from its near bound to its far, with each velocity its record gives within them marked, a velocity placed at the comoving distance of z = cz/c under the release cosmology."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22db388ecdc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel draws a structure's published lengths as bars on one axis for each unit, a lower limit fading out at its end, each length in the release cosmology where its paper assumed another, with the published value beneath.",
+                  "words": {
+                    "after": "The panel draws a structure's published lengths as bars on one axis for each unit, a lower limit fading out at its end, each length in the release cosmology where its paper assumed another, with the published value beneath."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22effd4e2a0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure placed by its members draws each member as a tick on one axis of comoving distance.",
+                  "words": {
+                    "after": "The panel of a structure placed by its members draws each member as a tick on one axis of comoving distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22f7aaaa8d4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a disputed structure says so above its values, naming each paper that disputes it.",
+                  "words": {
+                    "after": "The panel of a disputed structure says so above its values, naming each paper that disputes it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c230ee335b2d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names the structure's papers once, by first author and year, beside a value only where the structure cites more than one paper, and holds the record's notes, quotes and every value under one link that opens them.",
+                  "words": {
+                    "after": "The panel names the structure's papers once, by first author and year, beside a value only where the structure cites more than one paper, and holds the record's notes, quotes and every value under one link that opens them."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                  "kind": "requirement",
+                  "label": "RQ-161",
+                  "name": "When the person checks \"Only what lies inside\" in the top bar while a structure is chosen, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                  "words": {
+                    "after": "When the person checks \"Only what lies inside\" in the top bar while a structure is chosen, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                    "before": "When the person checks \"Only what lies inside\" in the panel of the chosen structure, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                  "kind": "criterion",
+                  "label": "AC-504",
+                  "name": "While a structure drawn as a volume is chosen, the top bar offers a checkbox \"Only what lies inside\" beside the level-of-detail switch, cleared unless the page's address turns it on.",
+                  "words": {
+                    "after": "While a structure drawn as a volume is chosen, the top bar offers a checkbox \"Only what lies inside\" beside the level-of-detail switch, cleared unless the page's address turns it on.",
+                    "before": "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                  "kind": "criterion",
+                  "label": "AC-509",
+                  "name": "While the cull is on, the panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                  "words": {
+                    "after": "While the cull is on, the panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                    "before": "The panel says the cull is approximate for a structure culled by a box that is not its published shape."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                  "kind": "criterion",
+                  "label": "AC-512",
+                  "name": "While the cull is on, the panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                  "words": {
+                    "after": "While the cull is on, the panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                    "before": "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search, the checkbox \"Only what lies inside\" while a structure drawn as a volume is chosen, and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                  "kind": "feature",
+                  "label": "F-38",
+                  "name": "Read an object",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                  "kind": "requirement",
+                  "label": "RQ-139",
+                  "name": "When the person clicks a drawn point, Univ Explorer shall show the object's record that Univ Server gives.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe32aecd7d3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c224b6290cc7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel opens with a sentence saying what the object is, as far as its record tells, how far away its preferred distance puts it, and its scale domain.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c225087c12cf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each value in the panel's sections stands on one line of its label, the value with the short name of its source, and the mark of its kind of value, and each section gives its frame, epoch and provenance once, beneath its lines.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c226b8b0863f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each source is named by a short name in the panel's sections, or by its title where the explorer knows no short name, and by its title in the full record.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c227aa642e74",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel shows the preferred or first value of each quantity, and holds every name, designation, value, catalogue entry with its flags, and paper of the record under one link that opens them in full.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22847d3d38d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where an object has more than one distance measurement, the panel draws them as dots on one axis of distance, each with its uncertainty and its source, the preferred one in the accent colour, a parallax at its inverse and labelled as such.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c229e5489bf9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where one source gives an object more than three redshifts, the panel draws them as ticks on one axis of velocity, with the velocity another source gives marked where one does.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22aa107cee9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel places a star's BP−RP colour index on the colour scale the view draws stars in.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                  "kind": "requirement",
+                  "label": "RQ-143",
+                  "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22b9a7cd9e8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel opens with a sentence saying what kind of structure it is, how far away it lies, and how large it is where its record gives a length.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22cfc5bc92f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel draws a structure's depth as a band on one axis of comoving distance, from its near bound to its far, with each velocity its record gives within them marked, a velocity placed at the comoving distance of z = cz/c under the release cosmology.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22db388ecdc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel draws a structure's published lengths as bars on one axis for each unit, a lower limit fading out at its end, each length in the release cosmology where its paper assumed another, with the published value beneath.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22effd4e2a0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure placed by its members draws each member as a tick on one axis of comoving distance.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c22f7aaaa8d4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a disputed structure says so above its values, naming each paper that disputes it.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bcba-dd8e-750a-886c-c230ee335b2d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names the structure's papers once, by first author and year, beside a value only where the structure cites more than one paper, and holds the record's notes, quotes and every value under one link that opens them.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                  "kind": "requirement",
+                  "label": "RQ-161",
+                  "name": "When the person checks \"Only what lies inside\" in the top bar while a structure is chosen, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                  "kind": "criterion",
+                  "label": "AC-504",
+                  "name": "While a structure drawn as a volume is chosen, the top bar offers a checkbox \"Only what lies inside\" beside the level-of-detail switch, cleared unless the page's address turns it on.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                  "kind": "criterion",
+                  "label": "AC-509",
+                  "name": "While the cull is on, the panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                  "kind": "criterion",
+                  "label": "AC-512",
+                  "name": "While the cull is on, the panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                  "parent": "01a1b13c-1e10-748d-8008-e7e063283348"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c224b6290cc7",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 31,
+                    "name": "The panel opens with a sentence saying what the object is, as far as its record tells, how far away its preferred distance puts it, and its scale domain.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c225087c12cf",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 33,
+                    "name": "Each value in the panel's sections stands on one line of its label, the value with the short name of its source, and the mark of its kind of value, and each section gives its frame, epoch and provenance once, beneath its lines.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c226b8b0863f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "Each source is named by a short name in the panel's sections, or by its title where the explorer knows no short name, and by its title in the full record.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c227aa642e74",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The panel shows the preferred or first value of each quantity, and holds every name, designation, value, catalogue entry with its flags, and paper of the record under one link that opens them in full.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22847d3d38d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "Where an object has more than one distance measurement, the panel draws them as dots on one axis of distance, each with its uncertainty and its source, the preferred one in the accent colour, a parallax at its inverse and labelled as such.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c229e5489bf9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "Where one source gives an object more than three redshifts, the panel draws them as ticks on one axis of velocity, with the velocity another source gives marked where one does.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22aa107cee9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "The panel places a star's BP−RP colour index on the colour scale the view draws stars in.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22b9a7cd9e8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 64,
+                    "name": "The panel opens with a sentence saying what kind of structure it is, how far away it lies, and how large it is where its record gives a length.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22cfc5bc92f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 66,
+                    "name": "The panel draws a structure's depth as a band on one axis of comoving distance, from its near bound to its far, with each velocity its record gives within them marked, a velocity placed at the comoving distance of z = cz/c under the release cosmology.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22db388ecdc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 68,
+                    "name": "The panel draws a structure's published lengths as bars on one axis for each unit, a lower limit fading out at its end, each length in the release cosmology where its paper assumed another, with the published value beneath.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22effd4e2a0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 70,
+                    "name": "The panel of a structure placed by its members draws each member as a tick on one axis of comoving distance.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c22f7aaaa8d4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 72,
+                    "name": "The panel of a disputed structure says so above its values, naming each paper that disputes it.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcba-dd8e-750a-886c-c230ee335b2d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 74,
+                    "name": "The panel names the structure's papers once, by first author and year, beside a value only where the structure cites more than one paper, and holds the record's notes, quotes and every value under one link that opens them.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 89,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search, the checkbox \"Only what lies inside\" while a structure drawn as a volume is chosen, and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "kind": "requirement",
+                    "label": "RQ-161",
+                    "line": 80,
+                    "name": "When the person checks \"Only what lies inside\" in the top bar while a structure is chosen, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                    "kind": "criterion",
+                    "label": "AC-504",
+                    "line": 87,
+                    "name": "While a structure drawn as a volume is chosen, the top bar offers a checkbox \"Only what lies inside\" beside the level-of-detail switch, cleared unless the page's address turns it on.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                    "kind": "criterion",
+                    "label": "AC-509",
+                    "line": 97,
+                    "name": "While the cull is on, the panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                    "kind": "criterion",
+                    "label": "AC-512",
+                    "line": 103,
+                    "name": "While the cull is on, the panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "commit": "f76ddc1f395624a2318242da4313119ae5185708",
+                "removed": [],
+                "revision": "product/atlas"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/atlas-w9",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml",
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml",
+                  "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1bcbb-1314-7392-88cc-1fe8d15c7909
+    id: approve-spec
+    kind: approval
+    versions:
+      - key: 01a1bcbb-1314-7392-88cc-1feec6766b88
+        at: 2026-11-08T19:55:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The record panels' redesign"
+        markdown: |-
+          **Read an object** gains seven criteria:
+          - a summary sentence;
+          - lines of label, value with a short source name, and kind mark, with provenance given once per section;
+          - short source names, the full title in the full record;
+          - preferred values shown, everything else behind one link;
+          - a dot plot of distances (parallaxes inverted and labelled);
+          - a strip of ticks where one source gives more than three redshifts;
+          - BP−RP on the view's star colour scale.
+
+          **See the structures** gains six criteria:
+          - a summary sentence;
+          - a depth band in comoving distance, with velocities placed at z = cz/c under the release cosmology;
+          - length bars per unit, lower limits fading out, values rescaled with the published value beneath;
+          - member strips;
+          - a disputed callout;
+          - papers named once by first author and year, with notes, quotes and every value behind one link.
+
+          **The cull:** "Only what lies inside" moves to the top bar, beside the level-of-detail switch. The panel explains the cull only while it is on, and the top bar criterion now names the checkbox.
+
+          Worth a look: the dot plot draws a parallax at its inverse, a derived value, so it is labelled "1/ϖ".
+    responses:
+      - key: 01a1bcbb-7698-76b5-ac7a-2d86e366b160
+        at: 2026-11-08T19:56:04Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved

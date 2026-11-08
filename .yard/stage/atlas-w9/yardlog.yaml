@@ -1,0 +1,47 @@
+format: yardlog/1
+key: 01a1bcbb-1314-7392-88cc-1fe23f2cc1f4
+branch: "stage/atlas-w9"
+base: "develop"
+title: "stage/atlas-w9"
+revision: 2
+opened:
+  at: 2026-11-08T19:55:39Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+stages:
+  - key: 01a1bcbb-1314-7392-88cc-1fe32cfee5ea
+    id: spec
+  - key: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+    id: build
+  - key: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+    id: close
+submissions:
+  - key: 01a1bcbb-1314-7392-88cc-1fef4bc945f0
+    blocks:
+      - 01a1bcbb-1314-7392-88cc-1fe8d15c7909
+    changes:
+      - what: sent
+        at: 2026-11-08T19:55:39Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+      - what: answered
+        at: 2026-11-08T19:56:04Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+acts:
+  - at: 2026-11-08T19:55:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+  - at: 2026-11-08T19:56:04Z
+    revision: 2
+    by:
+      name: "ariloudev"
+      email: "ariloudev@local"
