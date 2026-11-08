@@ -3,7 +3,7 @@ slug: frame-the-view-as-an-atlas
 name: "Frame the view as an atlas"
 body: |
   Laying the explorer out as printed celestial atlases lay out a chart: the view inside a
-  neat line whose edges are marked with coordinates, with a grid of them across it when asked for, its controls on a rail and in thin bars about
+  neat line whose edges are marked with coordinates, with a grid of them across it, and rings of distance in the axes' equator, when asked for, its controls on a rail and in thin bars about
   it, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks
   on the edges hold wherever the eye is, far from Earth as well as at it.
 realizes:
@@ -53,6 +53,31 @@ requirements:
         name: "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line."
       - key: 01a1bbb4-503d-7416-9488-0502db0af966
         name: "The grid takes no pointer events: the points under it are named and chosen as where it is off."
+  - key: 01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2
+    statement:
+      form: state_driven
+      while: "the person has turned the distance rings on"
+      system: "Univ Explorer"
+      shall: "draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring."
+    criteria:
+      - key: 01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b
+        name: "A switch beside the grid's switch in the top bar turns the distance rings on and off."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2
+        name: "The distance rings are off when the view opens on an address that does not turn them on."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdc69981e4ad
+        name: "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdc75c539aaa
+        name: "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdc8d373d024
+        name: "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdc9e9f39082
+        name: "Each ring is labelled with its distance where it crosses the spoke of zero longitude, and a label that would overlap one already placed is left out."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdca6d344fc9
+        name: "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdcb2966a530
+        name: "While the distance rings are on, the equator's single ring and its label are not drawn."
+      - key: 01a1bbd3-54fe-7370-9d9f-cdccfc8db018
+        name: "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off."
   - key: 01a1b7d7-c032-73ad-803e-b108ccec8a0c
     statement:
       form: ubiquitous
@@ -60,7 +85,7 @@ requirements:
       shall: "give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it."
     criteria:
       - key: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-        name: "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+        name: "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
       - key: 01a1b7f5-f51b-71f9-80de-cd251f348c42
         name: "A rail along the left edge, no wider than 52 CSS pixels, opens the view's controls, the groups of what is drawn and the list of structures, each as a drawer, and holds the button that returns to Earth."
       - key: 01a1b7f5-f51b-71f9-80de-cd2646cc3c6c

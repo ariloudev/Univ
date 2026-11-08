@@ -1,0 +1,50 @@
+key: 01a1bbd3-33bf-70e7-ae81-4ddbfe66b323
+id: build
+versions:
+  - key: 01a1bbd3-33bf-70e7-ae81-4ddecf8f0c65
+    at: 2026-11-08T15:42:23Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the distance rings"
+    goal: "The view draws the rings, spokes and labels in space, in place of the lone equator ring, verified by unit, component and end-to-end tests"
+    status: planned
+blocks:
+  - key: 01a1bbd3-9899-7112-9cdf-193ef571ba96
+    id: rings-plan
+    kind: plan
+    versions:
+      - key: 01a1bbd3-9899-7112-9cdf-19417ee3ad76
+        at: 2026-11-08T15:42:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: the distance rings"
+        markdown: |-
+          1. **Rings as data** (new `scene/rings.ts`, pure functions):
+             - `ringSet(view, toFrame, height)` gives the step (the scale bar's length, from `scaleBar(unitsPerPixel(...))`) and the first and last multiples within 3 × the eye's distance of the focus's distance in the plane.
+             - `ringLines(toFrame, set)` gives the rings (192 segments each) and the 12 spokes as one set of ICRS lines.
+             - `ringLabels(toFrame, set)` gives each ring's point on the 0° spoke with its text.
+             - *Meets:* ring spacing and range, spokes, rings in space.
+             - *Tests:* `rings.test.ts` checks the step against `scaleBar`, the range against the focus and distance, that every vertex lies in the equator (z = 0 in the axes' frame) at the ring's radius, 12 spokes, a change with the axes, and that the set is unchanged by a turn and changed by a move.
+          2. **Drawing** (`scene/controller.ts`). `Controller.setRings(on)`. While on, each tick replaces the lines named `equator` with `distance-rings`, rebuilt only when the set changes. Turned off, the equator ring comes back.
+             - *Meets:* in place of the single ring; follows moves, axes and scale.
+             - *Tests:* controller tests with a fake drawer.
+          3. **Labels** (`ui/overlay.ts`, `ui/SceneOverlay.tsx`). A labels layer with `pointer-events: none`. `placeOverlay` places each ring's label at its projected 0° point, leaves out any that overlap one already placed, and hides the single ring's label while the rings are on.
+             - *Meets:* labels, overlap, no pointer events, the single label hidden.
+             - *Tests:* overlay tests with a fake world.
+          4. **The switch** (`ui/ringsSwitch.ts` on `addressSwitch`; `SwitchBox` “Rings” beside “Grid” in `Whereabouts`). Atlas holds the state and tells the controller. The View drawer's ring sentence names the rings while they are on.
+             - *Meets:* the switch, off by default, the address, the top bar.
+             - *Tests:* hook tests; Atlas component tests; an e2e test that switches it on, sees labels, checks the top bar is still ≤ 40 px at 1,280 px, reloads and finds it on; the pick test runs with the rings on.
+          5. **Wave end:** `/simplify` and `/code-review`, fixes, the full gate and integration once each, trace links, screenshots on release 12, Yard Log closed, merged `--no-ff` into product/atlas.
+    responses:
+      - key: 01a1bbd4-81fe-7031-82aa-dfae0e2ad3ba
+        at: 2026-11-08T15:43:48Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved

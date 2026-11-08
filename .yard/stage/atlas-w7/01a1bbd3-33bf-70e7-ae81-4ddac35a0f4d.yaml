@@ -1,0 +1,463 @@
+key: 01a1bbd3-33bf-70e7-ae81-4ddac35a0f4d
+id: spec
+versions:
+  - key: 01a1bbd3-33bf-70e7-ae81-4ddd36ff33f0
+    at: 2026-11-08T15:42:23Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the distance rings"
+    goal: "frame-the-view-as-an-atlas specifies rings of equal distance and spokes in the axes' equator, spaced at the scale bar's length, switched beside the grid and kept in the address"
+    status: active
+blocks:
+  - key: 01a1bbd3-9899-7112-9cdf-193c7d6ee481
+    id: rings-spec-change
+    kind: loft
+    versions:
+      - key: 01a1bbd3-9899-7112-9cdf-193fe3df3927
+        at: 2026-11-08T15:42:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "One new requirement under frame-the-view-as-an-atlas, with nine criteria, and the top-bar criterion names the new switch. The explorer already draws one ring, the equator at the power of ten nearest the eye's distance (navigate-with-the-mouse). The distance rings generalise it and take its place while they are on."
+        base: "product/atlas"
+        recorded:
+          commit: "dd48b1fc03c51f9f494754a768d9a4f3506ee6b8"
+          branch: "stage/atlas-w7"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-08T15:42:48Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 12,
+              "graph.edges": 0,
+              "graph.nodes": 15,
+              "status.base.added": 10,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "words": {
+                    "after": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, with a grid of them across it, and rings of distance in the axes' equator, when asked for, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it.",
+                    "before": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, with a grid of them across it when asked for, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                  "words": {
+                    "after": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                  "words": {
+                    "after": "A switch beside the grid's switch in the top bar turns the distance rings on and off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                  "words": {
+                    "after": "The distance rings are off when the view opens on an address that does not turn them on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                  "words": {
+                    "after": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane.",
+                  "words": {
+                    "after": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                  "words": {
+                    "after": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, and a label that would overlap one already placed is left out.",
+                  "words": {
+                    "after": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, and a label that would overlap one already placed is left out."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                  "words": {
+                    "after": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                  "words": {
+                    "after": "While the distance rings are on, the equator's single ring and its label are not drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                  "words": {
+                    "after": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "words": {
+                    "after": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "before": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, and a label that would overlap one already placed is left out.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 56,
+                    "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 63,
+                    "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 65,
+                    "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 67,
+                    "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 71,
+                    "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 73,
+                    "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, and a label that would overlap one already placed is left out.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 75,
+                    "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 77,
+                    "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 79,
+                    "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Frame the view as an atlas",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 87,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "commit": "dd48b1fc03c51f9f494754a768d9a4f3506ee6b8",
+                "removed": [],
+                "revision": "product/atlas"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/atlas-w7",
+                "modified": [
+                  "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1bbd3-9899-7112-9cdf-193dbfffd36b
+    id: rings-spec-approval
+    kind: approval
+    versions:
+      - key: 01a1bbd3-9899-7112-9cdf-1940271e7f04
+        at: 2026-11-08T15:42:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The distance rings' spec"
+        markdown: |-
+          Approve the change above:
+
+          - **The switch:** a **Rings** switch beside **Grid** in the top bar. It is off by default, and `rings=on` keeps it on in the address.
+          - **Rings:** centred on the Solar System barycentre, in the chosen axes' equator, at every multiple of the **scale bar's length**, so the bar in the bottom bar is the key to them. Only rings within three times the eye's distance of the focus are drawn, about 40 to 90 of them.
+          - **Spokes:** every 30° of longitude, from the innermost ring drawn to the outermost.
+          - **Labels:** each ring's distance, where it crosses the 0° spoke. A label that would overlap another is left out.
+          - **In space:** unlike the sky grid, the rings move as you fly, as the points do. They change with the axes and when the scale bar steps.
+          - **The single ring:** while the rings are on, the equator's single ring and its label are not drawn.
+          - **The pointer:** the rings take no pointer events.
+
+          **Left out:** fading points by their height above or below the plane. Without depth testing, the rings can't show whether a point is above or below the plane. That would be its own change.
+    responses:
+      - key: 01a1bbd4-75e4-7443-842a-2d3ccf4b5a20
+        at: 2026-11-08T15:43:45Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
