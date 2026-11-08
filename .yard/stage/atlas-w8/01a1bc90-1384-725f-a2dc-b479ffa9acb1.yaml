@@ -19,6 +19,15 @@ versions:
     title: "Smooth lines and faded rings"
     goal: "Every line is drawn with smooth edges, crowded rings fade toward the horizon and their labels go, and large ring distances read in the next unit"
     status: active
+  - key: 01a1bca6-0174-701b-99af-fdcc479bb332
+    at: 2026-11-08T19:32:38Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Smooth lines and faded rings"
+    goal: "Every line is drawn with smooth edges, crowded rings fade toward the horizon and their labels go, and large ring distances read in the next unit"
+    status: done
 blocks:
   - key: 01a1bc91-79c0-736a-b797-5b300efbfd9d
     id: t-smooth
@@ -86,3 +95,19 @@ blocks:
         title: "Ring distances in the next unit"
         detail: "Each label in the largest unit it reaches one of: 800 kpc, 1.0 Mpc, 14.2 Mpc; rings.test passes."
         state: done
+  - key: 01a1bca6-0174-701b-99af-fdc9921d4446
+    id: built
+    kind: note
+    versions:
+      - key: 01a1bca6-0174-701b-99af-fdcd3db39f7d
+        at: 2026-11-08T19:32:38Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the build produced"
+        markdown: |-
+          - **Smooth edges, every line:** ribbons a pixel wider each side, their edge faded in the fragment shader by the distance across, interpolated straight across the view.
+          - **Rings fade as they crowd:** each ring's ends carry the vector to the next ring; the line shader fades a line by how far apart its neighbours lie on the view, 6 down to 2 CSS pixels. Labels of faded rings are left out. Spokes carry no neighbour and never fade.
+          - **Units:** ring distances in the largest unit they reach one of (800 kpc, 1.0 Mpc, 1.005 Gpc), sharing format.ts's units.
+        tone: success
