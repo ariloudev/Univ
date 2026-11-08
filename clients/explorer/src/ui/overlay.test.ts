@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { fakeWorld } from "../test/world.ts";
 import { project } from "../scene/camera.ts";
-import { ringFade, ringSpacing } from "../scene/rings.ts";
+import { FADE } from "../scene/drawing.ts";
+import { ringSpacing } from "../scene/rings.ts";
 import type { Vec3 } from "../scene/vec.ts";
 import { FLOW_PIXELS } from "../scene/kinds.ts";
 import { FLOW_REACH } from "../scene/outline.ts";
@@ -114,7 +115,8 @@ describe("the overlay", () => {
     placeOverlay(world, marks, { width: 800, height: 600 });
     const { controller } = world;
     const at = (p: Vec3) => project(controller.view, controller.toFrame, p, 800, 600);
-    const faded = new Set(controller.ringLabels.filter((l) => at(l.at) !== undefined && ringFade(ringSpacing(at, l.at, l.step)) < 1).map((l) => l.text));
+    const step = controller.rings?.step ?? NaN;
+    const faded = new Set(controller.ringLabels.filter((l) => at(l.at) !== undefined && ringSpacing(at, l.at, step) < FADE.full).map((l) => l.text));
     expect(faded.size).toBeGreaterThan(0);
     const shown = shownIn(marks.ringLabels.current).map((e) => e.textContent ?? "");
     expect(shown.length).toBeGreaterThan(2);

@@ -20,6 +20,16 @@ describe("a ribbon of segments", () => {
     expect(all).toEqual(new Set(["0,-1", "0,1", "1,-1", "1,1"]));
   });
 
+  it("gives each corner the neighbour of the end it is at, where the ends have any", () => {
+    const offsets = new Float32Array([0, 0, 0, 1, 0, 0]);
+    expect(ribbonOf(offsets).neighbours).toBeUndefined();
+    const ribbon = ribbonOf(offsets, new Float32Array([1, 2, 3, 4, 5, 6]));
+    for (let v = 0; v < 6; v += 1) {
+      const end = ribbon.corners[v * 2];
+      expect([...(ribbon.neighbours?.subarray(v * 3, v * 3 + 3) ?? [])]).toEqual(end === 0 ? [1, 2, 3] : [4, 5, 6]);
+    }
+  });
+
   it("is empty for no segment", () => {
     expect(ribbonOf(new Float32Array()).count).toBe(0);
   });

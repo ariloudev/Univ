@@ -93,11 +93,11 @@ uniform float u_width;
 // How much the offsets are scaled about the centre: 1 for an outline, and for a symbol drawn at
 // a fixed size on the view the megaparsecs its unit spans at the centre's distance.
 uniform float u_scale;
-// For lines that fade where they crowd, the distance rings: the megaparsecs between neighbours
-// (none, 0, for any other line), the ICRS point the offsets are from, and the device pixels
+// For lines of a family that fade where they crowd, such as the distance rings: 1, else 0; the
+// vector from each end to the same place on the next line of the family; and the device pixels
 // between neighbours on the view at which a line is gone and at which it is whole.
-uniform float u_fadeStep;
-uniform vec3 u_origin;
+uniform float u_fades;
+in vec3 a_neighbour;
 uniform vec2 u_fadeRange;
 // How far the fragment lies across the line from its middle, device pixels, and how faded.
 out float v_across;
@@ -108,28 +108,28 @@ const float NEAR = 1e-9;
 vec4 inFront(vec4 end, vec4 other) {
   return end.w >= NEAR ? end : mix(end, other, (NEAR - end.w) / (other.w - end.w));
 }
-// How whole a ring is at the offset, at the place from the eye: by how far apart on the view it and its
-// neighbours lie there, half a step either side of it out from the barycentre.
-float fadeAt(vec3 offset, vec3 place) {
-  if (u_fadeStep <= 0.0) return 1.0;
-  vec3 outward = u_axes * normalize(offset + u_origin) * (0.5 * u_fadeStep);
-  vec4 inner = u_projection * vec4(place - outward, 1.0);
-  vec4 outer = u_projection * vec4(place + outward, 1.0);
+// How whole a line is at its end placed at the clip-space point end: by how far apart on the
+// view its neighbours half a step either side of it lie. Projection is linear, so the half step
+// is projected alone.
+float fadeAt(vec4 end) {
+  // A line without neighbours, such as a spoke among the rings, never fades.
+  if (u_fades < 0.5 || dot(a_neighbour, a_neighbour) == 0.0) return 1.0;
+  vec4 halfStep = u_projection * vec4(u_axes * (0.5 * u_scale * a_neighbour), 0.0);
+  vec4 inner = end - halfStep;
+  vec4 outer = end + halfStep;
   if (inner.w < NEAR || outer.w < NEAR) return 1.0;
   float apart = length((outer.xy / outer.w - inner.xy / inner.w) * u_pixels);
   return smoothstep(u_fadeRange.x, u_fadeRange.y, apart);
 }
 void main() {
-  vec3 fromPlace = u_axes * (a_from * u_scale) + u_centre;
-  vec3 toPlace = u_axes * (a_to * u_scale) + u_centre;
-  vec4 a = u_projection * vec4(fromPlace, 1.0);
-  vec4 b = u_projection * vec4(toPlace, 1.0);
-  v_fade = a_corner.x < 0.5 ? fadeAt(a_from * u_scale, fromPlace) : fadeAt(a_to * u_scale, toPlace);
+  vec4 a = u_projection * vec4(u_axes * (a_from * u_scale) + u_centre, 1.0);
+  vec4 b = u_projection * vec4(u_axes * (a_to * u_scale) + u_centre, 1.0);
   if (a.w < NEAR && b.w < NEAR) {
     // Wholly behind the eye: outside the clip volume, not drawn.
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
     return;
   }
+  v_fade = fadeAt(a_corner.x < 0.5 ? a : b);
   vec4 from = inFront(a, b);
   vec4 to = inFront(b, a);
   vec2 along = (to.xy / to.w - from.xy / from.w) * u_pixels;

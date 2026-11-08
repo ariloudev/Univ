@@ -144,10 +144,8 @@ describe("the controller", () => {
     expect(drawn.lines.get("equator")).toBeUndefined();
     expect(drawn.lines.get("distance-rings")?.offsets.length).toBeGreaterThan(0);
     expect(controller.rings?.step).toBeGreaterThan(0);
-    // The rings fade as they crowd, by their step; the spokes, drawn apart, do not.
-    expect(drawn.lines.get("distance-rings")?.fade).toBe(controller.rings?.step);
-    expect(drawn.lines.get("distance-spokes")?.offsets.length).toBe(12 * 6);
-    expect(drawn.lines.get("distance-spokes")?.fade).toBeUndefined();
+    // Each end carries its neighbour, by which the rings fade as they crowd.
+    expect(drawn.lines.get("distance-rings")?.neighbours).toHaveLength(drawn.lines.get("distance-rings")?.offsets.length ?? -1);
     // Drawn again only when the rings change: a turn keeps them, a zoom past a step does not.
     const count = () => drawn.set.filter((name) => name === "distance-rings").length;
     const before = count();
@@ -161,14 +159,12 @@ describe("the controller", () => {
     expect(controller.rings?.axes).toBe("galactic");
     controller.setAxes("supergalactic");
     expect(drawn.lines.get("distance-rings")).toBeUndefined();
-    expect(drawn.lines.get("distance-spokes")).toBeUndefined();
     controller.tick();
     expect(controller.rings?.axes).toBe("supergalactic");
     expect(drawn.lines.get("distance-rings")?.offsets.length).toBeGreaterThan(0);
     controller.setRings(false);
     controller.tick();
     expect(drawn.lines.get("distance-rings")).toBeUndefined();
-    expect(drawn.lines.get("distance-spokes")).toBeUndefined();
     expect(drawn.lines.get("equator")).toBeDefined();
     expect(controller.rings).toBeUndefined();
   });

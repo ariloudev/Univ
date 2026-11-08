@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { type View, focalPixels, project, unitsPerPixel } from "./camera.ts";
-import type { Lines } from "./drawing.ts";
-import { FADE, type RingSet, ringFade, ringLabels, ringLines, ringSet, ringSpacing } from "./rings.ts";
+import { FADE, type Lines } from "./drawing.ts";
+import { type RingSet, ringLabels, ringLines, ringSet, ringSpacing } from "./rings.ts";
 import { scaleBar } from "./scale.ts";
 import { IDENTITY, type Mat3, type Vec3, add, apply } from "./vec.ts";
 
@@ -77,15 +77,14 @@ describe("the distance rings", () => {
       if (set === undefined) throw new Error("no rings");
       const lines = ringLines(toFrame, set);
       const radii = new Set<number>();
-      for (const [x, y, z] of [...vertices(lines.rings, toFrame), ...vertices(lines.spokes, toFrame)]) {
+      for (const [x, y, z] of vertices(lines, toFrame)) {
         expect(Math.abs(z)).toBeLessThan(1e-4);
         radii.add(Math.round((Math.hypot(x, y) / set.step) * 1e3) / 1e3);
       }
       const rings = set.last - set.first + 1;
       for (let k = set.first; k <= set.last; k += 1) expect(radii.has(k)).toBe(true);
       // 192 segments a ring, 12 spokes.
-      expect(lines.rings.offsets.length / 6).toBe(rings * 192);
-      expect(lines.spokes.offsets.length / 6).toBe(12);
+      expect(lines.offsets.length / 6).toBe(rings * 192 + 12);
     }
   });
 
@@ -94,7 +93,7 @@ describe("the distance rings", () => {
     const set = ringSet(view([5000, 3000, 0], 2), toFrame, "galactic", 800);
     if (set === undefined) throw new Error("no rings");
     expect(set.sector).toBeDefined();
-    const lines = ringLines(toFrame, set).rings;
+    const lines = ringLines(toFrame, set);
     // Offsets small beside the distance from the barycentre, so float32 keeps them.
     for (const o of lines.offsets) expect(Math.abs(o)).toBeLessThan(50);
     // Each arc's segments stay on its circle: a chord's middle within a millionth of the step.
@@ -126,7 +125,7 @@ describe("the distance rings", () => {
     const set = rings(view([1000, 0, 0], 50));
     const texts = ringLabels(IDENTITY, set).map((l) => l.text);
     expect(new Set(texts).size).toBe(texts.length);
-    for (const text of texts) expect(text).toMatch(/^[\d,]+(\.\d+)? (pc|kpc|Mpc)$/);
+    for (const text of texts) expect(text).toMatch(/^[\d,]+(\.\d+)? (pc|kpc|Mpc|Gpc)$/);
   });
 
   it("are whole rings, labelled on the spoke of zero longitude, where arcs would go round", () => {
@@ -135,24 +134,14 @@ describe("the distance rings", () => {
     expect(set.sector).toBeUndefined();
     const [label] = ringLabels(IDENTITY, set);
     expect(label?.at[1]).toBeCloseTo(0, 9);
-    expect(ringLines(IDENTITY, set).rings.offsets.length / 6).toBe((set.last - set.first + 1) * 192);
+    expect(ringLines(IDENTITY, set).offsets.length / 6).toBe((set.last - set.first + 1) * 192 + 12);
   });
 
   it("write each distance in the largest unit it reaches one of, to the step's last figure", () => {
     const set: RingSet = { axes: "galactic", step: 0.2, first: 4, last: 6, sector: undefined, key: "" };
     expect(ringLabels(IDENTITY, set).map((l) => l.text)).toEqual(["800 kpc", "1.0 Mpc", "1.2 Mpc"]);
     expect(ringLabels(IDENTITY, { ...set, first: 71, last: 71 })[0]?.text).toBe("14.2 Mpc");
-    expect(ringLabels(IDENTITY, { ...set, step: 5, first: 201, last: 202 }).map((l) => l.text)).toEqual(["1,005 Mpc", "1,010 Mpc"]);
-  });
-
-  it("fade between 2 and 6 CSS pixels apart on the view, gone below and whole above", () => {
-    expect(FADE).toEqual({ gone: 2, full: 6 });
-    expect(ringFade(1)).toBe(0);
-    expect(ringFade(2)).toBe(0);
-    expect(ringFade(4)).toBeCloseTo(0.5, 9);
-    expect(ringFade(6)).toBe(1);
-    expect(ringFade(20)).toBe(1);
-    expect(ringFade(3)).toBeLessThan(ringFade(5));
+    expect(ringLabels(IDENTITY, { ...set, step: 5, first: 199, last: 202 }).map((l) => l.text)).toEqual(["995 Mpc", "1.000 Gpc", "1.005 Gpc", "1.010 Gpc"]);
   });
 
   it("lie as far apart on the view as their step from above, and closer toward the horizon", () => {
@@ -170,12 +159,23 @@ describe("the distance rings", () => {
     expect(ringSpacing(at(grazing), [20, 0, 0], 0.5)).toBe(Infinity);
   });
 
-  it("fade the rings as they crowd, and not the spokes", () => {
+  it("carry at each ring's end the vector out to the next ring, by which they fade as they crowd, and none on the spokes", () => {
     const set = rings(view([0, 0, 0], 100));
-    const { rings: drawn, spokes } = ringLines(IDENTITY, set);
-    expect(drawn.fade).toBe(set.step);
-    expect(spokes.fade).toBeUndefined();
-    for (const label of ringLabels(IDENTITY, set)) expect(label.step).toBe(set.step);
+    const lines = ringLines(IDENTITY, set);
+    const ends = vertices(lines, IDENTITY);
+    const next = (i: number): Vec3 => [lines.neighbours?.[i * 3] ?? NaN, lines.neighbours?.[i * 3 + 1] ?? NaN, lines.neighbours?.[i * 3 + 2] ?? NaN];
+    const ringEnds = (set.last - set.first + 1) * 192 * 2;
+    expect(lines.neighbours).toHaveLength(lines.offsets.length);
+    for (let i = 0; i < ringEnds; i += 97) {
+      const [x = 0, y = 0] = ends[i] ?? [];
+      const [nx, ny, nz] = next(i);
+      // Out from the barycentre, in the plane, a step long.
+      expect(Math.hypot(nx, ny) / set.step).toBeCloseTo(1, 6);
+      expect(nz).toBe(0);
+      expect((nx * y - ny * x) / (set.step * Math.hypot(x, y))).toBeCloseTo(0, 6);
+    }
+    for (let i = ringEnds; i < ends.length; i += 1) expect(next(i)).toEqual([0, 0, 0]);
+    expect(FADE).toEqual({ gone: 2, full: 6 });
   });
 
   it("stay as they are while the view turns, and change as the eye moves, zooms past a step or changes axes", () => {
