@@ -64,7 +64,7 @@ requirements:
       - key: 01a1bd21-49d6-7489-b3d6-aa0d05b88cc6
         name: "While the outlines are off, each structure of a kind turned on is named in the view as where the outlines are on."
       - key: 01a1bd21-49d6-7489-b3d6-aa0eae4110b0
-        name: "While the outlines are off, a click on the view chooses no structure, and each structure is still chosen from the list of structures."
+        name: "While the outlines are off, a structure is still chosen by a click on its name in the view, as where they are on."
   - key: 01a1a497-e843-728a-bce8-3ff8d753cd12
     statement:
       form: event_driven
