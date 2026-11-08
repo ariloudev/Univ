@@ -1,33 +1,20 @@
 import { describe, expect, it } from "vitest";
 
 import { DOMAINS, manifestOf } from "../../test/fixtures.ts";
-import { NOTHING_HIDDEN, applied, hiddenInAddress, hideParameter } from "../hidden.ts";
-import { allPoints, allStructures, anyOff, domainOff, domainOn, domainState, everything, nonePoints, noneStructures, onlyKind, onlySource } from "./actions.ts";
-import { choicesOf } from "./choices.ts";
+import { type Change, NOTHING_HIDDEN, applied, hiddenInAddress, hideParameter } from "../hidden.ts";
+import { allPoints, allStructures, everything, nonePoints, noneStructures, onlyKind, onlySource } from "./actions.ts";
+import { anyOff, choicesOf, summaryOf } from "./choices.ts";
 
 const choices = choicesOf(
   DOMAINS.map((name) => ({ name, manifest: manifestOf(name) })),
   [{ kind: "void" }, { kind: "wall" }, { kind: "attractor" }],
 );
-const [stars, nearby, web] = choices.domains;
-if (stars === undefined || nearby === undefined || web === undefined) throw new Error("the fixtures hold three domains");
-const after = (search: string, changes: Parameters<typeof applied>[1]) => hideParameter(applied(hiddenInAddress(search), changes));
+const after = (search: string, changes: readonly Change[]) => hideParameter(applied(hiddenInAddress(search), changes));
 
 describe("the Show drawer's changes", () => {
-  it("show a scale domain mixed while it is on and some but not all of its sources are off", () => {
-    expect(domainState(nearby, NOTHING_HIDDEN)).toBe("on");
-    expect(domainState(nearby, hiddenInAddress("?hide=source:cosmicflows-4"))).toBe("mixed");
-    expect(domainState(nearby, hiddenInAddress("?hide=source:cosmicflows-4,source:mcconnachie-2012,source:updated-nearby-galaxies"))).toBe("on");
-    expect(domainState(nearby, hiddenInAddress("?hide=domain:nearby_galaxies,source:cosmicflows-4"))).toBe("off");
-  });
-
-  it("turn a scale domain on, from off or from mixed, with every source under it", () => {
-    expect(after("?hide=domain:nearby_galaxies,source:cosmicflows-4,source:twomrs", domainOn(nearby))).toBe("source:twomrs");
-    expect(after("?hide=source:mcconnachie-2012", domainOn(nearby))).toBeUndefined();
-  });
-
-  it("turn a scale domain off, its sources' switches as they are", () => {
-    expect(after("?hide=source:mcconnachie-2012", domainOff(nearby))).toBe("domain:nearby_galaxies,source:mcconnachie-2012");
+  it("turn a scale domain off or on alone, leaving every source's switch as it is", () => {
+    expect(after("?hide=source:twomrs", [{ group: "domain", name: "cosmic_web", shown: false }])).toBe("domain:cosmic_web,source:twomrs");
+    expect(after("?hide=domain:cosmic_web,source:twomrs", [{ group: "domain", name: "cosmic_web", shown: true }])).toBe("source:twomrs");
   });
 
   it("turn only a source on, with each scale domain whose points it places, and every other source off", () => {
@@ -52,9 +39,11 @@ describe("the Show drawer's changes", () => {
 
   it("turn every group that is off on at once", () => {
     const hidden = hiddenInAddress("?hide=domain:stars,source:twomrs,kind:inferred,structure:void,source:gone");
-    expect(anyOff(hidden)).toBe(true);
-    const all = applied(hidden, everything(hidden));
-    expect(anyOff(all)).toBe(false);
-    expect(anyOff(NOTHING_HIDDEN)).toBe(false);
+    expect(anyOff(summaryOf(choices, hidden))).toBe(true);
+    expect(hideParameter(applied(hidden, everything(hidden)))).toBeUndefined();
+  });
+
+  it("change nothing, and draw nothing again, where every group is already as asked", () => {
+    expect(applied(NOTHING_HIDDEN, allPoints(choices))).toBe(NOTHING_HIDDEN);
   });
 });

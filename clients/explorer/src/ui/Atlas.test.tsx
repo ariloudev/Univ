@@ -9,6 +9,7 @@ import { fakeWorld } from "../test/world.ts";
 import { Atlas, AtlasPage, type Selection } from "./Atlas.tsx";
 import type { DrawerName } from "./Rail.tsx";
 import { NOTHING_HIDDEN, hiddenInAddress } from "./hidden.ts";
+import { choicesOf } from "./show/choices.ts";
 import type { ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
 
@@ -44,7 +45,7 @@ function selectionOf({ structure, chosen = { kind: "none" }, inside }: Shown): S
 function Page({ world, shown }: { world: ReturnType<typeof fakeWorld>; shown: Shown }) {
   const [topBar, setTopBar] = useState<HTMLElement | null>(null);
   const [drawer, setDrawer] = useState<DrawerName>();
-  const choices = { domains: [{ name: "cosmic_web", points: 0, sources: [] }], sources: [], families: [{ family: "emptier", kinds: [{ kind: "void", count: 1 }] }] };
+  const choices = choicesOf([], [{ kind: "void" }]);
   return (
     <AtlasPage start={<p>Drawing release 7</p>} end={<p>Level of detail</p>} slot={setTopBar}>
       <Atlas

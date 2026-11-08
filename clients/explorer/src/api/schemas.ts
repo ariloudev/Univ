@@ -44,6 +44,9 @@ export type Rotations = z.infer<typeof Rotations>;
 /** The members of a tile manifest the explorer reads itself; the decoder checks the rest. */
 const ManifestCheck = z.looseObject({
   unit: z.enum(["pc", "Mpc"]),
+  /** The radius the domain's points reach, in its unit, and how many points it holds. */
+  radius: z.number(),
+  points: z.number().int(),
   rotations: Rotations,
   encoding: z.looseObject({
     kinds: z.array(z.enum(["measured", "estimated", "inferred", "reconstructed"])),
@@ -64,9 +67,9 @@ const ManifestCheck = z.looseObject({
 });
 
 /** A tile manifest as the explorer reads it: in parsecs or megaparsecs, with its rotations. */
-export type ExplorerManifest = TileManifest & { unit: "pc" | "Mpc"; rotations: Rotations };
+export type ExplorerManifest = TileManifest & { unit: "pc" | "Mpc"; rotations: Rotations; radius: number; points: number };
 
 export const ExplorerManifest = z.custom<ExplorerManifest>(
   (value) => ManifestCheck.safeParse(value).success,
-  "not a tile manifest the explorer can read: it needs a unit in pc or Mpc, the rotations, the kinds, the sources and the nodes",
+  "not a tile manifest the explorer can read: it needs a unit in pc or Mpc, its radius and points, the rotations, the kinds, the sources and the nodes",
 );

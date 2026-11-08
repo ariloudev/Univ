@@ -58,36 +58,37 @@ export const KIND_COLOURS: readonly Rgba[] = KINDS.map(() => POINT_COLOUR);
  * no colour of its own. */
 export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
 
+/** The families the Show drawer groups the kinds of structure in (choose-what-is-drawn), in
+ * its order; a kind of none of them is shown under "other". */
+const FAMILIES = ["denser", "emptier", "walls and threads", "distant arcs and groups", "flows"] as const;
+
 /** Each kind of structure's colour for its outline and markers (see-the-structures), apart from
- * one another, from the points' blue and from the chosen structure's white: violets for what is
- * emptier than its surroundings, oranges and reds for what is denser, greens for walls and
- * filaments, yellows for the quasar and burst structures of the distant universe, and magentas
- * for the centres of a flow, attractors and repellers, one family. */
-const STRUCTURE_KIND_COLOURS: Readonly<Record<string, readonly [number, number, number]>> = {
-  void: [0.62, 0.45, 1],
-  repeller: [0.8, 0.35, 1],
-  attractor: [1, 0.25, 0.95],
-  supercluster: [1, 0.55, 0.35],
-  supercluster_complex: [1, 0.33, 0.3],
-  basin: [1, 0.78, 0.3],
-  overdensity: [0.95, 0.62, 0.55],
-  wall: [0.45, 0.95, 0.35],
-  filament: [0.2, 0.8, 0.65],
-  quasar_group: [1, 0.92, 0.2],
-  ring: [0.85, 1, 0.5],
-  arc: [0.7, 0.85, 0.15],
-  shell: [1, 0.5, 0.78],
+ * one another, from the points' blue and from the chosen structure's white, and the family the
+ * Show drawer lists it in: violets for what is emptier than its surroundings and for the
+ * repellers, oranges and reds for what is denser, greens for walls and filaments, yellows for
+ * the quasar and burst structures of the distant universe and for a basin of attraction, and
+ * magentas for the attractors and the shells. */
+const STRUCTURE_KINDS: Readonly<Record<string, { rgb: readonly [number, number, number]; family: (typeof FAMILIES)[number] }>> = {
+  void: { rgb: [0.62, 0.45, 1], family: "emptier" },
+  repeller: { rgb: [0.8, 0.35, 1], family: "flows" },
+  attractor: { rgb: [1, 0.25, 0.95], family: "flows" },
+  supercluster: { rgb: [1, 0.55, 0.35], family: "denser" },
+  supercluster_complex: { rgb: [1, 0.33, 0.3], family: "denser" },
+  basin: { rgb: [1, 0.78, 0.3], family: "flows" },
+  overdensity: { rgb: [0.95, 0.62, 0.55], family: "denser" },
+  wall: { rgb: [0.45, 0.95, 0.35], family: "walls and threads" },
+  filament: { rgb: [0.2, 0.8, 0.65], family: "walls and threads" },
+  quasar_group: { rgb: [1, 0.92, 0.2], family: "distant arcs and groups" },
+  ring: { rgb: [0.85, 1, 0.5], family: "distant arcs and groups" },
+  arc: { rgb: [0.7, 0.85, 0.15], family: "distant arcs and groups" },
+  shell: { rgb: [1, 0.5, 0.78], family: "denser" },
 };
 
-/** The families the Show drawer groups the kinds of structure in (choose-what-is-drawn), each
- * kind in the family its colour belongs to; a kind of none of them is shown under "other". */
-export const STRUCTURE_FAMILIES: readonly { family: string; kinds: readonly string[] }[] = [
-  { family: "denser", kinds: ["supercluster", "supercluster_complex", "overdensity", "shell"] },
-  { family: "emptier", kinds: ["void"] },
-  { family: "walls and threads", kinds: ["wall", "filament"] },
-  { family: "distant arcs and groups", kinds: ["quasar_group", "ring", "arc"] },
-  { family: "flows", kinds: ["attractor", "repeller", "basin"] },
-];
+/** The families of the kinds of structure, each with its kinds, in the Show drawer's order. */
+export const STRUCTURE_FAMILIES: readonly { family: string; kinds: readonly string[] }[] = FAMILIES.map((family) => ({
+  family,
+  kinds: Object.keys(STRUCTURE_KINDS).filter((kind) => STRUCTURE_KINDS[kind]?.family === family),
+}));
 
 /** The way the reconstructed flow runs at each kind of structure that is a centre of a flow
  * (see-the-structures): in to an attractor, where a peculiar-velocity field converges, and out
@@ -111,7 +112,7 @@ const APPROXIMATE_OPACITY = 0.3;
 
 /** The colour `kind` of structure is drawn in, fainter where it is drawn `approximate`. */
 export function structureColour(kind: string, approximate: boolean): Rgba {
-  const [r, g, b] = STRUCTURE_KIND_COLOURS[kind] ?? STRUCTURE_COLOUR;
+  const [r, g, b] = STRUCTURE_KINDS[kind]?.rgb ?? STRUCTURE_COLOUR;
   return [r, g, b, approximate ? APPROXIMATE_OPACITY : STRUCTURE_OPACITY];
 }
 

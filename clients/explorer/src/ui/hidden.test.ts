@@ -39,7 +39,8 @@ describe("the groups turned off", () => {
     expect([...next.domain]).toEqual(["stars"]);
     expect(next.kind).toBe(hidden.kind);
     expect(next.structure).toBe(hidden.structure);
-    expect(applied(hidden, [])).toEqual(hidden);
+    expect(applied(hidden, [])).toBe(hidden);
+    expect(applied(hidden, [{ group: "kind", name: "inferred", shown: false }])).toBe(hidden);
   });
 
   it("leave out entries that name no group or no kind of value", () => {

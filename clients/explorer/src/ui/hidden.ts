@@ -47,18 +47,21 @@ export function hideParameter(hidden: Hidden): string | undefined {
   return entries.length === 0 ? undefined : entries.join(",");
 }
 
-/** `hidden` with each of `changes` made in order; the sets of the groups no change turns on or
- * off kept as they are, so that what depends on them alone is not done again. */
+/** `hidden` with each of `changes` made in order: the set of a group no change turns on or off
+ * kept as it is, so that what depends on it alone is not done again, and `hidden` itself where
+ * nothing changes, so that nothing is drawn again. */
 export function applied(hidden: Hidden, changes: readonly Change[]): Hidden {
-  const next: Record<Group, ReadonlySet<string>> = { ...hidden };
-  for (const group of GROUPS) {
-    const own = changes.filter((c) => c.group === group && c.shown === hidden[group].has(c.name));
-    if (own.length === 0) continue;
-    const set = new Set(hidden[group]);
-    for (const c of changes) if (c.group === group) c.shown ? set.delete(c.name) : set.add(c.name);
+  const next: Record<Group, Set<string> | ReadonlySet<string>> = { ...hidden };
+  let changed = false;
+  for (const { group, name, shown } of changes) {
+    if (next[group].has(name) !== shown) continue;
+    const set = next[group] === hidden[group] ? new Set(hidden[group]) : (next[group] as Set<string>);
+    if (shown) set.delete(name);
+    else set.add(name);
     next[group] = set;
+    changed = true;
   }
-  return next;
+  return changed ? next : hidden;
 }
 
 /** The groups turned off, read from the page's address and kept in it, and the way to turn

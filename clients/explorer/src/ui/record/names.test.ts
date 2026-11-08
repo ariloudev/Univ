@@ -19,7 +19,7 @@ describe("the record's short names", () => {
     ];
     const shorts = ids.map((id) => sourceShort(id));
     expect(new Set(shorts).size).toBe(ids.length);
-    expect(sourceShort("sdss-dr17-distant")).toBe("SDSS DR17, z > 0.35");
+    expect(sourceShort("sdss-dr17-distant")).toBe("SDSS DR17 distant");
   });
 
   it("name a paper by its first author and year, and keep the rest of its reference", () => {

@@ -26,7 +26,7 @@ const SHORT: Readonly<Record<string, string>> = {
   openngc: "OpenNGC",
   "researched-star-distances": "Researched distances",
   "researched-structures": "Researched structures",
-  "sdss-dr17-distant": "SDSS DR17, z > 0.35",
+  "sdss-dr17-distant": "SDSS DR17 distant",
   "sdss-dr17-galaxies": "SDSS DR17",
   "sixdfgs-dr3": "6dFGS DR3",
   twodfgrs: "2dFGRS",

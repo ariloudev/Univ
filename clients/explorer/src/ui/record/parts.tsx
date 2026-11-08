@@ -6,11 +6,19 @@ import type { ReactNode } from "react";
 
 import { Mark } from "../Mark.tsx";
 
-/** A part of the record under its heading. */
-export function Section({ title, testid, children }: { title: string; testid: string; children: ReactNode }) {
+/** A part of a panel under its heading, with what stands `aside` the heading, if anything. */
+export function Section({ title, testid, aside, children }: { title: string; testid?: string; aside?: ReactNode; children: ReactNode }) {
+  const heading = <h3 className="font-serif text-[15px] font-semibold">{title}</h3>;
   return (
     <section className="space-y-1.5" data-testid={testid}>
-      <h3 className="font-serif text-[15px] font-semibold">{title}</h3>
+      {aside === undefined ? (
+        heading
+      ) : (
+        <div className="flex items-baseline justify-between">
+          {heading}
+          {aside}
+        </div>
+      )}
       {children}
     </section>
   );
@@ -83,10 +91,11 @@ export function Disputed({ by }: { by: readonly string[] }) {
   );
 }
 
-/** A name that chooses what it names. */
-export function Chooser({ onClick, italic = false, children }: { onClick: () => void; italic?: boolean; children: ReactNode }) {
+/** A name that chooses what it names, or a link that does what it says; `label` names it for
+ * assistive technology where its words alone would not. */
+export function Chooser({ onClick, italic = false, label, children }: { onClick: () => void; italic?: boolean; label?: string; children: ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className={`text-accent hover:underline ${italic ? "font-serif italic" : ""}`}>
+    <button type="button" aria-label={label} onClick={onClick} className={`text-accent hover:underline ${italic ? "font-serif italic" : ""}`}>
       {children}
     </button>
   );
