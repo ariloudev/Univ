@@ -1,0 +1,53 @@
+key: 01a1bbb4-1fad-70ea-8ef8-6f16fb5d4a1b
+id: build
+versions:
+  - key: 01a1bbb4-1fad-70ea-8ef8-6f1915a15dd3
+    at: 2026-11-08T15:08:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the sky graticule"
+    goal: "The view draws the grid as directions of sight, at the ticks' shared steps, with its switch in the top bar, verified by unit, component and end-to-end tests"
+    status: planned
+blocks:
+  - key: 01a1bbb4-cae4-755d-a377-e47ceb1adf57
+    id: grid-plan
+    kind: plan
+    versions:
+      - key: 01a1bbb4-cae4-755d-a377-e47ed20ee1ac
+        at: 2026-11-08T15:09:10Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: the sky graticule"
+        markdown: |-
+          1. **Shared steps** (`scene/graticule.ts`). `edgeTicks` chooses one step per coordinate: the finest step that keeps its labels 60 px apart on every edge where any step fits. It returns that step beside each edge's ticks.
+             - *Meets:* the two reworded tick criteria.
+             - *Tests:* `graticule.test.ts` gains cases where the top and bottom edges disagree today; the existing tick tests keep passing.
+          2. **Grid lines** (new `scene/grid.ts`, pure functions). `gridLines(view, toFrame, axes, width, height, steps)`:
+             - samples each meridian and parallel every degree, as directions only (the eye's turn, not its place);
+             - keeps only what lies within the view's cone plus a margin, split into runs, projected to CSS pixels;
+             - stops meridians at ±80° unless they sit at a multiple of 90° or 6 h;
+             - marks the equator.
+             - *Meets:* every tick on a line, directions of sight, meridian stops, the equator.
+             - *Tests:* `grid.test.ts` checks that each edge tick's pixel lies on a line within 1 px; that a change of focus or distance changes nothing while a change of yaw or axes does; and the 80° stops, the pole-reaching meridians and the equator flag.
+          3. **Drawing** (`ui/AtlasFrame.tsx`). When the grid is on, it draws the lines as SVG paths under the neat line and labels: dim-ink hairlines at 0.75 px and about 20% opacity, the equator at 1.25 px and about 40%. The SVG keeps `pointer-events: none`.
+             - *Meets:* heavier equator and fainter lines, no pointer events.
+             - *Tests:* AtlasFrame component tests for the paths and stroke widths; the existing e2e hover and pick runs with the grid on.
+          4. **The switch** (new `ui/addressSwitch.ts`). One helper keeps a switch in the page's address. Level of detail moves onto it with no change in behaviour, and the grid's switch uses `grid=on`. The switch is a “Grid” checkbox (`role=switch`) beside the axes in `Whereabouts`.
+             - *Meets:* the switch, off by default, kept in the address, and the top bar.
+             - *Tests:* the address-switch hook tests; the existing level-of-detail tests unchanged; an e2e test that switches the grid on, reloads, finds it still on, and checks the top bar is still ≤ 40 px.
+          5. **Wave end:** `/simplify` and `/code-review`, fixes, `cargo xtask check` and `cargo xtask integration` once each, trace links accepted, a screenshot of the grid on release 12 for you, Yard Log closed, merged `--no-ff` into product/atlas.
+
+          No ingest, server or data changes.
+    responses:
+      - key: 01a1bbb6-1413-740c-93dc-2b62a0553f90
+        at: 2026-11-08T15:10:34Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
