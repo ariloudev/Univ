@@ -10,6 +10,15 @@ versions:
     title: "The spec change"
     goal: "Clicking the chosen point or structure again lets it go, and the open drawer is kept in the browser across visits"
     status: active
+  - key: 01a1c264-bded-71c4-afa6-ef71f8e5c10b
+    at: 2026-11-09T22:19:04Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "The spec change"
+    goal: "Clicking the chosen point or structure again lets it go, and the open drawer is kept in the browser across visits"
+    status: done
 blocks:
   - key: 01a1c25f-9463-7160-a5b1-33e109cfa9f8
     id: why
@@ -617,6 +626,103 @@ blocks:
       - key: 01a1c263-2b18-7666-b7e5-aa82db53c2a2
         at: 2026-11-09T22:17:21Z
         revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1c264-2db6-75d4-92ce-529774805bd1
+    id: plan-25-plan-fuzzy-growing-beacon-01a1c25f-9463-7160-a5b1-33de0cdb4682
+    kind: plan
+    versions:
+      - key: 01a1c264-2db6-75d4-92ce-5298e2422c84
+        at: 2026-11-09T22:18:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build plan: choosing again lets go, and the open drawer is remembered (`chore/ux-1`)"
+        markdown: |
+          # Build plan: choosing again lets go, and the open drawer is remembered (`chore/ux-1`)
+
+          ## Context
+
+          The owner asked for two UX changes in Univ Explorer. The spec change for them was approved in Yard and committed at `309b01c`:
+
+          - **read-an-object:** a click on the chosen object's point lets it go. That closes the record, unmarks the point and drops it from the address. The view stays put, and a double-click still flies there and keeps it chosen. RQ-148 now excludes this click.
+          - **see-the-structures:** the same for a click on the chosen structure's name in the view or in the Structures list.
+          - **frame-the-view-as-an-atlas:** the rail's open drawer, or none, is kept in localStorage and restored on opening. A missing or unknown value, or blocked storage, gives no drawer.
+
+          All code is in `clients/explorer/src/ui/`. Nothing is merged until the owner asks.
+
+          ## 1. Choosing again lets go
+
+          **The view's clicks (`useWorld.ts`)**
+          - **`firstOfDouble`:** returns `{ found, again }`, where `again` marks a click that falls within `DOUBLE_CLICK_MS` and `PICK_SLOP` of the last one.
+          - **`OnChoose` gains `letGo(found): boolean`.** It lets go of `found` and returns true when `found` is the chosen object's point or the chosen structure's name.
+          - **`bindView`'s `chooser(close)`:**
+            - **A single click** (`!close`):
+              - The second click of a double does nothing, because the `dblclick` that follows acts.
+              - Otherwise, if `onChoose.current.letGo(found)` returns true, it stops there: no `centreOn`, no choose.
+            - **A double-click** (`close`): chooses and flies as today, never letting go. A double-click on the chosen point therefore ends with it chosen and flown to. Its first click lets go, its second click is ignored, and the `dblclick` chooses it again.
+
+          **Who is chosen (`useChosen.ts`, `Scene.tsx`)**
+          - **`useChosen`** also returns `chosenId`, the id of the object it holds (`request?.id`).
+          - **`Scene`'s `OnChoose.letGo`:**
+            - A point whose `id === chosenId` → `selection.close()`.
+            - A name whose `id === structureId` → `selection.close()`.
+            - Anything else → false.
+          - **`Selection`** gains `structureFromList(id)`: `id === structureId ? close() : structureById(id)`.
+            - **`Atlas.tsx`**'s `StructureList` uses it in place of `structureById`.
+            - **Record links** (`useRecordContext`) keep `structureById`, as the approval said.
+          - **`selection.close()`** already clears the object request (address, mark) and the structure choice (colour, thickness, cull). No new let-go path is needed in the scene.
+
+          ## 2. The open drawer is remembered
+
+          - **`Rail.tsx`:** exports `isDrawerName(value): value is DrawerName`, read from the `DRAWERS` list.
+          - **New `ui/storedDrawer.ts`** with `useStoredDrawer(): [DrawerName | undefined, (d: DrawerName | undefined) => void]`:
+            - It reads `localStorage["univ-explorer.drawer"]` once and keeps it only when `isDrawerName`.
+            - It writes on each change, removing the key for none.
+            - Every access is in try/catch, so blocked storage gives no drawer and never throws.
+          - **`App.tsx`:** `useState<DrawerName>()` becomes `useStoredDrawer()`.
+
+          ## Tests and trace
+
+          - **`useWorld.test.ts`:** the `firstOfDouble` tests expect `{ found, again }`.
+          - **New `storedDrawer.test.ts`** covers:
+            - restoring a kept drawer;
+            - none when nothing is kept;
+            - none for an unknown name;
+            - removal of the key when the drawer closes;
+            - no throw, and no drawer, when `localStorage` throws.
+          - **Unit tests for `letGo` and `structureFromList`**, through a small pure helper in `Scene.tsx` or a hook test (fake world hoisted out of `renderHook`).
+          - **`e2e/explorer.spec.ts`:**
+            - Clicking the found point again closes the record, leaves the view's distance and centre as they were, and drops `object` from the address. This extends the "centres the view on a point clicked" test.
+            - Clicking Bootes Void again in the Structures list closes its record.
+            - Clicking a structure's name in the view again closes its record.
+            - A double-click on the chosen point keeps the record open.
+            - Opening the Show drawer, then reloading, keeps it open. Closing it, then reloading, opens none.
+          - **`loft.trace.yaml`:** links each new criterion to its test, accepted with `loft reconcile --accept`.
+
+          ## Order of commits
+
+          1. `feat(explorer): choosing the chosen point or structure again lets it go`, with its unit tests.
+          2. `feat(explorer): the open drawer is kept in localStorage`, with its unit tests.
+          3. `test(explorer): end-to-end, letting go and the kept drawer` and `test(trace): …`.
+
+          Each commit carries `.yard/`.
+
+          ## Verification
+
+          - **Between tasks:** `pnpm check` in `clients/explorer`.
+          - **At the end:** `/simplify` and `/code-review` in parallel, with their findings fixed. Then `cargo xtask check` and `cargo xtask integration`, each once and green, and each commit made on the command's own exit status.
+          - **By hand:** `cargo xtask explore`, to check both behaviours in the browser and send screenshots as files.
+          - **Yard:** close the Yard Log, then leave the branch unmerged and report.
+        planMode: true
+    responses:
+      - key: 01a1c264-ab43-7433-a9aa-34a8b3c1b4ad
+        at: 2026-11-09T22:18:59Z
+        revision: 5
         by:
           name: "ariloudev"
           email: "ariloudev@local"

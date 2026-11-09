@@ -34,6 +34,8 @@ export interface Selection {
   /** What the object's panel reads besides its record. */
   context?: RecordContext;
   structureById: (id: string) => void;
+  /** Chooses structure `id` from the list of structures, or lets it go where it is chosen. */
+  structureFromList: (id: string) => void;
   close: () => void;
 }
 
@@ -194,7 +196,7 @@ function Drawer({
       {name === "show" ? <ShowPanel {...show} /> : null}
       {name === "structures" ? (
         <>
-          <StructureList list={structures.shown} onChoose={selection.structureById} />
+          <StructureList list={structures.shown} onChoose={selection.structureFromList} />
           {structures.problem === undefined ? null : <p className="mt-2 text-xs text-warn">{structures.problem}</p>}
         </>
       ) : null}

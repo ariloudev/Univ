@@ -13,6 +13,7 @@ import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
+import { isChosen } from "./letGo.ts";
 import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 
@@ -67,8 +68,13 @@ export function Scene({
   const { world, domains, rotations, overlay, problem } = useWorld(release, canvas, {
     point: (point) => selection.object(point.id),
     structure: (id) => selection.structureById(id),
+    letGo: (found) => {
+      const chosenAlready = isChosen(found, { object: chosenId, structure: structureId });
+      if (chosenAlready) selection.close();
+      return chosenAlready;
+    },
   });
-  const { chosen, choose } = useChosen(release, world);
+  const { chosen, chosenId, choose } = useChosen(release, world);
   const [hidden, apply] = useHidden();
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
   const { domain, source, kind } = hidden;
@@ -101,6 +107,10 @@ export function Scene({
       choose(undefined);
       structureChoice.choose(id);
       if (world !== undefined) flyToStructure(world, structures, id);
+    },
+    structureFromList: (id) => {
+      if (id === structureId) selection.close();
+      else selection.structureById(id);
     },
     close: () => {
       choose(undefined);

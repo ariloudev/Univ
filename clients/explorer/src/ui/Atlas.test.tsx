@@ -38,7 +38,7 @@ interface Shown {
 }
 
 function selectionOf({ structure, chosen = { kind: "none" }, inside }: Shown): Selection {
-  return { chosen, structure, approximate: false, inside, object: none, structureById: none, close: none };
+  return { chosen, structure, approximate: false, inside, object: none, structureById: none, structureFromList: none, close: none };
 }
 
 /** The page and the view of `shown`, the page keeping the top bar's place and the drawer, as the

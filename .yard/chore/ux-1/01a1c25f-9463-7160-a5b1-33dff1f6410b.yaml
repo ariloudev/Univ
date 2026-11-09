@@ -10,3 +10,12 @@ versions:
     title: "Build"
     goal: "Choosing again lets go; the rail's drawer is stored in and restored from localStorage"
     status: planned
+  - key: 01a1c264-bded-71c4-afa6-ef72a49efc86
+    at: 2026-11-09T22:19:04Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Build"
+    goal: "Choosing again lets go; the rail's drawer is stored in and restored from localStorage"
+    status: active
