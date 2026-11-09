@@ -113,6 +113,34 @@ requirements:
         name: "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had."
       - key: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
         name: "A double-click on the chosen structure's name flies to it and leaves it chosen."
+  - key: 01a1c278-094a-7307-be66-e7839dd2fba6
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares."
+    criteria:
+      - key: 01a1c278-094a-7307-be66-e7847bc12551
+        name: "The list orders the structures by the distance from Earth to their centre as the view places it, nearest first, with those that have no placed shape last."
+      - key: 01a1c278-094a-7307-be66-e7859f3c18c9
+        name: "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count."
+      - key: 01a1c278-094a-7307-be66-e7862a633a0c
+        name: "Each row gives the structure's name, its kind in words beside a swatch of the kind's colour, and its distance."
+      - key: 01a1c278-094a-7307-be66-e787596ccbdd
+        name: "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\"."
+      - key: 01a1c278-094a-7307-be66-e7880ad36d01
+        name: "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list."
+      - key: 01a1c278-094a-7307-be66-e789414bdf63
+        name: "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says."
+      - key: 01a1c278-094a-7307-be66-e78af4b30484
+        name: "A switch at the head of the list orders it by name instead, without headings, and keeps each row's dot."
+      - key: 01a1c278-094a-7307-be66-e78bb3c7f814
+        name: "A box at the head of the list narrows it to the structures whose name or kind holds the text typed."
+      - key: 01a1c278-46e4-76f7-bee6-bda8fefa62ad
+        name: "While the list is narrowed, its count gives the structures shown out of the release's, such as \"12 of 54\"."
+      - key: 01a1c278-094a-7307-be66-e78c9329851d
+        name: "Where no structure's name or kind holds the text typed, the list shows one message that names the text and suggests part of a name or a kind."
+      - key: 01a1c278-094a-7307-be66-e78dcc50c90f
+        name: "The chosen structure's row is marked as chosen."
   - key: 01a1b13c-1e10-748d-8008-e7e063283348
     statement:
       form: event_driven
