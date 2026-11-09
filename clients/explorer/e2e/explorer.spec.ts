@@ -194,6 +194,43 @@ test("lists the release's structures and reads one, culling the view to it from 
   await expect(inside).toHaveCount(0);
 });
 
+test("lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box", async ({ page }) => {
+  await page.getByRole("navigation", { name: "Panels" }).getByRole("button", { name: "Structures" }).click();
+  const list = page.getByTestId("structures");
+  const rows = list.getByRole("button");
+  await expect(rows.first()).toBeVisible();
+  const total = await rows.count();
+  await expect(page.getByTestId("structures-count")).toHaveText(String(total));
+  // Nearest first: each placed row's distance, in megaparsecs, no less than the one before.
+  const mpc = (label: string): number | undefined => {
+    const m = /, (around us|[\d,.]+ (Mpc|Gpc))$/.exec(label);
+    if (m === null) return undefined;
+    if (m[1] === "around us") return 0;
+    const value = Number((m[1] ?? "").replace(/,/g, "").split(" ")[0]);
+    return m[2] === "Gpc" ? value * 1000 : value;
+  };
+  const labels = await rows.evaluateAll((buttons) => buttons.map((b) => b.getAttribute("aria-label") ?? ""));
+  const distances = labels.map(mpc).filter((d) => d !== undefined);
+  expect(distances.length).toBeGreaterThan(0);
+  expect(distances).toEqual([...distances].sort((a, b) => a - b));
+  await expect(list.getByRole("heading", { level: 3 }).first()).toHaveText(/^(Within 100 Mpc|100 Mpc to 1 Gpc|1 to 10 Gpc|Not placed)\d+$/);
+  expect(await page.getByTestId("depth-track").count()).toBe(total);
+  // From the find box: only the voids, counted out of all.
+  await page.getByRole("searchbox", { name: "Find a structure" }).fill("void");
+  const voids = await rows.count();
+  expect(voids).toBeGreaterThan(0);
+  expect(voids).toBeLessThanOrEqual(total);
+  await expect(page.getByTestId("structures-count")).toHaveText(`${voids} of ${total}`);
+  await page.getByRole("searchbox", { name: "Find a structure" }).fill("no such structure");
+  await expect(list).toHaveText("No structure's name or kind holds “no such structure”. Try part of a name, or a kind such as void.");
+  // By name, A to Z, without headings.
+  await page.getByRole("searchbox", { name: "Find a structure" }).fill("");
+  await page.getByRole("button", { name: "A to Z" }).click();
+  await expect(list.getByRole("heading", { level: 3 })).toHaveCount(0);
+  const byName = await rows.evaluateAll((buttons) => buttons.map((b) => (b.getAttribute("aria-label") ?? "").split(", ")[0] ?? ""));
+  expect(byName).toEqual([...byName].sort((a, b) => a.localeCompare(b)));
+});
+
 test("takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload", async ({ page }) => {
   await firstPoints(page);
   const outlines = page.getByRole("banner").getByRole("switch", { name: "Outlines" });

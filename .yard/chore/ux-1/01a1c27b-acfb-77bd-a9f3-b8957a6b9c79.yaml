@@ -64,6 +64,15 @@ blocks:
         title: "DepthIndex in the Structures drawer"
         detail: "`DepthIndex.tsx` replaces `StructureList` in Atlas.tsx, with its head (count, find, order switch, legend, axis) and rows (name, figure, kind swatch, track with status dot). The old list and its test move. Done when DepthIndex.test.tsx passes and `pnpm check` is green."
         state: active
+      - key: 01a1c27e-c299-75a0-982c-6c54a2e1f8ab
+        at: 2026-11-09T22:47:29Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "DepthIndex in the Structures drawer"
+        detail: "DepthIndex.tsx (with its head, rows, legend and ticks) is rendered by `StructuresDrawer` in Atlas.tsx. StructuresPanel.tsx is removed, and its list test moved to DepthIndex.test.tsx (9 tests); the file keeps its name so its trace links hold. `pnpm check` is green with 468 tests."
+        state: done
   - key: 01a1c27b-acfb-77bd-a9f3-b898db326926
     id: d-e2e
     kind: task
@@ -77,6 +86,15 @@ blocks:
         title: "End-to-end test, and a look at the real drawer"
         detail: "Covers an e2e test for the order, headings and find box, and a screenshot of the drawer from `cargo xtask explore`, sent as a file. Done when `cargo xtask integration` passes."
         state: open
+      - key: 01a1c27e-c299-75a0-982c-6c551353b1eb
+        at: 2026-11-09T22:47:29Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "End-to-end test, and a look at the real drawer"
+        detail: "Covers an e2e test for the order, headings and find box, and a screenshot of the drawer from `cargo xtask explore`, sent as a file. Done when `cargo xtask integration` passes."
+        state: active
   - key: 01a1c27b-acfb-77bd-a9f3-b89941f0214e
     id: d-trace
     kind: task
@@ -105,3 +123,17 @@ blocks:
           | # | Issue | How found | Fix | State |
           |---|---|---|---|---|
           | | None yet | | | |
+      - key: 01a1c27e-c299-75a0-982c-6c56704a30a9
+        at: 2026-11-09T22:47:29Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | 1 | Two Atlas tests looked for the old heading "Structures (N)" | `vitest` | They read the heading and the separate count | fixed |
+          | 2 | With no structures drawn and nothing typed, the list would have said no name holds "" | The same Atlas test (kinds turned off) | An empty state: "No structures are drawn. Turn their kinds on in the Show drawer." Not a spec criterion; it falls under the existing list Requirement | fixed |
+          | 3 | fallow reported `BANDS` exported but unused | `pnpm check` | Made module-private | fixed |
+          | 4 | Renaming StructuresPanel.test.tsx would have broken its links in loft.trace.yaml | Grepping the trace before committing | The file keeps its name | fixed |
