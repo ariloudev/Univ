@@ -90,6 +90,22 @@ blocks:
           | 2 | The object let-go e2e test expected the chosen mark to be removed, but the mark is hidden, not removed | Reading `SceneOverlay.tsx` while writing the trace links | `toBeHidden()` in place of `toHaveCount(0)` | fixed, awaiting integration |
           | 3 | The plan's tasks and this note were not registered before the build began | The owner's `/loft:yard` reminder | Registered now. t-letgo and t-drawer are recorded as done after the fact, so the Gantt chart has no times for them | fixed |
         tone: warning
+      - key: 01a1c26f-9fa0-7634-a9a8-20748f36a46b
+        at: 2026-11-09T22:30:57Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The view's click handler in `useWorld.ts` reached a CRAP score of 30 (0% tested), fallow's error threshold | `pnpm check` (fallow) | Moved the decision into the pure, tested `chooses()` and split the handler into `choose` and `chooser` | fixed |
+          | 2 | The object let-go e2e test expected the chosen mark to be removed, but the mark is hidden, not removed | Reading `SceneOverlay.tsx` while writing the trace links | `toBeHidden()` in place of `toHaveCount(0)` | fixed; passed in integration |
+          | 3 | The plan's tasks and this note were not registered before the build began | The owner's `/loft:yard` reminder | Registered now. t-letgo and t-drawer are recorded as done after the fact, so the Gantt chart has no times for them | fixed |
+          | 4 | "turns a scale domain off … keeps it off across a reload" clicked Show again after the reload, which now closes the kept drawer | `cargo xtask integration` (1 failed, 18 passed) | The test relies on the drawer kept open across the reload | fixed, awaiting integration |
+          | 5 | Letting go left the focus on the item's place, so the view kept turning about it | The owner, by hand (fix t-fix-focus) | `letGo()` closes the record, then calls `returnToEarth()` (decision: Back to Earth) | fixed, awaiting integration |
+        tone: warning
   - key: 01a1c26b-2fd3-75cc-84d5-3c8d826ee941
     id: ask-let-go-focus
     kind: question
@@ -151,6 +167,16 @@ blocks:
         title: "Letting go returns the focus to Earth"
         detail: "The owner found that letting go kept the camera on the item. Reword the let-go statements and criteria in read-an-object and see-the-structures, then make the let-go path call the controller's return to Earth. Done when the unit and e2e tests show Earth as the focus after letting go and `pnpm check` is green."
         state: active
+        type: fix
+      - key: 01a1c26f-9fa0-7634-a9a8-2075309b7bac
+        at: 2026-11-09T22:30:57Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Letting go returns the focus to Earth"
+        detail: "Done in `fix(explorer): letting go makes Earth the focus again`, on spec 3abd085. `letGo()` (letGo.ts) closes, then calls `returnToEarth()`. It has unit tests, and the e2e let-go tests poll until Earth's mark is at the view's centre. `pnpm check` is green; the e2e tests await integration under t-e2e."
+        state: done
         type: fix
   - key: 01a1c26b-edd1-7753-a4f7-58a5d81bcf50
     id: spec-change-focus
@@ -364,3 +390,59 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1c26c-3bb3-72a3-8474-ced4a0932389
+    id: plan-25-plan-fuzzy-growing-beacon-01a1c25f-9463-7160-a5b1-33dff1f6410b
+    kind: plan
+    versions:
+      - key: 01a1c26c-3bb3-72a3-8474-ced52646cb56
+        at: 2026-11-09T22:27:15Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Fix plan: letting go makes Earth the focus again (`chore/ux-1`)"
+        markdown: |
+          # Fix plan: letting go makes Earth the focus again (`chore/ux-1`)
+
+          ## Context
+
+          The owner found that deselecting kept the camera locked on the item they had let go. Nothing follows the chosen item: a click makes its point the view's focus, and turning and zooming pivot on it. The approved criteria said letting go leaves the view where it was, so the focus stayed on an empty spot.
+
+          The owner chose **Back to Earth** in Yard. The spec change is committed at `3abd085`:
+          - **Both let-go statements** (read-an-object and see-the-structures) now also make Earth the focus again.
+          - **Two criteria** now read "Once the object/structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had."
+
+          Only the steps these nodes touch are planned here. Everything else in the approved plan stands, and this is Yard task `t-fix-focus`, a fix.
+
+          ## Changes
+
+          - **`clients/explorer/src/ui/letGo.ts`:** adds `letGo(close, controller)`. It calls `close()`, then `controller?.returnToEarth()`.
+            - It reuses `Controller.returnToEarth()` (`scene/controller.ts`), which is what the rail's Earth button calls.
+            - That method centres on the origin at the current distance, flying unless reduced motion asks otherwise.
+          - **`clients/explorer/src/ui/Scene.tsx`:** `OnChoose.letGo` and `selection.structureFromList` call `letGo(selection.close, world?.controller)` in place of `selection.close()` alone.
+          - **The panels' close buttons keep `selection.close()` unchanged.** The decision covered only letting go by choosing again. Whether closing a panel should also return to Earth goes to the owner in the final report.
+
+          ## Tests and trace
+
+          - **`letGo.test.ts`:** `letGo` closes the record and returns the focus to Earth, using a fake controller that records `returnToEarth`.
+          - **`e2e/explorer.spec.ts`:** in the object and structure let-go tests, after the let-go click, the "Earth" mark is polled until it sits at the canvas centre (the focus) under reduced motion. The distance is still unchanged. This replaces the reliance on the view staying put.
+          - **`loft.trace.yaml`:** the two reworded criteria (keys `…7d969cb2496a` and `…7d9d5bd55b7c`) link to the new `letGo` unit test and their e2e tests, in place of `chooses`' "lets it go" test. The reworded statements make no criterion stale beyond these two.
+
+          ## Verification
+
+          - `pnpm check` in `clients/explorer` before the commit `fix(explorer): letting go makes Earth the focus again`, with `.yard/`.
+          - Then the remaining plan as approved:
+            - `cargo xtask integration`. The run in progress predates this fix and is superseded.
+            - Accept the trace links, then `/simplify` and `/code-review`.
+            - `cargo xtask check`, then integration once more.
+            - Close the Yard Log and leave the branch unmerged.
+        planMode: true
+    responses:
+      - key: 01a1c26e-a152-71aa-b0ad-c4c0e10bb613
+        at: 2026-11-09T22:29:52Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved

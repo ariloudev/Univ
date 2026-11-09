@@ -20,6 +20,54 @@ async function find(page: Page, name: string): Promise<void> {
   await expect(page.getByRole("region", { name: "The chosen object" }).getByTestId("lede")).toBeVisible();
 }
 
+/** Where a point is drawn near the centre of the view: out from the centre until the pointer is
+ * over a point (its label begins with its id), not over Earth at the focus or a structure's name. */
+async function pointNearCentre(page: Page): Promise<{ x: number; y: number }> {
+  const canvas = await centreOf(page.locator("canvas"));
+  const tooltip = page.getByRole("tooltip");
+  for (let r = 24; r <= 240; r += 6) {
+    for (let a = 0; a < 2 * Math.PI; a += 6 / r) {
+      const at = { x: canvas.x + r * Math.cos(a), y: canvas.y + r * Math.sin(a) };
+      await page.mouse.move(at.x, at.y);
+      // The label follows the pointer a frame later: what it names is read once it has.
+      const names = async () => (await tooltip.isVisible()) && /^\d+ · /.test((await tooltip.textContent()) ?? "");
+      if (await names()) {
+        await page.waitForTimeout(50);
+        if (await names()) return at;
+      }
+    }
+  }
+  throw new Error("no point is drawn near the centre");
+}
+
+/** A structure's name drawn where the view itself lies under it, on the screen and clear of the
+ * panels: its id. The structures are read after the first points, so their names come a little
+ * later. */
+async function nameInTheView(page: Page): Promise<string> {
+  const found = await page.waitForFunction(() => {
+    const canvas = document.querySelector("canvas");
+    for (const text of document.querySelectorAll("[data-structure] > span")) {
+      const box = text.getBoundingClientRect();
+      if (box.width > 0 && document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === canvas) {
+        return text.parentElement?.dataset["structure"];
+      }
+    }
+    return undefined;
+  });
+  return (await found.jsonValue()) ?? "";
+}
+
+/** How far Earth is from the centre of the view, in pixels: its mark's anchor, the top-left
+ * corner of the element placed over it, is at the centre where Earth is the focus. */
+async function earthFromCentre(page: Page): Promise<number> {
+  const earth = await page.getByTitle(/^The Solar System barycentre/).boundingBox();
+  const centre = await centreOf(page.locator("canvas"));
+  return earth === null ? Number.POSITIVE_INFINITY : Math.hypot(earth.x - centre.x, earth.y - centre.y);
+}
+
+/** Past the time within which a second click near a click is part of a double-click. */
+const PAST_A_DOUBLE_CLICK_MS = 600;
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
@@ -73,24 +121,7 @@ test("centres the view on a point clicked, keeping the distance, with the grid a
   await expect(page.getByTestId("grid")).toBeVisible();
   await page.getByRole("switch", { name: "Rings" }).check();
   await expect(page.getByTestId("ring-labels").locator("span:visible").first()).toBeVisible();
-  const canvas = await centreOf(page.locator("canvas"));
-  const tooltip = page.getByRole("tooltip");
-  // Out from the centre until the pointer is over a point (its label begins with its id), not
-  // over Earth at the focus or a structure's name.
-  let found: { x: number; y: number } | undefined;
-  for (let r = 24; r <= 240 && found === undefined; r += 6) {
-    for (let a = 0; a < 2 * Math.PI && found === undefined; a += 6 / r) {
-      const at = { x: canvas.x + r * Math.cos(a), y: canvas.y + r * Math.sin(a) };
-      await page.mouse.move(at.x, at.y);
-      // The label follows the pointer a frame later: what it names is read once it has.
-      const names = async () => (await tooltip.isVisible()) && /^\d+ · /.test((await tooltip.textContent()) ?? "");
-      if (await names()) {
-        await page.waitForTimeout(50);
-        if (await names()) found = at;
-      }
-    }
-  }
-  if (found === undefined) throw new Error("no point is drawn near the centre");
+  const found = await pointNearCentre(page);
   const distance = page.getByTestId("distance");
   const before = (await distance.textContent()) ?? "";
   await page.mouse.click(found.x, found.y);
@@ -106,6 +137,33 @@ test("centres the view on a point clicked, keeping the distance, with the grid a
       return box === null ? Number.POSITIVE_INFINITY : Math.hypot(box.x + box.width / 2 - centre.x, box.y + box.height / 2 - centre.y);
     })
     .toBeLessThan(3);
+  await expect(distance).toHaveText(before);
+});
+
+test("lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await firstPoints(page);
+  const found = await pointNearCentre(page);
+  const panel = page.getByRole("region", { name: "The chosen object" });
+  await page.mouse.click(found.x, found.y);
+  await expect(panel.getByTestId("lede")).toBeVisible();
+  // The point is now at the centre of the view, as the ring over it shows.
+  const mark = page.getByTestId("chosen-mark").locator("span");
+  await expect.poll(async () => (await mark.boundingBox()) !== null).toBe(true);
+  const point = await centreOf(mark);
+  await page.waitForTimeout(PAST_A_DOUBLE_CLICK_MS);
+  await page.mouse.dblclick(point.x, point.y);
+  await expect(panel.getByTestId("lede")).toBeVisible();
+  await expect(page).toHaveURL(/\?object=\d+/);
+  const distance = page.getByTestId("distance");
+  const before = (await distance.textContent()) ?? "";
+  const centre = await centreOf(mark);
+  await page.waitForTimeout(PAST_A_DOUBLE_CLICK_MS);
+  await page.mouse.click(centre.x, centre.y);
+  await expect(panel).toHaveCount(0);
+  await expect(mark).toBeHidden();
+  await expect(page).not.toHaveURL(/object=/);
+  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
   await expect(distance).toHaveText(before);
 });
 
@@ -130,6 +188,10 @@ test("lists the release's structures and reads one, culling the view to it from 
   await expect(panel.getByTestId("structure-inside")).toHaveCount(0);
   await inside.check();
   await expect(panel.getByTestId("structure-inside")).toBeVisible();
+  // Chosen again from the list, it is let go.
+  await page.getByTestId("structures").getByRole("button", { name: /^Bootes Void/ }).click();
+  await expect(panel).toHaveCount(0);
+  await expect(inside).toHaveCount(0);
 });
 
 test("takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload", async ({ page }) => {
@@ -139,17 +201,7 @@ test("takes the structures' outlines away from their switch, still naming each a
   await outlines.uncheck();
   await expect(page).toHaveURL(/outlines=off/);
   // A name still drawn where the view itself lies under it, as with the outlines on.
-  const found = await page.waitForFunction(() => {
-    const canvas = document.querySelector("canvas");
-    for (const text of document.querySelectorAll("[data-structure] > span")) {
-      const box = text.getBoundingClientRect();
-      if (box.width > 0 && document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === canvas) {
-        return text.parentElement?.dataset["structure"];
-      }
-    }
-    return undefined;
-  });
-  const at = await centreOf(page.locator(`[data-structure="${(await found.jsonValue()) ?? ""}"] > span`));
+  const at = await centreOf(page.locator(`[data-structure="${await nameInTheView(page)}"] > span`));
   await page.mouse.click(at.x, at.y);
   await expect(page.getByRole("region", { name: "The chosen structure" })).toBeVisible();
   await page.reload();
@@ -158,20 +210,8 @@ test("takes the structures' outlines away from their switch, still naming each a
 
 test("chooses a structure by the name it shows in the view, and still zooms over it", async ({ page }) => {
   await firstPoints(page);
-  // A name drawn where the view itself lies under it: on the screen and clear of the panels.
-  // Its inner element is the text, centred on the structure's place.
-  // The structures are read after the first points, so their names come a little later.
-  const found = await page.waitForFunction(() => {
-    const canvas = document.querySelector("canvas");
-    for (const text of document.querySelectorAll("[data-structure] > span")) {
-      const box = text.getBoundingClientRect();
-      if (box.width > 0 && document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === canvas) {
-        return text.parentElement?.dataset["structure"];
-      }
-    }
-    return undefined;
-  });
-  const id = (await found.jsonValue()) ?? "";
+  // A name's inner element is the text, centred on the structure's place.
+  const id = await nameInTheView(page);
   const text = page.locator(`[data-structure="${id}"] > span`);
   const centre = () => centreOf(text);
   const distance = page.getByTestId("distance");
@@ -191,6 +231,47 @@ test("chooses a structure by the name it shows in the view, and still zooms over
   await expect(page.getByRole("region", { name: "The chosen structure" })).toBeVisible();
 });
 
+test("lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await firstPoints(page);
+  const name = page.locator(`[data-structure="${await nameInTheView(page)}"]`);
+  const text = name.locator("> span");
+  const panel = page.getByRole("region", { name: "The chosen structure" });
+  let at = await centreOf(text);
+  await page.mouse.click(at.x, at.y);
+  await expect(panel).toBeVisible();
+  // Flown to at once, its name is placed on the next frame.
+  await page.waitForTimeout(PAST_A_DOUBLE_CLICK_MS);
+  at = await centreOf(text);
+  await page.mouse.dblclick(at.x, at.y);
+  await expect(panel).toBeVisible();
+  await expect(name).toHaveClass(/font-medium/);
+  const distance = page.getByTestId("distance");
+  await page.waitForTimeout(PAST_A_DOUBLE_CLICK_MS);
+  const before = (await distance.textContent()) ?? "";
+  at = await centreOf(text);
+  await page.mouse.click(at.x, at.y);
+  await expect(panel).toHaveCount(0);
+  await expect(name).not.toHaveClass(/font-medium/);
+  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
+  await expect(distance).toHaveText(before);
+});
+
+test("keeps the drawer open across a reload, and none once it is closed", async ({ page }) => {
+  const show = page.getByRole("navigation", { name: "Panels" }).getByRole("button", { name: "Show", exact: true });
+  const drawer = page.locator("#drawer-show");
+  await show.click();
+  await expect(drawer).toBeVisible();
+  await page.reload();
+  await expect(drawer).toBeVisible();
+  await expect(show).toHaveAttribute("aria-expanded", "true");
+  await show.click();
+  await expect(drawer).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
+  await expect(drawer).toHaveCount(0);
+});
+
 test("turns a scale domain off, counts none of its points in the key, and keeps it off across a reload", async ({ page }) => {
   await firstPoints(page);
   const stars = page.getByTestId("star-key");
@@ -201,7 +282,7 @@ test("turns a scale domain off, counts none of its points in the key, and keeps 
   await expect(page.getByTestId("show-summary")).toContainText("Points: 2 of 3 domains");
   await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
   await page.reload();
-  await page.getByRole("button", { name: "Show", exact: true }).click();
+  // The Show drawer is kept open across the reload.
   await expect(page.getByLabel("Stars", { exact: true })).not.toBeChecked();
 });
 

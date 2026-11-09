@@ -13,7 +13,7 @@ import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
-import { isChosen } from "./letGo.ts";
+import { isChosen, letGo } from "./letGo.ts";
 import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 
@@ -70,7 +70,7 @@ export function Scene({
     structure: (id) => selection.structureById(id),
     letGo: (found) => {
       const chosenAlready = isChosen(found, { object: chosenId, structure: structureId });
-      if (chosenAlready) selection.close();
+      if (chosenAlready) letGo(selection.close, world?.controller);
       return chosenAlready;
     },
   });
@@ -109,7 +109,7 @@ export function Scene({
       if (world !== undefined) flyToStructure(world, structures, id);
     },
     structureFromList: (id) => {
-      if (id === structureId) selection.close();
+      if (id === structureId) letGo(selection.close, world?.controller);
       else selection.structureById(id);
     },
     close: () => {

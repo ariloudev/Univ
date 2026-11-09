@@ -5619,3 +5619,79 @@ links:
       - file: "clients/explorer/src/ui/inside.test.ts"
         name: "is named in the address by the structure it culls to"
         body: 7665828ee4ed91a37092c6c24760fcc830d9489f939ec269e8731992d2510874
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d95dbb0dc01
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "is on the chosen object's point, and on no other point"
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "lets it go, and chooses nothing"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d969cb2496a
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "closes its record, and then makes Earth the focus again"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d97b9058d19
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d98f8d78c05
+    tests:
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "leaves the second click of a double-click to the double-click, letting nothing go"
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "is chosen by a double-click, which lets nothing go"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9ae7ac1094
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "is on the chosen structure's name, and on no other name"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9b40b85965
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the release's structures and reads one, culling the view to it from the top bar"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "is the one the renderer draws as chosen, until another is chosen or none"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "closes its record, and then makes Earth the focus again"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
+    tests:
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "is chosen by a double-click, which lets nothing go"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7da07ed45c84
+    tests:
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "keeps each drawer opened, and that none is once it closes"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the drawer open across a reload, and none once it is closed"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7da1d8eca54a
+    tests:
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens the drawer kept"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the drawer open across a reload, and none once it is closed"
+  - node: 01a1c25f-d5cd-76b6-b0cb-7da23d69692f
+    tests:
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens no drawer where none is kept"
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens no drawer where the one kept is not one the rail opens"
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens no drawer, and keeps none without failing, where the browser refuses local storage"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the drawer open across a reload, and none once it is closed"
