@@ -32,3 +32,64 @@ blocks:
 
           product/atlas now merges into develop, and the spec is published there.
         tone: success
+  - key: 01a1c25b-4599-76b6-b015-e887edee2f2c
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1c25b-4599-76b6-b015-e888f8a614e7
+        at: 2026-11-09T22:08:43Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        view: publish
+        note: "Published as sequence 7 at a37ad8e on develop, after product/atlas merged in at b93c01b. The state root is `379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9`, and `loft verify` passed. The publish includes W1–W9 and the additive releases."
+        recorded:
+          commit: "a37ad8ea6527f8c35b2ff4c8b835f8aff869a71a"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-09T22:08:43Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 63,
+              "constraint": 8,
+              "criterion": 642,
+              "decision": 33,
+              "feature": 42,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 180
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "a37ad8ea6527f8c35b2ff4c8b835f8aff869a71a",
+                "removed": [],
+                "revision": "a37ad8ea6527f8c35b2ff4c8b835f8aff869a71a"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 7,
+                "publishedAt": "2026-11-09T22:08:34Z",
+                "stateRoot": "379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

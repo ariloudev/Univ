@@ -192,3 +192,64 @@ blocks:
         title: "The object panel shows all four groups"
         consequence: "The panel gains sky position (equatorial and galactic), brightness, motion and redshift, and membership and flags. Explaining flags means each source definition documents what its flag codes mean."
         question: 01a1b7d1-3a0e-7193-8139-4fed64536978
+  - key: 01a1c25b-4aac-713d-b69a-f1d827e59d53
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1c25b-4aac-713d-b69a-f1d9fd9de572
+        at: 2026-11-09T22:08:45Z
+        revision: 22
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        view: publish
+        note: "Published as sequence 7 at a37ad8e on develop. It reached develop through product/atlas, which merged in at b93c01b. The state root is `379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9`."
+        recorded:
+          commit: "a37ad8ea6527f8c35b2ff4c8b835f8aff869a71a"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-09T22:08:45Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 63,
+              "constraint": 8,
+              "criterion": 642,
+              "decision": 33,
+              "feature": 42,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 180
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "a37ad8ea6527f8c35b2ff4c8b835f8aff869a71a",
+                "removed": [],
+                "revision": "a37ad8ea6527f8c35b2ff4c8b835f8aff869a71a"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 7,
+                "publishedAt": "2026-11-09T22:08:34Z",
+                "stateRoot": "379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
