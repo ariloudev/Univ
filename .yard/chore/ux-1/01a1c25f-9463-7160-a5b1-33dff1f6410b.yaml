@@ -1,0 +1,12 @@
+key: 01a1c25f-9463-7160-a5b1-33dff1f6410b
+id: build
+versions:
+  - key: 01a1c25f-9463-7160-a5b1-33e3df428688
+    at: 2026-11-09T22:13:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Build"
+    goal: "Choosing again lets go; the rail's drawer is stored in and restored from localStorage"
+    status: planned
