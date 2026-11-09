@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { Cosmology } from "../api/schemas.ts";
@@ -15,7 +15,8 @@ import { ScaleBar } from "./ScaleBar.tsx";
 import { SearchBox } from "./SearchBox.tsx";
 import { ShowPanel, type ShowPanelProps } from "./show/ShowPanel.tsx";
 import { StructureRecordPanel } from "./record/StructureRecordPanel.tsx";
-import { StructureList } from "./StructuresPanel.tsx";
+import { DepthIndex } from "./structures/DepthIndex.tsx";
+import { depthRows } from "./structures/depth.ts";
 import { SwitchBox } from "./SwitchBox.tsx";
 import type { ChooseOptions, ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
@@ -196,12 +197,18 @@ function Drawer({
       {name === "show" ? <ShowPanel {...show} /> : null}
       {name === "structures" ? (
         <>
-          <StructureList list={structures.shown} onChoose={selection.structureFromList} />
+          <StructuresDrawer structures={structures} selection={selection} />
           {structures.problem === undefined ? null : <p className="mt-2 text-xs text-warn">{structures.problem}</p>}
         </>
       ) : null}
     </aside>
   );
+}
+
+/** The structures drawer: the depth index of the structures drawn, the chosen one marked. */
+function StructuresDrawer({ structures, selection }: { structures: ShownStructures; selection: Selection }) {
+  const rows = useMemo(() => depthRows(structures.shown, structures), [structures]);
+  return <DepthIndex rows={rows} chosen={selection.structure?.id} onChoose={selection.structureFromList} />;
 }
 
 const OVER_THE_VIEW = "max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-20";

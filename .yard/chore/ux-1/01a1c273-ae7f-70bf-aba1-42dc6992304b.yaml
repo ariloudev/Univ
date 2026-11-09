@@ -10,6 +10,15 @@ versions:
     title: "Design: the Structures drawer"
     goal: "Options for a redesigned Structures drawer, built from the release's real structures, put to the owner to choose"
     status: active
+  - key: 01a1c27b-acfb-77bd-a9f3-b89b437101b4
+    at: 2026-11-09T22:44:07Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Design: the Structures drawer"
+    goal: "Options for a redesigned Structures drawer, built from the release's real structures, put to the owner to choose"
+    status: done
 blocks:
   - key: 01a1c273-ae7f-70bf-aba1-42ddfdc09ec4
     id: design-why
@@ -543,3 +552,113 @@ blocks:
           email: "ariloudev@local"
         channel: page
         verdict: approved
+  - key: 01a1c279-0d64-7513-9b7d-96ddcdf81111
+    id: plan-25-plan-fuzzy-growing-beacon-01a1c273-ae7f-70bf-aba1-42dc6992304b
+    kind: plan
+    versions:
+      - key: 01a1c279-0d64-7513-9b7d-96defd44ebbe
+        at: 2026-11-09T22:41:15Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build plan: the Structures drawer as a depth index (`chore/ux-1`)"
+        markdown: |
+          # Build plan: the Structures drawer as a depth index (`chore/ux-1`)
+
+          ## Context
+
+          The owner asked for a redesign of the Structures drawer using the frontend-design and dataviz skills. Today it is a flat A-to-Z list of italic names with "(kind)" after each. Long names wrap, and nothing says where a structure lies.
+
+          The owner chose option A, the "depth index", on the [options page](https://claude.ai/artifact/TT6xR8P36q2NZ4P3U2fnsK), which was built from release 12's real structures. They approved its spec change (`c710285`): one new Requirement in see-the-structures with 11 criteria (the "DI" criteria below). Nothing is merged until the owner asks.
+
+          ## Data: a pure model, `clients/explorer/src/ui/structures/depth.ts`
+
+          - **`depthRows(shown, structures)`:** builds one `DepthRow` per shown structure: `{ id, name, kind, colour, status, distance }`.
+            - **`distance`:** `norm(drawing.centre)` from `structures.drawings`, or undefined where the structure is not placed.
+            - **`status`:** `structures.details.get(id)?.status`, as `"observed" | "statistical_claim" | "reconstructed"`, with observed where it is missing.
+            - **`colour`:** `structureCss(kind)` (`scene/kinds.ts`).
+            - **`name`:** from the summary; the drawing's `name` carries "(at least)" where the shape is a lower limit, as in the view.
+          - **`distanceText(d)`:** whole Mpc below 1,000, Gpc to three figures from 1 Gpc, "around us" below 0.5 Mpc, and "not placed" for none. It reuses `figures` and `whole` from `scene/format.ts`.
+          - **`depthX(d, width)`:** a log map from 10 Mpc to 10 Gpc, clamped at both ends.
+          - **`BANDS`, `banded(rows)`:** within 100 Mpc, 100 Mpc–1 Gpc, 1–10 Gpc, and not placed, each nearest first, with empty bands left out.
+          - **`byName(rows)`**, and **`matching(rows, text)`:** name or kind words hold the text, ignoring case.
+
+          ## The view: `clients/explorer/src/ui/structures/DepthIndex.tsx`
+
+          It replaces `StructureList` in `StructuresPanel.tsx`; that file goes, and its test moves.
+
+          - **Head:**
+            - "Structures" with the count, which reads "12 of 54" while the list is narrowed.
+            - A search input, "Find a structure".
+            - A two-button switch, "Nearest first" and "A to Z", each with `aria-pressed`.
+            - The status legend.
+            - The axis ticks (10 Mpc, 100 Mpc, 1 Gpc, 10 Gpc), aligned over the rows' tracks.
+          - **Rows:**
+            - Each row is a button: the italic serif name, the distance figure on the right, then the kind in words with its swatch, and an SVG track with the status dot.
+            - The track is 12 px high, with the tick gridlines in `--color-line`.
+            - The dot is filled for observed, open for a statistical claim, and dashed for reconstructed, each in the kind's colour with the panel's ring.
+            - Each row carries the status in words as screen-reader text, and keeps `data-testid="structures"` on the list.
+          - **The chosen row:** the `--color-raised` background, the name at weight 500, and `aria-pressed`.
+          - **No match:** one message that names the text typed and suggests part of a name or a kind.
+          - **Style:** the explorer's Tailwind tokens throughout. Text is in ink or dim, never in a kind colour; only the swatch and dot carry the kind.
+          - **`Atlas.tsx`'s structures drawer:** renders `<DepthIndex rows={depthRows(structures.shown, structures)} chosen={selection.structure?.id} onChoose={selection.structureFromList} />`, memoised on `structures`.
+
+          ## Tests
+
+          - **`depth.test.ts`:**
+            - rows from summaries, drawings and details, including an unplaced structure and a missing status;
+            - `distanceText` at 0, 11, 999.6, 1,038 and 6,627 Mpc;
+            - `depthX` at 10 Mpc, 1 Gpc and 10 Gpc, and clamped below and above;
+            - bands and their order;
+            - `matching` by name and by kind, ignoring case.
+          - **`DepthIndex.test.tsx`:**
+            - headings with counts;
+            - rows nearest first;
+            - the A-to-Z switch drops the headings but keeps the dots;
+            - the find box narrows the list and shows "N of M";
+            - the no-match message;
+            - the chosen row is pressed;
+            - a click calls `onChoose`;
+            - the legend.
+          - **Moved tests:** `StructuresPanel.test.tsx`'s list test moves to `DepthIndex.test.tsx` (name, kind, choose), and `names.test.tsx` uses `DepthIndex` for the italic name.
+          - **`e2e/explorer.spec.ts`:** a new test, "lists the structures outward from Earth, under headings, and narrows them from the find box". The Bootes Void test's `getByRole("button", { name: /^Bootes Void/ })` keeps working, because the row's accessible name starts with the name.
+          - **`loft.trace.yaml`:** links for the 11 DI criteria, accepted after review.
+
+          ## Yard tasks (registered before the first code)
+
+          1. **d-model:** the `depth.ts` model with tests.
+          2. **d-view:** `DepthIndex.tsx` in the drawer with tests, the old list removed.
+          3. **d-e2e:** the e2e test, plus a screenshot of the drawer by hand (sent as a file).
+          4. **d-trace:** trace links accepted.
+
+          Then the review stage stands as approved: /simplify and /code-review, the full gate and integration, then closing the Yard Log.
+
+          ## Verification
+
+          - `pnpm check` (typecheck, Vitest, fallow, build) after each task.
+          - `cargo xtask integration` once the e2e test is in.
+          - A look at the real drawer with `cargo xtask explore`, screenshotted, against the options page.
+        planMode: true
+    responses:
+      - key: 01a1c27b-8569-70c3-9149-a8e85f231b2b
+        at: 2026-11-09T22:43:57Z
+        revision: 24
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1c27b-acfb-77bd-a9f3-b8945112b149
+    id: design-done
+    kind: note
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b89c674bbc91
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "What the design produced"
+        markdown: "The owner chose **A. Depth index**, and approved its spec change: one new see-the-structures Requirement with 11 criteria, committed at c710285. The build plan was approved through plan mode."
+        tone: success

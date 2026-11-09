@@ -1,13 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { StructureDetail } from "../api/structures.ts";
 import { R12_HUGE_LQG, R12_KBC_VOID, R12_VELA } from "../test/records/index.ts";
 import { shapeOf } from "../test/structures.ts";
 import { StructureRecordPanel } from "./record/StructureRecordPanel.tsx";
 import { matchedText } from "./record/structureText.ts";
-import { StructureList } from "./StructuresPanel.tsx";
 
 const LOCAL_VOID: StructureDetail = {
   id: "local-void",
@@ -31,14 +29,6 @@ const LOCAL_VOID: StructureDetail = {
 };
 
 describe("the structures", () => {
-  it("are listed by name and kind, each to choose", async () => {
-    const chosen = vi.fn();
-    render(<StructureList list={[{ id: "local-void", name: "Local Void", kind: "void", scale_domain: "cosmic_web" }]} onChoose={chosen} />);
-    expect(screen.getByRole("heading", { name: "Structures (1)" })).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Local Void (void)" }));
-    expect(chosen).toHaveBeenCalledWith("local-void");
-  });
-
   it("give a structure's kind, scale domain, how it was placed, and the paper each number is cited from", () => {
     render(<StructureRecordPanel detail={LOCAL_VOID} approximate={false} onClose={() => undefined} />);
     expect(screen.getByTestId("structure-kind").textContent).toBe("void · cosmic web domain");

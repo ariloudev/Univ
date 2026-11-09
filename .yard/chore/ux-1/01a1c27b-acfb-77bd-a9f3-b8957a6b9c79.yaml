@@ -1,0 +1,107 @@
+key: 01a1c27b-acfb-77bd-a9f3-b8957a6b9c79
+id: build-drawer
+versions:
+  - key: 01a1c27b-acfb-77bd-a9f3-b89d4971c157
+    at: 2026-11-09T22:44:07Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Build: the depth index"
+    goal: "The Structures drawer lists the structures outward from Earth on one shared log axis of distance, with headings, status dots, an A-to-Z switch and a find box"
+    status: active
+blocks:
+  - key: 01a1c27b-acfb-77bd-a9f3-b89649aeae1c
+    id: d-model
+    kind: task
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b89e133fe2b8
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The depth model (depth.ts)"
+        detail: "Covers `depthRows`, `distanceText`, `depthX`, `BANDS` and `banded`, `byName`, and `matching`. Done when depth.test.ts passes and `pnpm check` is green."
+        state: open
+      - key: 01a1c27b-bda8-74a8-95af-ac34fca5372d
+        at: 2026-11-09T22:44:11Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The depth model (depth.ts)"
+        detail: "Covers `depthRows`, `distanceText`, `depthX`, `BANDS` and `banded`, `byName`, and `matching`. Done when depth.test.ts passes and `pnpm check` is green."
+        state: active
+      - key: 01a1c27c-7863-7082-848a-8ca3882ee30b
+        at: 2026-11-09T22:44:59Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The depth model (depth.ts)"
+        detail: "depth.ts: `depthRows`, `distanceText`, `depthX`, `DEPTH_TICKS`, `BANDS` and `banded`, `byName`, `matching`, and `KNOWN_WORDS`. depth.test.ts passes (13 tests). The full `pnpm check`, with fallow's dead-export check, runs with d-view, which uses the model's exports, and the two land in one commit."
+        state: done
+  - key: 01a1c27b-acfb-77bd-a9f3-b8978431af9f
+    id: d-view
+    kind: task
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b89f35672a0e
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "DepthIndex in the Structures drawer"
+        detail: "`DepthIndex.tsx` replaces `StructureList` in Atlas.tsx, with its head (count, find, order switch, legend, axis) and rows (name, figure, kind swatch, track with status dot). The old list and its test move. Done when DepthIndex.test.tsx passes and `pnpm check` is green."
+        state: open
+      - key: 01a1c27c-7863-7082-848a-8ca46deaedc0
+        at: 2026-11-09T22:44:59Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "DepthIndex in the Structures drawer"
+        detail: "`DepthIndex.tsx` replaces `StructureList` in Atlas.tsx, with its head (count, find, order switch, legend, axis) and rows (name, figure, kind swatch, track with status dot). The old list and its test move. Done when DepthIndex.test.tsx passes and `pnpm check` is green."
+        state: active
+  - key: 01a1c27b-acfb-77bd-a9f3-b898db326926
+    id: d-e2e
+    kind: task
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b8a068b0a09b
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "End-to-end test, and a look at the real drawer"
+        detail: "Covers an e2e test for the order, headings and find box, and a screenshot of the drawer from `cargo xtask explore`, sent as a file. Done when `cargo xtask integration` passes."
+        state: open
+  - key: 01a1c27b-acfb-77bd-a9f3-b89941f0214e
+    id: d-trace
+    kind: task
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b8a1479cd836
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Trace the 11 depth index criteria"
+        detail: "Done when the links are written and accepted, and `loft reconcile` reports no TR-001, TR-002 or TR-006."
+        state: open
+  - key: 01a1c27b-acfb-77bd-a9f3-b89a2efea45c
+    id: drawer-issues
+    kind: note
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b8a2ff2f8e67
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | | None yet | | | |

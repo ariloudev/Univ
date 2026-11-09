@@ -133,7 +133,8 @@ describe("the explorer laid out as an atlas", () => {
     await userEvent.click(structuresButton);
     expect(structuresButton.getAttribute("aria-expanded")).toBe("true");
     const drawer = screen.getByRole("complementary", { name: "Structures" });
-    expect(within(drawer).getByText("Structures (1)")).toBeTruthy();
+    expect(within(drawer).getByRole("heading", { name: "Structures" })).toBeTruthy();
+    expect(within(drawer).getByTestId("structures-count").textContent).toBe("1");
     expect(within(drawer).getByText("The structures could not be read: 503 Unavailable")).toBeTruthy();
     // And the bottom bar says so while the drawer is closed.
     expect(within(screen.getByRole("contentinfo")).getByText("Structures not read").getAttribute("title")).toBe(
@@ -163,7 +164,7 @@ describe("the explorer laid out as an atlas", () => {
   it("lists no structure of a kind turned off, and holds the switches of what is drawn", async () => {
     show({ hidden: hiddenInAddress("?hide=structure:void"), shown: [] });
     await userEvent.click(screen.getByRole("button", { name: "Structures" }));
-    expect(screen.getByText("Structures (0)")).toBeTruthy();
+    expect(screen.getByTestId("structures-count").textContent).toBe("0");
     await userEvent.click(screen.getByRole("button", { name: "Show" }));
     expect(screen.getByRole("button", { name: "void 1 structure" }).getAttribute("aria-pressed")).toBe("false");
   });
