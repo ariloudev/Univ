@@ -4229,7 +4229,7 @@ links:
         body: 0fa94d94e75066201515b8528ee30582df297bf095f63a5a9ea163a45d0aed69
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "lists no structure of a kind turned off, and holds the switches of what is drawn"
-        body: 164b19b01e01101cf01aff580b2879123ebecf06676ed7727dbeacdfd55b4ffe
+        body: f885051d5ba00e375b68ae9213d1f6abb0f954df8e077e2ae4255c728839bb02
   - node: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
     reviewed: 51a1d42e822a90e1465311acfbb103a1d2ff7ef95ea401205ad27a469141f1a6
     tests:
@@ -4757,7 +4757,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "opens each drawer from the rail and closes it again with the same button"
-        body: 20f0c1d7d471856eb39b1fd3976b6ec7756d182dd0e8ef4225c8a5009ed33f2e
+        body: 797c0697d4a6542bced1b068fd3a8a17bfde2c22bc7393ec554824ff4bfc1cfb
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "returns to Earth from the rail"
         body: b3c97b9ed46abceb0070b3c2347c11d2bd0062ba98df09df4a720d9ab7400df3
@@ -4772,7 +4772,7 @@ links:
         body: b8b9b403225421e3225ebf0c8199b7990576692697eee83c47f67c9eedeeaa61
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "opens each drawer from the rail and closes it again with the same button"
-        body: 20f0c1d7d471856eb39b1fd3976b6ec7756d182dd0e8ef4225c8a5009ed33f2e
+        body: 797c0697d4a6542bced1b068fd3a8a17bfde2c22bc7393ec554824ff4bfc1cfb
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
         body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
@@ -4862,7 +4862,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/names.test.tsx"
         name: "names structures in italic type, in the view, in their list and in their panel"
-        body: 5574429bdf1fd8d6588f0c3a550139875ebe1cfb6e0ecec634206763b0c5bd9a
+        body: e331b7f0e2ebb02acdc736fe780850fe80864b8d0ac2e36be5c832cf881df8c6
   - node: 01a1b7d7-c032-73ad-803e-b11383d20219
     reviewed: a2a6f68da8bd77881a49afa223c9a38432108b956983417ead29db28136e27c1
     tests:
@@ -5430,9 +5430,9 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the release's structures and reads one, culling the view to it from the top bar"
         body: d3616e276f4922980aae1674f13491ac7c1097b47ebc1b2e76157650429b1ae7
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
-        name: "are listed by name and kind, each to choose"
-        body: 4478fbed723711539ef4f5494c7ca35e1ee630a4fb5fe9b4e77d33aff48ff6fa
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "lists each structure by name and kind, to choose"
+        body: a639414abd258eb8cfb1cecd221f5732a0eb74719421887e96edef400acee0cf
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "is read page after page, each in the release chosen"
         body: 6f76bb02efd1f77815b23c4d998ff841b9562c4e196fc7f1b162c93247e7bb4d
@@ -5589,6 +5589,135 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
         body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+  - node: 01a1c278-094a-7307-be66-e7847bc12551
+    reviewed: 32fd3cb7566ddf4a66625c46e56c1b4502e6320281b32a38c3882e1f1af6b06f
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "place each structure at the distance from Earth to its centre as drawn, in its kind's colour, known as its record says"
+        body: 77549677a1062c9275de2fdac4c078aba6c9fd40b02bce5c742ed2de2b44622a
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "leave a structure with no placed shape unplaced, and read a record silent on how it is known as observed"
+        body: 40757deac78286a03ee103aeb5ed55b0fcfbf5cf8e4f2a7b2eed2cd889081db5
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "lists the structures nearest first, under headings with their counts, those not placed last"
+        body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-094a-7307-be66-e7859f3c18c9
+    reviewed: 10beb421cdcb9a3708301339d9da58c0bd236e44020e8081e079e4121a1c0359
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "group the rows within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, nearest first under each"
+        body: c4f833d07f7f8ad5348153642c397a2e5fa41699bb5e68b57b49f765d3b06bcc
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "leave out a heading that holds no row"
+        body: 2e49bf3b24f1913c3386bb92fba5decb4b0d5c42885b0a5213a6c84a83ab0100
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "lists the structures nearest first, under headings with their counts, those not placed last"
+        body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-094a-7307-be66-e7862a633a0c
+    reviewed: 96f911335598a803d0672a185fd78ae20c8c42e3cc4e944230ee54d537ca51b6
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "lists each structure by name and kind, to choose"
+        body: a639414abd258eb8cfb1cecd221f5732a0eb74719421887e96edef400acee0cf
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "name a structure as the view does, \"(at least)\" after a name whose shape is a lower limit"
+        body: 371f86add15a1b2345ac806286ae1f6e0a644074756ed44b5900bffbbe857fb9
+  - node: 01a1c278-094a-7307-be66-e787596ccbdd
+    reviewed: 11b5d15a7cc03590c88c98ee5d76c2ab862f6aae4c3907e16d484d17f4aad264
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "is in whole megaparsecs below 1,000 Mpc, and in gigaparsecs to three figures from there"
+        body: b61959bd8669a3cddc3d0f84c8f31244b7eca69e2fac65c8564dca46ac46b8f9
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "reads \"around us\" for a structure centred on Earth, and \"not placed\" for one with no placed shape"
+        body: 0c4138779713372ff2b88d3736c6b08e7cdff3ed42b11bbfcc0e40bba753e916
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "gives each structure's distance, and draws a dot on the shared axis for each one placed"
+        body: aa77d495d2231f752cf0744b1688afc520c09d96c9cbcc25a51c8977b39609cb
+  - node: 01a1c278-094a-7307-be66-e7880ad36d01
+    reviewed: eedff5c4fa92b5389289e0d005575c5dfd528fedce08d922d7ae6ba5d8600360
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "runs logarithmically from 10 Mpc to 10 Gpc"
+        body: 6adb21e59d91a996486e6471fe923e9d4a6be3c6a3da721776b4f738f5dcc8c2
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "holds a structure nearer or farther than its ends at its ends"
+        body: 0438eaf69c15573c9b4ef6ca131c4d691951a0318b9dda5e8f7eda00e1aada03
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "gives each structure's distance, and draws a dot on the shared axis for each one placed"
+        body: aa77d495d2231f752cf0744b1688afc520c09d96c9cbcc25a51c8977b39609cb
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-094a-7307-be66-e789414bdf63
+    reviewed: d7cb7fd95a8f37850486ec19de9846f3d816706b3bedc9f4c75376212f1347bb
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "read a reconstructed structure as such, and a status the explorer does not know as observed"
+        body: 76ca5e8e45ef4c696723abbb8c511919f9dd8697dbe7d641e37eca03df7bb3c5
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "marks how each structure is known on its dot, as the legend says"
+        body: 1fc1f8a8c1f80215dc0148ee10968fa814cef32e43b1585d7ffd0edc34a01f5e
+  - node: 01a1c278-094a-7307-be66-e78af4b30484
+    reviewed: 7488b533a712fb0542429c65ac54a112e7470683778df29d7947f6dff35072ff
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "order by name, A to Z, when asked"
+        body: 843d68bad6532c0b8c349055184ca23d18c1cccff0e5ccc2bc5e611dcfab748a
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "orders the list by name instead from its switch, without headings, keeping each dot"
+        body: d96fd99f6e12f7ca0abd811baaed11eeac0ae270b62b7e406f236ab5509beed8
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-094a-7307-be66-e78bb3c7f814
+    reviewed: 79d05220fdd58ac79938eebb369a32f51da9f5a7395eb8d77b2d01b2c4771b6b
+    tests:
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "keeps the structures whose name holds the text typed, whatever its case"
+        body: a906670156e50b6cfbd6bbaabdd5612b505284d3560fafaeddffd1ea02bebc0d
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "keeps the structures whose kind, in words, holds the text typed"
+        body: 8f6cafab45bd9fbd0bdb06b5e938ae872e50c4f09eb7d3912d96c71cc60807a1
+      - file: "clients/explorer/src/ui/structures/depth.test.ts"
+        name: "keeps every structure for no text, and none where nothing holds it"
+        body: 6332b58794e8b69d507334d0dfd7c4c128a69bed9dc4ea4b54066f47757bb1ff
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "narrows the list to the structures whose name or kind holds the text typed, counting them out of all"
+        body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-46e4-76f7-bee6-bda8fefa62ad
+    reviewed: 494c00533f92cca766acdbb198f5f41e44aba69c90c298b89083583cbff6e57d
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "narrows the list to the structures whose name or kind holds the text typed, counting them out of all"
+        body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-094a-7307-be66-e78c9329851d
+    reviewed: 1b840d1852d9cf7bdea1590643cb1fbc1918b5e7f0a0bc590c202a9e049add0f
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "says so where no structure's name or kind holds the text typed"
+        body: bdba5c71349e02b8ff37a3cf9ff00ca34f7916dd6d0dcdfb46085d04b28bb5f2
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
+        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+  - node: 01a1c278-094a-7307-be66-e78dcc50c90f
+    reviewed: 752dfffe54c9f0c10bd994d63f038a6a29307915248c6efcfdc4f0b9ef5b0d00
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "marks the chosen structure's row as chosen, and no other"
+        body: 298ec43cc34c08b4da39f82418b1fbfdfa162f1c4c0066f7fe1f9e99d1c35fb2
   - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
     reviewed: 0bb887b3e772297bd79e8a2955746d05e19763fc1739607c18c2fc09843548fa
     tests:
