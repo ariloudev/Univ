@@ -1,0 +1,34 @@
+key: 01a1c25a-e43b-74a1-b75b-200bcc64e16b
+id: w-panels
+versions:
+  - key: 01a1c25a-e43b-74a1-b75b-200d78038814
+    at: 2026-11-09T22:08:19Z
+    revision: 20
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Record panels, the Show drawer, outlines"
+    goal: "Shorter record panels on one base panel, the Show drawer as one table of catalogues, and a switch that takes the structures' outlines away while keeping their names"
+    status: done
+blocks:
+  - key: 01a1c25a-e43b-74a1-b75b-200c1b75943b
+    id: w9-merged
+    kind: note
+    versions:
+      - key: 01a1c25a-e43b-74a1-b75b-200ee2ddb61f
+        at: 2026-11-09T22:08:19Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "W9 merged"
+        markdown: |-
+          stage/atlas-w9 was merged at c202e63. The owner confirmed that the wave-end checks had already run. Its Yard Log has the details.
+
+          - **The record panels:** an object panel and a structure panel built on one base panel, much shorter than before. The 13 mockups the owner approved, built from real release-12 records, are now test fixtures.
+          - **Only what lies inside:** the checkbox moves from the panel to the top bar.
+          - **The Show drawer:** one table of catalogues, with a column per domain (option B).
+          - **The Outlines switch:** hides the structures' outlines but keeps their names, and a structure can still be chosen by its name.
+
+          product/atlas now merges into develop, and the spec is published there.
+        tone: success
