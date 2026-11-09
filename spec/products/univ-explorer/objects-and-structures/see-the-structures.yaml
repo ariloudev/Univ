@@ -101,7 +101,7 @@ requirements:
       form: event_driven
       when: "the person chooses the structure already chosen, in the view or from the list of structures"
       system: "Univ Explorer"
-      shall: "let the structure go, closing its record."
+      shall: "let the structure go, closing its record and making Earth the focus again."
     criteria:
       - key: 01a1c25f-d5cd-76b6-b0cb-7d9ae7ac1094
         name: "A click on the chosen structure's name in the view closes its record."
@@ -110,7 +110,7 @@ requirements:
       - key: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
         name: "Once the structure is let go, its outline, markers and name are drawn as any other structure's of its kind."
       - key: 01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c
-        name: "Choosing the chosen structure again leaves the view where it was."
+        name: "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had."
       - key: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
         name: "A double-click on the chosen structure's name flies to it and leaves it chosen."
   - key: 01a1b13c-1e10-748d-8008-e7e063283348

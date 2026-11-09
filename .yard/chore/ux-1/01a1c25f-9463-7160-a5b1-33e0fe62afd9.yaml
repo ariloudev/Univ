@@ -10,3 +10,43 @@ versions:
     title: "Review and gate"
     goal: "/simplify and /code-review, then the full gate and integration"
     status: planned
+blocks:
+  - key: 01a1c269-2633-716a-b8dd-fe48c4648b34
+    id: t-review
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe50deacdd38
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "/simplify and /code-review, findings fixed"
+        detail: "Both run in parallel on the branch's changes against develop. Done when every confirmed finding is fixed or put to the owner."
+        state: open
+  - key: 01a1c269-2633-716a-b8dd-fe49a00ea8f5
+    id: t-gate
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe51e92c9ce0
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Full gate and integration"
+        detail: "Done when `cargo xtask check` and `cargo xtask integration` have each run once, green, after the review fixes."
+        state: open
+  - key: 01a1c269-2633-716a-b8dd-fe4a119902d8
+    id: t-close
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe52c5c25c83
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Close the Yard Log; leave the branch unmerged"
+        detail: "Done when the Yard Log is closed and committed. The owner merges `chore/ux-1` only when they ask."
+        state: open

@@ -19,3 +19,348 @@ versions:
     title: "Build"
     goal: "Choosing again lets go; the rail's drawer is stored in and restored from localStorage"
     status: active
+blocks:
+  - key: 01a1c269-2633-716a-b8dd-fe443bda1e2d
+    id: t-letgo
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe4ccd42caa6
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Choosing the chosen point or structure again lets it go"
+        detail: "Done in 902de4e. `firstOfDouble` marks a repeat click `again`, `chooses()` decides between choose and let go, `OnChoose.letGo` uses `isChosen` (letGo.ts), and `Selection.structureFromList` handles the Structures list. Done when the unit tests in useWorld.test.ts and letGo.test.ts pass with `pnpm check` green. Recorded here after the fact: it ran before the plan's tasks were registered."
+        state: done
+  - key: 01a1c269-2633-716a-b8dd-fe45d7bcbe21
+    id: t-drawer
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe4d3b1a28e1
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The open drawer is kept in localStorage"
+        detail: "Done in d219624. Adds `isDrawerName` in Rail.tsx, and `useStoredDrawer`, `storedDrawer` and `storeDrawer` in storedDrawer.ts, all wrapped in try/catch. App.tsx uses `useStoredDrawer`. Done when storedDrawer.test.ts passes with `pnpm check` green. Recorded here after the fact, like t-letgo."
+        state: done
+  - key: 01a1c269-2633-716a-b8dd-fe4685b07686
+    id: t-e2e
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe4e731e31f1
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "End-to-end tests: letting go and the kept drawer"
+        detail: "Three new Playwright tests: the object let go, the structure let go, and the drawer kept across a reload. The Structures list test is extended, and `pointNearCentre` and `nameInTheView` are pulled out as helpers. Done when `cargo xtask integration` passes."
+        state: active
+  - key: 01a1c269-2633-716a-b8dd-fe47142c138b
+    id: t-trace
+    kind: task
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe4f6d15c805
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Trace the 12 new criteria and re-accept the changed tests"
+        detail: "The links are written (655 of 655 nodes linked). Done when `loft reconcile --accept` has been run for the 12 new criteria and the 11 TR-006 links, `loft reconcile` reports no TR-002 or TR-006, and a `trace` view is recorded."
+        state: open
+  - key: 01a1c269-2633-716a-b8dd-fe4bd27488e9
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1c269-2633-716a-b8dd-fe532f126933
+        at: 2026-11-09T22:23:53Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The view's click handler in `useWorld.ts` reached a CRAP score of 30 (0% tested), fallow's error threshold | `pnpm check` (fallow) | Moved the decision into the pure, tested `chooses()` and split the handler into `choose` and `chooser` | fixed |
+          | 2 | The object let-go e2e test expected the chosen mark to be removed, but the mark is hidden, not removed | Reading `SceneOverlay.tsx` while writing the trace links | `toBeHidden()` in place of `toHaveCount(0)` | fixed, awaiting integration |
+          | 3 | The plan's tasks and this note were not registered before the build began | The owner's `/loft:yard` reminder | Registered now. t-letgo and t-drawer are recorded as done after the fact, so the Gantt chart has no times for them | fixed |
+        tone: warning
+  - key: 01a1c26b-2fd3-75cc-84d5-3c8d826ee941
+    id: ask-let-go-focus
+    kind: question
+    versions:
+      - key: 01a1c26b-2fd3-75cc-84d5-3c8e5e5d07d8
+        at: 2026-11-09T22:26:06Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        prompt: "When the chosen object or structure is let go, where should the view's focus go?"
+        header: "Focus"
+        context: |-
+          Nothing follows the chosen item. A click makes its point the **focus**, and turning and zooming pivot on it. Letting go currently leaves the focus there, because the approved criteria say the view stays where it was. So the camera still pivots on an empty spot. Choosing a structure also flies to it, so the focus sits on the structure's centre.
+
+          Any fix rewords two criteria: "A click on the chosen object's point leaves the view where it was" and "Choosing the chosen structure again leaves the view where it was".
+        options:
+          - label: "Back to Earth"
+            detail: "Letting go makes Earth the focus again at the current distance, as the Earth button does, flying there (or moving at once under reduced motion). It is simple and predictable, since Earth is the explorer's resting focus, but it moves the view a long way when you are far out."
+            recommended: true
+          - label: "The view before"
+            detail: "Letting go flies back to the focus and distance the view had just before the item was chosen. It undoes the click's centring or the structure's flight, but it also undoes any zoom or turn made since, and it is odd after several choices in a row."
+          - label: "Keep eye, refocus"
+            detail: "The eye stays where it is, but the focus moves to the point straight ahead at Earth's distance, so turning pivots there instead of on the item. Nothing jumps, but what you then turn about is an unmarked point in space."
+    responses:
+      - key: 01a1c26b-8d62-70ed-8f6e-284f236105ef
+        at: 2026-11-09T22:26:30Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Back to Earth"
+  - key: 01a1c26b-c60c-7104-aa38-29d68b2acaf8
+    id: decide-let-go-focus
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1c26b-c60c-7104-aa38-29d8635b5f67
+        at: 2026-11-09T22:26:45Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Letting go makes Earth the focus again"
+        consequence: "Letting go of the chosen object or structure flies the focus back to Earth at the current distance, as the Earth button does, so turning and zooming no longer pivot on the empty spot. Two criteria and both let-go statements are reworded (a minor spec change), and the let-go e2e tests check that the focus is Earth instead of an unchanged view."
+        question: 01a1c26b-2fd3-75cc-84d5-3c8d826ee941
+  - key: 01a1c26b-c60c-7104-aa38-29d7a7d19b4f
+    id: t-fix-focus
+    kind: task
+    versions:
+      - key: 01a1c26b-c60c-7104-aa38-29d97f2115eb
+        at: 2026-11-09T22:26:45Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Letting go returns the focus to Earth"
+        detail: "The owner found that letting go kept the camera on the item. Reword the let-go statements and criteria in read-an-object and see-the-structures, then make the let-go path call the controller's return to Earth. Done when the unit and e2e tests show Earth as the focus after letting go and `pnpm check` is green."
+        state: active
+        type: fix
+  - key: 01a1c26b-edd1-7753-a4f7-58a5d81bcf50
+    id: spec-change-focus
+    kind: loft
+    versions:
+      - key: 01a1c26b-edd1-7753-a4f7-58a6e6e454c0
+        at: 2026-11-09T22:26:55Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        view: spec-change
+        note: "Minor spec change, following the owner's \"Back to Earth\" decision. Both let-go statements now also make Earth the focus again, and the two \"leaves the view where it was\" criteria become \"Earth is the focus again, at the distance the view had\"."
+        base: "309b01c"
+        recorded:
+          commit: "d219624127642cd90466fa99b83d18bd88bacf1b"
+          branch: "chore/ux-1"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-09T22:26:55Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 4,
+              "graph.edges": 0,
+              "graph.nodes": 8,
+              "status.base.added": 0,
+              "status.base.changed": 4,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person clicks the drawn point of the object already chosen, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                  "words": {
+                    "after": "When the person clicks the drawn point of the object already chosen, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                    "before": "When the person clicks the drawn point of the object already chosen, Univ Explorer shall let the object go, closing its record."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d969cb2496a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once the object is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                  "words": {
+                    "after": "Once the object is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                    "before": "A click on the chosen object's point leaves the view where it was."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the structure already chosen, in the view or from the list of structures, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                  "words": {
+                    "after": "When the person chooses the structure already chosen, in the view or from the list of structures, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                    "before": "When the person chooses the structure already chosen, in the view or from the list of structures, Univ Explorer shall let the structure go, closing its record."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                  "words": {
+                    "after": "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                    "before": "Choosing the chosen structure again leaves the view where it was."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                  "kind": "feature",
+                  "label": "F-38",
+                  "name": "Read an object",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person clicks the drawn point of the object already chosen, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe32aecd7d3"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d969cb2496a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once the object is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                  "parent": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the structure already chosen, in the view or from the list of structures, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                  "parent": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 10,
+                    "key": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 79,
+                    "name": "When the person clicks the drawn point of the object already chosen, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c25f-d5cd-76b6-b0cb-7d969cb2496a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 88,
+                    "name": "Once the object is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 99,
+                    "name": "When the person chooses the structure already chosen, in the view or from the list of structures, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 112,
+                    "name": "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "commit": "309b01cf0bf03ce0d757f3ae4f4ea74f2f17b4f3",
+                "removed": [],
+                "revision": "309b01c"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 7,
+                "publishedAt": "2026-11-09T22:08:34Z",
+                "stateRoot": "379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "chore/ux-1",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml",
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
