@@ -1,0 +1,177 @@
+key: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+id: build
+versions:
+  - key: 01a1bcbb-1314-7392-88cc-1fea08cb26a9
+    at: 2026-11-08T19:55:39Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "One base panel, object and structure panels on it"
+    goal: "A base record panel with the shared header, sentence, sections, rows, charts and fold, and the object and structure panels built on it"
+    status: planned
+  - key: 01a1bcc2-145c-728f-9935-50485f659e03
+    at: 2026-11-08T20:03:18Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "One base panel, object and structure panels on it"
+    goal: "A base record panel with the shared header, sentence, sections, rows, charts and fold, and the object and structure panels built on it"
+    status: active
+  - key: 01a1bce7-d8ca-74db-9336-ee32be9d7618
+    at: 2026-11-08T20:44:33Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "One base panel, object and structure panels on it"
+    goal: "A base record panel with the shared header, sentence, sections, rows, charts and fold, and the object and structure panels built on it"
+    status: done
+blocks:
+  - key: 01a1bcc2-145c-728f-9935-50417bcb974e
+    id: t-base
+    kind: task
+    versions:
+      - key: 01a1bcc2-145c-728f-9935-504942c8e666
+        at: 2026-11-08T20:03:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The base panel and its parts"
+        detail: "RecordPanel, parts, charts with pure geometry, short source and paper names, comoving distance. Done when their unit tests pass."
+        state: active
+      - key: 01a1bcc5-1cfe-7218-b602-c74a53e1b16f
+        at: 2026-11-08T20:06:37Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The base panel and its parts"
+        detail: "RecordPanel, parts, charts with pure geometry, short source and paper names, comoving distance: 19 tests pass."
+        state: done
+  - key: 01a1bcc2-145c-728f-9935-50425f2b687c
+    id: t-object
+    kind: task
+    versions:
+      - key: 01a1bcc2-145c-728f-9935-504a86f8ef8c
+        at: 2026-11-08T20:03:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The object panel on the base"
+        detail: "Summary sentence, distance dot plot, position, brightness and colour scale, motion or velocity with its strip, members, lies inside, catalogues line, and today's sections as the full record. Done when objectRecordText and ObjectPanel tests pass."
+        state: open
+      - key: 01a1bcc5-1cfe-7218-b602-c74b45defa56
+        at: 2026-11-08T20:06:37Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The object panel on the base"
+        detail: "Summary sentence, distance dot plot, position, brightness and colour scale, motion or velocity with its strip, members, lies inside, catalogues line, and today's sections as the full record. Done when objectRecordText and ObjectPanel tests pass."
+        state: active
+      - key: 01a1bccc-e828-7291-8cf3-f2d031f3f823
+        at: 2026-11-08T20:15:07Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The object panel on the base"
+        detail: "ObjectRecordPanel on RecordPanel: summary sentence, distance dot plot (parallaxes at 1/ϖ), position, brightness and BP−RP scale, motion or velocity with the DESI strip, groups, lies inside, catalogues line; today's sections behind the full-record link. Tested on seven trimmed release-12 records."
+        state: done
+  - key: 01a1bcc2-145c-728f-9935-5043730a6ae3
+    id: t-structure
+    kind: task
+    versions:
+      - key: 01a1bcc2-145c-728f-9935-504b501f9236
+        at: 2026-11-08T20:03:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The structure panel on the base"
+        detail: "API widened, summary sentence, disputed callout, depth band or member strip, sky, size bars, measures, papers once, full record. Done when structureText and StructuresPanel tests pass."
+        state: open
+      - key: 01a1bccc-e828-7291-8cf3-f2d11b0a1623
+        at: 2026-11-08T20:15:07Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The structure panel on the base"
+        detail: "API widened, summary sentence, disputed callout, depth band or member strip, sky, size bars, measures, papers once, full record. Done when structureText and StructuresPanel tests pass."
+        state: active
+      - key: 01a1bcd3-c06a-70ae-aa8a-1c0a92274ef6
+        at: 2026-11-08T20:22:36Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The structure panel on the base"
+        detail: "StructureRecordPanel on RecordPanel: summary sentence, disputed callout, depth band (velocities at comoving z = cz/c, rescaled distances, marks within) or member ticks, sky, size bars per unit with lower limits open and rescaled values, measures, how it is drawn, papers once; notes, disputes, placement and every value with its quote behind the link. Tested on seven release-12 structures."
+        state: done
+  - key: 01a1bcc2-145c-728f-9935-50448139d47f
+    id: t-inside
+    kind: task
+    versions:
+      - key: 01a1bcc2-145c-728f-9935-504c220ff448
+        at: 2026-11-08T20:03:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Only what lies inside in the top bar"
+        detail: "The checkbox beside the level-of-detail switch while a volume structure is chosen, not in the record. Done when the Atlas test passes."
+        state: open
+      - key: 01a1bcd3-c06a-70ae-aa8a-1c0bcc8d6499
+        at: 2026-11-08T20:22:36Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Only what lies inside in the top bar"
+        detail: "The checkbox beside the level-of-detail switch while a volume structure is chosen, not in the record. Done when the Atlas test passes."
+        state: active
+      - key: 01a1bcd4-1eaa-71f3-89e2-c0dc1ff3c40a
+        at: 2026-11-08T20:23:00Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Only what lies inside in the top bar"
+        detail: "The checkbox follows the search in the top bar, beside the level-of-detail switch, while a structure with a volume is chosen; the record explains the cull only while it is on. Atlas test passes."
+        state: done
+  - key: 01a1bcc2-145c-728f-9935-50456b7673e2
+    id: t-e2e
+    kind: task
+    versions:
+      - key: 01a1bcc2-145c-728f-9935-504d65c6f0e8
+        at: 2026-11-08T20:03:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "End-to-end tests follow the new panel"
+        detail: "Tests that read the record's full lists open it first; the structure test uses the top bar checkbox. Done when integration passes."
+        state: open
+      - key: 01a1bcd4-1eaa-71f3-89e2-c0ddb22c7d65
+        at: 2026-11-08T20:23:00Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "End-to-end tests follow the new panel"
+        detail: "Tests that read the record's full lists open it first; the structure test uses the top bar checkbox. Done when integration passes."
+        state: active
+      - key: 01a1bcec-e44b-721c-b0ac-6ebf3a3d9c22
+        at: 2026-11-08T20:50:03Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "End-to-end tests follow the new panel"
+        detail: "The tests that read the record open its full record first; the structure test checks the Bootes Void's cull from the top bar. Integration: 14 Playwright tests and the Worker's tests pass."
+        state: done

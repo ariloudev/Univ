@@ -202,6 +202,7 @@ pub fn cross_match_watched(
     let next = State {
         ledger,
         previous: std::mem::take(&mut assigned.entries),
+        kept: inputs.state.kept.clone(),
     };
     let crossed = CrossMatched {
         release,

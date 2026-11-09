@@ -1,5 +1,7 @@
 //! A release's sources and their provenance (read-a-source).
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
 /// Every source of a release.
@@ -56,6 +58,44 @@ pub struct SourceDetail {
     /// Where on the sky and how far its entries reach; absent from a release built before
     /// coverage was recorded.
     pub coverage: Option<Coverage>,
+    /// The form its catalogue writes a designation in, with where that is read from; absent
+    /// where its definition gives none, or from a release built before forms were recorded.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub designation: Option<DesignationForm>,
+    /// What each value of each of its flags means, by the flag's column, where its definition
+    /// gives meanings.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub flags: BTreeMap<String, FlagMeanings>,
+}
+
+/// The placeholder a designation form holds once, where the source's identifier goes.
+pub const IDENTIFIER: &str = "{identifier}";
+
+/// `identifier` written in designation form `form`, such as `HIP 32754` in `HIP {identifier}`.
+#[must_use]
+pub fn write_in(form: &str, identifier: &str) -> String {
+    form.replacen(IDENTIFIER, identifier, 1)
+}
+
+/// The form a source's catalogue writes a designation in, holding `{identifier}` once, and the
+/// catalogue documentation it is read from, as a source definition gives them.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct DesignationForm {
+    pub form: String,
+    pub cite: String,
+}
+
+/// What each value of one flag column means, and the catalogue documentation that says so, as a
+/// source definition gives them.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(deny_unknown_fields)]
+pub struct FlagMeanings {
+    /// Each value as the source publishes it, with its meaning.
+    pub values: BTreeMap<String, String>,
+    pub cite: String,
 }
 
 /// A source's primary reference: its ADS bibcode or DOI, or why it has no single one.
@@ -86,6 +126,10 @@ pub struct Terms {
     /// terms allow commercial use.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub non_commercial: Option<String>,
+    /// The clause of the terms requiring data adapted from the source to be shared under the
+    /// same licence, quoted; absent when the terms require no such thing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub share_alike: Option<String>,
     /// Whom permission to redistribute the source was asked of and when, while its
     /// redistribution is `permission_pending` and the request is sent.
     #[serde(default, skip_serializing_if = "Option::is_none")]

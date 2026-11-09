@@ -14,14 +14,16 @@ use univ_model::api::lookup::{
 };
 use univ_model::api::objects::ObjectRecord;
 use univ_model::release::read;
+use univ_model::valid_in;
 
-use self::resolve::{Resolved, by_designation, by_name, replaced};
+use self::resolve::{Resolved, by_designation, by_designations, by_name, replaced};
 use self::vocabulary::vocabulary;
 use crate::backend::{Backend, Row, first};
 use crate::http::{Request, Response};
 use crate::problem::{Problem, ProblemType};
 use crate::releases::{RELEASE_PARAM, pinned, resolve};
-use crate::shards::shard_of;
+use crate::shards::{SHARD_OF, shard_in};
+use futures_util::future::try_join;
 
 /// Reads one object of the release the request reads, by its id.
 ///
@@ -130,7 +132,15 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
         request.param("designation"),
     ) {
         (Some(name), None, None) => {
-            let found = by_name(backend, release, &name).await?;
+            let mut found = by_name(backend, release, &name).await?;
+            if found.is_empty() {
+                // A designation in its catalogue's form, such as HIP 32754, resolves as a name.
+                let read = vocabulary(backend, release).await?.reading().parse(&name);
+                for (id, shard) in by_designations(backend, release, &read).await? {
+                    found.push((id, vec![name.clone()]));
+                    shards.push(shard);
+                }
+            }
             (LookedUp::Name { name }, Ambiguity::SharedName, found)
         }
         (None, Some(source), Some(designation)) => {
@@ -173,48 +183,79 @@ pub async fn find<B: Backend>(request: &Request, backend: &B) -> Result<Response
     }
 }
 
+/// The statement that reads the names of object `?2` of release `?1` from the catalogue.
+const NAMES: &str = concat!(
+    "SELECT source, name FROM names WHERE object_id = ?2 AND ",
+    valid_in!("", "?1")
+);
+
 /// The record of object `id` of `release`, or none when the release does not hold it: its
-/// shard, `known` or from the catalogue's index, then every row of the object in one round trip
-/// to it.
+/// shard, `known` or read from the catalogue's index with its names in one round trip, then
+/// every row of the object in one round trip to the shard, with its names read beside it when
+/// the shard was known.
 async fn record<B: Backend>(
     backend: &B,
     release: u32,
     id: u64,
     known: Option<u32>,
 ) -> Result<Option<Response>, Problem> {
-    let shard = match known {
-        Some(shard) => shard,
-        None => match shard_of(backend, release, id).await? {
-            Some(shard) => shard,
-            None => return Ok(None),
-        },
-    };
     let params = [json!(release), json!(id)];
-    let batch = backend
-        .shards(&[
-            (
-                shard,
-                "SELECT * FROM objects WHERE release = ?1 AND id = ?2",
-                &params,
+    let (shard, names) = if let Some(shard) = known {
+        (shard, None)
+    } else {
+        let mut read = backend
+            .releases_batch(&[(SHARD_OF, &params), (NAMES, &params)])
+            .await?
+            .into_iter();
+        let Some(shard) = shard_in(read.next().unwrap_or_default())? else {
+            return Ok(None);
+        };
+        (shard, Some(read.next().unwrap_or_default()))
+    };
+    let statements: [(u32, &str, &[serde_json::Value]); 4] = [
+        (
+            shard,
+            concat!(
+                "SELECT * FROM objects WHERE id = ?2 AND ",
+                valid_in!("", "?1")
             ),
-            (
-                shard,
-                "SELECT * FROM entries WHERE release = ?1 AND object_id = ?2",
-                &params,
+            &params,
+        ),
+        (
+            shard,
+            concat!(
+                "SELECT * FROM entries WHERE object_id = ?2 AND ",
+                valid_in!("", "?1")
             ),
-            (
-                shard,
-                "SELECT * FROM measurements WHERE release = ?1 AND object_id = ?2",
-                &params,
+            &params,
+        ),
+        (
+            shard,
+            concat!(
+                "SELECT * FROM measurements WHERE object_id = ?2 AND ",
+                valid_in!("", "?1")
             ),
-            (
-                shard,
-                "SELECT source, identifier FROM designations \
-                 WHERE release = ?1 AND object_id = ?2",
-                &params,
+            &params,
+        ),
+        (
+            shard,
+            concat!(
+                "SELECT source, identifier FROM designations WHERE object_id = ?2 AND ",
+                valid_in!("", "?1")
             ),
-        ])
-        .await?;
+            &params,
+        ),
+    ];
+    let rows = backend.shards(&statements);
+    let (batch, names) = match names {
+        Some(names) => (rows.await?, names),
+        None => {
+            try_join(async { Ok::<_, Problem>(rows.await?) }, async {
+                Ok(backend.releases(NAMES, &params).await?)
+            })
+            .await?
+        }
+    };
     let [objects, entries, measurements, designations]: [Vec<Row>; 4] =
         batch.try_into().map_err(|_| {
             Problem::new(
@@ -231,13 +272,20 @@ async fn record<B: Backend>(
         ));
     };
     let vocabulary = vocabulary(backend, release).await?;
-    let record = read::object(&vocabulary, &object, &entries, &measurements, &designations)
-        .map_err(|error| {
-            Problem::new(
-                ProblemType::InternalError,
-                format!("Object {id} of release {release} did not read: {error}."),
-            )
-        })?;
+    let record = read::object(
+        &vocabulary,
+        &object,
+        &entries,
+        &measurements,
+        &designations,
+        &names,
+    )
+    .map_err(|error| {
+        Problem::new(
+            ProblemType::InternalError,
+            format!("Object {id} of release {release} did not read: {error}."),
+        )
+    })?;
     Ok(Some(pinned(Response::json(&record)?, release)))
 }
 

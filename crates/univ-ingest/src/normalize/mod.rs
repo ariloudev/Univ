@@ -133,7 +133,9 @@ fn file_tables(files: &[RemoteFile]) -> Option<FileTables> {
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
         Access::Files { files } => file_tables(files).is_some(),
-        Access::Repository { holds, .. } => *holds == Holds::StarDistances,
+        Access::Repository { holds, .. } => {
+            matches!(holds, Holds::StarDistances | Holds::StarNames)
+        }
         _ => true,
     }
 }
@@ -413,8 +415,14 @@ pub fn normalize_until(
     correction: &CmbCorrection,
     cancel: &AtomicBool,
 ) -> Result<Normalized, NormalizeError> {
-    if let (Some((Holds::StarDistances, _)), [dir]) = (definition.access.repository(), files) {
-        return crate::stars::normalize(definition, dir);
+    match (definition.access.repository(), files) {
+        (Some((Holds::StarDistances, _)), [dir]) => {
+            return crate::stars::normalize(definition, dir);
+        }
+        (Some((Holds::StarNames, _)), [file]) => {
+            return crate::star_names::normalize(definition, file);
+        }
+        _ => {}
     }
     let mut normalizer = Normalizer::new(definition, correction)?.cancelled_by(cancel);
     let read = |file: &PathBuf| {

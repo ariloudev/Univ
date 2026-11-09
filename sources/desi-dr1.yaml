@@ -99,6 +99,14 @@ redistribution:
 scale_domain: cosmic_web
 mirrors:
   - "https://datalab.noirlab.edu/tap"
+flags:
+  spectype:
+    cite: >-
+      DESI data model (desidatamodel.readthedocs.io), zcatalog v1, zpix-SURVEY-PROGRAM.fits, HDU1
+      ZCATALOG, SPECTYPE: 'Spectral type of Redrock best fit template (e.g. GALAXY, QSO, STAR)'
+    values:
+      "GALAXY": "Spectral type of Redrock's best-fit template: galaxy."
+      "QSO": "Spectral type of Redrock's best-fit template: quasar (QSO)."
 normalization:
   redshifts:
     - column: z

@@ -20,6 +20,7 @@ use univ_model::value::Quantity;
 use super::objects::{json, snake};
 use crate::grids::{Window, basins, cf4pp, read_cf4_basins, read_cf4pp, read_twompp, twompp};
 use crate::source::SourceDefinition;
+use crate::tiles::sha256;
 
 /// The version of the grid header's layout.
 pub const HEADER_VERSION: u32 = 1;
@@ -110,16 +111,19 @@ pub fn grid_files(
                 floats(v.iter().map(|&l| f64::from(l)))
             }
         };
-        files.push((path.clone(), bytes));
+        let samples_key = keys::file(&sha256(&bytes));
+        files.push((path, bytes));
         let uncertainty = match &field.uncertainty {
             CellUncertainty::NoneReported => json!({ "form": "none_reported" }),
             CellUncertainty::StandardDeviation { column, sigma } => {
                 let sigma_path = keys::grid_samples(id, &format!("field-{i}-sigma"));
-                files.push((sigma_path.clone(), floats(sigma.iter().copied())));
+                let sigma_bytes = floats(sigma.iter().copied());
+                let sigma_key = keys::file(&sha256(&sigma_bytes));
+                files.push((sigma_path, sigma_bytes));
                 json!({
                     "form": "standard_deviation",
                     "column": column,
-                    "samples": keys::key(release, &sigma_path),
+                    "samples": sigma_key,
                 })
             }
         };
@@ -129,7 +133,7 @@ pub fn grid_files(
             "unit": field.unit,
             "kind": field.kind,
             "components": field.components,
-            "samples": keys::key(release, &path),
+            "samples": samples_key,
             "uncertainty": uncertainty,
             "labels": field.labels,
         }));
@@ -170,7 +174,8 @@ pub fn grid_files(
     });
     let header_path = keys::grid_header(id);
     let header_bytes = serde_json::to_vec_pretty(&header).map_err(|e| e.to_string())?;
-    files.push((header_path.clone(), header_bytes));
+    let header_key = keys::file(&sha256(&header_bytes));
+    files.push((header_path, header_bytes));
     let quantities: Vec<_> = grid
         .fields
         .iter()
@@ -183,7 +188,7 @@ pub fn grid_files(
         unit: snake(&g.unit),
         shape: json(&g.shape)?,
         fields: json(&quantities)?,
-        header_key: keys::key(release, &header_path),
+        header_key,
     };
     Ok(GridFiles { files, row })
 }

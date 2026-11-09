@@ -1,10 +1,13 @@
 import { useState } from "react";
 
 import type { ReleaseSummary } from "../api/schemas.ts";
+import { AtlasPage } from "./Atlas.tsx";
+import type { DrawerName } from "./Rail.tsx";
 import { ReleasePicker } from "./ReleasePicker.tsx";
 import { Scene } from "./Scene.tsx";
 import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
 import { useLevelOfDetail } from "./levelOfDetail.ts";
+import { SwitchBox } from "./SwitchBox.tsx";
 import { useReleases } from "./useReleases.ts";
 
 /** Univ Explorer: the releases of Univ Server, and the view of the one chosen. */
@@ -33,34 +36,36 @@ export function App() {
   }
 }
 
+/** A cosmology's name without the citation in brackets after it, which its title gives. */
+const shortName = (name: string): string => name.replace(/\s*\(.*$/, "");
+
 function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: number }) {
   const [release, setRelease] = useState(latest);
-  const [levelOfDetail, setLevelOfDetail] = useLevelOfDetail();
+  const levelOfDetail = useLevelOfDetail();
+  // The top bar's place for the view's parts, and the drawer open, outlive each release's view.
+  const [topBar, setTopBar] = useState<HTMLElement | null>(null);
+  const [drawer, setDrawer] = useState<DrawerName>();
   const shown = releases.find((r) => r.number === release);
+  const start = (
+    <>
+      <h1 className="font-serif text-base max-xl:sr-only">Univ Explorer</h1>
+      <ReleasePicker releases={releases} latest={latest} chosen={release} onChoose={setRelease} />
+      <p role="status" className="text-dim max-lg:sr-only" title={shown?.cosmology.name}>
+        Drawing release {release}
+        {shown === undefined ? "" : <span className="max-2xl:sr-only">, {shortName(shown.cosmology.name)}</span>}
+      </p>
+    </>
+  );
+  const end = <SwitchBox label="Level of detail" state={levelOfDetail} textClass="max-lg:sr-only" />;
   return (
-    <div className="flex h-full flex-col">
-      <header className="flex items-center gap-4 border-b border-line bg-panel px-4 py-2">
-        <h1 className="font-semibold">Univ Explorer</h1>
-        <ReleasePicker releases={releases} latest={latest} chosen={release} onChoose={setRelease} />
-        <p role="status" className="text-sm text-dim">
-          Drawing release {release}
-          {shown === undefined ? "" : `, ${shown.cosmology.name}`}
-        </p>
-        <label className="ml-auto flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            role="switch"
-            checked={levelOfDetail}
-            onChange={(event) => {
-              setLevelOfDetail(event.currentTarget.checked);
-            }}
-          />
-          Level of detail
-        </label>
-      </header>
-      <section aria-label="The view" className="relative flex-1" data-release={release}>
-        <Scene key={release} release={release} cosmology={shown?.cosmology.name ?? ""} levelOfDetail={levelOfDetail} />
-      </section>
-    </div>
+    <AtlasPage start={start} end={end} slot={setTopBar}>
+      <Scene
+        key={release}
+        release={release}
+        cosmology={shown?.cosmology}
+        levelOfDetail={levelOfDetail[0]}
+        place={{ topBar, drawer, onDrawer: setDrawer }}
+      />
+    </AtlasPage>
   );
 }

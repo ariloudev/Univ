@@ -36,9 +36,11 @@ macro_rules! row {
 
 mod objects;
 mod shards;
+mod sources;
 
 pub use objects::{ChainRow, DesignationRow, EntryRow, MeasurementRow, NameRow, ObjectRow, PARAMS};
 pub use shards::{ObjectShardRow, ReleaseShardRow, ShardCellRow};
+pub use sources::{CatalogueError, CatalogueUncertainty, SourceReadingRow, SourceTermRow};
 
 use serde::{Deserialize, Serialize};
 
@@ -70,7 +72,7 @@ impl ToSql for f64 {
     const KIND: ColumnKind = ColumnKind::Real;
 
     fn to_sql(&self) -> SqlValue {
-        SqlValue::Real(*self)
+        SqlValue::real(*self)
     }
 }
 
@@ -194,7 +196,7 @@ row! {
 row! {
     /// A placed object in its level-0 cell.
     ObjectCellRow => "object_cells", scope: PerRelease,
-    key: ["release", "domain", "ix", "iy", "iz", "object_id"], indexes: [], {
+    key: ["domain", "ix", "iy", "iz", "object_id", "release"], indexes: [], {
         release: u32,
         /// Term: its scale domain.
         domain: u32,
@@ -208,7 +210,7 @@ row! {
 row! {
     /// A structure in one cell its bounding box meets.
     StructureCellRow => "structure_cells", scope: PerRelease,
-    key: ["release", "level", "ix", "iy", "iz", "structure"], indexes: [], {
+    key: ["level", "ix", "iy", "iz", "structure", "release"], indexes: [], {
         release: u32,
         level: u8,
         ix: i64,
@@ -221,7 +223,7 @@ row! {
 row! {
     /// A term of the release: the name univ-model serializes for a value, which term columns
     /// hold by its id.
-    TermRow => "terms", scope: PerRelease, key: ["release", "id"], indexes: [], {
+    TermRow => "terms", scope: PerRelease, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u32,
         term: String,
@@ -230,8 +232,8 @@ row! {
 
 row! {
     /// A source of the release with its citation, terms and query.
-    SourceRow => "sources", scope: PerRelease, key: ["release", "n"],
-    indexes: [["release", "id"]], {
+    SourceRow => "sources", scope: PerRelease, key: ["n", "release"],
+    indexes: [["id", "release"]], {
         release: u32,
         /// Its index in the release, which every `source` column of the release holds.
         n: u32,
@@ -258,7 +260,7 @@ row! {
 
 row! {
     /// A payload a source's provenance records.
-    PayloadRow => "payloads", scope: PerRelease, key: ["release", "source", "item"],
+    PayloadRow => "payloads", scope: PerRelease, key: ["source", "item", "release"],
     indexes: [], {
         release: u32,
         source: u32,
@@ -273,7 +275,7 @@ row! {
 
 row! {
     /// What normalization made of a source's rows.
-    NormalizationRow => "normalizations", scope: PerRelease, key: ["release", "source"],
+    NormalizationRow => "normalizations", scope: PerRelease, key: ["source", "release"],
     indexes: [], {
         release: u32,
         source: u32,
@@ -286,7 +288,7 @@ row! {
 
 row! {
     /// A researched structure: its record as its file gives it, every number cited.
-    StructureRow => "structures", scope: PerRelease, key: ["release", "id"], indexes: [], {
+    StructureRow => "structures", scope: PerRelease, key: ["id", "release"], indexes: [], {
         release: u32,
         id: String,
         name: String,
@@ -314,7 +316,7 @@ row! {
 
 row! {
     /// A scale domain's tiles.
-    ScaleDomainRow => "scale_domains", scope: PerRelease, key: ["release", "name"], indexes: [], {
+    ScaleDomainRow => "scale_domains", scope: PerRelease, key: ["name", "release"], indexes: [], {
         release: u32,
         name: String,
         unit: String,
@@ -327,7 +329,7 @@ row! {
 
 row! {
     /// A volume grid.
-    GridRow => "grids", scope: PerRelease, key: ["release", "id"], indexes: [], {
+    GridRow => "grids", scope: PerRelease, key: ["id", "release"], indexes: [], {
         release: u32,
         id: String,
         source: u32,
@@ -340,7 +342,7 @@ row! {
 
 row! {
     /// A source's primary reference and coverage, beside its row in `sources`.
-    SourceDetailRow => "source_details", scope: PerRelease, key: ["release", "source"],
+    SourceDetailRow => "source_details", scope: PerRelease, key: ["source", "release"],
     indexes: [], {
         release: u32,
         /// The source's `sources.n`.
@@ -362,7 +364,7 @@ row! {
 row! {
     /// A structure's placed geometry and how it was derived, its outline test and its sizes
     /// rescaled to the release cosmology, beside its row in `structures`.
-    StructureDetailRow => "structure_details", scope: PerRelease, key: ["release", "id"],
+    StructureDetailRow => "structure_details", scope: PerRelease, key: ["id", "release"],
     indexes: [], {
         release: u32,
         /// The structure's `structures.id`.
@@ -382,70 +384,8 @@ row! {
     }
 }
 
-row! {
-    /// The conditions of a source's terms beyond its status, and the uncertainties it states
-    /// once for its whole catalogue, beside its row in `sources` (schema version 4): written
-    /// only for a source that has one of them.
-    SourceTermRow => "source_terms", scope: PerRelease, key: ["release", "source"],
-    indexes: [], {
-        release: u32,
-        /// The source's `sources.n`.
-        source: u32,
-        /// The clause of its terms that allows only non-commercial use, quoted; none when its
-        /// terms allow commercial use.
-        non_commercial: Option<String>,
-        /// JSON of the request for permission to redistribute it,
-        /// [`crate::api::sources::Permission`], while its status is `permission_pending`.
-        permission: Option<String>,
-        /// JSON array of the uncertainties it states once for its whole catalogue, each a
-        /// [`CatalogueUncertainty`]; none when it has none.
-        catalogue_uncertainties: Option<String>,
-    }
-}
-
-/// An uncertainty a source states once for its whole catalogue rather than for each row, such
-/// as 2dFGRS's rms of 85 km/s or a photometric redshift scatter σz / (1 + z): as a source
-/// definition writes it, given to each value as a symmetric error, estimated, citing `basis`.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct CatalogueError {
-    pub value: f64,
-    /// Its unit: the column's, or a velocity for a column of z (σz = σv / c).
-    pub unit: crate::units::Unit,
-    /// Whether it is stated per unit of (1 + z), as σz / (1 + z) is.
-    #[serde(default)]
-    pub times_one_plus_z: bool,
-    /// Where the source states it, quoted or cited.
-    pub basis: String,
-}
-
-impl CatalogueError {
-    /// The error in the unit of a column in `column`, before any factor of (1 + z): none when
-    /// the units cannot meet.
-    #[must_use]
-    pub fn in_unit(&self, column: crate::units::Unit) -> Option<f64> {
-        use crate::units::{Dimension, Unit};
-        if column.dimension() == Dimension::Dimensionless
-            && self.unit.dimension() == Dimension::Velocity
-        {
-            let km_s = self.unit.factor_to(Unit::KilometrePerSecond).ok()?;
-            return Some(self.value * km_s / crate::cosmology::SPEED_OF_LIGHT);
-        }
-        Some(self.value * self.unit.factor_to(column).ok()?)
-    }
-}
-
-/// A [`CatalogueError`] with the quantity whose every value from the source takes it as an
-/// estimated uncertainty, as `source_terms` holds it.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct CatalogueUncertainty {
-    pub quantity: crate::api::objects::MeasuredQuantity,
-    #[serde(flatten)]
-    pub error: CatalogueError,
-}
-
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 24] = [
+pub const TABLES: [Table; 26] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -470,7 +410,22 @@ pub const TABLES: [Table; 24] = [
     ObjectShardRow::TABLE,
     ShardCellRow::TABLE,
     ReleaseShardRow::TABLE,
+    ReleaseFileRow::TABLE,
+    SourceReadingRow::TABLE,
 ];
+
+row! {
+    /// A file of the release by its path in the release directory, such as
+    /// `tiles/cosmic_web/r07.bin`, and the SHA-256 of what it holds there: R2 keeps each file
+    /// once, under [`crate::release::keys::file`] of its SHA-256, shared by every release that
+    /// maps a path to it.
+    ReleaseFileRow => "release_files", scope: PerRelease, key: ["path", "release"],
+    indexes: [], {
+        release: u32,
+        path: String,
+        sha256: String,
+    }
+}
 
 /// The key a common name is looked up by: lower case, without white space.
 #[must_use]

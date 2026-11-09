@@ -1,0 +1,44 @@
+key: 01a1b1f0-2909-70f1-8e75-b934b9215318
+id: w3
+versions:
+  - key: 01a1b1f0-2909-70f1-8e75-b93aaccc70c9
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only added and changed rows, retirements and new files, with a manifest of each table's change and of the rows valid in the release."
+    status: planned
+  - key: 01a1b21d-b2c6-750e-8641-2186d9b73ee6
+    at: 2026-11-06T18:27:33Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only added and changed rows, retirements and new files, with a manifest of each table's change and of the rows valid in the release."
+    status: active
+  - key: 01a1b23d-a6ff-7044-abf1-224bbfb7571b
+    at: 2026-11-06T19:02:27Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only the rows it adds or changes and the retirements of those it drops, by comparing with the row index of the release before, and records the change in manifest v3."
+    status: done
+blocks:
+  - key: 01a1b23d-a6ff-7044-abf1-224aff8541ad
+    id: w3-merged
+    kind: note
+    versions:
+      - key: 01a1b23d-a6ff-7044-abf1-224ca4910173
+        at: 2026-11-06T19:02:27Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W3 merged"
+        markdown: "Merged as `bbeddb1` after `/simplify`, `/code-review` and a green `cargo xtask check`. A build compares each row with the release before's row index (SHA-256, kept in the state) and writes only what is new or changed, retiring the rest by key; manifest v3 records the parent and each table's change. Moved up from W4 because W3 needs them: prune deletes only rows no kept release holds, and publish refuses a parent `latest` does not point to and checks tables it writes no file of."
+        tone: success

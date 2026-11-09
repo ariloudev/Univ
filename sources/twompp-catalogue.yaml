@@ -72,6 +72,21 @@ fixes:
       J/MNRAS/416/2840 ReadMe and the served column description: "? Total apparent velocity error
       (equal to zero if not measured)" (read from http://vizier.nao.ac.jp/ftp/cats/J/MNRAS/416/2840/ReadMe
       and http://vizieridia.saao.ac.za/viz-bin/asu-tsv?-meta.all&-source=J/MNRAS/416/2840, 2026-11-03).
+designation:
+  form: "2MASX J{identifier}"
+  cite: >-
+    ReadMe of J/MNRAS/416/2840 (VizieR), Byte-by-byte Description of file catalog.dat, Name ('Name
+    of the galaxy as given in the 2MASS-XSC database (Cat. VII/233), or ZOA fake galaxy'; the ZoA
+    fakes are left out); form per the CDS Dictionary of Nomenclature of Celestial Objects (read via
+    vizier.nao.ac.jp/viz-bin/Dic, 2026-11-07), acronym 2MASX: '2MASX JHHMMSSss+DDMMSSs'
+flags:
+  Cln:
+    cite: >-
+      ReadMe of J/MNRAS/416/2840 (VizieR), catalog.dat, Cln ('[0/1] Flag to indicate if the redshift
+      has been obtained by the cloning procedure of Section 2.3')
+    values:
+      "0": "The redshift was not obtained by the cloning procedure of Section 2.3."
+      "1": "The redshift has been obtained by the cloning procedure of Section 2.3."
 normalization:
   redshifts:
     - column: HV

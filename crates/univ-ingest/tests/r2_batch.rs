@@ -174,7 +174,7 @@ fn a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build() {
         .iter()
         .filter(|f| f.target == Target::R2)
         .filter_map(|f| f.key.clone())
-        .chain([keys::key(1, keys::MANIFEST)])
+        .chain([keys::manifest(1)])
         .collect();
     assert!(keys_of_1.len() > 10, "{keys_of_1:?}");
 
@@ -199,7 +199,7 @@ fn a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build() {
     for key in &keys_of_1 {
         assert!(!batch.get(key, &scratch.path().join("x")).unwrap(), "{key}");
     }
-    let manifest_2 = keys::key(2, keys::MANIFEST);
+    let manifest_2 = keys::manifest(2);
     assert!(batch.get(&manifest_2, &scratch.path().join("m")).unwrap());
     drop(batch);
     let mut store = wrangler(persist.path());

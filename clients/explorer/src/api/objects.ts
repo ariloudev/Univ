@@ -4,7 +4,7 @@
 import { z } from "zod";
 
 import { toMpc } from "../scene/units.ts";
-import { ApiError, type ReadOptions, read } from "./client.ts";
+import { ApiError, type ReadOptions, cacheOf, kept, read } from "./client.ts";
 
 const Uncertainty = z.looseObject({
   form: z.string(),
@@ -28,6 +28,10 @@ const Measurement = z.looseObject({
   band: z.string().nullable().optional(),
   /** The two magnitudes a colour index was computed from, where its source publishes no colour. */
   derived_from: z.array(z.string()).nullable().optional(),
+  /** A distance's kind, such as `geometric` or `photogeometric`. */
+  distance: z.looseObject({ kind: z.string().optional() }).nullable().optional(),
+  /** A redshift's kind, spectroscopic or photometric, and the frame its source published it in. */
+  redshift: z.looseObject({ kind: z.string().optional(), published_frame: z.string().optional() }).nullable().optional(),
 });
 export type Measurement = z.infer<typeof Measurement>;
 
@@ -37,6 +41,10 @@ const Preferred = z.looseObject({
   rule: z.string(),
   measurement: MeasurementKey,
   distance_mpc: z.number(),
+  /** The rank of the measurement preferred, such as `geometric` or `photometric_redshift`, and
+   * what decided between it and the runner-up. */
+  rank: z.string().optional(),
+  decided: z.string().optional(),
   /** Fractional: the uncertainty over the distance. */
   uncertainty: z.looseObject({ form: z.string(), total: z.number().nullable().optional() }),
 });
@@ -51,7 +59,22 @@ const Position = z.looseObject({
   epoch: z.number(),
 });
 
-const SkyPosition = z.looseObject({ frame: z.string(), epoch: z.number().nullable().optional() });
+/** The object's preferred sky position: ICRS degrees at its epoch, from one entry. */
+const SkyPosition = z.looseObject({
+  frame: z.string(),
+  ra: z.number().optional(),
+  dec: z.number().optional(),
+  epoch: z.number().nullable().optional(),
+  entry: z.number().int().optional(),
+  uncertainty_mas: z.number().nullable().optional(),
+});
+
+/** A source and the identifier it gives. */
+const SourceIdentifier = z.looseObject({ source: z.string(), identifier: z.string() });
+
+/** How one object stands to another: a group to its dominant galaxy or a member, and back. */
+const Relation = z.looseObject({ kind: z.string(), entry: SourceIdentifier, other: SourceIdentifier, scheme: z.string(), identifier: z.string() });
+export type Relation = z.infer<typeof Relation>;
 
 const ObjectRecord = z.looseObject({
   release: z.number().int(),
@@ -61,20 +84,31 @@ const ObjectRecord = z.looseObject({
     z.looseObject({
       source: z.string(),
       identifier: z.string(),
+      /** Its identifier in its catalogue's form, where its source's definition gives one. */
+      designation: z.string().nullable().optional(),
       name: z.string().nullable(),
+      /** Its source's quality columns, by column, as published. */
+      flags: z.record(z.string(), z.unknown()).optional(),
       spectral_type: z.looseObject({ text: z.string(), kind_of_value: z.string() }).nullable().optional(),
       references: z
         .array(z.looseObject({ citation: z.string(), doi: z.string().nullable().optional(), bibcode: z.string().nullable().optional() }))
         .optional(),
     }),
   ),
-  designations: z.array(z.looseObject({ source: z.string(), identifier: z.string() })),
+  designations: z.array(SourceIdentifier.extend({ designation: z.string().nullable().optional() })),
+  /** Every common or proper name its sources give it, with the source. */
+  names: z.array(z.looseObject({ name: z.string(), source: z.string() })).optional(),
+  relations: z.array(Relation).optional(),
+  not_placed: z.string().nullable().optional(),
   measurements: z.array(Measurement),
   preferred: Preferred.nullable(),
   position: Position.nullable(),
   sky_position: SkyPosition.nullable().optional(),
 });
 export type ObjectRecord = z.infer<typeof ObjectRecord>;
+
+/** A record as Univ Server gives it, read and checked. */
+export const readRecord = (raw: unknown): ObjectRecord => ObjectRecord.parse(raw);
 
 const ObjectChoices = z.looseObject({
   objects: z.array(z.looseObject({ id: z.number().int(), names: z.array(z.string()).optional() })),
@@ -110,13 +144,17 @@ function lookupOf(query: string): { by: "id" | "designation" | "name"; path: str
 export const lookupPath = (query: string): string => lookupOf(query).path;
 
 /** A name as the name lookup compares it: letter case and white space ignored. */
-const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
+export const nameKey = (text: string) => text.toLowerCase().replace(/\s+/g, "");
 
 /** The name or designation of `record` that reads as `text`, letter case and white space aside,
  * as `record` spells it; none where it has none. */
 export function nameOf(record: ObjectRecord, text: string): string | undefined {
   const key = nameKey(text);
-  const spellings = [...record.entries.flatMap((e) => (e.name === null ? [] : [e.name])), ...record.designations.map((d) => d.identifier)];
+  const spellings = [
+    ...(record.names ?? []).map((n) => n.name),
+    ...record.entries.flatMap((e) => (e.name === null ? [] : [e.name])),
+    ...record.designations.flatMap((d) => (d.designation === null || d.designation === undefined ? [d.identifier] : [d.designation, d.identifier])),
+  ];
   return spellings.find((s) => nameKey(s) === key);
 }
 
@@ -154,6 +192,14 @@ export async function search(query: string, options: ReadOptions = {}): Promise<
   }
 }
 
+/** The records read most recently, by release and id: the hover label and the panel share them,
+ * so a point rested on and then chosen is read once. One that fails is read again next time. */
+const recent = cacheOf<string, Exclude<Found, { kind: "none" }>>();
+
+/** Object `id` of `release`, read once while it is among the 64 read last. */
+export const recordOf = (id: number, release: number): Promise<Exclude<Found, { kind: "none" }>> =>
+  kept(recent, `${release}:${id}`, () => objectOf(id, { release }), 64);
+
 /** The object's ICRS position in megaparsecs; none for an object with no distance. */
 export function placeOf(record: ObjectRecord): [number, number, number] | undefined {
   const position = record.position;
@@ -162,7 +208,8 @@ export function placeOf(record: ObjectRecord): [number, number, number] | undefi
   return [position.x * k, position.y * k, position.z * k];
 }
 
-const sameKey = (m: Measurement, key: z.infer<typeof MeasurementKey>) =>
+/** Whether `m` is the measurement `key` names. */
+export const sameKey = (m: Measurement, key: z.infer<typeof MeasurementKey>) =>
   m.entry === key.entry && m.quantity === key.quantity && m.n === key.n;
 
 /** The measurement the preferred distance was taken from, and every other distance. */

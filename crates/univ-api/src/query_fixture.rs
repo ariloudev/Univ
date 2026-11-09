@@ -60,17 +60,17 @@ pub fn volume_db_placed(objects: &[Placed], place: fn(u64) -> u32) -> Sqlite {
     let db = db();
     db.place_by(place);
     db.exec(&format!(
-        "INSERT INTO terms VALUES (2, {BODY}, 'body'), (2, {GROUP}, 'galaxy_group'), \
-         (2, {COSMIC_WEB}, 'cosmic_web'), (2, {STARS}, 'stars');
+        "INSERT INTO terms VALUES (2, {BODY}, 'body', NULL), (2, {GROUP}, 'galaxy_group', NULL), \
+         (2, {COSMIC_WEB}, 'cosmic_web', NULL), (2, {STARS}, 'stars', NULL);
          INSERT INTO structures VALUES (2, 'box-only', 'Box Only', 'wall', 'observed', 'cosmic_web',
            205.0, 205.0, 205.0, 'primitive', '{{}}', NULL,
-           '{{\"min\":[200.0,200.0,200.0],\"max\":[210.0,210.0,210.0]}}');
+           '{{\"min\":[200.0,200.0,200.0],\"max\":[210.0,210.0,210.0]}}', NULL);
          INSERT INTO structures VALUES (2, 'members-only', 'Members Only', 'ring', 'observed',
            'cosmic_web', NULL, NULL, NULL, 'members', '{{}}',
            '{{\"shape\":{{\"frame\":\"icrs\",\"unit\":\"megaparsec\",\"geometry\":{{\"kind\":\"members\",
              \"members\":[{{\"member\":\"tracer\",\"kind\":\"quasar\",\"at\":[300.0,0.0,0.0]}},
                           {{\"member\":\"tracer\",\"kind\":\"quasar\",\"at\":[320.0,0.0,0.0]}}]}}}}}}',
-           '{{\"min\":[300.0,0.0,0.0],\"max\":[320.0,0.0,0.0]}}');"
+           '{{\"min\":[300.0,0.0,0.0],\"max\":[320.0,0.0,0.0]}}', NULL);"
     ));
     let mut sql = objects_sql(objects);
     let rows: Vec<(String, String)> = db
@@ -87,18 +87,15 @@ pub fn volume_db_placed(objects: &[Placed], place: fn(u64) -> u32) -> Sqlite {
         for cell in range.cells() {
             writeln!(
                 sql,
-                "INSERT INTO structure_cells VALUES (2, {level}, {}, {}, {}, '{id}');",
+                "INSERT INTO structure_cells VALUES (2, {level}, {}, {}, {}, '{id}', NULL);",
                 cell.ix, cell.iy, cell.iz
             )
             .unwrap();
         }
     }
     db.exec(&sql);
-    db.put(
-        "releases/2/tiles/cosmic_web/manifest.json",
-        manifest(168.0, 2),
-    );
-    db.put("releases/2/tiles/stars/manifest.json", manifest(48.0, 1));
+    db.put("files/c05a1c", manifest(168.0, 2));
+    db.put("files/57a125", manifest(48.0, 1));
     db
 }
 
@@ -117,7 +114,7 @@ fn objects_sql(objects: &[Placed]) -> String {
             sql,
             "INSERT INTO objects (release, id, kind, placed, scale_domain, x, y, z) \
              VALUES (2, {}, {}, 1, {}, {x:?}, {y:?}, {z:?});
-             INSERT INTO object_cells VALUES (2, {}, {}, {}, {}, {});",
+             INSERT INTO object_cells VALUES (2, {}, {}, {}, {}, {}, NULL);",
             object.id,
             object.kind,
             object.domain,

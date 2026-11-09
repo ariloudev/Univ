@@ -46,6 +46,26 @@ pub fn read_checked<T: DeserializeOwned>(
     parse_checked(file, &text, check)
 }
 
+/// The check of a versioned file, for [`read_checked`]: its `version`, read by `version`, is
+/// `expected`.
+///
+/// # Errors
+///
+/// The check refuses another version, naming the field `version`.
+pub fn version_is<T>(
+    version: impl Fn(&T) -> u32,
+    expected: u32,
+) -> impl FnOnce(&T) -> Result<(), (String, String)> {
+    move |file: &T| {
+        let found = version(file);
+        if found == expected {
+            Ok(())
+        } else {
+            Err(("version".to_owned(), format!("is {found}, not {expected}")))
+        }
+    }
+}
+
 /// Parses `text`, read from `file` (a path or another name of where it came from, such as an R2
 /// key), as a `T`, then makes the checks serde cannot, as [`read_checked`] does.
 ///

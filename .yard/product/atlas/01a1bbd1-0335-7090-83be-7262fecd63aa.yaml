@@ -1,0 +1,33 @@
+key: 01a1bbd1-0335-7090-83be-7262fecd63aa
+id: w-graticule
+versions:
+  - key: 01a1bbd1-0335-7090-83be-72646092955a
+    at: 2026-11-08T15:39:59Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Sky graticule"
+    goal: "The atlas view draws a grid of the chosen axes' round longitudes and latitudes as directions of sight, its switch beside the axes and kept in the address"
+    status: done
+blocks:
+  - key: 01a1bbd1-0335-7090-83be-72630aef2327
+    id: w6-merged
+    kind: note
+    versions:
+      - key: 01a1bbd1-0335-7090-83be-7265b30a0b1a
+        at: 2026-11-08T15:39:59Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W6 merged: the sky graticule"
+        markdown: |-
+          stage/atlas-w6 merged at b1e8fef after the review fixes, the full gate and integration (13 explorer e2e tests). Its Yard Log has the details.
+
+          - **What the owner approved:** a new requirement under frame-the-view-as-an-atlas, with eight criteria.
+          - **One change after approval:** the review found that a tick step shared by both edges stripped the labels from about one view in six. The owner approved the replacement: each edge takes a multiple of the finer edge's step, and the grid's lines use that finer step.
+          - **One minor change:** a meridian runs on to its tick past 80°.
+
+          product/atlas is not merged into develop or main, and nothing is pushed, published or deployed.
+        tone: success

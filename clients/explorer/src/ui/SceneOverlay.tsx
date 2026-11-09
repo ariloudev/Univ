@@ -1,10 +1,14 @@
+import { useEffect, useState } from "react";
+
+import { recordOf } from "../api/objects.ts";
 import { CHOSEN_CSS, STRUCTURE_CSS } from "../scene/kinds.ts";
 import type { NameLabel, Overlay } from "./overlay.ts";
 import { useStore } from "./store.ts";
-import { pointText } from "./text.ts";
+import { headingOf, pointText } from "./text.ts";
 import type { World } from "./useWorld.ts";
 
-/** Earth, the ring's label and the chosen object's mark, kept over their places. */
+/** Earth, the ring's label or the distance rings' labels, and the chosen object's mark, kept
+ * over their places. None takes the pointer. */
 export function Marks({ overlay }: { overlay: Overlay }) {
   return (
     <>
@@ -17,6 +21,7 @@ export function Marks({ overlay }: { overlay: Overlay }) {
       <div ref={overlay.ring} className="pointer-events-none absolute top-0 left-0 text-xs text-dim">
         <span ref={overlay.ringLabel} className="ml-1 whitespace-nowrap" />
       </div>
+      <div ref={overlay.ringLabels} className="pointer-events-none absolute inset-0 text-xs text-dim" data-testid="ring-labels" />
       <div ref={overlay.chosen} className="pointer-events-none absolute top-0 left-0" data-testid="chosen-mark" style={{ display: "none" }}>
         <span className="block h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-warn" />
       </div>
@@ -33,7 +38,7 @@ export function StructureNames({ names, overlay, chosen }: { names: readonly Nam
         <span
           key={name.id}
           data-structure={name.id}
-          className={`absolute top-0 left-0 text-xs whitespace-nowrap ${name.id === chosen ? "font-semibold" : ""}`}
+          className={`absolute top-0 left-0 font-serif text-xs whitespace-nowrap italic ${name.id === chosen ? "font-medium" : ""}`}
           style={{ display: "none", color: name.id === chosen ? CHOSEN_CSS : STRUCTURE_CSS }}
         >
           <span className="block -translate-x-1/2 -translate-y-1/2">{name.text}</span>
@@ -43,13 +48,47 @@ export function StructureNames({ names, overlay, chosen }: { names: readonly Nam
   );
 }
 
-/** The label of what is under the pointer: a structure's name, which a click reads, or a point. */
-export function HoverLabel({ world }: { world: World }) {
+/** How long the pointer rests on a point before its label names it, milliseconds. */
+const REST_MS = 300;
+
+/** The name or first designation of object `id` of `release`, read from its record once the
+ * pointer has rested on it for `REST_MS`; none before, or for another object. */
+function useRestedName(id: number | undefined, release: number): string | undefined {
+  const [named, setNamed] = useState<{ id: number; name: string }>();
+  useEffect(() => {
+    if (id === undefined) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      recordOf(id, release)
+        .then((found) => {
+          if (live && found.kind === "object") setNamed({ id, name: headingOf(found.record) });
+        })
+        .catch(() => undefined);
+    }, REST_MS);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [id, release]);
+  return named !== undefined && named.id === id ? named.name : undefined;
+}
+
+/** The label of what is under the pointer: a structure's name, which a click reads, or a point,
+ * named from its record once the pointer has rested on it. */
+export function HoverLabel({ world, release }: { world: World; release: number }) {
   const hover = useStore(world.hover);
+  const point = hover !== undefined && "point" in hover ? hover.point : undefined;
+  const name = useRestedName(point?.id, release);
   if (hover === undefined) return null;
   return (
     <p role="tooltip" className="pointer-events-none absolute rounded bg-panel px-2 py-1 text-xs" style={{ left: hover.x + 12, top: hover.y + 12 }}>
-      {"name" in hover ? `${hover.name.text}. Click to read the structure.` : pointText(hover.point)}
+      {"name" in hover ? (
+        <>
+          <span className="font-serif italic">{hover.name.text}</span>. Click to read the structure.
+        </>
+      ) : (
+        pointText(hover.point, name)
+      )}
     </p>
   );
 }

@@ -23,6 +23,12 @@ pub enum PublishError {
     Pruned { number: u32, pruned_at: String },
     /// `latest` points to a newer release.
     NotNewer { number: u32, latest: u32 },
+    /// The release holds only what changed from its parent, which `latest` does not point to.
+    NotOnLatest {
+        number: u32,
+        parent: u32,
+        latest: Option<u32>,
+    },
     /// The release's rows and those of the releases not pruned are estimated beyond the cap in
     /// one database.
     OverCap {
@@ -30,13 +36,22 @@ pub enum PublishError {
         database: Database,
         /// The release's own estimate, bytes.
         this: u64,
-        /// The estimates of the other releases not pruned, summed, bytes.
+        /// The rows the database holds already that the release does not keep, estimated,
+        /// bytes.
         others: u64,
-        /// How many releases those are.
+        /// How many releases not pruned it holds besides.
         releases: u64,
     },
     /// The release needs more object shards than Univ Server binds.
     TooManyShards { number: u32, needs: u32, binds: u32 },
+    /// A database holds releases of a schema older than the release's, whose rows are not
+    /// shared: they must be brought under it before anything is published.
+    OlderSchema {
+        number: u32,
+        database: String,
+        holds: u32,
+        needs: u32,
+    },
     /// The journal cannot be used.
     Journal { number: u32, problem: String },
     /// An upload or check failed part way; the next run continues from the journal.
@@ -73,6 +88,17 @@ impl fmt::Display for PublishError {
                 "release {number} is not published: latest points to release {latest}, which \
                  is newer"
             ),
+            Self::NotOnLatest {
+                number,
+                parent,
+                latest,
+            } => write!(
+                f,
+                "release {number} is not published: it holds only what changed from release \
+                 {parent}, and latest points to {}; publish release {parent} first, or build \
+                 release {number} again on the release latest points to",
+                latest.map_or_else(|| "no release".to_owned(), |l| format!("release {l}"))
+            ),
             Self::OverCap {
                 number,
                 database,
@@ -82,9 +108,9 @@ impl fmt::Display for PublishError {
             } => write!(
                 f,
                 "release {number} is not published: its rows in {database} are estimated at \
-                 {this} bytes and those of the {releases} release(s) not pruned at {others} \
-                 bytes, together {} bytes, beyond the {} cap of {D1_CAP_BYTES} bytes; prune a \
-                 release first",
+                 {this} bytes and those {database} holds already that it does not keep, of the \
+                 {releases} release(s) not pruned, at {others} bytes, together {} bytes, beyond \
+                 the {} cap of {D1_CAP_BYTES} bytes; prune a release first",
                 this + others,
                 decimal_bytes(D1_CAP_BYTES)
             ),
@@ -97,6 +123,17 @@ impl fmt::Display for PublishError {
                 "release {number} is not published: it needs {needs} object shards and Univ \
                  Server binds {binds}; bind more in both wrangler.toml files, or build it with a \
                  larger shard budget"
+            ),
+            Self::OlderSchema {
+                number,
+                database,
+                holds,
+                needs,
+            } => write!(
+                f,
+                "release {number} is not published: {database} holds releases of D1 schema \
+                 version {holds}, whose rows each belong to one release, and this release is of \
+                 version {needs}, whose rows are shared between releases; nothing was uploaded"
             ),
             Self::Journal { number, problem } => {
                 write!(f, "release {number} is not published: {problem}")

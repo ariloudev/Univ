@@ -7,16 +7,19 @@ use univ_model::api::objects::MeasuredQuantity;
 use univ_model::geometry::Aabb;
 use univ_model::ids::SourceId;
 use univ_model::release::keys;
+use univ_model::release::manifest::ManifestSource;
 use univ_model::release::rows::{
-    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceRow, SourceTermRow,
-    StructureRow,
+    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceReadingRow,
+    SourceRow, SourceTermRow, StructureRow,
 };
 
 use super::objects::{json, snake};
 use super::placement::Placement;
+use super::terms::SourceIndex;
+use crate::designations::DesignationRules;
 use crate::provenance::Provenance;
 use crate::source::SourceDefinition;
-use crate::tiles::{Built, name_of, unit_symbol};
+use crate::tiles::{Built, name_of, sha256, unit_symbol};
 
 /// The rows of a release's sources and their provenance.
 #[derive(Debug, Default)]
@@ -27,6 +30,33 @@ pub struct SourceRows {
     /// One for each source whose terms limit it to non-commercial use, whose permission is
     /// pending, or that states an uncertainty once for its whole catalogue.
     pub terms: Vec<SourceTermRow>,
+    /// One for each source that gives a designation form, flag meanings or a share-alike
+    /// clause, or that the designation rules rank.
+    pub reading: Vec<SourceReadingRow>,
+}
+
+/// How `d` is read, as `source_reading` holds it for its `sources.n` `n`: none when it gives
+/// nothing to read it by and the designation rules do not rank it.
+fn reading_row(
+    release: u32,
+    n: u32,
+    d: &SourceDefinition,
+    designations: &DesignationRules,
+) -> Result<Option<SourceReadingRow>, String> {
+    let rank = designations.rank(&d.id);
+    let form = d.designation.as_ref();
+    if form.is_none() && d.flags.is_empty() && d.terms.share_alike.is_none() && rank.is_none() {
+        return Ok(None);
+    }
+    Ok(Some(SourceReadingRow {
+        release,
+        source: n,
+        designation_form: form.map(|f| f.form.clone()),
+        designation_cite: form.map(|f| f.cite.clone()),
+        rank,
+        share_alike: d.terms.share_alike.clone(),
+        flags: (!d.flags.is_empty()).then(|| json(&d.flags)).transpose()?,
+    }))
 }
 
 /// The uncertainties `d` states once for its whole catalogue, as `source_terms` holds them.
@@ -42,20 +72,25 @@ fn catalogue_uncertainties(d: &SourceDefinition) -> Vec<CatalogueUncertainty> {
         .collect()
 }
 
-/// The rows of `definitions` in release `release`, each numbered by its place among them and
-/// with the entries the release holds from it and the provenance kept in `cache`.
+/// The rows of `definitions` in release `release`, each numbered by `index` and
+/// with the entries the release holds from it, the provenance kept in `cache` and its place in
+/// `designations`.
 ///
 /// # Errors
 ///
-/// Fails when a provenance cannot be read or a value cannot be written as JSON.
+/// Fails when a source has no index, a provenance cannot be read or a value cannot be written
+/// as JSON.
 pub fn source_rows(
     release: u32,
     definitions: &[SourceDefinition],
+    index: &SourceIndex,
     entries: &BTreeMap<SourceId, u64>,
     cache: &Path,
+    designations: &DesignationRules,
 ) -> Result<SourceRows, String> {
     let mut rows = SourceRows::default();
-    for (n, d) in (0u32..).zip(definitions) {
+    for d in definitions {
+        let n = index.indexed(&d.id)?;
         let id = d.id.to_string();
         rows.sources.push(SourceRow {
             release,
@@ -88,6 +123,8 @@ pub fn source_rows(
                     .transpose()?,
             });
         }
+        rows.reading
+            .extend(reading_row(release, n, d, designations)?);
         let provenance = Provenance::read(&cache.join(d.id.as_str()))
             .map_err(|e| format!("{id}: its provenance cannot be read: {e}"))?;
         for p in &provenance.payloads {
@@ -179,8 +216,27 @@ pub fn domain_rows(release: u32, tiles: &Built) -> Vec<ScaleDomainRow> {
                 radius: d.manifest.radius,
                 points: d.points() as u64,
                 nodes: d.nodes.len() as u64,
-                manifest_key: keys::key(release, &keys::tile_manifest(name)),
+                manifest_key: keys::file(&sha256(&d.json)),
             }
+        })
+        .collect()
+}
+
+/// Each of `definitions` as the release manifest lists it, with the entries the release holds
+/// from it among `per_source`.
+pub fn manifest_sources(
+    definitions: &[SourceDefinition],
+    per_source: &BTreeMap<SourceId, u64>,
+) -> Vec<ManifestSource> {
+    definitions
+        .iter()
+        .map(|d| ManifestSource {
+            id: d.id.to_string(),
+            redistribution: d.redistribution.status.as_str().to_owned(),
+            review: d.redistribution.review.as_str().to_owned(),
+            non_commercial: d.terms.non_commercial.clone(),
+            permission: d.redistribution.permission.clone(),
+            entries: per_source.get(&d.id).copied().unwrap_or(0),
         })
         .collect()
 }

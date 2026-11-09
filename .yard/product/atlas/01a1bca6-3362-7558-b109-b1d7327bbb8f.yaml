@@ -1,0 +1,36 @@
+key: 01a1bca6-3362-7558-b109-b1d7327bbb8f
+id: w-smooth
+versions:
+  - key: 01a1bca6-3362-7558-b109-b1d96284af52
+    at: 2026-11-08T19:32:51Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Smooth lines, faded rings"
+    goal: "Lines drawn whole with smooth edges, and crowded distance rings fade toward the horizon"
+    status: done
+blocks:
+  - key: 01a1bca6-3362-7558-b109-b1d8e2ceb863
+    id: w8-merged
+    kind: note
+    versions:
+      - key: 01a1bca6-3362-7558-b109-b1da1b2f6f23
+        at: 2026-11-08T19:32:51Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W8 merged"
+        markdown: |-
+          stage/atlas-w8 was merged at 58fa1e6 after the full gate and integration passed.
+
+          - **The owner's report:** shimmer, dashes and a moiré band low over the plane.
+          - **The causes:**
+            - a ribbon triangle layout that left half of every segment undrawn;
+            - hard edges;
+            - rings crowding under a pixel apart.
+          - **One new criterion:** crowded rings fade, and their labels go.
+
+          Nothing has been pushed, published or deployed.
+        tone: success

@@ -15,6 +15,7 @@ pub enum Stage {
     Release,
     Publish,
     Prune,
+    Migrate,
 }
 
 /// A number a stage counted, and what it counts, such as 98 `objects`.

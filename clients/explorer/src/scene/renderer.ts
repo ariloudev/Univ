@@ -4,11 +4,11 @@
 // double precision once a frame, and its points' small offsets are float32.
 
 import { type Detail, type DrawnDetail, EVERYTHING, EVERY_POINT } from "../catalogue/lod.ts";
-import type { View } from "./camera.ts";
+import { type View, pixelsAt } from "./camera.ts";
 import { type ToDraw, drawList } from "./drawList.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
-import type { Drawer, Lines, Rgba } from "./drawing.ts";
+import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
 import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
@@ -55,6 +55,10 @@ type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; sli
 
 interface Outline extends Drawn {
   colour: Rgba;
+  /** 1 where its lines fade as they crowd on the view, else 0. */
+  fades: number;
+  /** Its symbol, drawn at a fixed size on the view about its centre, where it has one. */
+  symbol: (Drawn & Omit<FixedSymbol, "offsets">) | undefined;
 }
 
 /** The eye's axes, place and projection for one frame. */
@@ -62,6 +66,12 @@ interface Frame {
   axes: Mat3;
   eye: Vec3;
   projection: Float32Array;
+}
+
+/** How far ahead of the eye `point` lies along its line of sight, which perspective divides by. */
+function depthOf({ axes, eye }: Frame, point: Vec3): number {
+  const [bx = 0, by = 0, bz = 0] = axes[2];
+  return -(bx * (point[0] - eye[0]) + by * (point[1] - eye[1]) + bz * (point[2] - eye[2]));
 }
 
 /** A linked program and the locations of its uniforms. */
@@ -92,6 +102,9 @@ function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string): 
   return { program, axes: at("u_axes"), centre: at("u_centre"), projection: at("u_projection") };
 }
 
+/** 1 where `lines` fade as they crowd on the view, else 0. */
+const fadesOf = (lines: Lines): number => (lines.neighbours === undefined ? 0 : 1);
+
 export class Renderer implements Drawer {
   private readonly gl: WebGL2RenderingContext;
   private readonly points: Program;
@@ -99,6 +112,8 @@ export class Renderer implements Drawer {
   private readonly lineColour: WebGLUniformLocation | null;
   private readonly lineWidth: WebGLUniformLocation | null;
   private readonly linePixels: WebGLUniformLocation | null;
+  private readonly lineScale: WebGLUniformLocation | null;
+  private readonly lineFade: Record<"on" | "range", WebGLUniformLocation | null>;
   /** Each tile's points, by its id, with the sphere they lie in. */
   private readonly batches = new Map<string, Batch>();
   /** The domain whose detail the point program holds, while a frame is drawn, and how opaque its
@@ -137,6 +152,9 @@ export class Renderer implements Drawer {
     this.lineColour = gl.getUniformLocation(this.lines.program, "u_colour");
     this.lineWidth = gl.getUniformLocation(this.lines.program, "u_width");
     this.linePixels = gl.getUniformLocation(this.lines.program, "u_pixels");
+    this.lineScale = gl.getUniformLocation(this.lines.program, "u_scale");
+    const line = (name: string) => gl.getUniformLocation(this.lines.program, name);
+    this.lineFade = { on: line("u_fades"), range: line("u_fadeRange") };
     gl.useProgram(this.points.program);
     this.pointSize = gl.getUniformLocation(this.points.program, "u_size");
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
@@ -290,13 +308,10 @@ export class Renderer implements Drawer {
     this.markers.set(name, { ...this.upload({ ...markers, kinds }), colour: markers.colour });
   }
 
-  /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */
-  setLines(name: string, lines: Lines | undefined): void {
-    const old = this.outlines.get(name);
-    if (old !== undefined) this.release(old);
-    this.outlines.delete(name);
-    if (lines === undefined) return;
-    const ribbon = ribbonOf(lines.offsets);
+  /** The segments `offsets` about `centre`, with their ends' `neighbours` where they fade, as a
+   * ribbon to draw. */
+  private uploadLines(centre: Vec3, offsets: Float32Array, neighbours?: Float32Array): Drawn {
+    const ribbon = ribbonOf(offsets, neighbours);
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
@@ -304,12 +319,31 @@ export class Renderer implements Drawer {
       this.buffer(this.lines.program, "a_to", ribbon.to, 3),
       this.buffer(this.lines.program, "a_corner", ribbon.corners, 2),
     ];
+    // Lines that do not fade leave a_neighbour unread: u_fades is 0 for them.
+    if (ribbon.neighbours !== undefined) buffers.push(this.buffer(this.lines.program, "a_neighbour", ribbon.neighbours, 3));
     this.gl.bindVertexArray(null);
-    this.outlines.set(name, { vao, buffers, centre: lines.centre, count: ribbon.count, colour: lines.colour });
+    return { vao, buffers, centre, count: ribbon.count };
   }
 
-  /** Draws the view on a canvas `width` × `height` device pixels. */
-  draw(view: View, toFrame: Mat3, width: number, height: number): void {
+  /** Lets go of an outline and its symbol. */
+  private releaseOutline(outline: Outline): void {
+    this.release(outline);
+    if (outline.symbol !== undefined) this.release(outline.symbol);
+  }
+
+  /** Draws `lines` under `name`, in place of what was drawn under it; nothing for none. */
+  setLines(name: string, lines: Lines | undefined): void {
+    const old = this.outlines.get(name);
+    if (old !== undefined) this.releaseOutline(old);
+    this.outlines.delete(name);
+    if (lines === undefined) return;
+    const { symbol: fixed } = lines;
+    const symbol = fixed === undefined ? undefined : { ...this.uploadLines(lines.centre, fixed.offsets), pixels: fixed.pixels, maxWidth: fixed.maxWidth };
+    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets, lines.neighbours), colour: lines.colour, fades: fadesOf(lines), symbol });
+  }
+
+  /** Draws the view on a canvas `width` × `height` device pixels, `ratio` of them to a CSS pixel. */
+  draw(view: View, toFrame: Mat3, width: number, height: number, ratio: number): void {
     const gl = this.gl;
     gl.viewport(0, 0, width, height);
     gl.clearColor(0.02, 0.027, 0.05, 1);
@@ -318,21 +352,36 @@ export class Renderer implements Drawer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
-    this.drawOutlines(frame, width, height);
+    this.drawOutlines(frame, width, height, ratio);
     this.drawPoints(frame, sight, view.distance);
     this.drawMarkers(frame);
   }
 
-  private drawOutlines(frame: Frame, width: number, height: number): void {
+  private drawOutlines(frame: Frame, width: number, height: number, ratio: number): void {
     this.use(this.lines, frame);
     this.gl.uniform2f(this.linePixels, width / 2, height / 2);
+    this.gl.uniform1f(this.lineScale, 1);
+    // The fade's bounds are CSS pixels, so many device pixels each.
+    this.gl.uniform2f(this.lineFade.range, FADE.gone * ratio, FADE.full * ratio);
     for (const [name, outline] of this.outlines) {
       if (this.hiddenNames.has(name)) continue;
+      this.gl.uniform1f(this.lineFade.on, outline.fades);
       const style = structureStyle(outline.colour, name === this.chosen);
       this.gl.uniform4f(this.lineColour, ...style.colour);
       this.gl.uniform1f(this.lineWidth, style.lineWidth);
-      this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
+      if (outline.count > 0) this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
+      this.drawSymbol(frame, outline, style.lineWidth, height);
     }
+  }
+
+  /** An outline's symbol, if it has one, at its fixed size on a view `height` pixels high, in
+   * lines no wider than `lineWidth` nor its own widest; the scale left at 1 for outlines. */
+  private drawSymbol(frame: Frame, { symbol, centre }: Outline, lineWidth: number, height: number): void {
+    if (symbol === undefined) return;
+    this.gl.uniform1f(this.lineWidth, Math.min(lineWidth, symbol.maxWidth));
+    this.gl.uniform1f(this.lineScale, pixelsAt(symbol.pixels, depthOf(frame, centre), height));
+    this.drawOne(this.lines, frame, symbol, this.gl.TRIANGLES);
+    this.gl.uniform1f(this.lineScale, 1);
   }
 
   /** The tiles' points in sight, but those turned off: of each its share, as opaque as its fade. */
@@ -409,7 +458,8 @@ export class Renderer implements Drawer {
 
   /** Lets go of everything drawn, as when the view closes. */
   dispose(): void {
-    for (const drawn of [...this.batches.values(), ...this.outlines.values(), ...this.markers.values()]) this.release(drawn);
+    for (const drawn of [...this.batches.values(), ...this.markers.values()]) this.release(drawn);
+    for (const outline of this.outlines.values()) this.releaseOutline(outline);
     this.batches.clear();
     this.fades.clear();
     this.outlines.clear();

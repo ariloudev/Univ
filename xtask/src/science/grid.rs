@@ -3,6 +3,8 @@
 use std::path::Path;
 
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
+use univ_model::encoding::hex;
 use univ_model::release::keys;
 
 /// What a check reads of a grid header (`grids/{id}/header.json`).
@@ -58,17 +60,18 @@ pub fn load(dir: &Path, number: u32, grid: &str, field: usize) -> Result<Loaded,
         .fields
         .get(field)
         .ok_or_else(|| format!("grid {grid} has no field {field}"))?;
-    let local = f
-        .samples
-        .strip_prefix(&keys::prefix(number))
-        .ok_or_else(|| {
-            format!(
-                "grid {grid}: {} is not a key of release {number}",
-                f.samples
-            )
-        })?;
-    let path = dir.join(local);
+    // A field's samples lie at its path in the release directory and, in R2, under the key of
+    // what they hold, which the header names.
+    let path = dir.join(keys::grid_samples(grid, &format!("field-{field}")));
     let bytes = std::fs::read(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let key = keys::file(&hex(&Sha256::digest(&bytes)));
+    if key != f.samples {
+        return Err(format!(
+            "grid {grid} of release {number}: the header names {} for field {field}, but its \
+             samples are {key}",
+            f.samples
+        ));
+    }
     let samples: Vec<f32> = bytes
         .as_chunks::<4>()
         .0

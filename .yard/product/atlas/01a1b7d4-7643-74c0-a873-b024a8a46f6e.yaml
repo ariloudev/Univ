@@ -1,0 +1,2754 @@
+key: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+id: spec
+versions:
+  - key: 01a1b7d4-7643-74c0-a873-b02b799c44aa
+    at: 2026-11-07T21:05:16Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Spec: atlas, object record, designations and names"
+    goal: "spec/ says how sources give designation forms and flag meanings, how name sources attach names, what the object panel shows, and how the atlas frame lays out the explorer; approved by the owner"
+    status: active
+  - key: 01a1b7dd-c877-776d-a92b-1d8cf3acb8f5
+    at: 2026-11-07T21:15:27Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Spec: atlas, object record, designations and names"
+    goal: "spec/ says how sources give designation forms and flag meanings, how name sources attach names, what the object panel shows, and how the atlas frame lays out the explorer; approved by the owner"
+    status: done
+blocks:
+  - key: 01a1b7dc-72f3-70ae-b7ed-519dc84911a5
+    id: research
+    kind: note
+    versions:
+      - key: 01a1b7dc-72f3-70ae-b7ed-51a3694153a4
+        at: 2026-11-07T21:14:00Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the research found"
+        markdown: |-
+          **The panel today.** HIP 32754 is headed "32754 #17", because `headingOf` takes the first entry's name, a bare HIP number. Below that it lists eight raw ids with source slugs. The record already holds sky position, magnitudes, proper motion, radial velocity, redshift, flags and group relations, and the panel shows none of them.
+
+          **Designations.** `rules/matching.yaml` already prefixes a few (such as "HIP " on gaia-dr3-hipparcos2). Source definitions deny unknown fields, so the designation form and flag meanings are new fields there. Nothing records what flag values mean today, only prose in `cuts`.
+
+          **Name sources**
+
+          | Source | Names | Terms | Joins by |
+          |---|---|---|---|
+          | IAU Catalog of Star Names (WGSN) | 652, to 2026-10-15 | Public domain (names); the etymology text is CC BY, not taken | HIP (578 of 652) |
+          | OpenNGC v20260501 (Verga) | 13,970 NGC/IC rows, all 110 Messier numbers, 152 common names | **CC BY-SA 4.0**, credit Mattia Verga | PGC (10,105 of the 10,792 galaxies), 2MASX (9,704), position |
+          | NGC 2000.0 (VizieR VII/118) | 13,226 | Sky Publishing copyright, scientific use only | not adopted |
+          | Wikidata labels | many | CC0 | later, if wanted |
+
+          - OpenNGC: drop 652 duplicate and 10 nonexistent rows. About 2,580 rows are clusters and nebulae, with nothing in our catalogues to attach to. That includes 70 of the 110 Messier objects. M102 is listed as a duplicate of M101; NGC 5866 is the usual identification, and that is noted as a dispute.
+          - IAU: the live list is an HTML table only. The last text file, from 2022, has 452 names.
+  - key: 01a1b7dc-72f3-70ae-b7ed-519ec333146d
+    id: spec-change
+    kind: loft
+    versions:
+      - key: 01a1b7dc-72f3-70ae-b7ed-51a48913434c
+        at: 2026-11-07T21:14:00Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "Seven Features change: frame-the-view-as-an-atlas (new), read-an-object, define-a-source, cross-match-catalogues, look-up-an-object and read-a-source. Two published criteria are reworded: AC-392, the panel's heading, and AC-394, names and designations."
+        recorded:
+          commit: "fc079c3bb48ff5b7490d91ef8405456a364eb853"
+          branch: "product/atlas"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-07T21:14:00Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 1,
+              "graph.diff": 80,
+              "graph.edges": 7,
+              "graph.nodes": 110,
+              "status.base.added": 70,
+              "status.base.changed": 9,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "added",
+                  "key": "01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Share unchanged rows and files between releases",
+                  "words": {
+                    "after": "Share unchanged rows and files between releases\n\nEach row is held from the release that adds it until a release retires it, and each file once by its SHA-256, so a release writes, publishes and stores only what it changes."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a22adb93e1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from.",
+                  "words": {
+                    "after": "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a3db453005",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from.",
+                  "words": {
+                    "after": "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a4a7c6a5fc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A designation form that does not hold `{identifier}` exactly once is refused.",
+                  "words": {
+                    "after": "A designation form that does not hold `{identifier}` exactly once is refused."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a5418a1492",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A flag meaning given for a column the definition does not take as a flag is refused.",
+                  "words": {
+                    "after": "A flag meaning given for a column the definition does not take as a flag is refused."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e61d47a4c1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted.",
+                  "words": {
+                    "after": "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a603958644",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each designation keeps the identifier as its source publishes it, and the identifier in its catalogue's form where the source's definition gives a form.",
+                  "words": {
+                    "after": "Each designation keeps the identifier as its source publishes it, and the identifier in its catalogue's form where the source's definition gives a form."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a7f17a4472",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object's designations are ordered by the rank the designation rules give their sources, the highest first, then by source id.",
+                  "words": {
+                    "after": "An object's designations are ordered by the rank the designation rules give their sources, the highest first, then by source id."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a8bb0003b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each designation in its catalogue's form is attached to the object as a name its source gives, so that the object is found by it.",
+                  "words": {
+                    "after": "Each designation in its catalogue's form is attached to the object as a name its source gives, so that the object is found by it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e775e83b00",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A proper name, such as Sirius or the Andromeda Galaxy, is attached as the name of its catalogue entry, apart from the object's designations.",
+                  "words": {
+                    "after": "A proper name, such as Sirius or the Andromeda Galaxy, is attached as the name of its catalogue entry, apart from the object's designations."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e83780d376",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An entry of a star-name source joins the object of the star its HIP number names.",
+                  "words": {
+                    "after": "An entry of a star-name source joins the object of the star its HIP number names."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e9e889ce84",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An entry of a galaxy-name source joins the object its PGC number or 2MASX designation names, or else the object its position matches.",
+                  "words": {
+                    "after": "An entry of a galaxy-name source joins the object its PGC number or 2MASX designation names, or else the object its position matches."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37eac8b77d98",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An entry of a name source that joins no object becomes an object of its own, with its sky position and no distance.",
+                  "words": {
+                    "after": "An entry of a name source that joins no object becomes an object of its own, with its sky position and no distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37eb1f141005",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A name source's entries that its catalogue marks as duplicates or as nonexistent objects are left out, each with its reason.",
+                  "words": {
+                    "after": "A name source's entries that its catalogue marks as duplicates or as nonexistent objects are left out, each with its reason."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                  "kind": "requirement",
+                  "label": "RQ-33",
+                  "name": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to.",
+                  "words": {
+                    "after": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to.",
+                    "before": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1521b702e5bb",
+                  "kind": "criterion",
+                  "label": "AC-84",
+                  "name": "The release manifest lists every file of the release with its SHA-256, those it shares with the release before it included.",
+                  "words": {
+                    "after": "The release manifest lists every file of the release with its SHA-256, those it shares with the release before it included.",
+                    "before": "The release manifest lists every file of the release with its SHA-256."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the owner builds a release, Univ Ingest shall write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not.",
+                  "words": {
+                    "after": "When the owner builds a release, Univ Ingest shall write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f34044901a8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row the new release holds unchanged from the release latest points to is not written again.",
+                  "words": {
+                    "after": "A row the new release holds unchanged from the release latest points to is not written again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f35e0c90550",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row the release latest points to holds and the new release does not is retired from the new release on.",
+                  "words": {
+                    "after": "A row the release latest points to holds and the new release does not is retired from the new release on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f36f972f991",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A changed row is retired from the new release on and written again, valid from it.",
+                  "words": {
+                    "after": "A changed row is retired from the new release on and written again, valid from it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f372d8be4cc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Rows are compared by their key and a hash of their content, kept for the release latest points to beside the id state.",
+                  "words": {
+                    "after": "Rows are compared by their key and a hash of their content, kept for the release latest points to beside the id state."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f385b1742dd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A release whose only change from the release before it is in its structures writes no object, catalogue entry, measurement or tile.",
+                  "words": {
+                    "after": "A release whose only change from the release before it is in its structures writes no object, catalogue entry, measurement or tile."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f39d65afd25",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release manifest gives, for each table of each database, the rows the release adds and retires and the fingerprint of every row valid in it.",
+                  "words": {
+                    "after": "The release manifest gives, for each table of each database, the rows the release adds and retires and the fingerprint of every row valid in it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall store each file of a release once by its SHA-256, shared by every release that holds it.",
+                  "words": {
+                    "after": "Univ Ingest shall store each file of a release once by its SHA-256, shared by every release that holds it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3bcb2e200b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A file whose SHA-256 a release not yet pruned already holds is not written again.",
+                  "words": {
+                    "after": "A file whose SHA-256 a release not yet pruned already holds is not written again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3ca904736d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release maps each of its paths to the SHA-256 of the file it holds there.",
+                  "words": {
+                    "after": "The release maps each of its paths to the SHA-256 of the file it holds there."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1538be54b520",
+                  "kind": "requirement",
+                  "label": "RQ-39",
+                  "name": "When the owner prunes a release, Univ Ingest shall delete the rows and files that no release left unpruned holds, and record when it was pruned.",
+                  "words": {
+                    "after": "When the owner prunes a release, Univ Ingest shall delete the rows and files that no release left unpruned holds, and record when it was pruned.",
+                    "before": "When the owner prunes a release, Univ Ingest shall delete the release's files and tables and record when it was pruned."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3d6d51b6a3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row or file that a release left unpruned holds is not deleted.",
+                  "words": {
+                    "after": "A row or file that a release left unpruned holds is not deleted."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                  "kind": "criterion",
+                  "label": "AC-475",
+                  "name": "The rows valid only in pruned releases are deleted from the catalogue database and from every object shard.",
+                  "words": {
+                    "after": "The rows valid only in pruned releases are deleted from the catalogue database and from every object shard.",
+                    "before": "The release's rows are deleted from the catalogue database and from every object shard."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                  "kind": "requirement",
+                  "label": "RQ-41",
+                  "name": "When the owner publishes a complete release, Univ Ingest shall upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it.",
+                  "words": {
+                    "after": "When the owner publishes a complete release, Univ Ingest shall upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it.",
+                    "before": "When the owner publishes a complete release, Univ Ingest shall upload its files to local R2 and its tables to the catalogue database and object shards of local D1, and only then point latest at it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3e7a645727",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No row or file the release shares with the release before it is uploaded again.",
+                  "words": {
+                    "after": "No row or file the release shares with the release before it is uploaded again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3f2c140ce6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once uploaded, the rows valid in the release in each database match the counts and fingerprints of the release manifest.",
+                  "words": {
+                    "after": "Once uploaded, the rows valid in the release in each database match the counts and fingerprints of the release manifest."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4080f434a5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the release was built on a release other than the one latest points to, then Univ Ingest shall refuse to publish it before uploading anything.",
+                  "words": {
+                    "after": "If the release was built on a release other than the one latest points to, then Univ Ingest shall refuse to publish it before uploading anything."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4109bd7c10",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the release it was built on and the release latest points to.",
+                  "words": {
+                    "after": "The message names the release it was built on and the release latest points to."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared, Univ Ingest shall bring those releases under the shared schema in place before uploading anything.",
+                  "words": {
+                    "after": "When the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared, Univ Ingest shall bring those releases under the shared schema in place before uploading anything."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4375add914",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every row of such a release is valid from that release until a later release retires it.",
+                  "words": {
+                    "after": "Every row of such a release is valid from that release until a later release retires it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f44a48bd262",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every file of such a release is held once by its SHA-256 and read through the release's map of its paths.",
+                  "words": {
+                    "after": "Every file of such a release is held once by its SHA-256 and read through the release's map of its paths."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f45728f89f0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No such release is built or uploaded again.",
+                  "words": {
+                    "after": "No such release is built or uploaded again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4682a162c9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Reads pinned to such a release return the same data after the change as before it.",
+                  "words": {
+                    "after": "Reads pinned to such a release return the same data after the change as before it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a936e8825f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each designation in the response gives the identifier as its source publishes it, and in its catalogue's form where the source's definition gives one.",
+                  "words": {
+                    "after": "Each designation in the response gives the identifier as its source publishes it, and in its catalogue's form where the source's definition gives one."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45aa7e2ca87a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response lists the object's designations in the order the release gives them, the preferred designation first.",
+                  "words": {
+                    "after": "The response lists the object's designations in the order the release gives them, the preferred designation first."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45aba93bf7fc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives each flag of each catalogue entry with its value as the source publishes it.",
+                  "words": {
+                    "after": "The response gives each flag of each catalogue entry with its value as the source publishes it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45aceeef58a0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A designation in its catalogue's form, such as HIP 32754, resolves as a name does.",
+                  "words": {
+                    "after": "A designation in its catalogue's form, such as HIP 32754, resolves as a name does."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37ec41787dde",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response says whether the source's terms require data adapted from it to be shared under the same licence.",
+                  "words": {
+                    "after": "The response says whether the source's terms require data adapted from it to be shared under the same licence."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45ad166959ce",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the source's designation form with its citation, where its definition gives one.",
+                  "words": {
+                    "after": "The response gives the source's designation form with its citation, where its definition gives one."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45ae96a7f9df",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the meaning of each value of each of the source's flags with its citation, where its definition gives them.",
+                  "words": {
+                    "after": "The response gives the meaning of each value of each of the source's flags with its citation, where its definition gives them."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "words": {
+                    "after": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, the panels in the margins about it, and a\nkey and a scale along its foot. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                  "words": {
+                    "after": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b103f2a0c853",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes.",
+                  "words": {
+                    "after": "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart.",
+                  "words": {
+                    "after": "The ticks of an edge are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b105558be2c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees.",
+                  "words": {
+                    "after": "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b106cab43cde",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each edge names the coordinate its ticks give, such as galactic longitude.",
+                  "words": {
+                    "after": "Each edge names the coordinate its ticks give, such as galactic longitude."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b107f30dda23",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks follow the view as it turns, zooms and moves, and as the axes are changed.",
+                  "words": {
+                    "after": "The ticks follow the view as it turns, zooms and moves, and as the axes are changed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall keep its panels in the margins about the view, never over it.",
+                  "words": {
+                    "after": "Univ Explorer shall keep its panels in the margins about the view, never over it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b1098469cdfc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The left margin holds the view's controls, the groups of what is drawn and the list of structures.",
+                  "words": {
+                    "after": "The left margin holds the view's controls, the groups of what is drawn and the list of structures."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10a29501e13",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The right margin holds the search and the record of the chosen object or structure.",
+                  "words": {
+                    "after": "The right margin holds the search and the record of the chosen object or structure."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10be4240ee2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The bottom margin holds the key, the scale and the credits.",
+                  "words": {
+                    "after": "The bottom margin holds the key, the scale and the credits."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10c2a3715b9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No panel covers the view on a window at least 1,024 CSS pixels wide.",
+                  "words": {
+                    "after": "No panel covers the view on a window at least 1,024 CSS pixels wide."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10d8ab271ac",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "On a narrower window, each margin folds into a button that opens it over the view and closes it again.",
+                  "words": {
+                    "after": "On a narrower window, each margin folds into a button that opens it over the view and closes it again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw a scale of the view at the distance of its focus.",
+                  "words": {
+                    "after": "Univ Explorer shall draw a scale of the view at the distance of its focus."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10fa8776879",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance.",
+                  "words": {
+                    "after": "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b11043cf39a0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus.",
+                  "words": {
+                    "after": "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall name structures and objects as atlases name areas and points.",
+                  "words": {
+                    "after": "Univ Explorer shall name structures and objects as atlases name areas and points."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b1129a75edd3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Structures are named in italic type, in the view, in their list and in their panel.",
+                  "words": {
+                    "after": "Structures are named in italic type, in the view, in their list and in their panel."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b11383d20219",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Objects are named in upright type, in the hover label and in their panel.",
+                  "words": {
+                    "after": "Objects are named in upright type, in the hover label and in their panel."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0f94a6148dc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once the pointer has rested on the point for 0.3 seconds, the label gives the object's name or first designation, read from its record, in place of its id.",
+                  "words": {
+                    "after": "Once the pointer has rested on the point for 0.3 seconds, the label gives the object's name or first designation, read from its record, in place of its id."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a6b2-b217-764e-93d0-da89ee4e3c67",
+                  "kind": "criterion",
+                  "label": "AC-392",
+                  "name": "The panel is headed by the object's name: the name it was found by, or else the first proper name its sources give, or else the first designation of its record, in its catalogue's form, with its id beside it.",
+                  "words": {
+                    "after": "The panel is headed by the object's name: the name it was found by, or else the first proper name its sources give, or else the first designation of its record, in its catalogue's form, with its id beside it.",
+                    "before": "The panel is headed by the object's name: the name it was found by, or else the first name its sources give, or else its first designation, with its id beside it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3fe7201a1670",
+                  "kind": "criterion",
+                  "label": "AC-394",
+                  "name": "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a designation that more than one source gives once, with all of them.",
+                  "words": {
+                    "after": "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a designation that more than one source gives once, with all of them.",
+                    "before": "The panel gives the object's names and designations, each with its source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fa7a60e532",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives the object's position on the sky as right ascension and declination and as galactic longitude and latitude, with the frame and epoch of each.",
+                  "words": {
+                    "after": "The panel gives the object's position on the sky as right ascension and declination and as galactic longitude and latitude, with the frame and epoch of each."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fb367dbf6d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each magnitude of the object with its band, its uncertainty, its kind of value and its source.",
+                  "words": {
+                    "after": "The panel gives each magnitude of the object with its band, its uncertainty, its kind of value and its source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fc825b2931",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives the object's proper motion, radial velocity and redshift where its sources publish them, each with its uncertainty, kind of value and source.",
+                  "words": {
+                    "after": "The panel gives the object's proper motion, radial velocity and redshift where its sources publish them, each with its uncertainty, kind of value and source."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fdf7abeef3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen.",
+                  "words": {
+                    "after": "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fe29efa362",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names each structure of the release whose volume holds the object's position, each of which can be chosen.",
+                  "words": {
+                    "after": "The panel names each structure of the release whose volume holds the object's position, each of which can be chosen."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0ffeb6df712",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none.",
+                  "words": {
+                    "after": "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b1003b3339be",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each value in the panel is marked with the symbol of its kind of value that the key shows.",
+                  "words": {
+                    "after": "Each value in the panel is marked with the symbol of its kind of value that the key shows."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7a9-f2af-7290-9cdf-77a3c5b309a5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs.",
+                  "words": {
+                    "after": "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7a9-f2af-7290-9cdf-77a431863fe1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's.",
+                  "words": {
+                    "after": "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                  "kind": "criterion",
+                  "label": "AC-408",
+                  "name": "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows.",
+                  "words": {
+                    "after": "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows.",
+                    "before": "Each structure's name is drawn at its centre."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7a9-f2af-7290-9cdf-77a50a274427",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs.",
+                  "words": {
+                    "after": "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf23344602c",
+                  "kind": "constraint",
+                  "label": "CON-3",
+                  "name": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, counting each row once whichever releases hold it, and budgeting the rows of the release latest points to at 4.5 GB in each so that a release changing every row can be published before the previous one is pruned.",
+                  "words": {
+                    "after": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, counting each row once whichever releases hold it, and budgeting the rows of the release latest points to at 4.5 GB in each so that a release changing every row can be published before the previous one is pruned.",
+                    "before": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, budgeting each release at 4.5 GB in each so the next release can be published before the previous one is pruned."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Share unchanged rows and files between releases",
+                  "words": {
+                    "after": "Share unchanged rows and files between releases\n\nEach row is held from the release that adds it until a release retires it, and each file once by its SHA-256, so a release writes, publishes and stores only what it changes."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-15372421c144",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a19f23-636f-72bd-b194-153d515c188e",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "from": "01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406"
+                },
+                {
+                  "from": "01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                  "kind": "requirement",
+                  "label": "RQ-1",
+                  "name": "Univ Ingest shall read each source from its source definition in the repository.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a22adb93e1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from.",
+                  "parent": "01a19f22-2ad9-716e-876f-1832b1bae1e2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a3db453005",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from.",
+                  "parent": "01a19f22-2ad9-716e-876f-1832b1bae1e2"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                  "kind": "requirement",
+                  "label": "RQ-2",
+                  "name": "If a source definition is incomplete or names an unknown unit, frame or scale domain, then Univ Ingest shall refuse the run before fetching anything and name the field.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a4a7c6a5fc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A designation form that does not hold `{identifier}` exactly once is refused.",
+                  "parent": "01a19f22-2ad9-716e-876f-1838f05eb5b7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a5418a1492",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A flag meaning given for a column the definition does not take as a flag is refused.",
+                  "parent": "01a19f22-2ad9-716e-876f-1838f05eb5b7"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                  "kind": "requirement",
+                  "label": "RQ-3",
+                  "name": "Univ Ingest shall record in each source definition whether its terms permit redistributing its data, with the terms it rests on.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e61d47a4c1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted.",
+                  "parent": "01a19f22-2ad9-716e-876f-183a6daa9364"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": "FG-3",
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                  "kind": "feature",
+                  "label": "F-7",
+                  "name": "Cross-match catalogues",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-15129323b215",
+                  "kind": "requirement",
+                  "label": "RQ-30",
+                  "name": "Univ Ingest shall attach to each object the designations and names its catalogue entries carry.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a603958644",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each designation keeps the identifier as its source publishes it, and the identifier in its catalogue's form where the source's definition gives a form.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a7f17a4472",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An object's designations are ordered by the rank the designation rules give their sources, the highest first, then by source id.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a8bb0003b4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each designation in its catalogue's form is attached to the object as a name its source gives, so that the object is found by it.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e775e83b00",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A proper name, such as Sirius or the Andromeda Galaxy, is attached as the name of its catalogue entry, apart from the object's designations.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e83780d376",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An entry of a star-name source joins the object of the star its HIP number names.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37e9e889ce84",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An entry of a galaxy-name source joins the object its PGC number or 2MASX designation names, or else the object its position matches.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37eac8b77d98",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An entry of a name source that joins no object becomes an object of its own, with its sky position and no distance.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37eb1f141005",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A name source's entries that its catalogue marks as duplicates or as nonexistent objects are left out, each with its reason.",
+                  "parent": "01a19f23-636f-72bd-b194-15129323b215"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                  "kind": "feature",
+                  "label": "F-9",
+                  "name": "Build a release",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                  "kind": "requirement",
+                  "label": "RQ-33",
+                  "name": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to.",
+                  "parent": "01a19f23-636f-72bd-b194-151d9fb569d2"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1521b702e5bb",
+                  "kind": "criterion",
+                  "label": "AC-84",
+                  "name": "The release manifest lists every file of the release with its SHA-256, those it shares with the release before it included.",
+                  "parent": "01a19f23-636f-72bd-b194-151ed99bd6f9"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the owner builds a release, Univ Ingest shall write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not.",
+                  "parent": "01a19f23-636f-72bd-b194-151d9fb569d2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f34044901a8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row the new release holds unchanged from the release latest points to is not written again.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f35e0c90550",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row the release latest points to holds and the new release does not is retired from the new release on.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f36f972f991",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A changed row is retired from the new release on and written again, valid from it.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f372d8be4cc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Rows are compared by their key and a hash of their content, kept for the release latest points to beside the id state.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f385b1742dd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A release whose only change from the release before it is in its structures writes no object, catalogue entry, measurement or tile.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f39d65afd25",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release manifest gives, for each table of each database, the rows the release adds and retires and the fingerprint of every row valid in it.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f33b5e55051"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall store each file of a release once by its SHA-256, shared by every release that holds it.",
+                  "parent": "01a19f23-636f-72bd-b194-151d9fb569d2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3bcb2e200b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A file whose SHA-256 a release not yet pruned already holds is not written again.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3ca904736d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release maps each of its paths to the SHA-256 of the file it holds there.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-15372421c144",
+                  "kind": "feature",
+                  "label": "F-11",
+                  "name": "Prune old releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1538be54b520",
+                  "kind": "requirement",
+                  "label": "RQ-39",
+                  "name": "When the owner prunes a release, Univ Ingest shall delete the rows and files that no release left unpruned holds, and record when it was pruned.",
+                  "parent": "01a19f23-636f-72bd-b194-15372421c144"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3d6d51b6a3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A row or file that a release left unpruned holds is not deleted.",
+                  "parent": "01a19f23-636f-72bd-b194-1538be54b520"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                  "kind": "criterion",
+                  "label": "AC-475",
+                  "name": "The rows valid only in pruned releases are deleted from the catalogue database and from every object shard.",
+                  "parent": "01a19f23-636f-72bd-b194-1538be54b520"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-153d515c188e",
+                  "kind": "feature",
+                  "label": "F-12",
+                  "name": "Publish a release locally",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                  "kind": "requirement",
+                  "label": "RQ-41",
+                  "name": "When the owner publishes a complete release, Univ Ingest shall upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it.",
+                  "parent": "01a19f23-636f-72bd-b194-153d515c188e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3e7a645727",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No row or file the release shares with the release before it is uploaded again.",
+                  "parent": "01a19f23-636f-72bd-b194-153ee5a17619"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f3f2c140ce6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once uploaded, the rows valid in the release in each database match the counts and fingerprints of the release manifest.",
+                  "parent": "01a19f23-636f-72bd-b194-153ee5a17619"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4080f434a5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the release was built on a release other than the one latest points to, then Univ Ingest shall refuse to publish it before uploading anything.",
+                  "parent": "01a19f23-636f-72bd-b194-153d515c188e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4109bd7c10",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the release it was built on and the release latest points to.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f4080f434a5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared, Univ Ingest shall bring those releases under the shared schema in place before uploading anything.",
+                  "parent": "01a19f23-636f-72bd-b194-153d515c188e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4375add914",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every row of such a release is valid from that release until a later release retires it.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f44a48bd262",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every file of such a release is held once by its SHA-256 and read through the release's map of its paths.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f45728f89f0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No such release is built or uploaded again.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b19f-a71f-7111-b5df-7f4682a162c9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Reads pinned to such a release return the same data after the change as before it.",
+                  "parent": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0d39dc9a3f",
+                  "kind": "feature",
+                  "label": "F-15",
+                  "name": "Look up an object",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d0ee7e600ab",
+                  "kind": "requirement",
+                  "label": "RQ-52",
+                  "name": "When a client requests an object by its object id, Univ Server shall return the object with its catalogue entries, measurements, preferred measurement and derived positions.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45a936e8825f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each designation in the response gives the identifier as its source publishes it, and in its catalogue's form where the source's definition gives one.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45aa7e2ca87a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response lists the object's designations in the order the release gives them, the preferred designation first.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45aba93bf7fc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives each flag of each catalogue entry with its value as the source publishes it.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0ee7e600ab"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d16ab310032",
+                  "kind": "requirement",
+                  "label": "RQ-53",
+                  "name": "When a client requests an object by a catalogue designation or a common name, Univ Server shall return the object that the designation or name resolves to.",
+                  "parent": "01a19f1e-d177-716d-b124-3d0d39dc9a3f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45aceeef58a0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A designation in its catalogue's form, such as HIP 32754, resolves as a name does.",
+                  "parent": "01a19f1e-d177-716d-b124-3d16ab310032"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d23daf70123",
+                  "kind": "feature",
+                  "label": "F-16",
+                  "name": "Read a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d24f2c252fc",
+                  "kind": "requirement",
+                  "label": "RQ-56",
+                  "name": "When a client requests a source, Univ Server shall return its citation, terms of use, required credit, provider, query, cuts and coverage.",
+                  "parent": "01a19f1e-d177-716d-b124-3d23daf70123"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7dc-04ef-7334-abc7-37ec41787dde",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response says whether the source's terms require data adapted from it to be shared under the same licence.",
+                  "parent": "01a19f1e-d177-716d-b124-3d24f2c252fc"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45ad166959ce",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the source's designation form with its citation, where its definition gives one.",
+                  "parent": "01a19f1e-d177-716d-b124-3d24f2c252fc"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d8-3f35-70aa-853f-45ae96a7f9df",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the meaning of each value of each of the source's flags with its citation, where its definition gives them.",
+                  "parent": "01a19f1e-d177-716d-b124-3d24f2c252fc"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b103f2a0c853",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b105558be2c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b106cab43cde",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each edge names the coordinate its ticks give, such as galactic longitude.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b107f30dda23",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks follow the view as it turns, zooms and moves, and as the axes are changed.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall keep its panels in the margins about the view, never over it.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b1098469cdfc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The left margin holds the view's controls, the groups of what is drawn and the list of structures.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10a29501e13",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The right margin holds the search and the record of the chosen object or structure.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10be4240ee2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The bottom margin holds the key, the scale and the credits.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10c2a3715b9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No panel covers the view on a window at least 1,024 CSS pixels wide.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10d8ab271ac",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "On a narrower window, each margin folds into a button that opens it over the view and closes it again.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw a scale of the view at the distance of its focus.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b10fa8776879",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b11043cf39a0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall name structures and objects as atlases name areas and points.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b1129a75edd3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Structures are named in italic type, in the view, in their list and in their panel.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b11163a65264"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b11383d20219",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Objects are named in upright type, in the hover label and in their panel.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b11163a65264"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                  "kind": "feature",
+                  "label": "F-38",
+                  "name": "Read an object",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe4680b13fa",
+                  "kind": "requirement",
+                  "label": "RQ-138",
+                  "name": "When the pointer rests on a drawn point, Univ Explorer shall name the object it stands for.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe32aecd7d3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0f94a6148dc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once the pointer has rested on the point for 0.3 seconds, the label gives the object's name or first designation, read from its record, in place of its id.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe4680b13fa"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe654d91c29",
+                  "kind": "requirement",
+                  "label": "RQ-139",
+                  "name": "When the person clicks a drawn point, Univ Explorer shall show the object's record that Univ Server gives.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe32aecd7d3"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a6b2-b217-764e-93d0-da89ee4e3c67",
+                  "kind": "criterion",
+                  "label": "AC-392",
+                  "name": "The panel is headed by the object's name: the name it was found by, or else the first proper name its sources give, or else the first designation of its record, in its catalogue's form, with its id beside it.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3fe7201a1670",
+                  "kind": "criterion",
+                  "label": "AC-394",
+                  "name": "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a designation that more than one source gives once, with all of them.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fa7a60e532",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives the object's position on the sky as right ascension and declination and as galactic longitude and latitude, with the frame and epoch of each.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fb367dbf6d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each magnitude of the object with its band, its uncertainty, its kind of value and its source.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fc825b2931",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives the object's proper motion, radial velocity and redshift where its sources publish them, each with its uncertainty, kind of value and source.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fdf7abeef3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0fe29efa362",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel names each structure of the release whose volume holds the object's position, each of which can be chosen.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b0ffeb6df712",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7d7-c032-73ad-803e-b1003b3339be",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each value in the panel is marked with the symbol of its kind of value that the key shows.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe654d91c29"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                  "kind": "requirement",
+                  "label": "RQ-141",
+                  "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7a9-f2af-7290-9cdf-77a3c5b309a5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff084b48fab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7a9-f2af-7290-9cdf-77a431863fe1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff084b48fab"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                  "kind": "requirement",
+                  "label": "RQ-142",
+                  "name": "Univ Explorer shall name each drawn structure in the view.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                  "kind": "criterion",
+                  "label": "AC-408",
+                  "name": "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff56cfa0dc5"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                  "kind": "requirement",
+                  "label": "RQ-143",
+                  "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1b7a9-f2af-7290-9cdf-77a50a274427",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ceccbdcd63e",
+                  "kind": "component",
+                  "label": "CMP-33",
+                  "name": "Ingest pipeline",
+                  "parent": null
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf1defde8b6",
+                  "kind": "component",
+                  "label": "CMP-38",
+                  "name": "Release publisher",
+                  "parent": "01a19f1e-d177-716d-b124-3ceccbdcd63e"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a22adb93e1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 28,
+                    "name": "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a3db453005",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 30,
+                    "name": "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a4a7c6a5fc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "A designation form that does not hold `{identifier}` exactly once is refused.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a5418a1492",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A flag meaning given for a column the definition does not take as a flag is refused.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37e61d47a4c1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 59,
+                    "name": "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a603958644",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 98,
+                    "name": "Each designation keeps the identifier as its source publishes it, and the identifier in its catalogue's form where the source's definition gives a form.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a7f17a4472",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 100,
+                    "name": "An object's designations are ordered by the rank the designation rules give their sources, the highest first, then by source id.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a8bb0003b4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 102,
+                    "name": "Each designation in its catalogue's form is attached to the object as a name its source gives, so that the object is found by it.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37e775e83b00",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 106,
+                    "name": "A proper name, such as Sirius or the Andromeda Galaxy, is attached as the name of its catalogue entry, apart from the object's designations.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37e83780d376",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 108,
+                    "name": "An entry of a star-name source joins the object of the star its HIP number names.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37e9e889ce84",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 110,
+                    "name": "An entry of a galaxy-name source joins the object its PGC number or 2MASX designation names, or else the object its position matches.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37eac8b77d98",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 112,
+                    "name": "An entry of a name source that joins no object becomes an object of its own, with its sky position and no distance.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37eb1f141005",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 114,
+                    "name": "A name source's entries that its catalogue marks as duplicates or as nonexistent objects are left out, each with its reason.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 81,
+                    "name": "When the owner builds a release, Univ Ingest shall write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f34044901a8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 88,
+                    "name": "A row the new release holds unchanged from the release latest points to is not written again.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f35e0c90550",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 90,
+                    "name": "A row the release latest points to holds and the new release does not is retired from the new release on.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f36f972f991",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 92,
+                    "name": "A changed row is retired from the new release on and written again, valid from it.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f372d8be4cc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 94,
+                    "name": "Rows are compared by their key and a hash of their content, kept for the release latest points to beside the id state.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f385b1742dd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 96,
+                    "name": "A release whose only change from the release before it is in its structures writes no object, catalogue entry, measurement or tile.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f39d65afd25",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 98,
+                    "name": "The release manifest gives, for each table of each database, the rows the release adds and retires and the fingerprint of every row valid in it.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 100,
+                    "name": "Univ Ingest shall store each file of a release once by its SHA-256, shared by every release that holds it.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f3bcb2e200b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 106,
+                    "name": "A file whose SHA-256 a release not yet pruned already holds is not written again.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f3ca904736d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 108,
+                    "name": "The release maps each of its paths to the SHA-256 of the file it holds there.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f3d6d51b6a3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 17,
+                    "name": "A row or file that a release left unpruned holds is not deleted.",
+                    "path": "spec/products/univ-ingest/releases/prune-old-releases.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f3e7a645727",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 20,
+                    "name": "No row or file the release shares with the release before it is uploaded again.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f3f2c140ce6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 22,
+                    "name": "Once uploaded, the rows valid in the release in each database match the counts and fingerprints of the release manifest.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b19f-a71f-7111-b5df-7f4080f434a5",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 59,
+                    "name": "If the release was built on a release other than the one latest points to, then Univ Ingest shall refuse to publish it before uploading anything.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f4109bd7c10",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 66,
+                    "name": "The message names the release it was built on and the release latest points to.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 68,
+                    "name": "When the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared, Univ Ingest shall bring those releases under the shared schema in place before uploading anything.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f4375add914",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 75,
+                    "name": "Every row of such a release is valid from that release until a later release retires it.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f44a48bd262",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 77,
+                    "name": "Every file of such a release is held once by its SHA-256 and read through the release's map of its paths.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f45728f89f0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 79,
+                    "name": "No such release is built or uploaded again.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b19f-a71f-7111-b5df-7f4682a162c9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 81,
+                    "name": "Reads pinned to such a release return the same data after the change as before it.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45a936e8825f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "Each designation in the response gives the identifier as its source publishes it, and in its catalogue's form where the source's definition gives one.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45aa7e2ca87a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "The response lists the object's designations in the order the release gives them, the preferred designation first.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45aba93bf7fc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "The response gives each flag of each catalogue entry with its value as the source publishes it.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45aceeef58a0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "A designation in its catalogue's form, such as HIP 32754, resolves as a name does.",
+                    "path": "spec/products/univ-server/reference-data/look-up-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7dc-04ef-7334-abc7-37ec41787dde",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "The response says whether the source's terms require data adapted from it to be shared under the same licence.",
+                    "path": "spec/products/univ-server/reference-data/read-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45ad166959ce",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 31,
+                    "name": "The response gives the source's designation form with its citation, where its definition gives one.",
+                    "path": "spec/products/univ-server/reference-data/read-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d8-3f35-70aa-853f-45ae96a7f9df",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 33,
+                    "name": "The response gives the meaning of each value of each of the source's flags with its citation, where its definition gives them.",
+                    "path": "spec/products/univ-server/reference-data/read-a-source.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Frame the view as an atlas",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 13,
+                    "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b103f2a0c853",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 19,
+                    "name": "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "The ticks of an edge are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b105558be2c4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b106cab43cde",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "Each edge names the coordinate its ticks give, such as galactic longitude.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b107f30dda23",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "The ticks follow the view as it turns, zooms and moves, and as the axes are changed.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 29,
+                    "name": "Univ Explorer shall keep its panels in the margins about the view, never over it.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b1098469cdfc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "The left margin holds the view's controls, the groups of what is drawn and the list of structures.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10a29501e13",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The right margin holds the search and the record of the chosen object or structure.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10be4240ee2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "The bottom margin holds the key, the scale and the credits.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10c2a3715b9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "No panel covers the view on a window at least 1,024 CSS pixels wide.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10d8ab271ac",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "On a narrower window, each margin folds into a button that opens it over the view and closes it again.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 45,
+                    "name": "Univ Explorer shall draw a scale of the view at the distance of its focus.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10fa8776879",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 51,
+                    "name": "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b11043cf39a0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 53,
+                    "name": "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 55,
+                    "name": "Univ Explorer shall name structures and objects as atlases name areas and points.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b1129a75edd3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 61,
+                    "name": "Structures are named in italic type, in the view, in their list and in their panel.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b11383d20219",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 63,
+                    "name": "Objects are named in upright type, in the hover label and in their panel.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0f94a6148dc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 18,
+                    "name": "Once the pointer has rested on the point for 0.3 seconds, the label gives the object's name or first designation, read from its record, in place of its id.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0fa7a60e532",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "The panel gives the object's position on the sky as right ascension and declination and as galactic longitude and latitude, with the frame and epoch of each.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0fb367dbf6d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 49,
+                    "name": "The panel gives each magnitude of the object with its band, its uncertainty, its kind of value and its source.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0fc825b2931",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 51,
+                    "name": "The panel gives the object's proper motion, radial velocity and redshift where its sources publish them, each with its uncertainty, kind of value and source.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0fdf7abeef3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 53,
+                    "name": "The panel names each group the object is a member of, and each member of a group the object is, each of which can be chosen.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0fe29efa362",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 55,
+                    "name": "The panel names each structure of the release whose volume holds the object's position, each of which can be chosen.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b0ffeb6df712",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 57,
+                    "name": "The panel gives each flag of each catalogue entry of the object with the meaning its source gives that value, or the value alone where its source gives none.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b1003b3339be",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 59,
+                    "name": "Each value in the panel is marked with the symbol of its kind of value that the key shows.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7a9-f2af-7290-9cdf-77a3c5b309a5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7a9-f2af-7290-9cdf-77a431863fe1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7a9-f2af-7290-9cdf-77a50a274427",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 66,
+                    "name": "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "kind": "requirement",
+                    "label": "RQ-33",
+                    "line": 8,
+                    "name": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f23-636f-72bd-b194-1521b702e5bb",
+                    "kind": "criterion",
+                    "label": "AC-84",
+                    "line": 19,
+                    "name": "The release manifest lists every file of the release with its SHA-256, those it shares with the release before it included.",
+                    "path": "spec/products/univ-ingest/releases/build-a-release.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "kind": "requirement",
+                    "label": "RQ-39",
+                    "line": 10,
+                    "name": "When the owner prunes a release, Univ Ingest shall delete the rows and files that no release left unpruned holds, and record when it was pruned.",
+                    "path": "spec/products/univ-ingest/releases/prune-old-releases.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                    "kind": "criterion",
+                    "label": "AC-475",
+                    "line": 23,
+                    "name": "The rows valid only in pruned releases are deleted from the catalogue database and from every object shard.",
+                    "path": "spec/products/univ-ingest/releases/prune-old-releases.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "kind": "requirement",
+                    "label": "RQ-41",
+                    "line": 13,
+                    "name": "When the owner publishes a complete release, Univ Ingest shall upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6b2-b217-764e-93d0-da89ee4e3c67",
+                    "kind": "criterion",
+                    "label": "AC-392",
+                    "line": 27,
+                    "name": "The panel is headed by the object's name: the name it was found by, or else the first proper name its sources give, or else the first designation of its record, in its catalogue's form, with its id beside it.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a497-e843-728a-bce8-3fe7201a1670",
+                    "kind": "criterion",
+                    "label": "AC-394",
+                    "line": 31,
+                    "name": "The panel gives the object's names and designations, each designation in its catalogue's form, each with the title of its source, and a designation that more than one source gives once, with all of them.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                    "kind": "criterion",
+                    "label": "AC-408",
+                    "line": 43,
+                    "name": "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1e-d177-716d-b124-3cf23344602c",
+                    "kind": "constraint",
+                    "label": "CON-3",
+                    "line": 24,
+                    "name": "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, counting each row once whichever releases hold it, and budgeting the rows of the release latest points to at 4.5 GB in each so that a release changing every row can be published before the previous one is pruned.",
+                    "path": "spec/components/ingest-pipeline.yaml"
+                  }
+                ],
+                "commit": "d5c230ffe4e63c682381e8c4a9cbe82494508cb1",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/atlas",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml",
+                  "spec/products/univ-explorer/product.yaml",
+                  "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml",
+                  "spec/products/univ-ingest/acquisition/define-a-source.yaml",
+                  "spec/products/univ-ingest/identity/cross-match-catalogues.yaml",
+                  "spec/products/univ-server/reference-data/look-up-an-object.yaml",
+                  "spec/products/univ-server/reference-data/read-a-source.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1b7dc-72f3-70ae-b7ed-519f250c3753
+    id: spec-approval
+    kind: approval
+    versions:
+      - key: 01a1b7dc-72f3-70ae-b7ed-51a5d82dc08e
+        at: 2026-11-07T21:14:00Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Approve the spec change for the atlas, the object record, designations and names"
+        markdown: |-
+          **Explorer**
+          - New Feature *Frame the view as an atlas*:
+            - live coordinate ticks on the view's edges, RA in hours;
+            - panels in the left, right and bottom margins, never over the view at 1,024 px and wider, folding into buttons below that;
+            - a scale bar of round lengths;
+            - structures named in italic type, objects in upright type.
+          - *Read an object*:
+            - The heading is the name it was found by, then a proper name, then the first designation in its catalogue's form.
+            - A designation given by more than one source is listed once.
+            - The panel adds sky position (RA/Dec and l/b), magnitudes, motion and redshift, groups and members, the structures that hold the object, and flags with their meanings.
+            - Every value carries its kind-of-value mark.
+            - The hover label shows the name after a 0.3 s rest.
+
+          **Ingest**
+          - Source definitions may give a cited designation form (`HIP {identifier}`) and the cited meanings of flag values. A form without exactly one `{identifier}` is refused.
+          - Share-alike terms are marked, with the clause quoted.
+          - An object's designations are ordered by rank in the designation rules, and each formatted designation is also a name the object is found by.
+          - Name sources:
+            - IAU names join by HIP; galaxy names join by PGC or 2MASX, else by position.
+            - Proper names are kept apart from designations.
+            - Duplicate and nonexistent rows are left out with their reasons.
+            - A name that joins nothing becomes a sky-position-only object.
+
+          **Server**
+          - The record gives each designation both raw and formatted, in rank order, with each entry's flags.
+          - "HIP 32754" resolves as a name does.
+          - A source's record gives its designation form, its flag meanings and whether it is share-alike.
+
+          Look at AC-392 and AC-394, the two reworded published criteria, and at the sky-position-only objects, which the questions below decide.
+    responses:
+      - key: 01a1b7dd-a86c-776c-a9a2-4fbe111ac62d
+        at: 2026-11-07T21:15:19Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1b7dc-72f3-70ae-b7ed-51a0a3566bc8
+    id: q-openngc
+    kind: question
+    versions:
+      - key: 01a1b7dc-72f3-70ae-b7ed-51a656c7f3ef
+        at: 2026-11-07T21:14:00Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "OpenNGC's terms are CC BY-SA 4.0: data adapted from it must be shared under the same licence. Should release 12 adopt it?"
+        header: "OpenNGC"
+        context: "OpenNGC is the one open source of NGC/IC designations, Messier numbers and galaxy common names such as \"Andromeda Galaxy\". Share-alike covers the adapted database, not other sources' data, so its names would be published as a separable source marked share-alike, crediting Mattia Verga. The copyrighted alternative, NGC 2000.0, cannot be redistributed."
+        options:
+          - label: "Adopt, share-alike"
+            detail: "M31, NGC 4472 and \"Andromeda Galaxy\" resolve, and NGC/IC numbers head galaxy panels. Its names are marked share-alike in the source record and in the credits. Recommended: there is no open alternative of the same coverage."
+            recommended: true
+          - label: "Skip OpenNGC"
+            detail: "Only IAU star names now. Galaxies keep their survey designations (2MASS, PGC), and M31 still does not resolve until a CC0 source such as Wikidata is added later."
+    responses:
+      - key: 01a1b7dd-a86c-776c-a9a2-4fbf9f15487e
+        at: 2026-11-07T21:15:19Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Adopt, share-alike"
+  - key: 01a1b7dc-72f3-70ae-b7ed-51a1bf98bc34
+    id: q-sky-only
+    kind: question
+    versions:
+      - key: 01a1b7dc-72f3-70ae-b7ed-51a7302b58c6
+        at: 2026-11-07T21:14:00Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "What should happen to names that match no object we hold, such as most Messier clusters and nebulae (M42, M45) and stars without a HIP number?"
+        header: "Unmatched"
+        context: "About 2,580 OpenNGC rows are clusters, nebulae or stars, including 70 of the 110 Messier objects, and 74 IAU names have no HIP number. None of our catalogues has an object for them, and they have no distance."
+        options:
+          - label: "Sky-only objects"
+            detail: "Each becomes an object with its sky position and no distance, so searching \"M42\" finds it and its panel says it is not placed. It is not drawn in 3D until a source gives it a distance. Recommended: the names stay findable, and nothing is drawn where we don't know the distance."
+            recommended: true
+          - label: "Leave them out"
+            detail: "Only names that join an object we already hold are kept. The rest are counted under a left-out reason, and searching \"M42\" finds nothing."
+    responses:
+      - key: 01a1b7dd-a86c-776c-a9a2-4fc041cff1f1
+        at: 2026-11-07T21:15:19Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Sky-only objects"
+  - key: 01a1b7dc-72f3-70ae-b7ed-51a2ff9deefe
+    id: q-iau-copy
+    kind: question
+    versions:
+      - key: 01a1b7dc-72f3-70ae-b7ed-51a8aef7d4c0
+        at: 2026-11-07T21:14:00Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "How should the IAU star-name list be taken in?"
+        header: "IAU list"
+        context: "The current list (652 names, to 2026-10-15) is only an HTML table at exopla.net. The last text file is from 2022 and has 452 names. The names are public domain."
+        options:
+          - label: "Snapshot in repo"
+            detail: "Read the live table once into a YAML file under the repository, with the date it was read, as the researched star files are. Rebuilds stay reproducible offline, and an update is a new snapshot. Recommended."
+            recommended: true
+          - label: "Fetch the 2022 file"
+            detail: "Fetch the plain-text file each run, like the other sources. Simpler to keep, but 200 newer names are missing."
+          - label: "Scrape each run"
+            detail: "Fetch and parse the live HTML table on every fetch. Always current, but it needs a new HTML-table access method and breaks if the page changes."
+    responses:
+      - key: 01a1b7dd-a86c-776c-a9a2-4fc1c589e4db
+        at: 2026-11-07T21:15:19Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Snapshot in repo"
+  - key: 01a1b7dd-c877-776d-a92b-1d869ea6bbec
+    id: d-openngc
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1b7dd-c877-776d-a92b-1d899a2d2f0c
+        at: 2026-11-07T21:15:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "OpenNGC is adopted as a share-alike names source"
+        consequence: "NGC/IC designations, Messier numbers and galaxy common names come from OpenNGC v20260501. The source is marked share-alike, quotes its CC BY-SA 4.0 clause and credits Mattia Verga, and its names stay a separable source in the release."
+        question: 01a1b7dc-72f3-70ae-b7ed-51a0a3566bc8
+  - key: 01a1b7dd-c877-776d-a92b-1d8721c5899d
+    id: d-sky-only
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1b7dd-c877-776d-a92b-1d8ad284f592
+        at: 2026-11-07T21:15:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Names that join nothing become sky-only objects"
+        consequence: "M42, M45 and stars without a HIP number become objects with a sky position and no distance. Search finds them, the panel says they are not placed, and the view draws nothing for them."
+        question: 01a1b7dc-72f3-70ae-b7ed-51a1bf98bc34
+  - key: 01a1b7dd-c877-776d-a92b-1d88b7ae096b
+    id: d-iau-snapshot
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1b7dd-c877-776d-a92b-1d8b16e79a8b
+        at: 2026-11-07T21:15:27Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The IAU list is a dated snapshot in the repository"
+        consequence: "The 652 names are read once from the live WGSN table into a repository YAML file with the date read, joined by HIP. The source's access is `repository`, like the researched stars, and an update is a new snapshot."
+        question: 01a1b7dc-72f3-70ae-b7ed-51a2ff9deefe

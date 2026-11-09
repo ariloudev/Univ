@@ -1,5 +1,5 @@
-//! Pruning release n: its R2 files and its rows of the tables of one release deleted, and its
-//! pruning time recorded in the list of releases, which keeps it (AC-100), beside the id
+//! Pruning release n: the R2 files and the rows of the tables of releases that n holds and no
+//! release left unpruned shares deleted, and its pruning time recorded in the list of releases, which keeps it (AC-100), beside the id
 //! ledger, which is never pruned (AC-99). The release `latest` points to is refused (AC-101).
 //!
 //! The steps can run again: R2 files are deleted first, all but the manifest in one batch and
@@ -23,13 +23,16 @@ use std::path::{Path, PathBuf};
 
 use univ_model::release::manifest::Target;
 use univ_model::release::shards::Database;
-use univ_model::release::{ReleaseManifest, Scope, TABLES, keys};
+use univ_model::release::{ReleaseManifest, Scope, TABLES, keys, valid_in};
 
-use super::check::{Status, published_status, sql_text, tables_in};
+use super::check::{
+    Status, counts_of, execute_sql, kept_releases, published_status, r2_manifest, sha256s,
+    sql_text, tables_in,
+};
 use super::journal::{self, Journal};
 use super::progress::{Lines, Progress};
 use super::{Latest, Store, StoreOptions};
-use crate::release::{parse_manifest, read_manifest, release_dir};
+use crate::release::{read_manifest, release_dir};
 use crate::watch::STOPPED;
 
 /// A release pruned.
@@ -103,12 +106,8 @@ fn manifest_of(
     number: u32,
     out: &Path,
 ) -> Result<Option<ReleaseManifest>, String> {
-    let key = keys::key(number, keys::MANIFEST);
-    if let Some(bytes) = store.get(&key)? {
-        let text = String::from_utf8_lossy(&bytes);
-        return parse_manifest(Path::new(&key), &text, number)
-            .map(Some)
-            .map_err(|e| e.to_string());
+    if let Some(manifest) = r2_manifest(store, number)? {
+        return Ok(Some(manifest));
     }
     let dir = release_dir(out, number);
     if !dir.join(keys::MANIFEST).exists() {
@@ -119,24 +118,35 @@ fn manifest_of(
         .map_err(|e| e.to_string())
 }
 
-/// The R2 keys of release `number` that its manifest and its publish journal name, or none
-/// when neither is left; and whether the journal named any.
+/// The R2 keys of release `number` that its manifest and its publish journal name and that no
+/// other release left unpruned holds, or none when neither is left; and whether the journal
+/// named any.
 fn r2_keys(
     store: &mut dyn Store,
-    number: u32,
+    (number, status): (u32, &Status),
     options: &StoreOptions<'_>,
 ) -> Result<(Option<BTreeSet<String>>, bool), String> {
-    let prefix = keys::prefix(number);
     let manifest = manifest_of(store, number, options.out)?;
     let journal = Journal::read(options.journals, number).map_err(|e| e.to_string())?;
-    if manifest.is_none() && journal.is_none() {
+    // The files its map of paths names: a release brought under shared rows has a manifest
+    // that names their keys under its prefix.
+    let mapped = if status.file_map {
+        let sql = format!(
+            "SELECT DISTINCT sha256 FROM release_files WHERE {}",
+            valid_in("", number)
+        );
+        sha256s(store, &sql)?
+    } else {
+        BTreeSet::new()
+    };
+    if manifest.is_none() && journal.is_none() && mapped.is_empty() {
         return Ok((None, false));
     }
-    let mut found = BTreeSet::new();
+    let mut found: BTreeSet<String> = mapped.iter().map(|s| keys::file(s)).collect();
     if let Some(m) = &manifest {
         let r2 = m.files.iter().filter(|f| f.target == Target::R2);
         found.extend(r2.filter_map(|f| f.key.clone()));
-        found.insert(keys::key(number, keys::MANIFEST));
+        found.insert(keys::manifest(number));
     }
     let journaled: Vec<String> = journal
         .iter()
@@ -146,13 +156,56 @@ fn r2_keys(
         .collect();
     let any_journaled = !journaled.is_empty();
     found.extend(journaled);
-    found.retain(|k| k.starts_with(&prefix));
+    let mut held = held_elsewhere(store, number)?;
+    held.extend(journaled_elsewhere(options.journals, number)?);
+    let manifest = keys::manifest(number);
+    found.retain(|k| *k == manifest || (k.starts_with(keys::FILES) && !held.contains(k)));
     Ok((Some(found), any_journaled))
+}
+
+/// The R2 keys that the publish journal of a release other than `number` records as uploaded:
+/// a release part way through publishing holds its files before its `release_files` are in D1.
+fn journaled_elsewhere(journals: &Path, number: u32) -> Result<BTreeSet<String>, String> {
+    let Ok(entries) = std::fs::read_dir(journals) else {
+        return Ok(BTreeSet::new());
+    };
+    let mut keys = BTreeSet::new();
+    for entry in entries.filter_map(Result::ok) {
+        let name = entry.file_name();
+        let other = name
+            .to_str()
+            .and_then(|n| n.strip_prefix("publish-")?.strip_suffix(".yaml"))
+            .and_then(|n| n.parse::<u32>().ok())
+            .filter(|&n| n != number);
+        let Some(other) = other else { continue };
+        let journal = Journal::read(journals, other).map_err(|e| e.to_string())?;
+        keys.extend(
+            journal
+                .iter()
+                .flat_map(|j| &j.done)
+                .filter(|d| d.target == Target::R2)
+                .filter_map(|d| d.key.clone()),
+        );
+    }
+    Ok(keys)
+}
+
+/// The R2 keys of the files that a release left unpruned, other than `number`, maps a path to.
+fn held_elsewhere(store: &mut dyn Store, number: u32) -> Result<BTreeSet<String>, String> {
+    let sql = format!(
+        "SELECT DISTINCT f.sha256 AS sha256 FROM release_files f JOIN releases r \
+         ON r.pruned_at IS NULL AND r.number != {number} AND {}",
+        valid_in("f.", "r.number")
+    );
+    Ok(sha256s(store, &sql)?
+        .iter()
+        .map(|s| keys::file(s))
+        .collect())
 }
 
 /// Deletes `keys`: all but the release's manifest in one batch, then the manifest.
 fn delete_all(store: &mut dyn Store, number: u32, keys: &BTreeSet<String>) -> Result<(), String> {
-    let manifest = keys::key(number, keys::MANIFEST);
+    let manifest = keys::manifest(number);
     let rest: Vec<String> = keys.iter().filter(|k| **k != manifest).cloned().collect();
     store.delete_keys(&rest)?;
     if keys.contains(&manifest) {
@@ -204,7 +257,10 @@ fn databases(
     let per_release = || TABLES.iter().filter(|t| t.scope == Scope::PerRelease);
     let mut held = Vec::new();
     if status.shard_index {
-        let sql = format!("SELECT shard FROM release_shards WHERE release = {number}");
+        let sql = format!(
+            "SELECT shard FROM release_shards WHERE {}",
+            valid_in("", number)
+        );
         for row in store.query(Database::Catalogue, &sql)? {
             let shard = row
                 .get("shard")
@@ -226,46 +282,48 @@ fn databases(
     Ok(held)
 }
 
-/// The rows of release `number` in `tables` of `database`, as one sum of counts (D1 limits the
-/// terms of a compound `SELECT`, so no `UNION`).
+/// The SQL condition selecting the rows a prune of release `number` deletes: those valid in it
+/// and in none of the releases `kept`. A row is valid in an unbroken run of releases, from its
+/// `release` until its `retired`, so it is valid in no kept release when that run lies after
+/// the last kept release before `number` and ends by the first kept release after it.
+fn pruned_rows(number: u32, kept: &[u32]) -> String {
+    let before = kept.iter().filter(|&&k| k < number).max();
+    let after = kept.iter().filter(|&&k| k > number).min();
+    std::iter::once(valid_in("", number))
+        .chain(before.map(|b| format!("release > {b}")))
+        .chain(after.map(|a| format!("retired IS NOT NULL AND retired <= {a}")))
+        .collect::<Vec<_>>()
+        .join(" AND ")
+}
+
+/// The rows `filter` selects in `tables` of `database`, summed.
 fn rows_of(
     store: &mut dyn Store,
     database: Database,
     tables: &[&str],
-    number: u32,
+    filter: &str,
 ) -> Result<u64, String> {
-    let counts: Vec<String> = tables
-        .iter()
-        .map(|t| format!("(SELECT COUNT(*) FROM {t} WHERE release = {number})"))
-        .collect();
-    let rows = store.query(database, &format!("SELECT {} AS n", counts.join(" + ")))?;
-    rows.first()
-        .and_then(|r| r.get("n"))
-        .and_then(serde_json::Value::as_u64)
-        .ok_or_else(|| format!("{database} gave no count of the rows of release {number}"))
+    let each: Vec<(&str, String)> = tables.iter().map(|t| (*t, filter.to_owned())).collect();
+    Ok(counts_of(store, database, &each)?.iter().sum())
 }
 
-/// Deletes release `number`'s rows of `tables` from `database`, and runs `then` after, in one
-/// file written to `journals`.
+/// Deletes the rows of `tables` from `database` that `filter` selects, and runs `then` after,
+/// in one file written to `journals`, named for release `number`.
 fn delete_rows(
     store: &mut dyn Store,
     (database, tables): (Database, &[&str]),
-    number: u32,
+    (number, filter): (u32, &str),
     journals: &Path,
     then: Option<String>,
 ) -> Result<(), String> {
     let mut statements: Vec<String> = tables
         .iter()
-        .map(|t| format!("DELETE FROM {t} WHERE release = {number};"))
+        .map(|t| format!("DELETE FROM {t} WHERE {filter};"))
         .collect();
     statements.extend(then);
     let sql = statements.join("\n") + "\n";
-    std::fs::create_dir_all(journals).map_err(|e| e.to_string())?;
     let file = journals.join(format!("prune-{number}-{}.sql", database.dir()));
-    std::fs::write(&file, sql).map_err(|e| format!("{}: {e}", file.display()))?;
-    let executed = store.execute_file(database, &file);
-    let _ = std::fs::remove_file(&file);
-    executed
+    execute_sql(store, database, &file, &sql)
 }
 
 /// Prunes release `number` from `store`. `progress` is given a line for each step.
@@ -301,8 +359,7 @@ pub fn prune_with(
     if latest.0 == Some(number) {
         return Err(PruneError::Latest { number });
     }
-    let (listing, journaled) = r2_keys(store, number, options).map_err(failed)?;
-    let prefix = keys::prefix(number);
+    let (listing, journaled) = r2_keys(store, (number, &status), options).map_err(failed)?;
     if !status.listed {
         let Some(keys) = listing.filter(|_| journaled) else {
             return Err(PruneError::NotListed { number });
@@ -312,7 +369,7 @@ pub fn prune_with(
         delete_all(store, number, &keys).map_err(failed)?;
         progress.line(format!(
             "release {number}: never listed in D1, but its journal records R2 uploads: the {} \
-             keys under {prefix} its journal and manifest name deleted",
+             keys its journal and manifest name that no other release holds deleted",
             keys.len()
         ));
         let pruned_at = (options.now)();
@@ -340,7 +397,7 @@ pub fn prune_with(
         None => return Err(PruneError::NoFileList { number }),
     };
     progress.line(format!(
-        "release {number}: {files} R2 files under {prefix} deleted"
+        "release {number}: {files} R2 files that no release left unpruned holds deleted"
     ));
     if progress.stopping() {
         return Err(failed(STOPPED.to_owned()));
@@ -348,9 +405,11 @@ pub fn prune_with(
     // Each object shard's rows, then the catalogue's with the pruning time, last: a prune
     // stopped part way still finds the shards by the catalogue's index.
     let held = databases(store, number, &status).map_err(failed)?;
+    let kept = kept_releases(store, number).map_err(failed)?;
+    let filter = pruned_rows(number, &kept);
     let mut rows = 0;
     for (database, tables) in &held {
-        rows += rows_of(store, *database, tables, number).map_err(failed)?;
+        rows += rows_of(store, *database, tables, &filter).map_err(failed)?;
         let then = (*database == Database::Catalogue).then(|| {
             format!(
                 "UPDATE releases SET pruned_at = {} WHERE number = {number} AND pruned_at IS \
@@ -358,17 +417,25 @@ pub fn prune_with(
                 sql_text(&(options.now)())
             )
         });
-        delete_rows(store, (*database, tables), number, options.journals, then).map_err(failed)?;
-        let left = rows_of(store, *database, tables, number).map_err(failed)?;
+        delete_rows(
+            store,
+            (*database, tables),
+            (number, &filter),
+            options.journals,
+            then,
+        )
+        .map_err(failed)?;
+        let left = rows_of(store, *database, tables, &filter).map_err(failed)?;
         if left > 0 {
             return Err(failed(format!(
-                "{database} still holds {left} rows of release {number}"
+                "{database} still holds {left} rows of release {number} that no release kept \
+                 holds"
             )));
         }
     }
     let shards = held.len().saturating_sub(1);
     progress.line(format!(
-        "release {number}: {rows} rows deleted from the tables of one release, in the \
+        "release {number}: {rows} rows that no release left unpruned holds deleted, in the \
          catalogue database and {shards} object shard(s); the list of releases and the id \
          ledger are kept"
     ));

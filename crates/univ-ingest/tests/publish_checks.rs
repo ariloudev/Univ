@@ -1,7 +1,7 @@
 //! What publishing checks beyond the uploads themselves, against an in-memory D1 and R2: each
 //! table's rows reaching D1 as built (a text Wrangler would strip, a row altered on the way),
-//! the CON-3 cap over every release not pruned, and a missing publication time recorded by a
-//! rerun once every unit is journaled.
+//! the refusals before any upload, and a missing publication time recorded by a rerun once
+//! every unit is journaled. The CON-3 cap is in `publish_cap`.
 
 #![expect(
     clippy::unwrap_used,
@@ -13,11 +13,10 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, publishing};
-use release_fixture::{build_next, fixture, read_manifest};
+use release_fixture::{build_next, fixture};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
-use univ_model::release::D1_CAP_BYTES;
-use univ_model::release::shards::Database;
+use univ_model::release::SCHEMA_VERSION;
 
 /// What `latest` points to, by D1.
 fn latest(store: &MemoryStore) -> Option<i64> {
@@ -100,71 +99,6 @@ fn a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure
 }
 
 #[test]
-fn a_release_beyond_the_cap_with_those_not_pruned_is_refused_with_both_estimates() {
-    let f = fixture();
-    build_next(&f);
-    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
-    let mut store = MemoryStore::default();
-    publishing(
-        &mut store,
-        1,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap();
-    let recorded = store.int("SELECT d1_estimated_bytes FROM releases WHERE number = 1");
-    let built = build_next(&f);
-    assert_eq!(
-        u64::try_from(recorded).unwrap(),
-        read_manifest(&univ_ingest::release::release_dir(f.out.path(), 1))
-            .d1
-            .estimated_bytes
-    );
-    // Release 1 as if it took nearly all of the cap.
-    let others = D1_CAP_BYTES - 1000;
-    store
-        .db
-        .execute(
-            &format!("UPDATE releases SET d1_estimated_bytes = {others} WHERE number = 1"),
-            [],
-        )
-        .unwrap();
-    store.reset();
-    let refused = publishing(
-        &mut store,
-        2,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap_err();
-    let this = built.manifest.d1.estimated_bytes;
-    assert_eq!(
-        refused,
-        PublishError::OverCap {
-            number: 2,
-            database: Database::Catalogue,
-            this,
-            others,
-            releases: 1
-        }
-    );
-    let message = refused.to_string();
-    assert!(
-        message.contains(&format!(
-            "its rows in the catalogue database are estimated at {this} bytes"
-        )) && message.contains(&format!("1 release(s) not pruned at {others} bytes"))
-            && message.contains("beyond the 10 GB cap of 10000000000 bytes"),
-        "{message}"
-    );
-    assert_eq!(store.uploaded(), Vec::<String>::new());
-    assert_eq!(latest(&store), Some(1));
-}
-
-#[test]
 fn a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled() {
     let f = fixture();
     build_next(&f);
@@ -237,62 +171,6 @@ fn a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled() {
 }
 
 #[test]
-fn a_release_beyond_the_cap_in_one_object_shard_is_refused_naming_the_shard() {
-    let f = fixture();
-    build_next(&f);
-    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
-    let mut store = MemoryStore::default();
-    publishing(
-        &mut store,
-        1,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap();
-    // Release 1 as if its shard 1 took nearly all of the cap.
-    let others = D1_CAP_BYTES - 10;
-    store
-        .db
-        .execute(
-            &format!(
-                "UPDATE release_shards SET estimated_bytes = {others} WHERE release = 1 AND \
-                 shard = 1"
-            ),
-            [],
-        )
-        .unwrap();
-    let built = build_next(&f);
-    store.reset();
-    let refused = publishing(
-        &mut store,
-        2,
-        f.out.path(),
-        f.state.path(),
-        journals.path(),
-        &clock,
-    )
-    .unwrap_err();
-    assert_eq!(
-        refused,
-        PublishError::OverCap {
-            number: 2,
-            database: Database::Shard(1),
-            this: built.manifest.shards[1].d1.estimated_bytes,
-            others,
-            releases: 1
-        }
-    );
-    assert!(
-        refused
-            .to_string()
-            .contains("its rows in object shard 1 are estimated at")
-    );
-    assert_eq!(store.uploaded(), Vec::<String>::new());
-}
-
-#[test]
 fn a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload() {
     let f = fixture();
     let built = build_next(&f);
@@ -328,5 +206,173 @@ fn a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload() {
         "{message}"
     );
     assert_eq!(store.uploaded(), Vec::<String>::new());
-    assert!(store.r2.is_empty() && store.shards.is_empty());
+    // Only the shards it binds were read, and none was written to.
+    assert!(store.r2.is_empty());
+    assert!(store.shards.keys().all(|&i| i < needs - 1));
+    assert!(
+        store
+            .shards
+            .values()
+            .all(|db| memory_store::int(db, "SELECT COUNT(*) FROM sqlite_master") == 0)
+    );
+}
+
+#[test]
+fn a_database_of_an_older_schema_is_refused_before_anything_is_uploaded() {
+    let f = fixture();
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // A catalogue of schema 4, older than the one a publish migrates (schema 5).
+    store
+        .db
+        .execute_batch(
+            "CREATE TABLE schema_version (version INTEGER PRIMARY KEY);
+             INSERT INTO schema_version VALUES (4);",
+        )
+        .unwrap();
+    let error = publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert!(
+        matches!(
+            &error,
+            PublishError::OlderSchema {
+                holds: 4,
+                needs: SCHEMA_VERSION,
+                ..
+            }
+        ),
+        "{error}"
+    );
+    assert!(
+        error.to_string().contains("nothing was uploaded"),
+        "{error}"
+    );
+    assert!(store.r2.is_empty());
+    assert!(!store.ops.iter().any(|o| matches!(o, Op::Execute(_))));
+}
+
+#[test]
+fn a_release_built_on_a_parent_latest_does_not_point_to_is_refused() {
+    let f = fixture();
+    build_next(&f);
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // Release 2 holds only its change from release 1, which was never published.
+    let error = publishing(
+        &mut store,
+        2,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert!(
+        matches!(
+            &error,
+            PublishError::NotOnLatest {
+                number: 2,
+                parent: 1,
+                latest: None
+            }
+        ),
+        "{error}"
+    );
+    // The message names the release it was built on and where latest points.
+    let said = error.to_string();
+    assert!(
+        said.contains("changed from release 1") && said.contains("latest points to no release"),
+        "{said}"
+    );
+    assert!(store.r2.is_empty());
+    assert!(!store.ops.iter().any(|o| matches!(o, Op::Execute(_))));
+}
+
+#[test]
+fn a_table_whose_rows_a_release_all_keeps_is_checked_though_it_writes_no_file_of_it() {
+    let mut f = fixture();
+    let last = f.structures.pop().unwrap();
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    build_next(&f);
+    publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap();
+    // Release 2 only adds a structure: it writes no file of the objects, whose rows it keeps.
+    f.structures.push(last);
+    let second = build_next(&f);
+    assert!(
+        !second
+            .manifest
+            .files
+            .iter()
+            .any(|file| file.path.contains("-objects-"))
+    );
+    // A row release 1 loaded is lost from D1 before release 2 is published.
+    let shard = *store.shards.keys().next().unwrap();
+    store
+        .shards
+        .get(&shard)
+        .unwrap()
+        .execute(
+            "DELETE FROM objects WHERE id = (SELECT MIN(id) FROM objects)",
+            [],
+        )
+        .unwrap();
+    let error = publishing(
+        &mut store,
+        2,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("objects"), "{error}");
+    assert_eq!(latest(&store), Some(1));
+}
+
+#[test]
+fn a_database_of_schema_6_takes_a_release_of_schema_7_with_no_migration() {
+    let f = fixture();
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // Schema 7 only adds a table to schema 6's, which the release's schema creates.
+    store
+        .db
+        .execute_batch(
+            "CREATE TABLE schema_version (version INTEGER PRIMARY KEY);
+             INSERT INTO schema_version VALUES (6);",
+        )
+        .unwrap();
+    publishing(
+        &mut store,
+        1,
+        f.out.path(),
+        f.state.path(),
+        journals.path(),
+        &clock,
+    )
+    .unwrap();
+    assert_eq!(
+        memory_store::int(&store.db, "SELECT MAX(version) FROM schema_version"),
+        i64::from(SCHEMA_VERSION)
+    );
+    assert!(memory_store::int(&store.db, "SELECT COUNT(*) FROM source_reading") > 0);
 }

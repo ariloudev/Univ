@@ -1,0 +1,34 @@
+key: 01a1bbe7-a73f-743a-a9d7-2818be187ec3
+id: w-rings
+versions:
+  - key: 01a1bbe7-a73f-743a-a9d7-281a0307efa4
+    at: 2026-11-08T16:04:43Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Distance rings"
+    goal: "The atlas view draws rings of equal distance from the barycentre, with spokes, in the chosen axes' equator, at the scale bar's length, in place of the single equator ring while switched on"
+    status: done
+blocks:
+  - key: 01a1bbe7-a73f-743a-a9d7-28194443b713
+    id: w7-merged
+    kind: note
+    versions:
+      - key: 01a1bbe7-a73f-743a-a9d7-281bbd92a3c0
+        at: 2026-11-08T16:04:43Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W7 merged: the distance rings"
+        markdown: |-
+          stage/atlas-w7 merged at 9410882 after the review fixes, the full gate and integration (14 explorer e2e tests). Its Yard Log has the details.
+
+          - **What the owner approved:** a new requirement under frame-the-view-as-an-atlas, with nine criteria.
+          - **Plan mode:** the plan was presented again through plan mode after the owner asked why it hadn't been. Later waves' plans go through plan mode.
+          - **Two minor spec changes:** labels go on the arcs' middle line where only arcs are drawn, and the rings may run on to 4 × the eye's distance so that a moving view keeps them.
+          - **Open for the owner:** at a shallow angle the far rings crowd into a band near the horizon. A shorter reach would thin it.
+
+          product/atlas is not merged into develop or main, and nothing is pushed, published or deployed.
+        tone: success

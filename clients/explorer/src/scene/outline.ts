@@ -2,7 +2,8 @@
 // rings and edges, paths, rays and ranges as lines, points and member lists as markers. Every
 // position is ICRS megaparsecs once `place` has turned it from the shape's frame and unit.
 
-import { type Vec3, add, scale, sub } from "./vec.ts";
+import type { Flow } from "./kinds.ts";
+import { ORIGIN, type Vec3, add, scale, sub } from "./vec.ts";
 
 /** Segments of each ring of a sphere or an ellipsoid. */
 const SEGMENTS = 96;
@@ -61,4 +62,37 @@ export function boundsEdges(min: Vec3, max: Vec3): Vec3[] {
     [0, half[1], 0],
     [0, 0, half[2]],
   ]);
+}
+
+/** Where an arrow of the flow symbol starts and ends, in its sphere's radii from its centre, and
+ * how long and wide its head is. */
+const ARROW_NEAR = 1.15;
+/** How far the flow symbol's arrows reach, in its sphere's radii. */
+export const FLOW_REACH = 2;
+const HEAD_BACK = 0.3;
+const HEAD_ACROSS = 0.15;
+
+/** The segments of an arrow from `tail` to `tip`, pointing along the unit vector `towards`, its
+ * head four barbs back from the tip, across along `u` and along `v`. */
+function arrow(tail: Vec3, tip: Vec3, towards: Vec3, u: Vec3, v: Vec3): Vec3[] {
+  const back = scale(towards, -HEAD_BACK);
+  const barbs = [u, scale(u, -1), v, scale(v, -1)].flatMap((across) => [tip, add(add(tip, back), scale(across, HEAD_ACROSS))]);
+  return [tail, tip, ...barbs];
+}
+
+/** The symbol of a centre of a flow (see-the-structures), about the origin with a radius of one:
+ * a sphere as three rings in the planes of `axes`, unit vectors, and an arrow along each axis
+ * either way, pointing in toward the centre where the flow runs `in`, and out where it runs
+ * `out`. */
+export function flowSymbol(flow: Flow, axes: readonly [Vec3, Vec3, Vec3]): Vec3[] {
+  const arrows = axes.flatMap((axis, k) => {
+    const u = axes[(k + 1) % 3] ?? axis;
+    const v = axes[(k + 2) % 3] ?? axis;
+    return [axis, scale(axis, -1)].flatMap((way) => {
+      const near = scale(way, ARROW_NEAR);
+      const far = scale(way, FLOW_REACH);
+      return flow === "in" ? arrow(far, near, scale(way, -1), u, v) : arrow(near, far, way, u, v);
+    });
+  });
+  return [...rings(ORIGIN, axes), ...arrows];
 }

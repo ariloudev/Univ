@@ -1,0 +1,135 @@
+key: 01a1b7d4-7643-74c0-a873-b02acdf91bfd
+id: w-release-12
+versions:
+  - key: 01a1b7d4-7643-74c0-a873-b0312f1e1198
+    at: 2026-11-07T21:05:16Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Release 12"
+    goal: "Release 12, with designations and names, built and published locally after the owner's approval, and seen in the explorer"
+    status: planned
+  - key: 01a1b888-4f37-759e-a2ce-d8fdf1ea358a
+    at: 2026-11-08T00:21:43Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Release 12"
+    goal: "Release 12, with designations and names, built and published locally after the owner's approval, and seen in the explorer"
+    status: active
+  - key: 01a1b9ff-9531-7166-9023-10675e0c65b4
+    at: 2026-11-08T07:11:37Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Release 12"
+    goal: "Release 12, with designations and names, built and published locally after the owner's approval, and seen in the explorer"
+    status: done
+blocks:
+  - key: 01a1b7e5-22ce-727d-bcf2-72b0d4172d7d
+    id: t5-run
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72c254cdd5b2
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build and publish release 12, then measure"
+        detail: "After the owner's approval: back up, fetch OpenNGC, build, publish, check lookups and the panel in the explorer, and run the benches. Done when the write-up is recorded."
+        state: open
+      - key: 01a1b8dc-70ac-73e5-b720-48e404ad7a78
+        at: 2026-11-08T01:53:36Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build and publish release 12, then measure"
+        detail: "Backed up; building offline."
+        state: active
+      - key: 01a1b8f5-dac7-745a-a057-d7ee8484350b
+        at: 2026-11-08T02:21:22Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build and publish release 12, then measure"
+        detail: "Built offline (36,947,976 objects, 3,780 new ids, 510 replaced: 215 merged, 295 split). Science replaying the build chain fails on release 11's pre-schema-7 SQL (`no such column: retired`); a change release is checked with `--store`, so it runs on the local D1 once the publish ends. Publishing."
+        state: active
+      - key: 01a1b9ff-9531-7166-9023-10650c394d92
+        at: 2026-11-08T07:11:37Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build and publish release 12, then measure"
+        detail: "Done on stage/atlas-w5, merged at c223420."
+        state: done
+  - key: 01a1b888-4f37-759e-a2ce-d8f7f5cf4dd4
+    id: r12-approval
+    kind: approval
+    versions:
+      - key: 01a1b888-4f37-759e-a2ce-d8feb94351f6
+        at: 2026-11-08T00:21:43Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build and publish release 12 locally"
+        markdown: |-
+          W1 to W4 are merged into product/atlas. Release 12 is the first to hold the designation forms, flag meanings, ranks and the two name sources. Release 11 has none of these: the explorer heads HIP 32754 by its Bailer-Jones id, and "Sirius" or "M31" don't resolve.
+
+          **Checked already, offline, normalizing the two new sources only:**
+          - OpenNGC: 13,371 entries, 662 left out (652 Dup, 10 NonEx).
+          - IAU star names: 637 entries, 14 left out with no position.
+
+          **The run, all local, with no request to any provider:**
+          1. Back up the local D1 and R2 (`.cache/univ-ingest/wrangler`, 32 GB; 1 TB is free) and the id state.
+          2. `univ-ingest build --offline`: release 12, built as a change on 11 from the cache.
+          3. `cargo xtask science` on it.
+          4. `univ-ingest publish` to the local D1 and R2. The store moves to schema 7 on this publish, adding one table, with no migration.
+          5. Check that "Sirius", "M31", "Andromeda Galaxy", "NGC 4472" and "HIP 32754" resolve. Read the panel in the explorer and take the screenshots you asked for. Run `bench lookup` (QA-2) and `bench first-points`, and record D1 and R2 growth.
+
+          Nothing is pushed, merged into develop or main, published with loft, or deployed.
+    responses:
+      - key: 01a1b8db-f921-7674-b0af-de4373452afb
+        at: 2026-11-08T01:53:06Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1b8dc-70ac-73e5-b720-48e22cbba579
+    id: d-r12
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1b8dc-70ac-73e5-b720-48e3b4be1ebb
+        at: 2026-11-08T01:53:36Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 12 is built and published locally"
+        consequence: "The local D1 and R2 and the id state were backed up to `.cache/univ-ingest/backup-r11/`; release 12 is built offline from the cache as a change on 11, checked, and published locally, moving the store to schema 7."
+  - key: 01a1b9ff-9531-7166-9023-106486f00350
+    id: w5-merged
+    kind: note
+    versions:
+      - key: 01a1b9ff-9531-7166-9023-10660e153394
+        at: 2026-11-08T07:11:37Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W5 merged: the atlas plan is complete"
+        markdown: |-
+          stage/atlas-w5 merged at c223420 after its review fixes, the full gate and integration. Release 12 is published locally (not deployed): every name lookup resolves, lookup p95 3.6 ms, first points p95 373 ms. Science: 30 PASS, 3 FAIL (two cross-match regressions from OpenNGC, and the fingerprint check's gap on change releases), 3 CONCERN.
+
+          The owner chose a follow-up wave for release 13: the cross-match rule, the fingerprint check, and names not given twice by ingest. product/atlas is not merged into develop or main, and nothing is pushed, published or deployed.
+        tone: success

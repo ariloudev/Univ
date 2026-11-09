@@ -172,7 +172,14 @@ fn load() -> Loaded {
              WHERE release = 1 AND object_id = ?1 ORDER BY identifier DESC",
             id,
         );
-        let record = object(&v, &one.remove(0), &entries, &measurements, &designations)
+        // As Univ Server reads them from the catalogue.
+        let names = rows(
+            &db,
+            "SELECT source, name FROM names WHERE release = 1 AND object_id = ?1",
+            id,
+        );
+        let rows = [entries, measurements, designations, names];
+        let record = object(&v, &one.remove(0), &rows[0], &rows[1], &rows[2], &rows[3])
             .unwrap_or_else(|e| panic!("object {id}: {e}"));
         pairs.push((o, record));
     }

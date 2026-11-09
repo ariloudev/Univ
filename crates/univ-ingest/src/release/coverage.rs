@@ -25,6 +25,7 @@ use univ_model::units::Unit;
 
 use super::objects::{json as to_text, snake};
 use super::sky::{COVERAGE_ORDER, cell};
+use super::terms::SourceIndex;
 use super::terms::variant_name;
 use crate::crossmatch::ReleaseObject;
 use crate::source::SourceDefinition;
@@ -258,24 +259,25 @@ pub fn coverages(
     out
 }
 
-/// The `source_details` rows of release `release`: each of `definitions`, numbered by its place
-/// among them as `sources.n` is, with its reference and its coverage among `coverages`.
+/// The `source_details` rows of release `release`: each of `definitions`, numbered by `index`
+/// as `sources.n` is, with its reference and its coverage among `coverages`.
 ///
 /// # Errors
 ///
-/// Fails when a value cannot be written as JSON.
+/// Fails when a source has no index or a value cannot be written as JSON.
 pub fn source_detail_rows(
     release: u32,
     definitions: &[SourceDefinition],
+    index: &SourceIndex,
     coverages: &BTreeMap<SourceId, Coverage>,
 ) -> Result<Vec<SourceDetailRow>, String> {
-    (0u32..)
-        .zip(definitions)
-        .map(|(n, d)| {
+    definitions
+        .iter()
+        .map(|d| {
             let coverage = coverages.get(&d.id);
             Ok(SourceDetailRow {
                 release,
-                source: n,
+                source: index.indexed(&d.id)?,
                 bibcode: d.reference.bibcode.clone(),
                 doi: d.reference.doi.clone(),
                 reference_note: d.reference.none.clone(),

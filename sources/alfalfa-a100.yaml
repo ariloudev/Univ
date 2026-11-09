@@ -78,6 +78,23 @@ mirrors:
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+designation:
+  form: "AGC {identifier}"
+  cite: >-
+    ReadMe of J/ApJ/861/49 (VizieR), Byte-by-byte Description of file table2.dat, AGC ('UGC/AGC
+    number') and Note (1); form per the CDS Dictionary of Nomenclature of Celestial Objects (read
+    via vizier.nao.ac.jp/viz-bin/Dic, 2026-11-07), acronym AGC (Arecibo General Catalog): 'AGC
+    NNNNNNA'
+flags:
+  HI:
+    cite: >-
+      ReadMe of J/ApJ/861/49 (VizieR), Byte-by-byte Description of file table2.dat, HI ('HI source
+      code'), Note (2)
+    values:
+      "1": "Source of significant S/N and high quality insuring reliability."
+      "2": >-
+        Source of slightly lower S/N which coincides with an optical counterpart of known,
+        coincident redshift.
 normalization:
   redshifts:
     - column: Vhel

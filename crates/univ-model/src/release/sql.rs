@@ -52,9 +52,20 @@ pub enum SqlValue {
     Text(String),
 }
 
+impl SqlValue {
+    /// A real as a REAL column gives it back: -0.0 as 0.0, which SQLite stores as the integer
+    /// 0, so that what is written, estimated, fingerprinted and hashed is what D1 holds. A
+    /// value that is not finite is kept, for the build's check to refuse.
+    #[must_use]
+    pub fn real(x: f64) -> Self {
+        // IEEE 754: -0.0 + 0.0 is +0.0, and every other value is unchanged.
+        Self::Real(x + 0.0)
+    }
+}
+
 impl From<Option<f64>> for SqlValue {
     fn from(value: Option<f64>) -> Self {
-        value.map_or(Self::Null, Self::Real)
+        value.map_or(Self::Null, Self::real)
     }
 }
 
@@ -78,7 +89,7 @@ impl From<&str> for SqlValue {
 
 impl From<f64> for SqlValue {
     fn from(value: f64) -> Self {
-        Self::Real(value)
+        Self::real(value)
     }
 }
 
@@ -249,7 +260,9 @@ pub enum ColumnKind {
 /// Which rows of a table belong to release n.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Scope {
-    /// Release n's own rows, its `release` column leading the key: pruning deletes them.
+    /// Rows shared by the releases they are valid in: each row is valid from the release in its
+    /// `release` column, which ends its key, until the release in its `retired` column, if any,
+    /// which a later release sets (see [`RETIRED`]).
     PerRelease,
     /// The id ledger, kept across releases and never pruned: release n's view of it is the rows
     /// whose `release` is at most n, which each release carries whole.
@@ -263,12 +276,16 @@ impl Scope {
     #[must_use]
     pub fn filter(self, number: u32) -> String {
         match self {
-            Self::PerRelease => format!("release = {number}"),
+            Self::PerRelease => super::shared::valid_in("", number),
             Self::Ledger => format!("release <= {number}"),
             Self::Releases => format!("number = {number}"),
         }
     }
 }
+
+/// The `release` and `retired` a shared row is estimated with: a release number SQLite stores
+/// in two bytes, whatever the release, so a row's estimate does not change with it.
+const A_RELEASE: SqlValue = SqlValue::Integer(1_000);
 
 /// A table of the schema: its columns in the order rows give them with the type of each, its
 /// primary key and its secondary indexes, each by column names, and which of its rows belong to
@@ -307,10 +324,25 @@ impl Table {
     /// page whole.
     #[must_use]
     pub fn estimated_bytes(&self, values: &[SqlValue]) -> u64 {
-        let mut bytes = stored_bytes(payload_bytes(values), self.tree());
+        // A row shared between releases stores its release, which a kept row keeps from the
+        // release that added it, and its `retired`: NULL when written, a release number once a
+        // later release retires it. Both are counted at two bytes, so the estimate errs high and
+        // is the same in every release.
+        let shared = self.scope == Scope::PerRelease;
+        let release = self.position("release").filter(|_| shared);
+        let value = |i: usize| {
+            if Some(i) == release {
+                Some(&A_RELEASE)
+            } else {
+                values.get(i)
+            }
+        };
+        let retired = shared.then_some(&A_RELEASE);
+        let stored = (0..values.len()).filter_map(value).chain(retired);
+        let mut bytes = stored_bytes(payload_bytes(stored), self.tree());
         for index in self.indexes {
             let columns = index.iter().chain(self.key.iter());
-            let picked = columns.filter_map(|c| self.position(c).and_then(|i| values.get(i)));
+            let picked = columns.filter_map(|c| self.position(c).and_then(value));
             bytes += stored_bytes(payload_bytes(picked), Tree::Index);
         }
         // Rounded up: the estimate errs high.
@@ -347,70 +379,12 @@ pub fn write_tuple(values: &[SqlValue], out: &mut String) {
     out.push(')');
 }
 
-/// A table's `INSERT OR IGNORE` statements made one row at a time: a statement is given once
-/// the next row would take it over [`MAX_STATEMENT_BYTES`].
-pub struct Statements {
-    head: String,
-    current: String,
-    /// The row being added, as its tuple: one buffer for every row.
-    tuple: String,
-}
-
-impl Statements {
-    /// No statement yet, into `table`.
-    #[must_use]
-    pub fn new(table: Table) -> Self {
-        Self {
-            head: table.insert_head(),
-            current: String::new(),
-            tuple: String::new(),
-        }
-    }
-
-    /// Adds a row, giving the statement it closed, if any.
-    pub fn push(&mut self, row: &[SqlValue]) -> Option<String> {
-        self.tuple.clear();
-        write_tuple(row, &mut self.tuple);
-        let tuple = &self.tuple;
-        let mut closed = None;
-        if !self.current.is_empty() && self.current.len() + tuple.len() + 3 > MAX_STATEMENT_BYTES {
-            self.current.push_str(";\n");
-            closed = Some(std::mem::take(&mut self.current));
-        }
-        if self.current.is_empty() {
-            self.current.push_str(&self.head);
-        } else {
-            self.current.push_str(",\n");
-        }
-        self.current.push_str(tuple);
-        closed
-    }
-
-    /// The last statement, if a row was added since one was given.
-    pub fn finish(&mut self) -> Option<String> {
-        if self.current.is_empty() {
-            return None;
-        }
-        self.current.push_str(";\n");
-        Some(std::mem::take(&mut self.current))
-    }
-}
-
 /// A row of a table of the schema.
 pub trait Row {
     /// The table it is a row of.
     const TABLE: Table;
     /// Its values in the order of the table's columns.
     fn values(&self) -> Vec<SqlValue>;
-}
-
-/// The statements [`Statements`] makes of `rows`, for a test.
-#[cfg(test)]
-pub(crate) fn inserts(table: Table, rows: &[Vec<SqlValue>]) -> Vec<String> {
-    let mut statements = Statements::new(table);
-    let mut out: Vec<String> = rows.iter().filter_map(|r| statements.push(r)).collect();
-    out.extend(statements.finish());
-    out
 }
 
 #[cfg(test)]
@@ -425,6 +399,10 @@ mod tests {
         assert_eq!(SqlValue::Real(1e300).literal(), "1e300");
         assert_eq!(SqlValue::Real(2.0).literal(), "2.0");
         assert_eq!(SqlValue::Real(f64::NAN).literal(), "NULL");
+        assert_eq!(SqlValue::from(-0.0), SqlValue::Real(0.0));
+        assert!(matches!(SqlValue::from(-0.0), SqlValue::Real(x) if x.is_sign_positive()));
+        assert!(matches!(SqlValue::from(f64::NAN), SqlValue::Real(x) if x.is_nan()));
+        assert_eq!(SqlValue::from(Some(-1.5)), SqlValue::Real(-1.5));
         assert_eq!(SqlValue::Integer(-7).literal(), "-7");
         assert_eq!(SqlValue::from(None::<f64>).literal(), "NULL");
     }
@@ -462,28 +440,13 @@ mod tests {
             SqlValue::Integer(300),
             SqlValue::from("abcd"),
         ];
-        // Record: header 1 + 3 serial types, body 0 + 2 + 4, cell 4: 14. Index on (name,
-        // release, id): header 4, body 4 + 0 + 2, cell 4: 14. 28 / 0.65 = 43.08, rounded up.
-        assert_eq!(T.estimated_bytes(&row), 44);
-    }
-
-    #[test]
-    fn inserts_split_before_the_statement_limit() {
-        let long = "x".repeat(40_000);
-        let rows: Vec<Vec<SqlValue>> = (0..5)
-            .map(|i| {
-                vec![
-                    SqlValue::Integer(1),
-                    SqlValue::Integer(i),
-                    long.as_str().into(),
-                ]
-            })
-            .collect();
-        let statements = inserts(T, &rows);
-        assert_eq!(statements.len(), 3, "two rows of 40 kB to a statement");
-        assert!(statements.iter().all(|s| s.len() <= MAX_STATEMENT_BYTES));
-        assert!(statements[0].starts_with("INSERT OR IGNORE INTO t (release, id, name) VALUES\n"));
-        assert!(statements[2].ends_with(");\n"));
-        assert_eq!(inserts(T, &[]), Vec::<String>::new());
+        // Record: header 1 + 4 serial types, body 2 + 2 + 4 + 2 (`release` and `retired` each
+        // at two bytes, whatever the release), cell 4: 19. Index on (name, release, id): header
+        // 4, body 4 + 2 + 2, cell 4: 16. 35 / 0.65 = 53.8, rounded up.
+        assert_eq!(T.estimated_bytes(&row), 54);
+        // The same row kept into a later release is estimated the same.
+        let mut later = row.clone();
+        later[0] = SqlValue::Integer(200);
+        assert_eq!(T.estimated_bytes(&later), 54);
     }
 }

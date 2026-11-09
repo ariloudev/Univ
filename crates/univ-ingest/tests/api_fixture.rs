@@ -19,6 +19,7 @@ use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
 use univ_model::release::shards::SHARD_TABLES;
+use univ_model::release::{RETIRED, valid_in};
 
 /// The variable that asks the test to rewrite the file.
 const UPDATE: &str = "UPDATE_FIXTURES";
@@ -30,8 +31,9 @@ const FILE: &str = "crates/univ-api/src/testkit_objects.sql";
 const RELEASE: u32 = 2;
 
 /// The tables the file holds, in its order.
-const TABLES: [&str; 8] = [
+const TABLES: [&str; 9] = [
     "sources",
+    "source_reading",
     "terms",
     "chains",
     "objects",
@@ -42,9 +44,9 @@ const TABLES: [&str; 8] = [
 ];
 
 const HEADER: &str = "\
--- Release 2 of Univ Ingest's fixture: its sources and every object with its entries,
--- measurements, designations and names, and the vocabulary they are coded in, as
--- cargo xtask integration publishes them. Checked against what ingest writes by
+-- Release 2 of Univ Ingest's fixture: its sources and how they are read, and every object
+-- with its entries, measurements, designations and names, and the vocabulary they are coded
+-- in, as cargo xtask integration publishes them. Checked against what ingest writes by
 -- univ-ingest's test api_fixture; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test
 -- api_fixture rewrites it.
 ";
@@ -75,8 +77,10 @@ enum KeyValue {
     Text(String),
 }
 
-/// Release [`RELEASE`]'s rows of `table` in each of `dbs` as `INSERT INTO` statements, one a
-/// line, in the order of the table's primary key whichever database holds them.
+/// The rows of `table` valid in release [`RELEASE`] in each of `dbs` as `INSERT INTO`
+/// statements, one a line, in the order of the table's primary key whichever database holds
+/// them. Each is written as release [`RELEASE`]'s own, never retired, the rows it shares with
+/// release 1 included: the file is the release whole, as one database holds it.
 fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut String) {
     let key = univ_model::release::TABLES
         .iter()
@@ -86,7 +90,10 @@ fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut St
     let mut lines = Vec::new();
     for db in dbs {
         let mut q = db
-            .prepare(&format!("SELECT * FROM {table} WHERE release = ?1"))
+            .prepare(&format!(
+                "SELECT * FROM {table} WHERE {}",
+                valid_in("", "?1")
+            ))
             .unwrap();
         let columns: Vec<String> = q.column_names().iter().map(|c| (*c).to_owned()).collect();
         let mut rows = q.query([RELEASE]).unwrap();
@@ -103,7 +110,11 @@ fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut St
                 })
                 .collect();
             let values: Vec<String> = (0..columns.len())
-                .map(|i| literal(db, row.get_ref(i).unwrap()))
+                .map(|i| match columns[i].as_str() {
+                    "release" => RELEASE.to_string(),
+                    RETIRED => "NULL".to_owned(),
+                    _ => literal(db, row.get_ref(i).unwrap()),
+                })
                 .collect();
             lines.push((
                 order,
@@ -138,7 +149,17 @@ fn text(store: &MemoryStore) -> String {
     .unwrap();
     for table in TABLES {
         if SHARD_TABLES.contains(&table) {
-            dump(store.shards.values(), table, &mut out);
+            // A shard bound but never loaded holds no table.
+            let loaded = store.shards.values().filter(|db| {
+                db.query_row(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+                    [table],
+                    |r| r.get::<_, i64>(0),
+                )
+                .unwrap()
+                    > 0
+            });
+            dump(loaded, table, &mut out);
         } else {
             dump(std::iter::once(db), table, &mut out);
         }

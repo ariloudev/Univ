@@ -13,7 +13,6 @@ use crate::cosmology::{AssumedCosmology, Cosmology};
 use crate::derive::Step;
 use crate::distance::{DistanceKind, Measure, Method};
 use crate::entry::{PaperReference, PositionUncertainty, RedshiftKind};
-use crate::ids::Designation;
 use crate::object::{
     CandidateLink, Decided, FractionalUncertainty, MethodRank, NotPlacedReason, ObjectKind,
     PositionClass, Relation, Resolution,
@@ -36,9 +35,14 @@ pub struct ObjectRecord {
     /// Every catalogue entry resolved to it, numbered from 0, the anchor first.
     pub entries: Vec<EntryRecord>,
     /// Every designation it carries, each a source and the identifier that source gives: its
-    /// entries' own and those their sources give beside them, such as a Hipparcos number.
+    /// entries' own and those their sources give beside them, such as a Hipparcos number;
+    /// ordered by the rank the release gives their sources, the highest first, then by source.
     #[serde(default)]
-    pub designations: Vec<Designation>,
+    pub designations: Vec<DesignationRecord>,
+    /// Every common or proper name its sources give it, such as Sirius or the Andromeda Galaxy,
+    /// each with its source; ordered as its designations are.
+    #[serde(default)]
+    pub names: Vec<NameRecord>,
     /// Every measurement of its entries, by entry, quantity and n.
     pub measurements: Vec<MeasurementRecord>,
     /// Its preferred sky position; absent when no entry has one.
@@ -57,6 +61,28 @@ pub struct ObjectRecord {
     pub relations: Vec<Relation>,
 }
 
+/// A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a
+/// `source_id`.
+// The one schema of a designation in the API: `ids::Designation` takes it too.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema), schema(as = Designation))]
+pub struct DesignationRecord {
+    pub source: String,
+    pub identifier: String,
+    /// The identifier in its catalogue's form, such as `HIP 32754` for Hipparcos's `32754`,
+    /// where its source's definition gives a form; given in an object's designations.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub designation: Option<String>,
+}
+
+/// A common or proper name of the object, with the source that gives it.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct NameRecord {
+    pub name: String,
+    pub source: String,
+}
+
 /// A catalogue entry of the object: the designation its source gives it, how it was resolved
 /// into the object, and its sky position as published.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -68,6 +94,9 @@ pub struct EntryRecord {
     pub source: String,
     /// Its identifier in that source.
     pub identifier: String,
+    /// Its identifier in its catalogue's form, where its source's definition gives a form.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub designation: Option<String>,
     /// A second name its source gives, such as a Hipparcos number.
     pub name: Option<String>,
     /// How it was resolved into the object: the anchor, a published cross-identification, or a

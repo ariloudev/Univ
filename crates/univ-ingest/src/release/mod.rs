@@ -29,14 +29,20 @@ mod details;
 mod entries;
 mod files;
 mod grids;
+mod kept;
+pub use d1::ROWS;
+pub use kept::{Kept, NUMBERING};
 mod meta;
 mod objects;
 mod outline;
 mod packing;
 pub use packing::LOOSE_BUCKETS;
+pub mod local_d1;
 mod place;
 mod placement;
+mod placing;
 mod pointers;
+pub mod reindex;
 mod rescaled;
 mod shapes;
 mod sharded;
@@ -57,6 +63,7 @@ pub use check::{
 };
 pub use config::{FILE as CONFIG_FILE, ReleaseConfig};
 pub use coverage::{Coverage, coverages, source_detail_rows};
+pub use d1::Before;
 pub use d1::{D1Writer, D1Written, InMemory, MAX_FILE_BYTES, PartSink, content_sha256};
 pub use details::structure_detail_rows;
 pub use files::{
@@ -212,16 +219,28 @@ pub fn build_watched(
     }
     let dir = release_dir(out, number);
     let building = out.join(RELEASES).join(format!(".building-{number}"));
-    let written = write_release(inputs, number, &building, watch).map_err(|problem| {
+    let rows = row_index(state, made, number).map_err(fail)?;
+    let next_rows = crate::state::next_rows_dir(state);
+    let before = Before {
+        kept: &current.kept,
+        rows: rows.as_deref(),
+        next_rows: &next_rows,
+    };
+    // What a build that stops or fails leaves: its release directory and the next row index.
+    let discard = || {
         let _ = std::fs::remove_dir_all(&building);
+        let _ = std::fs::remove_dir_all(&next_rows);
+    };
+    let written = write_release(inputs, number, &building, &before, watch).map_err(|problem| {
+        discard();
         fail(problem)
     })?;
     if let Err(stopped) = watch.check() {
-        let _ = std::fs::remove_dir_all(&building);
+        discard();
         return Err(fail(stopped));
     }
     if !written.failed.is_empty() {
-        let _ = std::fs::remove_dir_all(&building);
+        discard();
         return Err(BuildError::Checks {
             number,
             failed: written.failed,
@@ -230,7 +249,7 @@ pub fn build_watched(
     let checked = files::write_manifest(&building, &written.manifest)
         .and_then(|()| files::verify(&building, &written.manifest));
     if let Err(failed) = checked {
-        let _ = std::fs::remove_dir_all(&building);
+        discard();
         return Err(BuildError::Checks {
             number,
             failed: vec![failed],
@@ -242,15 +261,21 @@ pub fn build_watched(
     ));
     // The last safe point: from here the release is made complete and its number used up.
     if let Err(stopped) = watch.check() {
-        let _ = std::fs::remove_dir_all(&building);
+        discard();
         return Err(fail(stopped));
     }
     std::fs::rename(&building, &dir).map_err(|e| {
-        let _ = std::fs::remove_dir_all(&building);
+        discard();
         fail(format!("{} cannot be made complete: {e}", dir.display()))
     })?;
-    if let Err(problem) = record(state, &inputs.crossed.next, number) {
+    if let Err(problem) = record(
+        state,
+        &inputs.crossed.next,
+        (&written.kept, &next_rows),
+        number,
+    ) {
         let _ = std::fs::remove_dir_all(&dir);
+        let _ = std::fs::remove_dir_all(&next_rows);
         return Err(fail(problem));
     }
     // The copy the cross-match left; the state just installed is the one it made.
@@ -261,6 +286,21 @@ pub fn build_watched(
         manifest: written.manifest,
         provisional: provisional(inputs.definitions),
     })
+}
+
+/// The row index of the last of the `made` releases the state directory `state` records, which
+/// release `number` is compared with: none before the first.
+fn row_index(state: &Path, made: usize, number: u32) -> Result<Option<PathBuf>, String> {
+    let rows = crate::state::rows_dir(state).map_err(|e| e.to_string())?;
+    if rows.is_none() && made > 0 {
+        return Err(format!(
+            "the state in {} holds no row index of release {made}, which release {number} \
+             would be compared with: every row would be written again and none of release \
+             {made}'s retired",
+            state.display()
+        ));
+    }
+    Ok(rows)
 }
 
 /// Each `releases/{k}` under `out` whose number is beyond the `made` releases a state records.
@@ -282,13 +322,18 @@ pub fn unrecorded(out: &Path, made: usize) -> Vec<PathBuf> {
 
 /// Installs `next`, the state the cross-match made for release `number`, as the state
 /// directory's: the one step that uses the number up.
-fn record(state: &Path, next: &State, number: u32) -> Result<(), String> {
+fn record(
+    state: &Path,
+    next: &State,
+    (kept, rows): (&Kept, &Path),
+    number: u32,
+) -> Result<(), String> {
     let last = next.ledger.releases().last().map(|r| r.name.as_str());
     if last != Some(number.to_string().as_str()) {
         return Err(format!(
             "the cross-match's state is not that of release {number}"
         ));
     }
-    next.install(state)
+    next.install(state, kept, rows)
         .map_err(|e| format!("the state cannot be recorded in {}: {e}", state.display()))
 }

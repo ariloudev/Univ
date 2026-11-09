@@ -3,6 +3,7 @@
 
 mod access;
 mod normalization;
+mod reading;
 mod reference;
 mod rules;
 
@@ -16,10 +17,10 @@ pub use normalization::{
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
 };
-pub use univ_model::api::sources::Permission;
+pub use univ_model::api::sources::{DesignationForm, FlagMeanings, Permission};
 use univ_model::time::is_calendar_date;
 
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -56,6 +57,13 @@ pub struct SourceDefinition {
     /// Corrections to the source as published, each with its evidence.
     #[serde(default)]
     pub fixes: Vec<Fix>,
+    /// The form the catalogue writes a designation in, cited; none where it is written bare.
+    #[serde(default)]
+    pub designation: Option<DesignationForm>,
+    /// What each value of a flag column means, by column, cited from the catalogue's
+    /// documentation; a flag column it does not name is served with its values alone.
+    #[serde(default)]
+    pub flags: BTreeMap<String, FlagMeanings>,
     /// How rows are read beyond the column each field comes from. Its enums are written as
     /// single-key maps, such as `{ symmetric: e_cz }`, rather than YAML tags.
     #[serde(default, with = "serde_norway::with::singleton_map_recursive")]
@@ -107,6 +115,9 @@ pub enum Field {
     SpectralType,
     GroupId,
     Quality,
+    /// The entry's identifier in another catalogue, kept by the column's name, such as the PGC
+    /// number an NGC galaxy is given: what a published cross-identification joins it by.
+    CrossIdentifier,
     SupergalacticX,
     SupergalacticY,
     SupergalacticZ,
@@ -138,6 +149,10 @@ pub struct Terms {
     /// when the terms allow commercial use.
     #[serde(default)]
     pub non_commercial: Option<String>,
+    /// The clause of the terms that requires data adapted from the source to be shared under
+    /// the same licence, quoted as published; none when the terms require no such thing.
+    #[serde(default)]
+    pub share_alike: Option<String>,
 }
 
 /// Whether a source's data may be published in a release, judged from its terms.
@@ -318,6 +333,10 @@ impl SourceDefinition {
         if let Some(clause) = &self.terms.non_commercial {
             blank("terms.non_commercial", clause)?;
         }
+        if let Some(clause) = &self.terms.share_alike {
+            blank("terms.share_alike", clause)?;
+        }
+        reading::check(self.designation.as_ref(), &self.flags, &self.columns)?;
         self.redistribution.check_permission()?;
         self.access.check()?;
         if self.columns.is_empty() && !matches!(self.access, Access::Repository { .. }) {

@@ -48,6 +48,8 @@ pub struct MemoryStore {
     pub ops: Vec<Op>,
     /// Fails every upload once this many have been made.
     pub fail_after: Option<usize>,
+    /// Fails the first upload this holds of, and every one after it; and each delete it holds of.
+    pub fail_at: Option<fn(&Op) -> bool>,
     /// Gives back R2 objects with their last byte changed.
     pub corrupt_reads: bool,
     pub observer: Option<Observer>,
@@ -63,6 +65,7 @@ impl Default for MemoryStore {
             r2: BTreeMap::new(),
             ops: Vec::new(),
             fail_after: None,
+            fail_at: None,
             corrupt_reads: false,
             observer: None,
             uploads: 0,
@@ -76,7 +79,13 @@ impl MemoryStore {
             if self.fail_after.is_some_and(|k| self.uploads >= k) {
                 return Err(format!("injected failure at {op:?}"));
             }
+            if self.fail_at.is_some_and(|at| at(&op)) {
+                self.fail_after = Some(self.uploads);
+                return Err(format!("injected failure at {op:?}"));
+            }
             self.uploads += 1;
+        } else if matches!(op, Op::Delete(_)) && self.fail_at.is_some_and(|at| at(&op)) {
+            return Err(format!("injected failure at {op:?}"));
         }
         self.ops.push(op);
         Ok(())
@@ -109,6 +118,7 @@ impl MemoryStore {
     pub fn reset(&mut self) {
         self.ops.clear();
         self.fail_after = None;
+        self.fail_at = None;
         self.corrupt_reads = false;
         self.observer = None;
         self.uploads = 0;
@@ -306,4 +316,22 @@ pub fn pruning(
         now: &now,
     };
     prune(store, number, &options, &mut |_| {})
+}
+
+/// The rows of a [`MemoryStore`]'s databases, as a reindex reads them.
+pub struct Rows<'a>(pub &'a MemoryStore);
+
+impl univ_ingest::release::reindex::RowSource for Rows<'_> {
+    fn databases(&self) -> Vec<Database> {
+        std::iter::once(Database::Catalogue)
+            .chain(self.0.shards.keys().map(|i| Database::Shard(*i)))
+            .collect()
+    }
+
+    fn db(&self, database: Database) -> Result<&Connection, String> {
+        match database {
+            Database::Catalogue => Ok(&self.0.db),
+            Database::Shard(i) => self.0.shards.get(&i).ok_or(format!("no shard {i}")),
+        }
+    }
 }

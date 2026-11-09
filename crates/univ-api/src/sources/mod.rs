@@ -5,7 +5,10 @@ pub(crate) mod provenance;
 pub use provenance::provenance;
 
 use serde_json::json;
-use univ_model::api::sources::{Coverage, Permission, Reference, SourceDetail, SourceList, Terms};
+use univ_model::api::sources::{
+    Coverage, DesignationForm, Permission, Reference, SourceDetail, SourceList, Terms,
+};
+use univ_model::valid_in;
 
 use crate::backend::{Backend, column, first, json_column, rows_as};
 use crate::http::{Request, Response};
@@ -29,8 +32,11 @@ pub async fn list<B: Backend>(request: &Request, backend: &B) -> Result<Response
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT id, title, scale_domain, entries, citation, credit FROM sources \
-             WHERE release = ?1 ORDER BY n",
+            concat!(
+                "SELECT id, title, scale_domain, entries, citation, credit FROM sources WHERE ",
+                valid_in!("", "?1"),
+                " ORDER BY n"
+            ),
             &[json!(release)],
         )
         .await?;
@@ -67,14 +73,21 @@ pub async fn get<B: Backend>(
     let release = resolve(request, backend).await?;
     let rows = backend
         .releases(
-            "SELECT s.id, s.title, s.provider, s.scale_domain, s.entries, s.citation, \
-             s.terms_url, s.terms_quote, s.credit, s.redistribution, s.review, s.access, s.cuts, \
-             d.source AS detailed, d.bibcode, d.doi, d.reference_note, d.sky, d.radial, \
-             t.non_commercial, t.permission \
-             FROM sources s LEFT JOIN source_details d \
-             ON d.release = s.release AND d.source = s.n \
-             LEFT JOIN source_terms t ON t.release = s.release AND t.source = s.n \
-             WHERE s.release = ?1 AND s.id = ?2",
+            concat!(
+                "SELECT s.id, s.title, s.provider, s.scale_domain, s.entries, s.citation, \
+                 s.terms_url, s.terms_quote, s.credit, s.redistribution, s.review, s.access, \
+                 s.cuts, d.source AS detailed, d.bibcode, d.doi, d.reference_note, d.sky, \
+                 d.radial, t.non_commercial, t.permission, r.designation_form, \
+                 r.designation_cite, r.share_alike, r.flags \
+                 FROM sources s LEFT JOIN source_details d ON d.source = s.n AND ",
+                valid_in!("d.", "?1"),
+                " LEFT JOIN source_terms t ON t.source = s.n AND ",
+                valid_in!("t.", "?1"),
+                " LEFT JOIN source_reading r ON r.source = s.n AND ",
+                valid_in!("r.", "?1"),
+                " WHERE s.id = ?2 AND ",
+                valid_in!("s.", "?1")
+            ),
             &[json!(release), json!(id)],
         )
         .await?;
@@ -106,6 +119,7 @@ pub async fn get<B: Backend>(
             redistribution: column(&row, "redistribution")?,
             review: column(&row, "review")?,
             non_commercial: column(&row, "non_commercial")?,
+            share_alike: column(&row, "share_alike")?,
             permission,
             permission_to_ask,
         },
@@ -119,6 +133,14 @@ pub async fn get<B: Backend>(
         } else {
             None
         },
+        designation: match (
+            column::<Option<String>>(&row, "designation_form")?,
+            column::<Option<String>>(&row, "designation_cite")?,
+        ) {
+            (Some(form), Some(cite)) => Some(DesignationForm { form, cite }),
+            _ => None,
+        },
+        flags: json_column::<Option<_>>(&row, "flags")?.unwrap_or_default(),
     };
     Ok(pinned(Response::json(&detail)?, release))
 }

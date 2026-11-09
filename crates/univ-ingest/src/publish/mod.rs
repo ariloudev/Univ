@@ -42,13 +42,17 @@
 //! `latest` points to by then: the time `latest` moved, as `latest` or the journal gives it, or
 //! else the time its last unit was checked.
 
+mod cap;
 mod check;
 mod error;
+mod held;
 pub mod journal;
+mod migrate;
 mod progress;
 mod prune;
 mod r2batch;
 mod refuse;
+mod units;
 mod upload;
 mod wrangler;
 
@@ -62,6 +66,7 @@ use crate::tiles::sha256;
 
 pub use check::{Status, published_status, sql_text};
 pub use error::PublishError;
+pub use migrate::{migrate, migrate_with};
 pub use progress::{FileDone, Lines, Progress};
 pub use prune::{PruneError, Pruned, prune, prune_with};
 pub use r2batch::{R2Batch, SCRIPT};

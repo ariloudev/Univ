@@ -37,11 +37,15 @@ describe("searching", () => {
     expect(await screen.findByText("“Twin” names 2 objects:")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "2 (Twin)" }));
     expect(found).toHaveBeenCalledWith(2, undefined, "Twin");
+    // The answers close once one is chosen.
+    expect(screen.queryByText("“Twin” names 2 objects:")).toBeNull();
   });
 
   it("repeats what was searched for when nothing is found", async () => {
     answer(404, { status: 404, title: "No such object", type: "urn:univ:problem:object-not-found" });
     await find("Nowhere");
     expect((await screen.findByRole("status")).textContent).toBe("Nothing found for “Nowhere”.");
+    await userEvent.click(screen.getByRole("button", { name: "Close the search's answers" }));
+    expect(screen.queryByRole("status")).toBeNull();
   });
 });

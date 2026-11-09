@@ -137,3 +137,37 @@ export async function readJson<T>(
   const response = await read(path, options);
   return schema.parse(await response.json());
 }
+
+/** Every cache `cacheOf` made, for `forgetCaches`. */
+const caches = new Set<Map<unknown, unknown>>();
+
+/** A cache for `kept`, which `forgetCaches` empties. */
+export function cacheOf<K, V>(): Map<K, Promise<V>> {
+  const cache = new Map<K, Promise<V>>();
+  caches.add(cache as Map<unknown, unknown>);
+  return cache;
+}
+
+/** The answer `read` gives for `key`, read once and kept in `cache` until it fails; at most
+ * `limit` are kept, the one used longest ago dropped first. */
+export function kept<K, V>(cache: Map<K, Promise<V>>, key: K, read: () => Promise<V>, limit = Number.POSITIVE_INFINITY): Promise<V> {
+  const found = cache.get(key);
+  if (found !== undefined) {
+    cache.delete(key);
+    cache.set(key, found);
+    return found;
+  }
+  const made = read();
+  cache.set(key, made);
+  made.catch(() => {
+    if (cache.get(key) === made) cache.delete(key);
+  });
+  const oldest = cache.keys().next().value;
+  if (cache.size > limit && oldest !== undefined) cache.delete(oldest);
+  return made;
+}
+
+/** Forgets every answer kept, as a test begins. */
+export function forgetCaches(): void {
+  for (const cache of caches) cache.clear();
+}

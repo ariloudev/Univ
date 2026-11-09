@@ -25,16 +25,28 @@ pub struct SourceId(Arc<str>);
 /// A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a
 /// `source_id`.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawDesignation")]
 pub struct Designation {
-    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub source: SourceId,
     // Shared by every copy: an entry's designation is copied into its object's preferred
-    // measurements and the id maps, for each of tens of millions of entries. A plain comment, as
-    // a doc comment would enter the API's OpenAPI document.
-    #[cfg_attr(feature = "openapi", schema(value_type = String))]
+    // measurements and the id maps, for each of tens of millions of entries.
     pub identifier: Arc<str>,
+}
+
+// The API's one schema of a designation is the object record's, whose form this one serializes
+// to without the optional formatted designation.
+#[cfg(feature = "openapi")]
+impl utoipa::PartialSchema for Designation {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        <crate::api::objects::DesignationRecord as utoipa::PartialSchema>::schema()
+    }
+}
+
+#[cfg(feature = "openapi")]
+impl utoipa::ToSchema for Designation {
+    fn name() -> std::borrow::Cow<'static, str> {
+        <crate::api::objects::DesignationRecord as utoipa::ToSchema>::name()
+    }
 }
 
 /// A designation as read, before its checks.

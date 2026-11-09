@@ -72,7 +72,7 @@ fn a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated
     db.exec(&format!(
         "INSERT INTO source_terms SELECT 2, n, NULL, NULL, \
          '[{{\"quantity\":\"redshift\",\"value\":85.0,\"unit\":\"kilometre_per_second\",\
-         \"times_one_plus_z\":false,\"basis\":\"Colless et al. 2001: rms 85 km/s\"}}]' \
+         \"times_one_plus_z\":false,\"basis\":\"Colless et al. 2001: rms 85 km/s\"}}]', NULL \
          FROM sources WHERE release = 2 AND id = '{source}';"
     ));
     let (_, after) = read(&db, "/v1/objects/1", "");
@@ -186,4 +186,53 @@ fn the_release_vocabulary_is_read_once() {
 fn object_from(db: &Sqlite, id: u64) {
     let (response, _) = read(db, &format!("/v1/objects/{id}"), "");
     assert_eq!(response.status, 200);
+}
+
+#[test]
+fn designations_are_given_raw_and_in_their_catalogues_form_highest_ranked_first() {
+    let record = object(6);
+    let first = &record["designations"][0];
+    assert_eq!(first["source"], "hipparcos-2007");
+    assert_eq!(first["identifier"], "1");
+    assert_eq!(first["designation"], "HIP 1");
+    assert_eq!(record["entries"][0]["designation"], "HIP 1");
+    // A source whose definition gives no form gives its identifier alone.
+    let canis = object(11);
+    assert_eq!(
+        canis["designations"][0],
+        serde_json::json!({"source": "mcconnachie-2012", "identifier": "Canis Major"})
+    );
+}
+
+#[test]
+fn each_entry_keeps_its_flags_as_its_source_publishes_them() {
+    assert_eq!(
+        object(6)["entries"][0]["flags"],
+        serde_json::json!({"Sn": "5"})
+    );
+}
+
+#[test]
+fn the_record_lists_its_names_apart_from_its_designations() {
+    assert_eq!(
+        object(11)["names"],
+        serde_json::json!([{"name": "Canis Major", "source": "mcconnachie-2012"}])
+    );
+    // A researched star is named by its file.
+    assert_eq!(
+        object(6)["names"],
+        serde_json::json!([{"name": "HIP 1 (SIMULATED)", "source": "researched-star-distances"}])
+    );
+}
+
+#[test]
+fn a_designation_in_its_catalogues_form_resolves_as_a_name_does() {
+    let db = db();
+    for name in ["HIP 1", "hip 1", " HIP 1 "] {
+        let (response, record) = read(&db, "/v1/objects", &format!("name={name}"));
+        assert_eq!(response.status, 200, "{name}: {record}");
+        assert_eq!(record["id"], 6, "{name}");
+    }
+    let (response, _) = read(&db, "/v1/objects", "name=HIP 999999");
+    assert_eq!(response.status, 404);
 }

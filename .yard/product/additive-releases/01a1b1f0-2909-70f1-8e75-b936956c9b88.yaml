@@ -1,0 +1,65 @@
+key: 01a1b1f0-2909-70f1-8e75-b936956c9b88
+id: w5
+versions:
+  - key: 01a1b1f0-2909-70f1-8e75-b93cada4e31c
+    at: 2026-11-06T17:37:48Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: Migrate release 10 and make release 11"
+    goal: "Local release 10 is under schema 6 with pinned reads unchanged, and release 11 is built and published as its change alone."
+    status: planned
+  - key: 01a1b258-4525-74c6-8f34-56723c3c3ba7
+    at: 2026-11-06T19:31:31Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: Migrate release 10 and make the first additive release"
+    goal: "The local store and state of release 10 are brought under shared rows in place, pinned reads unchanged, and release 11 is built and published as its change, after the owner approves the real run."
+    status: active
+  - key: 01a1b636-0f9a-73ee-ac61-ae38a73b823f
+    at: 2026-11-07T13:32:38Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5: Migrate release 10 and make the first additive release"
+    goal: "The local store and state of release 10 are brought under shared rows in place, pinned reads unchanged, and release 11 is built and published as its change, after the owner approves the real run."
+    status: done
+blocks:
+  - key: 01a1b636-0f9a-73ee-ac61-ae3651804515
+    id: w5-merged
+    kind: note
+    versions:
+      - key: 01a1b636-0f9a-73ee-ac61-ae371d18bc11
+        at: 2026-11-07T13:32:38Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W5 merged: release 10 migrated, release 11 published as its change"
+        markdown: |-
+          Merged as `01b3565` after a green `cargo xtask check` and `cargo xtask integration`. The run on the real local store found three bugs, each now fixed with a test that fails without the fix: a70624b (reindex), 0650873 (never-loaded database) and 40f5a11 (migration of a bound shard).
+
+          | | Release 10 (full) | Release 11 (change) |
+          |---|---|---|
+          | Migrate + reindex | | 5 min 43 s + 2 min 57 s, once |
+          | Build | 15 min, 55 GB | 25 min 56 s, 108 GB peak footprint |
+          | Build output | 38 GB | 2.7 GB |
+          | Publish | 1 h 35 min | 15 min 34 s, including one stop and resume |
+          | D1 used bytes added | 22.9 GB | 0.86 GB |
+          | Lookup / first points p95 | 3.9 ms / 213 ms | 3.7 ms / 211 ms |
+
+          All pinned reads of release 10 are unchanged through the migration and through release 11: 317 of 320 sampled answers are byte-identical, and the 3 that differ are grid headers that now name their samples by SHA-256.
+
+          Release 11 is gigabytes rather than kilobytes for three reasons outside the shared-rows path:
+          - 10 object splits from the fibres fix abbddc0, which landed after release 10 was built;
+          - a one-time repack of shards that release 10 had filled to the 4.5 GB budget under the old size estimate;
+          - a tile layout that is not local.
+
+          The next candidates, for the owner to choose from, are local tiles, a streamed row index (build memory), a no-change release 12 to measure the steady state, and a `VACUUM` of the 9 GB of free pages. The W5 log has the details.
+
+          `product/additive-releases` now holds W1–W5. It is not merged into `develop` or `main`, and nothing is published, pushed or deployed.
+        tone: success

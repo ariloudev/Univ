@@ -1,6 +1,8 @@
 //! A release's scale domains, their tile manifests and their tiles (fetch-a-tile-manifest,
 //! fetch-point-tiles). Manifests and tiles are served from R2 as Univ Ingest published them:
-//! the Worker hands their objects to the runtime to stream, and never decodes them.
+//! the Worker hands their objects to the runtime to stream, and never decodes them. R2 keeps
+//! each file once, by its SHA-256 (`files/{sha256}`): a domain's row names its manifest's key,
+//! and the manifest gives each tile's SHA-256, so a tile shared by releases is one object.
 //!
 //! A tile or manifest read pinned to a release never changes, so it is cacheable for a year
 //! and immutable. Read unpinned, a tile is answered with a redirect to the same tile pinned to
@@ -17,6 +19,7 @@ use univ_model::geometry::Aabb;
 use univ_model::tile::format::layout;
 use univ_model::tile::manifest::{NodeIndex, TileManifest, TileManifestIndex};
 use univ_model::units::scale_domain_unit;
+use univ_model::valid_in;
 use utoipa::{PartialSchema, ToSchema};
 
 use crate::backend::{Backend, rows_as};
@@ -177,8 +180,7 @@ pub async fn tile<B: Backend>(
             .with_header("cache-control", "no-store");
         return Ok(pinned(redirect, release));
     }
-    let key =
-        univ_model::release::keys::key(release, &univ_model::release::keys::tile(name, address));
+    let key = univ_model::release::keys::file(sha256);
     let response = Response::empty(200)
         .with_header("content-type", "application/octet-stream")
         .with_header("etag", &format!("\"{sha256}\""))
@@ -243,8 +245,11 @@ pub(crate) async fn domains_of<B: Backend>(
     }
     let rows = backend
         .releases(
-            "SELECT name, radius, points, nodes, manifest_key FROM scale_domains \
-             WHERE release = ?1 ORDER BY name",
+            concat!(
+                "SELECT name, radius, points, nodes, manifest_key FROM scale_domains WHERE ",
+                valid_in!("", "?1"),
+                " ORDER BY name"
+            ),
             &[json!(release)],
         )
         .await?;

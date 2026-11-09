@@ -22,10 +22,16 @@ requirements:
         name: "The terms of use and the required credit are given as the source definition states them."
       - key: 01a1a931-2c8a-73a8-91f2-591121be3932
         name: "The response gives the source's redistribution status and whether its terms allow only non-commercial use."
+      - key: 01a1b7dc-04ef-7334-abc7-37ec41787dde
+        name: "The response says whether the source's terms require data adapted from it to be shared under the same licence."
       - key: 01a19f1e-d177-716d-b124-3d2711844898
         name: "The query and the cuts are the ones the fetch ran, verbatim."
       - key: 01a19f1e-d177-716d-b124-3d2878dbdf48
         name: "The coverage gives the source's sky footprint as a sky region and, where its catalogue entries hold redshifts or distances, the range they span."
+      - key: 01a1b7d8-3f35-70aa-853f-45ad166959ce
+        name: "The response gives the source's designation form with its citation, where its definition gives one."
+      - key: 01a1b7d8-3f35-70aa-853f-45ae96a7f9df
+        name: "The response gives the meaning of each value of each of the source's flags with its citation, where its definition gives them."
   - key: 01a19f1e-d177-716d-b124-3d29d163748c
     statement:
       form: event_driven

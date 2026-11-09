@@ -25,6 +25,10 @@ requirements:
         name: "A source definition gives the primary citation, the terms of use, the required credit and the scale domain."
       - key: 01a19f22-2ad9-716e-876f-183725365029
         name: "A source definition lists the mirrors to try, in order."
+      - key: 01a1b7d8-3f35-70aa-853f-45a22adb93e1
+        name: "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from."
+      - key: 01a1b7d8-3f35-70aa-853f-45a3db453005
+        name: "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from."
   - key: 01a19f22-2ad9-716e-876f-1838f05eb5b7
     statement:
       form: unwanted
@@ -34,6 +38,12 @@ requirements:
     criteria:
       - key: 01a19f22-2ad9-716e-876f-183984aea659
         name: "The message names the source definition, the field and what is wrong with it."
+      - key: 01a1b7d8-3f35-70aa-853f-45a4a7c6a5fc
+        name: "A designation form that does not hold `{identifier}` exactly once is refused."
+      - key: 01a1b7d8-3f35-70aa-853f-45a5418a1492
+        name: "A flag meaning given for a column the definition does not take as a flag is refused."
+      - key: 01a1b838-25fc-71d6-a728-9b6a30cffe28
+        name: "A source definition may take a column as the entry's identifier in another catalogue, such as the PGC number OpenNGC gives an NGC galaxy, which a published cross-identification joins the entry by."
   - key: 01a19f22-2ad9-716e-876f-183a6daa9364
     statement:
       form: ubiquitous
@@ -48,6 +58,8 @@ requirements:
         name: "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent."
       - key: 01a1a931-2c8a-73a8-91f2-58fd8e368264
         name: "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted."
+      - key: 01a1b7dc-04ef-7334-abc7-37e61d47a4c1
+        name: "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted."
   - key: 01a19f22-2ad9-716e-876f-183d2d91487a
     statement:
       form: unwanted

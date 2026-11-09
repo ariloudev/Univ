@@ -9,7 +9,7 @@ use crate::release::sql::{Row, Scope, SqlValue, Table};
 row! {
     /// The object shard that holds an object's rows (`objects`, `entries`, `measurements`,
     /// `designations` and `object_cells`), so a read by id goes to that shard alone.
-    ObjectShardRow => "object_shards", scope: PerRelease, key: ["release", "id"],
+    ObjectShardRow => "object_shards", scope: PerRelease, key: ["id", "release"],
     indexes: [], {
         release: u32,
         /// The object's id.
@@ -22,9 +22,11 @@ row! {
 row! {
     /// The level-0 cells of one scale domain that one object shard holds: those whose Morton
     /// code ([`crate::release::shards::morton`]) lies from `first` to `last`, both included. A
-    /// shard's cells are consecutive in Morton order, so each shard has at most one row per
-    /// domain, and the rows of one release never overlap.
-    ShardCellRow => "shard_cells", scope: PerRelease, key: ["release", "shard", "domain"],
+    /// shard holds one run for each stretch of consecutive cells of one domain it holds, so it
+    /// may hold several runs of a domain, between which other shards' cells lie; the runs of
+    /// one release never overlap.
+    ShardCellRow => "shard_cells", scope: PerRelease,
+    key: ["shard", "domain", "first", "release"],
     indexes: [], {
         release: u32,
         shard: u32,
@@ -39,7 +41,7 @@ row! {
     /// One object shard of a release: its objects and the D1 storage its rows are estimated to
     /// take, which publishing sums over the releases not pruned to check the shard's database
     /// against the CON-3 cap.
-    ReleaseShardRow => "release_shards", scope: PerRelease, key: ["release", "shard"],
+    ReleaseShardRow => "release_shards", scope: PerRelease, key: ["shard", "release"],
     indexes: [], {
         release: u32,
         shard: u32,

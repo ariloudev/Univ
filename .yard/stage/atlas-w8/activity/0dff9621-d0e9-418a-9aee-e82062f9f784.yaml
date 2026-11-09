@@ -1,0 +1,77 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-08T19:32:13Z
+turns:
+  - started: 2026-11-08T19:08:41Z
+    ended: 2026-11-08T19:19:26Z
+  - started: 2026-11-08T19:20:10Z
+    ended: 2026-11-08T19:20:14Z
+  - started: 2026-11-08T19:20:14Z
+    ended: 2026-11-08T19:20:18Z
+  - started: 2026-11-08T19:20:19Z
+    ended: 2026-11-08T19:24:34Z
+  - started: 2026-11-08T19:24:38Z
+    ended: 2026-11-08T19:28:35Z
+  - started: 2026-11-08T19:32:13Z
+subagents:
+  - agent: ac5ddda101dba73fd
+    type: general-purpose
+    started: 2026-11-08T19:19:21Z
+    ended: 2026-11-08T19:20:10Z
+    stage: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+  - agent: a4310fae2b2c6aa74
+    type: general-purpose
+    started: 2026-11-08T19:19:21Z
+    ended: 2026-11-08T19:20:13Z
+    stage: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+  - agent: acd22aa16526f34d6
+    type: general-purpose
+    started: 2026-11-08T19:19:21Z
+    ended: 2026-11-08T19:20:19Z
+    stage: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+  - agent: ad8d85e16bda6f9eb
+    type: general-purpose
+    started: 2026-11-08T19:19:21Z
+    ended: 2026-11-08T19:20:19Z
+    stage: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+plan:
+  - started: 2026-11-08T19:09:31Z
+    ended: 2026-11-08T19:10:07Z
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T19:26:47Z
+    ended: 2026-11-08T19:26:49Z
+    failed: false
+    stage: 01a1bc90-1384-725f-a2dc-b479ffa9acb1
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T19:26:55Z
+    ended: 2026-11-08T19:27:01Z
+    failed: false
+    stage: 01a1bc90-1384-725f-a2dc-b479ffa9acb1

@@ -223,7 +223,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
 
 /** What follows a frame drawn: the overlay placed, the frame counted, and the first points
  * marked if these are they; whether the first points are now marked. */
-export function drawn(world: World, overlay: Overlay, size: { width: number; height: number }, marked: boolean): boolean {
+export function drawn(world: World, overlay: Overlay, size: { width: number; height: number; ratio?: number }, marked: boolean): boolean {
   placeOverlay(world, overlay, size);
   world.frame.set(world.frame.get() + 1);
   if (marked || world.pickable.length === 0) return marked;
@@ -249,7 +249,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
   const [world, setWorld] = useState<World>();
   const [rotations, setRotations] = useState<Rotations>();
   const [domains, setDomains] = useState<readonly Domain[]>([]);
-  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), chosen: useRef(null), names: useRef(null) };
+  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), ringLabels: useRef(null), chosen: useRef(null), names: useRef(null) };
   const overlayRef = useRef(overlay);
   const chooseRef = useRef(onChoose);
   chooseRef.current = onChoose;

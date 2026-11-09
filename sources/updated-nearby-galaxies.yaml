@@ -113,6 +113,37 @@ fixes:
           1904.05721, beside UNGC's own Dist of 0.01 Mpc
       values:
         "Milky Way": [8178.0, 25.6]
+flags:
+  f_Dist:
+    cite: >-
+      ReadMe of J/AJ/145/101 (VizieR), Byte-by-byte Description of file table1.dat, f_Dist ('Method
+      used to obtain Dist'), Note (G1)
+    values:
+      "TRGB": "By the Tip of the Red Giant Branch."
+      "Cep": "From the Cepheid luminosity."
+      "geom": "By a geometric determination of the distance."
+      "SN": "From the SuperNova luminosity."
+      "SBF": "From galaxy Surface Brightness Fluctuations."
+      "mem": "From galaxy membership in known groups with measured distances of other members."
+      "TF": "By the Tully-Fisher relation."
+      "FP": "By the Fundamental Plane."
+      "BS": "By luminosity of the Brightest Stars."
+      "CMD": >-
+        By the Color Magnitude Diagram using some prominent features or simultaneous distance and
+        stellar population fitting.
+      "HB": "By the Horizontal Branch."
+      "RR": "From the luminosity of RR Lyrae stars."
+      "PNLF": "By the Planetary Nebula Luminosity Function."
+      "h": >-
+        By the Hubble velocity-distance relation at H0 = 73 km/s/Mpc, not accounting for a certain
+        Virgocentric flow model.
+      "h'": >-
+        By the Hubble velocity-distance relation at H0 = 73 km/s/Mpc, in view of a certain
+        Virgocentric flow model.
+      "txt": >-
+        One of a small number of dwarf galaxies (N=11) missing the measurements of both optical and
+        HI velocities due to their low surface brightness and HI deficiency; their texture indicates
+        their likely proximity.
 normalization:
   distances:
     - value: Dist

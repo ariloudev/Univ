@@ -1,0 +1,1521 @@
+key: 01a1bbb4-1fad-70ea-8ef8-6f17d9d4cdb6
+id: close
+versions:
+  - key: 01a1bbb4-1fad-70ea-8ef8-6f1afdd17d30
+    at: 2026-11-08T15:08:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: planned
+  - key: 01a1bbbd-a3ac-754f-a4b3-cb0be80c44ae
+    at: 2026-11-08T15:18:50Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: active
+  - key: 01a1bbd0-c3d6-75de-84d2-b14ab3b7e5fb
+    at: 2026-11-08T15:39:43Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Review, gate and merge"
+    goal: "/simplify and /code-review fixed, the full gate and integration green once, trace links accepted, merged into product/atlas"
+    status: done
+blocks:
+  - key: 01a1bbc7-7ef1-7644-b844-6620685e1bb7
+    id: review-findings
+    kind: note
+    versions:
+      - key: 01a1bbc7-7ef1-7644-b844-6623ec19ad8b
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The review found a fault in the shared step"
+        markdown: |-
+          `/code-review` showed that a step shared by both edges of a coordinate costs far more than my example said:
+
+          - **Labels lost:** near a pole, one edge fits only 90°, so the other edge and the grid fall to 90° too.
+          - **Scale:** across 5,472 views, 16.5% (pitch 52–71°) lost almost every label on the far edge, and the grid drew only 4 meridians.
+
+          The fix keeps every tick on a line without that loss. The edge that can take the finer step keeps it, and the grid's lines use it. The other edge takes the finest step that fits it and is a multiple of the finer one.
+
+          - **Labels lost:** 0 of 9,600 views now lose labels.
+          - **Coarser edges:** 647 of about 38,000 edges take a coarser multiple than they would alone, for example 30° beside 10°.
+
+          **Also fixed, outside the spec:**
+          - an edge whose only fitting step has no tick no longer sets the step;
+          - a round value met exactly at a sample is no longer counted twice;
+          - the `/simplify` cleanups, including a grid that samples only the lines within the view.
+        tone: warning
+  - key: 01a1bbc7-7ef1-7644-b844-66219c860be0
+    id: step-spec-change
+    kind: loft
+    versions:
+      - key: 01a1bbc7-7ef1-7644-b844-6624669c95ac
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "Three criteria are reworded: the two tick-step criteria and the grid's step criterion."
+        base: "product/atlas"
+        recorded:
+          commit: "ad5df92d66bbad8d88c6cb67ab925aa62a7662c3"
+          branch: "stage/atlas-w6"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-08T15:29:35Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 13,
+              "graph.edges": 0,
+              "graph.nodes": 17,
+              "status.base.added": 9,
+              "status.base.changed": 4,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "words": {
+                    "after": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, with a grid of them across it when asked for, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it.",
+                    "before": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                  "words": {
+                    "after": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                    "before": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                  "words": {
+                    "after": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                    "before": "The ticks of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                  "words": {
+                    "after": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                  "words": {
+                    "after": "A switch beside the axes in the top bar turns the grid on and off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid is off when the view opens on an address that does not turn it on.",
+                  "words": {
+                    "after": "The grid is off when the view opens on an address that does not turn it on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                  "words": {
+                    "after": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                  "words": {
+                    "after": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                  "words": {
+                    "after": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                  "words": {
+                    "after": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                  "words": {
+                    "after": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                  "words": {
+                    "after": "The grid takes no pointer events: the points under it are named and chosen as where it is off."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "words": {
+                    "after": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "before": "The top bar holds the release, the eye's distance from the focus with the axes, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b10246def191"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid is off when the view opens on an address that does not turn it on.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                  "parent": "01a1bbb4-503d-7416-9488-04fa6b93a838"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 33,
+                    "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 40,
+                    "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 42,
+                    "name": "The grid is off when the view opens on an address that does not turn it on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 44,
+                    "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 46,
+                    "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 48,
+                    "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 50,
+                    "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 52,
+                    "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Frame the view as an atlas",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 23,
+                    "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 62,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "commit": "47849fda3e5908b9a5642cf2863c3e4b0ad5ebd5",
+                "removed": [],
+                "revision": "product/atlas"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/atlas-w6",
+                "modified": [
+                  "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1bbc7-7ef1-7644-b844-6622213bd759
+    id: step-spec-approval
+    kind: approval
+    versions:
+      - key: 01a1bbc7-7ef1-7644-b844-6625266baedc
+        at: 2026-11-08T15:29:35Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ticks at a multiple of the finer edge's step"
+        markdown: |-
+          This replaces the shared step you approved, because the review showed it strips the labels from about one view in six.
+
+          **The tick criteria now read:**
+          > …the finest step … that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.
+
+          **The grid criterion now reads:**
+          > The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.
+
+          What changes for you:
+          - Near a pole, the crowded edge shows only its 90° ticks (or none), and the far edge keeps its 5° ones.
+          - The grid follows the finer edge, so its lines can be closer than the coarser edge's ticks.
+
+          The code and tests for this are written; I'll commit them once you approve.
+    responses:
+      - key: 01a1bbc7-b141-7409-b1f1-2c7e3daeb9f9
+        at: 2026-11-08T15:29:48Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1bbd0-c3d6-75de-84d2-b1461a12b6d2
+    id: review-done
+    kind: note
+    versions:
+      - key: 01a1bbd0-c3d6-75de-84d2-b148ba449da8
+        at: 2026-11-08T15:39:43Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review, gate and integration"
+        markdown: |-
+          | Step | Result |
+          |---|---|
+          | `/simplify` (4 reviewers) | Applied: the grid samples only the lines within the view (about 25k samples per frame down to a few thousand); `tidy`, `directionOf` and `pixelOf` are shared; `EdgeTicks` carries its coordinate; `isEquator` is a function; one `SwitchBox` and `Switch` type serve level of detail and the grid; `ticksOf` is gone. |
+          | `/code-review` | Fixed: the shared step that stripped the labels of about one view in six (spec reworded, approved); empty fits no longer set a step; a round value met at a sample is counted once; trace links. Left as they are: the grid can be denser than the coarser edge's ticks, which the approved wording allows, and camera's `outward` keeps its own radians formula, outside this diff. |
+          | `cargo xtask check` | Passed, 13 gates, once fallow's complexity limit was met by splitting `gridLines` (a913816). |
+          | `cargo xtask integration` | Passed, with 13 Playwright tests, including the new grid test and the pick test with the grid on. |
+          | Trace | 593 of 593 nodes linked; the two TR-008 findings predate this work. |
+        tone: success
+  - key: 01a1bbd0-c3d6-75de-84d2-b147490d762a
+    id: w6-trace
+    kind: loft
+    versions:
+      - key: 01a1bbd0-c3d6-75de-84d2-b1495344ecfa
+        at: 2026-11-08T15:39:43Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: trace
+        note: "The 8 new grid criteria and the 3 reworded criteria are linked to their unit, component and e2e tests, and the links are accepted."
+        base: "product/atlas"
+        recorded:
+          commit: "a913816f450fb18f891fab6de1bfaa7c88a5ffa2"
+          branch: "stage/atlas-w6"
+          loft: 2.3.0
+          at: 2026-11-08T15:39:43Z
+        report: |
+          {
+            "base": "product/atlas",
+            "commit": "47849fda3e5908b9a5642cf2863c3e4b0ad5ebd5",
+            "counts": {
+              "features": 1
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b103f2a0c853",
+                    "label": null,
+                    "name": "Each edge of the view carries a tick where the direction of sight through it crosses a round longitude or latitude of the chosen axes.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 42
+                          }
+                        ],
+                        "name": "cross round longitudes and latitudes where the edge's direction of sight does"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10435170cb6",
+                    "label": null,
+                    "name": "The ticks of an edge other than of right ascension are spaced at the finest step of 90, 30, 15, 10, 5, 2 or 1 degrees, or a tenth or hundredth of one, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge of the coordinate takes.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 44,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "use the finest step whose labels stay at least 60 pixels apart"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 104
+                          }
+                        ],
+                        "name": "choose the finer of two steps when the coarser one crowds"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "space each edge at a multiple of the finer step of its coordinate's two edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "keep the labels of an edge far from the pole where the other edge passes near it"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 91,
+                            "lastLine": 97
+                          }
+                        ],
+                        "name": "count a round value met exactly at a sample once"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b863-1a09-757d-bbd7-6f0d72803e9a",
+                    "label": null,
+                    "name": "The ticks of an edge of right ascension are spaced at the finest step of 6, 2 or 1 hours, 30, 20, 10, 5, 2 or 1 minutes, or a tenth or hundredth of a minute, that keeps their labels at least 60 CSS pixels apart and is a multiple of any finer step the other edge takes.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 106,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "step right ascension by round hours and minutes"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "space each edge at a multiple of the finer step of its coordinate's two edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b105558be2c4",
+                    "label": null,
+                    "name": "A tick of equatorial right ascension is labelled in hours and minutes, and every other tick in degrees.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 113,
+                            "lastLine": 122
+                          }
+                        ],
+                        "name": "label right ascension in hours and minutes, and every other coordinate in degrees"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b106cab43cde",
+                    "label": null,
+                    "name": "Each edge names the coordinate its ticks give, such as galactic longitude.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 20,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "name each edge's coordinate in the chosen axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 161,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b107f30dda23",
+                    "label": null,
+                    "name": "The ticks follow the view as it turns, zooms and moves, and as the axes are changed.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/graticule.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 124,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "follow the view as it turns and as the axes change, wherever the eye is"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 237,
+                            "lastLine": 249
+                          }
+                        ],
+                        "name": "moves the ticks and the scale with the view"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd23746b3fab",
+                    "label": null,
+                    "name": "The ticks and their labels are drawn just inside the view's edge, taking no width or height from the view.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 161,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fb4ff5b352",
+                    "label": null,
+                    "name": "A switch beside the axes in the top bar turns the grid on and off.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 248
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fcf6a73520",
+                    "label": null,
+                    "name": "The grid is off when the view opens on an address that does not turn it on.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/gridSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 9,
+                            "lastLine": 13
+                          }
+                        ],
+                        "name": "is off unless the address turns it on"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 211
+                          }
+                        ],
+                        "name": "draws the grid across the view while its switch is on, and keeps it on in the address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fd03559559",
+                    "label": null,
+                    "name": "The page's address keeps the grid turned on, so that a reload or a shared link keeps it on.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/gridSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 15,
+                            "lastLine": 25
+                          }
+                        ],
+                        "name": "is kept on in the address, beside what else it holds, and leaves it once off again"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/gridSwitch.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 27,
+                            "lastLine": 31
+                          }
+                        ],
+                        "name": "starts on where the address turns it on, as after a reload"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 213,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "opens with the grid on where the address turns it on"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 248
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fe7cd7893c",
+                    "label": null,
+                    "name": "The grid draws a line along each multiple of the finer of the steps the two edges of each coordinate are spaced at, so that every tick lies on one of its lines.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "draws a line through every tick on the view's edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "runs every line on past the view's edges, with no gap inside it"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 109,
+                            "lastLine": 112
+                          }
+                        ],
+                        "name": "steps right ascension by the hours of its ticks"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04ff805e7421",
+                    "label": null,
+                    "name": "The grid's lines are directions of sight: they turn with the view and change with the axes, and stay still while the eye moves or zooms.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "stays still while the eye moves or zooms, and turns with the view and the axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 235
+                          }
+                        ],
+                        "name": "turns the grid with the view, and keeps it still while the eye zooms"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 248
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-0500d68ce364",
+                    "label": null,
+                    "name": "A line of longitude other than one at a multiple of 90 degrees, or of 6 hours of right ascension, stops at 80 degrees of latitude north and south, unless an edge marks it farther on, where it runs on to that tick.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 101
+                          }
+                        ],
+                        "name": "stops a line of longitude at 80 degrees unless it lies at a multiple of 90 degrees"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 45,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "draws a line through every tick on the view's edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-0501d8ee5c20",
+                    "label": null,
+                    "name": "The axes' equator is drawn heavier than the grid's other lines, and every line of the grid is drawn thinner and fainter than the neat line.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/grid.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 103,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "marks the axes' equator alone"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 211
+                          }
+                        ],
+                        "name": "draws the grid across the view while its switch is on, and keeps it on in the address"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-0502db0af966",
+                    "label": null,
+                    "name": "The grid takes no pointer events: the points under it are named and chosen as where it is off.",
+                    "requirement": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 211
+                          }
+                        ],
+                        "name": "draws the grid across the view while its switch is on, and keeps it on in the address"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 108
+                          }
+                        ],
+                        "name": "centres the view on a point clicked, keeping the distance, with the grid drawn over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "label": null,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 74,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 248
+                          }
+                        ],
+                        "name": "draws the grid across the view from its switch beside the axes, and keeps it across a reload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd251f348c42",
+                    "label": null,
+                    "name": "A rail along the left edge, no wider than 52 CSS pixels, opens the view's controls, the groups of what is drawn and the list of structures, each as a drawer, and holds the button that returns to Earth.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "opens each drawer from the rail and closes it again with the same button"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 131,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "returns to Earth from the rail"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd2646cc3c6c",
+                    "label": null,
+                    "name": "An open drawer narrows the view rather than covering it, and its rail button closes it again.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "puts the drawer in the row beside the view, which narrows, and over the view below 1,024 pixels"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "opens each drawer from the rail and closes it again with the same button"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd2773cf8abe",
+                    "label": null,
+                    "name": "The record of the chosen object or structure is shown in the right margin only while one is chosen, and folds to the window's edge when asked.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 148
+                          }
+                        ],
+                        "name": "shows the record in the right margin only while something is chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 150,
+                            "lastLine": 159
+                          }
+                        ],
+                        "name": "folds the record to the window's edge when asked, and opens it again for the next thing chosen"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd28fdfc1b1d",
+                    "label": null,
+                    "name": "The bottom bar holds the scale, the key and the credits in one line no taller than 30 CSS pixels.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 161,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "marks the view's edges with their coordinates, and holds the scale, the key and the credits in its bottom bar"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 175,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "holds the key and the credits in its bottom bar once the catalogue is read"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 218
+                          }
+                        ],
+                        "name": "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7f5-f51b-71f9-80de-cd296b50d30d",
+                    "label": null,
+                    "name": "On a window narrower than 1,024 CSS pixels, a drawer and the record open over the view and close again.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 121
+                          }
+                        ],
+                        "name": "puts the drawer in the row beside the view, which narrows, and over the view below 1,024 pixels"
+                      },
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 250,
+                            "lastLine": 266
+                          }
+                        ],
+                        "name": "opens a drawer and the record over the view below 1,024 pixels, and closes them again"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10fa8776879",
+                    "label": null,
+                    "name": "The scale is a bar of a round length, 1, 2 or 5 times a power of ten of parsecs, kiloparsecs or megaparsecs, between 60 and 160 CSS pixels long at the focus's distance.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/scale.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 17
+                          }
+                        ],
+                        "name": "is a round length of parsecs, kiloparsecs or megaparsecs between 60 and 160 pixels"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b11043cf39a0",
+                    "label": null,
+                    "name": "The scale is labelled with its length and its unit, and changes with the eye's distance from the focus.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/scale.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 25
+                          }
+                        ],
+                        "name": "is labelled in the unit that suits its length, and changes with the distance"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/Atlas.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 237,
+                            "lastLine": 249
+                          }
+                        ],
+                        "name": "moves the ticks and the scale with the view"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b1129a75edd3",
+                    "label": null,
+                    "name": "Structures are named in italic type, in the view, in their list and in their panel.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/names.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 29
+                          }
+                        ],
+                        "name": "names structures in italic type, in the view, in their list and in their panel"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b11383d20219",
+                    "label": null,
+                    "name": "Objects are named in upright type, in the hover label and in their panel.",
+                    "requirement": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/names.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 43
+                          }
+                        ],
+                        "name": "names a structure in italic in the hover label, and an object in upright type there and in its panel"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                "label": null,
+                "name": "Frame the view as an atlas",
+                "requirements": [
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10246def191",
+                    "label": null,
+                    "name": "Univ Explorer shall mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "mark the edges of the view with the directions of sight through them, in the axes the view is drawn in.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1bbb4-503d-7416-9488-04fa6b93a838",
+                    "label": null,
+                    "name": "While the person has turned the grid on, Univ Explorer shall draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                    "statement": {
+                      "condition": "the person has turned the grid on",
+                      "form": "state_driven",
+                      "shall": "draw across the view the lines of sight along the round longitudes and latitudes its edges mark, in the axes the view is drawn in.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                    "label": null,
+                    "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b10ec3cb74b8",
+                    "label": null,
+                    "name": "Univ Explorer shall draw a scale of the view at the distance of its focus.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw a scale of the view at the distance of its focus.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b7d7-c032-73ad-803e-b11163a65264",
+                    "label": null,
+                    "name": "Univ Explorer shall name structures and objects as atlases name areas and points.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name structures and objects as atlases name areas and points.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 593,
+              "linked": 593,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }

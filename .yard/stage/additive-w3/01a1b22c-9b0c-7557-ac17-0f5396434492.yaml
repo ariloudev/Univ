@@ -1,0 +1,194 @@
+key: 01a1b22c-9b0c-7557-ac17-0f5396434492
+id: w3
+versions:
+  - key: 01a1b22c-9b0c-7557-ac17-0f5b40a5d798
+    at: 2026-11-06T18:43:50Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only the rows it adds or changes and the retirements of those it drops, by comparing with the row index of the release before, and records the change in manifest v3."
+    status: active
+  - key: 01a1b23d-8026-71c1-a9b6-b1575c41e175
+    at: 2026-11-06T19:02:17Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3: Ingest writes the change"
+    goal: "A build writes only the rows it adds or changes and the retirements of those it drops, by comparing with the row index of the release before, and records the change in manifest v3."
+    status: done
+blocks:
+  - key: 01a1b22c-9b0c-7557-ac17-0f54b8413107
+    id: w3-index
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f5c3ba90c88
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Row index kept in the state"
+        detail: "rows/{database}/{table}.idx per per-release table: key hash, content hash (both without release), the release that added the row, its key as SQL literals. Written by every build into rows.part, moved into states/{n}/ on install; the replaced state's index removed. A state that lists releases but holds no index is refused (W5 seeds release 10's)."
+        state: done
+  - key: 01a1b22c-9b0c-7557-ac17-0f55f4219e23
+    id: w3-diff
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f5d5b5e6dd5
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Compare at D1Writer::add_at, retire by key"
+        detail: "Unchanged rows are not written and keep the release that added them; new and changed rows are written as release n. At finish, rows of the index not kept become UPDATE … SET retired = n WHERE (key) IN (VALUES …) files, parts r001…, per table and database, the vanished shard included (a shard the release before held stays one release so its rows can be retired)."
+        state: done
+  - key: 01a1b22c-9b0c-7557-ac17-0f56d914b749
+    id: w3-manifest
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f5e2df6cd69
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Manifest v3"
+        detail: "parent; per table and database: added and retired beside the rows and fingerprint of every row valid in the release."
+        state: done
+  - key: 01a1b22c-9b0c-7557-ac17-0f57451fea0a
+    id: w3-prune
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f5fc1f7150e
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Prune deletes only rows no kept release holds (moved up from W4)"
+        detail: "Once builds share rows, DELETE … WHERE release = n would remove rows later releases hold: prune now deletes rows valid in n and in no listed unpruned release."
+        state: done
+  - key: 01a1b22c-9b0c-7557-ac17-0f584e5ed739
+    id: w3-tests
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f600cf76d4f
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Tests: structure only, source added and dropped"
+        detail: "stable_rows: a structure-only release writes no object-shard row or file and retires none; shared_rows: releases 1→4 (structure added, source added, source dropped) keep every pinned read of the earlier ones, see each key once, and pass publish's fingerprint and content checks over the rows valid in them. The test loader and the API fixture read a release through the releases before it."
+        state: done
+  - key: 01a1b22c-9b0c-7557-ac17-0f595a523769
+    id: w3-science
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f61b1207d35
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "xtask science refuses a release written as a change"
+        detail: "Its D1 files alone are not the release; W5 makes science read the published store."
+        state: done
+  - key: 01a1b22c-9b0c-7557-ac17-0f5a72ed2f7f
+    id: w3-review
+    kind: task
+    versions:
+      - key: 01a1b22c-9b0c-7557-ac17-0f6287e02231
+        at: 2026-11-06T18:43:50Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify and /code-review in parallel, fixes, cargo xtask check."
+        state: active
+      - key: 01a1b23b-15e4-74bd-8f7e-3ad958c10993
+        at: 2026-11-06T18:59:39Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify (reuse, simplification, efficiency, altitude) and /code-review high ran; fixes applied, see the note. Gate next."
+        state: active
+      - key: 01a1b23d-8026-71c1-a9b6-b15543bc9adc
+        at: 2026-11-06T19:02:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Review and gate"
+        detail: "/simplify (four angles) and /code-review high; fixes in 023b97a; eight criteria linked (f98ba6e); cargo xtask check passed, 13 gates."
+        state: done
+  - key: 01a1b23b-15e4-74bd-8f7e-3ad8dd753036
+    id: w3-findings
+    kind: note
+    versions:
+      - key: 01a1b23b-15e4-74bd-8f7e-3ada8092e538
+        at: 2026-11-06T18:59:39Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the W3 reviews found, and what was done"
+        markdown: |-
+          | Finding | Done |
+          |---|---|
+          | Index hashed with `DefaultHasher`, not stable across toolchains: an upgrade would rewrite and retire every row | SHA-256's first 16 bytes over typed values; a test pins the algorithm |
+          | A table whose rows were all kept writes no file, so publish never checked it | `check_kept` checks every such table against the rows valid in the release before `latest` moves |
+          | Nothing required the parent to be published: out of order, retirements land on the wrong release | `NotOnLatest` refusal (moved up from W4) |
+          | A truncated index read as complete | Each record checked against the file's length; a test cuts one short |
+          | CON-3 shard sums by `release IN`, missing shared rows | Each kept release's valid row, erring high |
+          | `rows.part` left by a failed or stopped build | Removed on every failure path |
+          | `xtask science` refused any release after the first | Loads the parent chain, leaves the rows valid in n as its own |
+          | Prune filter grew with the releases kept | Bounded by the nearest kept release on each side; a middle-release test |
+          | Index 4.9 GB at 100 M rows, a binary search per row, key strings and statements all held | Per-table arrays (~33 B/row) in each table's writer state, an in-order cursor, keys skipped unless retired, retirements streamed through the shared `Statements` and part writer, index appended in 1 MB blocks (no open file per table) |
+          | Duplicate hash, double hashing, kept rows deep-copied, three copies of "key without release" | One `hash_at`, once per row; `Fingerprinter::add_replacing`; `Table::natural_key` |
+
+          **Not changed:** the API fixture keeps release 2 written whole (`release = 2`, never retired): univ-api's testkit has its own releases 1–3, and the rows valid in 2 are what it reads; the old states' YAML stays (only the replaced row index is removed); the held-shard count stays derived from `Kept`.
+
+          **Carried forward:** a state with releases and no row index cannot build until W5 seeds release 10's; R2 files are still all written and uploaded (skipping held ones is W4's publish step).
+  - key: 01a1b23d-8026-71c1-a9b6-b154b7c2d05b
+    id: w3-produced
+    kind: note
+    versions:
+      - key: 01a1b23d-8026-71c1-a9b6-b156cae11279
+        at: 2026-11-06T19:02:17Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What W3 produced"
+        markdown: |-
+          ```mermaid
+          flowchart LR
+            I["rows/ of release n-1\nkey + content hash per row"] --> C{"each row of release n"}
+            C -->|same key, same content| K["not written\nkeeps its release"]
+            C -->|new or changed| W["written as release n"]
+            I -->|not kept| R["retired = n\nby key, -r001 files"]
+            C --> N["rows.part/ → states/n/rows"]
+          ```
+
+          | | Before W3 | After |
+          |---|---|---|
+          | Rows a structure-only release writes | every row | the structures' rows; no object-shard row or file |
+          | Retirement | every earlier row, whole tables | by key, only what changed or went |
+          | Manifest | v2 | v3: `parent`, rows added and retired per table |
+          | Publish | checks tables it loads | also checks tables it writes no file of; refuses a parent `latest` does not point to |
+          | Prune | `release = n` | rows valid in n and no kept release, bounded by the nearest kept on each side |
+          | `xtask science` | one build's files | the build loaded through its parent chain |
+
+          The index hashes with SHA-256, so a toolchain upgrade changes nothing; at ~100 M rows it holds ~3.3 GB during the build and reads mostly in order.
+
+          **Carried forward to W4:** files already held are still written and uploaded; CON-3 still sums shared rows once per release (errs high); fixture state and integration on chains of releases.
+          **To W5:** the real state has no row index, so it cannot build until release 10's is seeded.
+        tone: success

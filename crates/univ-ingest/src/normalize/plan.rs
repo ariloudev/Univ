@@ -135,6 +135,8 @@ pub(super) struct Plan {
     pub supergalactic: Option<[Col; 3]>,
     /// The quality columns, each with its name shared by every entry's flags.
     pub flags: Vec<(usize, Arc<str>)>,
+    /// The cross-identifier columns, each with its name shared by every entry's.
+    pub cross_ids: Vec<(usize, Arc<str>)>,
     pub redshifts: Vec<RedshiftPlan>,
     pub distances: Vec<DistancePlan>,
     pub rules: Vec<RulePlan>,
@@ -143,6 +145,24 @@ pub(super) struct Plan {
     pub leaving: Changed,
     /// Parsecs for stars, megaparsecs otherwise.
     pub distance_unit: Unit,
+}
+
+/// Each column `definition` takes as `field`, by its index in the header, with its name shared
+/// by every entry that carries it.
+fn named_columns(
+    definition: &SourceDefinition,
+    field: Field,
+    r: &Resolver<'_>,
+) -> Result<Vec<(usize, Arc<str>)>, NormalizeError> {
+    definition
+        .columns
+        .iter()
+        .filter(|c| c.field == field)
+        .map(|c| {
+            r.col(&c.column)
+                .map(|col| (col.index, flag_name(&col.name)))
+        })
+        .collect()
 }
 
 /// Finds the columns of a definition in a table's header.
@@ -418,15 +438,8 @@ impl Plan {
             spectral_type: r.spectral_type()?,
             group_id: r.field(Field::GroupId)?.map(|c| c.index),
             supergalactic: r.supergalactic()?,
-            flags: definition
-                .columns
-                .iter()
-                .filter(|c| c.field == Field::Quality)
-                .map(|c| {
-                    r.col(&c.column)
-                        .map(|col| (col.index, flag_name(&col.name)))
-                })
-                .collect::<Result<_, _>>()?,
+            flags: named_columns(definition, Field::Quality, &r)?,
+            cross_ids: named_columns(definition, Field::CrossIdentifier, &r)?,
             redshifts: n
                 .redshifts
                 .iter()

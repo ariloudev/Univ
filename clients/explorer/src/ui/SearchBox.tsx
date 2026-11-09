@@ -1,6 +1,7 @@
 import { type FormEvent, useRef, useState } from "react";
 
 import { type Found, type ObjectRecord, search } from "../api/objects.ts";
+import { FLOATING } from "./floating.ts";
 
 type State = { kind: "idle" } | { kind: "searching" } | { kind: "failed"; message: string } | Exclude<Found, { kind: "object" }>;
 
@@ -30,20 +31,40 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
       });
   };
   return (
-    <div className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
-      <form onSubmit={submit} role="search" className="flex gap-2">
+    <div className="relative">
+      <form onSubmit={submit} role="search" className="flex gap-1.5">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Id, source:identifier or name"
+          placeholder="Name, designation or id"
           aria-label="Find an object by id, source:identifier or name"
-          className="min-w-0 flex-1 rounded border border-line bg-space px-2 py-1"
+          className="w-40 min-w-0 rounded border border-line bg-space px-2 py-0.5 2xl:w-60"
         />
-        <button type="submit" className="rounded border border-accent px-2 py-1 text-accent hover:bg-accent hover:text-space">
+        <button type="submit" className="rounded border border-accent px-2 py-0.5 text-accent hover:bg-accent hover:text-space">
           Find
         </button>
       </form>
-      <Outcome state={state} onFound={onFound} />
+      {state.kind === "idle" ? null : (
+        <div className={`${FLOATING} top-full right-0 mt-2 max-h-[60vh] w-80 overflow-y-auto whitespace-normal`}>
+          <button
+            type="button"
+            onClick={() => {
+              setState({ kind: "idle" });
+            }}
+            className="float-right ml-2 text-dim hover:text-ink"
+            aria-label="Close the search's answers"
+          >
+            ×
+          </button>
+          <Outcome
+            state={state}
+            onFound={(id, record, as) => {
+              setState({ kind: "idle" });
+              onFound(id, record, as);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -103,6 +103,7 @@ pub fn entry(source: &str, n: usize, p: Vec3, redshift: bool) -> CatalogueEntry 
         vec![]
     };
     CatalogueEntry {
+        cross_ids: univ_model::entry::Flags::default(),
         designation: Designation::new(SourceId::new(source).unwrap(), n.to_string()).unwrap(),
         name: None,
         position: Some(Position::new(native, PositionUncertainty::NoneReported).unwrap()),

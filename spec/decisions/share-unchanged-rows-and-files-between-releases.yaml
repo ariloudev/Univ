@@ -1,0 +1,105 @@
+key: 01a1b1a0-7c6e-703c-8f49-8a7e2f8c5737
+slug: share-unchanged-rows-and-files-between-releases
+title: "Share unchanged rows and files between releases"
+context: "Measured on release 10, every release copies all of its rows: 37 GB of D1 across the catalogue database and seven object shards, published in 1 h 35 min after a 15 min build, so a release that adds one structure, a few kilobytes, costs the same as one that changes every object. ADR-16 keeps releases immutable, and AC-128 has two reads pinned to one release agree whatever is published later; a row that is never changed once written keeps both, whichever releases hold it."
+state:
+  kind: accepted
+  selectedOption: 01a1b1a0-7c6e-703c-8f49-8a8204af6f25
+  outcome: "Each row is held from the release that adds it until a release retires it, and each file once by its SHA-256, so a release writes, publishes and stores only what it changes."
+drivers:
+  - key: 01a1b1a0-7c6e-703c-8f49-8a7fe0d0f43a
+    kind: local
+    label: "Storage"
+    statement: "Keeping several releases costs little more than the latest alone."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a80d43a94ba
+    kind: local
+    label: "Release time"
+    statement: "A release that adds structures or one source is published in minutes, not hours."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a811cc27416
+    kind: local
+    label: "Pinned reads"
+    statement: "A read pinned to a release returns the same data whatever is published after it."
+options:
+  - key: 01a1b1a0-7c6e-703c-8f49-8a8204af6f25
+    title: "Shared rows and files"
+    description: "A row carries the release that adds it and the release that retires it, if any; a file is stored under its SHA-256 and mapped by each release that holds it. A build compares its rows with an index of the latest release's rows by key and content hash."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a83d0b0b4af
+    title: "A copy of every row per release"
+    description: "As up to release 10: each release writes and publishes all of its rows and files under its own number."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a841db34162
+    title: "Carry unchanged tables forward"
+    description: "Rows stay per release, but a release's unchanged tables are copied inside D1 and R2 from the release before it rather than uploaded."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a851827ca0c
+    title: "Cache the build's stages"
+    description: "Keep normalized sources and the cross-match result between builds, so a build re-runs only what changed; publish and storage as before."
+assessments:
+  - option: 01a1b1a0-7c6e-703c-8f49-8a8204af6f25
+    driver: 01a1b1a0-7c6e-703c-8f49-8a7fe0d0f43a
+    rating: supports
+    rationale: "storage grows by each release's change alone"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a8204af6f25
+    driver: 01a1b1a0-7c6e-703c-8f49-8a80d43a94ba
+    rating: supports
+    rationale: "a structure release publishes kilobytes and no tile"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a8204af6f25
+    driver: 01a1b1a0-7c6e-703c-8f49-8a811cc27416
+    rating: supports
+    rationale: "a written row never changes; a later release only retires it from then on"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a83d0b0b4af
+    driver: 01a1b1a0-7c6e-703c-8f49-8a7fe0d0f43a
+    rating: conflicts
+    rationale: "37 GB per release; CON-3 leaves room for two releases"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a83d0b0b4af
+    driver: 01a1b1a0-7c6e-703c-8f49-8a80d43a94ba
+    rating: conflicts
+    rationale: "1 h 35 min to publish any change"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a83d0b0b4af
+    driver: 01a1b1a0-7c6e-703c-8f49-8a811cc27416
+    rating: supports
+    rationale: "each release has its own rows"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a841db34162
+    driver: 01a1b1a0-7c6e-703c-8f49-8a7fe0d0f43a
+    rating: conflicts
+    rationale: "each release still holds a full copy"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a841db34162
+    driver: 01a1b1a0-7c6e-703c-8f49-8a80d43a94ba
+    rating: supports
+    rationale: "copies inside the store take minutes"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a841db34162
+    driver: 01a1b1a0-7c6e-703c-8f49-8a811cc27416
+    rating: supports
+    rationale: "each release has its own rows"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a851827ca0c
+    driver: 01a1b1a0-7c6e-703c-8f49-8a7fe0d0f43a
+    rating: conflicts
+    rationale: "storage as before"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a851827ca0c
+    driver: 01a1b1a0-7c6e-703c-8f49-8a80d43a94ba
+    rating: neutral
+    rationale: "saves minutes of the build, none of the publish"
+  - option: 01a1b1a0-7c6e-703c-8f49-8a851827ca0c
+    driver: 01a1b1a0-7c6e-703c-8f49-8a811cc27416
+    rating: supports
+    rationale: "releases unchanged"
+consequences:
+  - key: 01a1b1a0-7c6e-703c-8f49-8a864fa9a80d
+    kind: cost
+    statement: "Every read of a release selects the rows valid in it, from the release that adds a row until the one that retires it, and reads a file through the release's map of its paths."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a87dc7ffeef
+    kind: obligation
+    statement: "The index of the latest release's rows by key and content hash must match the rows published, or a build writes the wrong change."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a8807bed18a
+    kind: cost
+    statement: "Pruning deletes only the rows and files that no release left unpruned holds."
+  - key: 01a1b1a0-7c6e-703c-8f49-8a8934976c63
+    kind: benefit
+    statement: "A release that adds structures publishes kilobytes, and one that adds a source publishes about what that source adds."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3cf1defde8b6
+  - role: outcome
+    node: 01a1b19f-a71f-7111-b5df-7f33b5e55051
+  - role: outcome
+    node: 01a1b19f-a71f-7111-b5df-7f3a7c9bc406
+  - role: outcome
+    node: 01a1b19f-a71f-7111-b5df-7f42a7d3e03b

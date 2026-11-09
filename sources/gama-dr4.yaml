@@ -63,6 +63,23 @@ redistribution:
 scale_domain: cosmic_web
 mirrors:
   - "https://www.gama-survey.org"
+flags:
+  NQ:
+    cite: >-
+      SpecObj v27 (SpecCat DMU, DR4) column description, NQ: 'Normalised redshift quality (use nQ >
+      2 for science)'; values defined by Liske et al. 2015, MNRAS 452, 2087, Section 2.3.4, equation
+      (15), from p(z_b), the probability that the redshift is correct
+    values:
+      "1": "The spectrum does not yield a redshift."
+      "2": "p(z_b) < 0.9: not accepted for science."
+      "3": "0.9 <= p(z_b) < 0.95."
+      "4": "0.95 <= p(z_b) <= 1."
+  SURVEY:
+    cite: >-
+      SpecObj v27 (SpecCat DMU, DR4) column description, SURVEY: 'Survey best matched spectrum
+      originated from'
+    values:
+      "GAMA": "The best matched spectrum originated from GAMA."
 normalization:
   redshifts:
     - column: Z

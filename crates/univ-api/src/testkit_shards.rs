@@ -7,7 +7,8 @@
 //! them; an object it names no shard for is given one by the backend's placement, `id % 2`
 //! unless a test sets another. The index is then written as a build writes it, from what the
 //! shards hold: each shard's objects (`release_shards`) and the range of the Morton codes of its
-//! cells of each domain (`shard_cells`). A fixture written by hand thus spans two shards, and
+//! cells of each domain (`shard_cells`), each row added by the first release that has it and
+//! shared by every later one; an object's row of the index is retired with its object. A fixture written by hand thus spans two shards, and
 //! every read is tested across them.
 
 use std::cell::Cell as Shared;
@@ -83,22 +84,23 @@ impl Shards {
         if !moving {
             return;
         }
-        let unplaced: Vec<(i64, u64)> = catalogue
+        let unplaced: Vec<(i64, u64, Option<i64>)> = catalogue
             .prepare(
-                "SELECT release, id FROM main.objects o WHERE NOT EXISTS \
-                 (SELECT 1 FROM object_shards s WHERE s.release = o.release AND s.id = o.id)",
+                "SELECT release, id, retired FROM main.objects o WHERE NOT EXISTS \
+                 (SELECT 1 FROM object_shards s WHERE s.id = o.id AND s.release <= o.release \
+                 AND (s.retired IS NULL OR s.retired > o.release))",
             )
             .unwrap()
-            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
             .unwrap()
             .map(Result::unwrap)
             .collect();
         let place = self.place.get();
-        for (release, id) in unplaced {
+        for (release, id, retired) in unplaced {
             catalogue
                 .execute(
-                    "INSERT INTO object_shards VALUES (?1, ?2, ?3)",
-                    rusqlite::params![release, id, place(id)],
+                    "INSERT INTO object_shards VALUES (?1, ?2, ?3, ?4)",
+                    rusqlite::params![release, id, place(id), retired],
                 )
                 .unwrap();
         }
@@ -108,9 +110,8 @@ impl Shards {
             } else {
                 "object_id"
             };
-            let owner = format!(
-                "SELECT 1 FROM object_shards s WHERE s.release = t.release AND s.id = t.{id}"
-            );
+            // An object stays in one shard: a later release's rows of it go where its first went.
+            let owner = format!("SELECT 1 FROM object_shards s WHERE s.id = t.{id}");
             for i in 0..SHARDS {
                 let sql = format!(
                     "INSERT INTO shard{i}.{table} SELECT * FROM main.{table} t \
@@ -128,13 +129,14 @@ impl Shards {
     fn index(&self, catalogue: &Connection) {
         catalogue
             .execute_batch(
-                "INSERT INTO release_shards SELECT release, shard, COUNT(*), 0 FROM object_shards \
-                 WHERE true GROUP BY release, shard \
-                 ON CONFLICT (release, shard) DO UPDATE SET objects = excluded.objects;",
+                "DELETE FROM release_shards; \
+                 INSERT INTO release_shards \
+                 SELECT MIN(release), shard, COUNT(*), 0, NULL FROM object_shards GROUP BY shard;",
             )
             .unwrap();
         for (i, shard) in (0_u32..).zip(&self.shards) {
-            let mut ranges: BTreeMap<(i64, i64), (u64, u64)> = BTreeMap::new();
+            // Each domain's run: the first release with a cell in it, and the range of codes.
+            let mut ranges: BTreeMap<i64, (i64, u64, u64)> = BTreeMap::new();
             let mut cells = shard
                 .prepare("SELECT release, domain, ix, iy, iz FROM object_cells")
                 .unwrap();
@@ -151,15 +153,20 @@ impl Shards {
             for row in rows {
                 let (release, domain, cell) = row.unwrap();
                 let code = morton(cell).unwrap();
-                let range = ranges.entry((release, domain)).or_insert((code, code));
-                *range = (range.0.min(code), range.1.max(code));
+                let run = ranges.entry(domain).or_insert((release, code, code));
+                *run = (run.0.min(release), run.1.min(code), run.2.max(code));
             }
-            for ((release, domain), (first, last)) in ranges {
+            for (domain, (release, first, last)) in ranges {
+                // One run for each shard and domain: it replaces any the fixture gave.
                 catalogue
                     .execute(
-                        "INSERT INTO shard_cells VALUES (?1, ?2, ?3, ?4, ?5) \
-                         ON CONFLICT (release, shard, domain) \
-                         DO UPDATE SET first = excluded.first, last = excluded.last",
+                        "DELETE FROM shard_cells WHERE shard = ?1 AND domain = ?2",
+                        rusqlite::params![i, domain],
+                    )
+                    .unwrap();
+                catalogue
+                    .execute(
+                        "INSERT INTO shard_cells VALUES (?1, ?2, ?3, ?4, ?5, NULL)",
                         rusqlite::params![release, i, domain, first, last],
                     )
                     .unwrap();

@@ -13,7 +13,7 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, int, publishing};
-use release_fixture::{build_next, fixture};
+use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
 use univ_ingest::tiles::sha256;
@@ -68,7 +68,7 @@ fn every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last() {
             .unwrap();
         assert_eq!(store.ops[put + 1], Op::Get(key.into()), "{key} read back");
     }
-    assert!(store.r2.contains_key(&keys::key(1, keys::MANIFEST)));
+    assert!(store.r2.contains_key(&keys::manifest(1)));
     // Each D1 table holds the rows the manifest counts.
     for t in m.d1.tables.iter().filter(|t| t.rows > 0) {
         let column = if t.table == "releases" {
@@ -159,6 +159,12 @@ fn a_file_that_reads_back_with_another_sha256_stops_the_publish() {
     // A local file changed after its build is refused as it is checked, before it is uploaded.
     let (mut store, journals) = (MemoryStore::default(), tempfile::tempdir().unwrap());
     let dir = univ_ingest::release::release_dir(f.out.path(), 1);
+    let rules_key = release_fixture::read_manifest(&dir)
+        .files
+        .iter()
+        .find(|m| m.path == keys::rules("matching"))
+        .and_then(|m| m.key.clone())
+        .unwrap();
     std::fs::write(dir.join(keys::rules("matching")), "changed").unwrap();
     let refused = publishing(
         &mut store,
@@ -174,11 +180,7 @@ fn a_file_that_reads_back_with_another_sha256_stops_the_publish() {
             if problem == "rules/matching.yaml no longer matches its SHA-256"),
         "{refused}"
     );
-    assert!(
-        !store
-            .r2
-            .contains_key(&keys::key(1, &keys::rules("matching")))
-    );
+    assert!(!store.r2.contains_key(&rules_key));
     assert_eq!(latest(&store), None);
 }
 
@@ -279,9 +281,17 @@ fn an_interrupted_publish_leaves_latest_and_continues_from_its_journal() {
     else {
         panic!("{error}")
     };
+    // Every file but those release 1 holds already, and the manifest.
+    let first = read_manifest(&univ_ingest::release::release_dir(f.out.path(), 1));
+    let held = built
+        .manifest
+        .files
+        .iter()
+        .filter(|f| f.key.is_some() && first.files.iter().any(|g| g.sha256 == f.sha256))
+        .count();
     assert_eq!(
         (*at, *total),
-        (Latest(Some(1)), built.manifest.files.len() + 1)
+        (Latest(Some(1)), built.manifest.files.len() + 1 - held)
     );
     assert!(*done > 0 && *done < *total, "{error}");
     let message = error.to_string();

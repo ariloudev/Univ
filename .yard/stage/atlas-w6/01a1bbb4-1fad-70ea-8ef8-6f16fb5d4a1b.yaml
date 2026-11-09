@@ -1,0 +1,201 @@
+key: 01a1bbb4-1fad-70ea-8ef8-6f16fb5d4a1b
+id: build
+versions:
+  - key: 01a1bbb4-1fad-70ea-8ef8-6f1915a15dd3
+    at: 2026-11-08T15:08:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the sky graticule"
+    goal: "The view draws the grid as directions of sight, at the ticks' shared steps, with its switch in the top bar, verified by unit, component and end-to-end tests"
+    status: planned
+  - key: 01a1bbb6-433c-707e-9fa2-d39cf0ceb5e6
+    at: 2026-11-08T15:10:46Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the sky graticule"
+    goal: "The view draws the grid as directions of sight, at the ticks' shared steps, with its switch in the top bar, verified by unit, component and end-to-end tests"
+    status: active
+  - key: 01a1bbbd-a3ac-754f-a4b3-cb0a4028e560
+    at: 2026-11-08T15:18:50Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the sky graticule"
+    goal: "The view draws the grid as directions of sight, at the ticks' shared steps, with its switch in the top bar, verified by unit, component and end-to-end tests"
+    status: done
+blocks:
+  - key: 01a1bbb4-cae4-755d-a377-e47ceb1adf57
+    id: grid-plan
+    kind: plan
+    versions:
+      - key: 01a1bbb4-cae4-755d-a377-e47ed20ee1ac
+        at: 2026-11-08T15:09:10Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: the sky graticule"
+        markdown: |-
+          1. **Shared steps** (`scene/graticule.ts`). `edgeTicks` chooses one step per coordinate: the finest step that keeps its labels 60 px apart on every edge where any step fits. It returns that step beside each edge's ticks.
+             - *Meets:* the two reworded tick criteria.
+             - *Tests:* `graticule.test.ts` gains cases where the top and bottom edges disagree today; the existing tick tests keep passing.
+          2. **Grid lines** (new `scene/grid.ts`, pure functions). `gridLines(view, toFrame, axes, width, height, steps)`:
+             - samples each meridian and parallel every degree, as directions only (the eye's turn, not its place);
+             - keeps only what lies within the view's cone plus a margin, split into runs, projected to CSS pixels;
+             - stops meridians at ±80° unless they sit at a multiple of 90° or 6 h;
+             - marks the equator.
+             - *Meets:* every tick on a line, directions of sight, meridian stops, the equator.
+             - *Tests:* `grid.test.ts` checks that each edge tick's pixel lies on a line within 1 px; that a change of focus or distance changes nothing while a change of yaw or axes does; and the 80° stops, the pole-reaching meridians and the equator flag.
+          3. **Drawing** (`ui/AtlasFrame.tsx`). When the grid is on, it draws the lines as SVG paths under the neat line and labels: dim-ink hairlines at 0.75 px and about 20% opacity, the equator at 1.25 px and about 40%. The SVG keeps `pointer-events: none`.
+             - *Meets:* heavier equator and fainter lines, no pointer events.
+             - *Tests:* AtlasFrame component tests for the paths and stroke widths; the existing e2e hover and pick runs with the grid on.
+          4. **The switch** (new `ui/addressSwitch.ts`). One helper keeps a switch in the page's address. Level of detail moves onto it with no change in behaviour, and the grid's switch uses `grid=on`. The switch is a “Grid” checkbox (`role=switch`) beside the axes in `Whereabouts`.
+             - *Meets:* the switch, off by default, kept in the address, and the top bar.
+             - *Tests:* the address-switch hook tests; the existing level-of-detail tests unchanged; an e2e test that switches the grid on, reloads, finds it still on, and checks the top bar is still ≤ 40 px.
+          5. **Wave end:** `/simplify` and `/code-review`, fixes, `cargo xtask check` and `cargo xtask integration` once each, trace links accepted, a screenshot of the grid on release 12 for you, Yard Log closed, merged `--no-ff` into product/atlas.
+
+          No ingest, server or data changes.
+    responses:
+      - key: 01a1bbb6-1413-740c-93dc-2b62a0553f90
+        at: 2026-11-08T15:10:34Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1bbb6-433c-707e-9fa2-d396bb78f788
+    id: t-steps
+    kind: task
+    versions:
+      - key: 01a1bbb6-433c-707e-9fa2-d39d64bbeba0
+        at: 2026-11-08T15:10:46Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Share one step per coordinate across its edges"
+        detail: "graticule.ts: edgeTicks picks the finest step that fits every edge; done when graticule.test.ts passes with the new disagreeing-edges cases."
+        state: active
+      - key: 01a1bbb9-b4d9-7061-a24d-5f9eed3a7a16
+        at: 2026-11-08T15:14:32Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Share one step per coordinate across its edges"
+        detail: "graticule.ts: edgeTicks picks the finest step that fits every edge; done when graticule.test.ts passes with the new disagreeing-edges cases."
+        state: done
+  - key: 01a1bbb6-433c-707e-9fa2-d397e37a7688
+    id: t-lines
+    kind: task
+    versions:
+      - key: 01a1bbb6-433c-707e-9fa2-d39e5cabca66
+        at: 2026-11-08T15:10:46Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Grid lines as directions of sight"
+        detail: "scene/grid.ts gridLines; done when grid.test.ts shows every tick on a line, still under moves and zooms, the 80° stops and the equator flag."
+        state: open
+      - key: 01a1bbb9-b4d9-7061-a24d-5f9f58507bc2
+        at: 2026-11-08T15:14:32Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Grid lines as directions of sight"
+        detail: "scene/grid.ts gridLines; grid.test.ts shows every tick on a line within 1 px, the grid still under moves and zooms, the 80° stops and the equator flag."
+        state: done
+  - key: 01a1bbb6-433c-707e-9fa2-d3984ee747ae
+    id: t-draw
+    kind: task
+    versions:
+      - key: 01a1bbb6-433c-707e-9fa2-d39f9eb37b0a
+        at: 2026-11-08T15:10:46Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Draw the grid in the atlas frame"
+        detail: "AtlasFrame draws the paths under the neat line, fainter and thinner, the equator heavier; done when its component tests pass."
+        state: open
+      - key: 01a1bbb9-b4d9-7061-a24d-5fa12c85ac38
+        at: 2026-11-08T15:14:32Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Draw the grid in the atlas frame"
+        detail: "AtlasFrame draws the paths under the neat line, fainter and thinner, the equator heavier; done when its component tests pass."
+        state: active
+      - key: 01a1bbbd-a3ac-754f-a4b3-cb073668ab51
+        at: 2026-11-08T15:18:50Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Draw the grid in the atlas frame"
+        detail: "AtlasFrame draws the paths under the neat line, fainter and thinner, the equator heavier. Opacity was raised from 0.22 to 0.4 (the equator from 0.45 to 0.7) after the first screenshot on release 12 showed the lines lost in the points; both stay under the neat line's."
+        state: done
+  - key: 01a1bbb6-433c-707e-9fa2-d39918ee61f4
+    id: t-switch
+    kind: task
+    versions:
+      - key: 01a1bbb6-433c-707e-9fa2-d3a0ca858416
+        at: 2026-11-08T15:10:46Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The grid's switch, kept in the address"
+        detail: "addressSwitch.ts shared with level of detail; a Grid switch beside the axes; done when the hook tests and an e2e reload test pass."
+        state: open
+      - key: 01a1bbbd-a3ac-754f-a4b3-cb08e29318f6
+        at: 2026-11-08T15:18:50Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The grid's switch, kept in the address"
+        detail: "addressSwitch.ts is shared with level of detail; a Grid switch sits beside the axes; the hook tests, the atlas component tests and a new e2e reload test (still to run in integration) cover it."
+        state: done
+  - key: 01a1bbb9-b4d9-7061-a24d-5f9d2d8c9f16
+    id: stop-reworded
+    kind: note
+    versions:
+      - key: 01a1bbb9-b4d9-7061-a24d-5fa027461742
+        at: 2026-11-08T15:14:32Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "A minor spec change: a meridian runs on to its tick"
+        markdown: "The approved criteria clashed in one case. A meridian stops at 80°, but near a pole the top edge can mark 30° or 330° at about 82° of latitude (for example, galactic, looking up at 72°, 1280 × 800), and that tick would sit on no line. The stop criterion now reads *…stops at 80 degrees … unless an edge marks it farther on, where it runs on to that tick.* It is committed on its own (0b77b55) as a minor spec change, which is pre-approved, and a grid test covers that view."
+        tone: warning
+  - key: 01a1bbbd-a3ac-754f-a4b3-cb06cbe2d5dd
+    id: build-done
+    kind: note
+    versions:
+      - key: 01a1bbbd-a3ac-754f-a4b3-cb0900b78ef0
+        at: 2026-11-08T15:18:50Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        markdown: |-
+          Built and committed (ad5df92). The explorer's `pnpm check` passes, and the grid is checked on release 12 in galactic, in equatorial and looking at the south celestial pole.
+
+          | Part | Where |
+          |---|---|
+          | Shared tick steps | `scene/graticule.ts` (`edgeTicks`, `sight`) |
+          | Grid lines | `scene/grid.ts` |
+          | Drawing | `ui/AtlasFrame.tsx` |
+          | Switch | `ui/addressSwitch.ts`, `ui/gridSwitch.ts`, `ui/Panels.tsx` |
+        tone: success

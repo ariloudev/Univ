@@ -1,0 +1,407 @@
+key: 01a1b185-4180-7293-a2be-8dbe4f3680f7
+id: options
+versions:
+  - key: 01a1b185-4180-7293-a2be-8dc2df46d391
+    at: 2026-11-06T15:41:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Shape additive releases"
+    goal: "The ways to make a release from the last one plus a change are compared, and the owner has chosen one."
+    status: planned
+  - key: 01a1b19e-7686-704f-89b1-b9dcade6dbd2
+    at: 2026-11-06T16:08:34Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Shape additive releases"
+    goal: "The ways to make a release from the last one plus a change are compared, and the owner has chosen one."
+    status: done
+blocks:
+  - key: 01a1b188-df1e-74dd-98f1-8205473245fd
+    id: q-scope
+    kind: question
+    versions:
+      - key: 01a1b188-df1e-74dd-98f1-820a9cba24f9
+        at: 2026-11-06T15:44:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Which changes must make a release without the full cost?"
+        header: "Changes"
+        options:
+          - label: "Structures"
+            detail: "Adding or correcting structures in structures/: the commonest change, and the cheapest to make additive, since objects and tiles do not move."
+            recommended: true
+          - label: "A new source"
+            detail: "Adding one catalogue: its objects and tiles change, and cross-match must see every entry again to keep ids right, but most shards' rows stay the same."
+            recommended: true
+          - label: "A changed source"
+            detail: "A source re-fetched or re-normalized: like a new source, with objects that leave as well as arrive."
+          - label: "Rules"
+            detail: "Matching, ranking or tile rules: may move every object; a full release is the honest answer, so this one stays full."
+        multiple: true
+    responses:
+      - key: 01a1b19a-f157-7347-a8af-d6c30d0565b0
+        at: 2026-11-06T16:04:43Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Structures"
+          - "A new source"
+  - key: 01a1b188-df1e-74dd-98f1-82064df8d7db
+    id: q-approach
+    kind: question
+    versions:
+      - key: 01a1b188-df1e-74dd-98f1-820b551d03fc
+        at: 2026-11-06T15:44:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "How should a release reuse what its parent already holds?"
+        header: "Approach"
+        context: "Each keeps ADR-16 and AC-128: a release, once published, never changes."
+        options:
+          - label: "Carry forward"
+            detail: "Rows stay per release, as now. The build still runs whole but writes SQL and files only for what differs from the parent, by the manifest's fingerprints; publish copies the rest inside D1 (INSERT … SELECT from release n) and R2 (copy by key). A structure: minutes, not 95. Storage per release unchanged, CON-3 as now. Server untouched."
+            recommended: true
+          - label: "Shared rows"
+            detail: "Rows are valid from the release that added them until one that retires them; a release writes only its changes and storage grows by the change alone, so many releases can live side by side. Schema 6, every server query filters by range, prune rewritten: the biggest change by far, worth it only if many releases must coexist."
+          - label: "Stage caches"
+            detail: "Keep normalized entries per source and the cross-match result between runs, so a build re-runs only what changed. Saves minutes of the 15-minute build; the 95-minute publish and the storage stay as they are."
+    responses:
+      - key: 01a1b19a-f157-7347-a8af-d6c454b0284b
+        at: 2026-11-06T16:04:43Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Shared rows"
+  - key: 01a1b188-df1e-74dd-98f1-820792fdeab5
+    id: q-unit
+    kind: question
+    versions:
+      - key: 01a1b188-df1e-74dd-98f1-820c93bc0346
+        at: 2026-11-06T15:44:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "At what unit should a release tell its parent's data apart from its own?"
+        header: "Unit"
+        options:
+          - label: "Table per shard"
+            detail: "The manifest already fingerprints each table in the catalogue and in each shard. A structure changes three catalogue tables; a new source changes the shards its objects land in. Simple and already checked at publish."
+            recommended: true
+          - label: "Cell"
+            detail: "Fingerprint each level-0 cell's rows, so a source in one part of the sky rewrites only those cells. Finer, faster for small sources, but a new fingerprint per cell and per table, and copy-forward by cell ranges."
+          - label: "Row"
+            detail: "Diff every row against the parent: the least written, but the build must read the parent's 37 GB, which costs more than it saves."
+    responses:
+      - key: 01a1b19a-f157-7347-a8af-d6c5c18d260d
+        at: 2026-11-06T16:04:43Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: "Not sure if my previous answer changes this"
+  - key: 01a1b188-df1e-74dd-98f1-82081644881b
+    id: q-build
+    kind: question
+    versions:
+      - key: 01a1b188-df1e-74dd-98f1-820d1cf2e304
+        at: 2026-11-06T15:44:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should the build itself stop re-running every stage?"
+        header: "Build"
+        options:
+          - label: "Whole, then diff"
+            detail: "Keep the build one deterministic pass from the downloads (15 min), and make only its writing and the publish additive. Simplest to trust: a carried table is the same table a full build would make, and the fingerprints prove it."
+            recommended: true
+          - label: "Skip stages too"
+            detail: "Also cache normalized sources and the cross-match result, so a structures-only release skips to resolving members (about a minute). Faster again, at the cost of a second path that must agree with the whole build."
+    responses:
+      - key: 01a1b19a-f157-7347-a8af-d6c6af94020d
+        at: 2026-11-06T16:04:43Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: "Now sure how this is related to my first answer"
+  - key: 01a1b19b-7438-720e-beaa-11f7d57569cc
+    id: d-scope
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-11fe301ad26d
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Structures and new sources are additive"
+        consequence: "A release that adds structures or one source writes only its change; a changed source and any rule change still make a full release, though under shared rows even a full release stores only the rows that differ."
+        question: 01a1b188-df1e-74dd-98f1-8205473245fd
+  - key: 01a1b19b-7438-720e-beaa-11f8f4548e70
+    id: d-approach
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-11ff106225bc
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Shared rows across releases"
+        consequence: "Each row is valid from the release that adds it until one retires it: storage grows by each release's change, many releases can be kept, and publish writes only the change. The D1 schema goes to 6, every Univ Server read selects by release range, prune deletes only rows no kept release sees, and CON-3's per-release budget is rewritten."
+        question: 01a1b188-df1e-74dd-98f1-82064df8d7db
+  - key: 01a1b19b-7438-720e-beaa-11f928173c59
+    id: how-it-relates
+    kind: note
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-1200de2f6dec
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "How the last two questions read under shared rows"
+        markdown: |-
+          Shared rows settle **how releases store and publish**. Two things are still open, and they are separate:
+
+          1. **How a build finds its change.** Under shared rows a release writes rows that are new, rows that changed, and retirements of rows that are gone. To know which, the build compares what it made with what the parent holds. It can compare by whole table (coarse: a new source would rewrite every shard's objects table, losing most of the gain) or row by row. Row by row needs the parent's rows, but not its 37 GB: a small index kept beside the id state, each row's key and a hash of its content (about 36 M keys, roughly 0.6 GB), is enough.
+          2. **How long the build itself takes.** That is separate from storage: the build can still run whole (15 min) and then compare, or keep stage results between runs so a structures-only release skips cross-match and tiles.
+
+          ```mermaid
+          flowchart LR
+            B[build: whole or cached] --> D[compare with the parent's row index]
+            D -->|added, changed| W[write rows valid from n]
+            D -->|gone| R[retire rows at n]
+            W --> P[publish: the change alone]
+            R --> P
+          ```
+
+          Tiles and grids in R2 have the same choice as rows: keyed per release, as now, or stored once by content and shared.
+        tone: info
+  - key: 01a1b19b-7438-720e-beaa-11faef1e24ce
+    id: q-unit-2
+    kind: question
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-12019dcb1d74
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "With shared rows, how should a build find which rows changed?"
+        header: "Diff unit"
+        options:
+          - label: "Row by key"
+            detail: "A row index (key and content hash per row) kept with the id state; the build compares each row it makes with it and writes only added, changed and retired rows. Exact, and a structure release publishes kilobytes."
+            recommended: true
+          - label: "Whole table"
+            detail: "Compare each table's fingerprint per database; any difference rewrites the table for the new release. No index, but a new source rewrites every shard's objects, entries and measurements: most of a full publish."
+          - label: "Cell"
+            detail: "Compare each level-0 cell's rows by fingerprint and rewrite whole cells that differ. A middle way: a small source in one part of the sky rewrites only its cells; still an index, of cells rather than rows."
+    responses:
+      - key: 01a1b19e-309e-777f-8fc0-71cd83d11994
+        at: 2026-11-06T16:08:16Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Row by key"
+  - key: 01a1b19b-7438-720e-beaa-11fba3305035
+    id: q-build-2
+    kind: question
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-1202295a2c08
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Separately from storage: should the build keep running every stage?"
+        header: "Build time"
+        options:
+          - label: "Whole, then diff"
+            detail: "One deterministic pass from the downloads (15 min, 55 GB), then the comparison. A structure release: about 15 min to build, seconds to publish. One path, easy to trust."
+            recommended: true
+          - label: "Skip stages"
+            detail: "Also keep normalized sources and the cross-match result between runs, so a structures-only release resolves members against the kept objects in about a minute. Faster, but a second path that must agree with the whole build; a new source still needs cross-match again."
+    responses:
+      - key: 01a1b19e-309e-777f-8fc0-71ce20c689a4
+        at: 2026-11-06T16:08:16Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "Whole, then diff"
+  - key: 01a1b19b-7438-720e-beaa-11fc7225413d
+    id: q-files
+    kind: question
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-120390485fe5
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "Should tiles and grids in R2 be shared across releases as rows will be?"
+        header: "R2 files"
+        options:
+          - label: "By content"
+            detail: "Each file stored once under its SHA-256; a release maps its paths to hashes in D1. A structure release uploads no tile; a new source uploads only the tiles it changes. Univ Server reads a tile through that map."
+            recommended: true
+          - label: "Per release"
+            detail: "Keep releases/{n}/ keys: each release copies its 0.7 GB of tiles and 0.4 GB of grids. Simple, server untouched for files, but storage and upload grow by a full set each release."
+    responses:
+      - key: 01a1b19e-309e-777f-8fc0-71cf41e42af9
+        at: 2026-11-06T16:08:16Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "By content"
+  - key: 01a1b19b-7438-720e-beaa-11fd8c8a9de2
+    id: q-migrate
+    kind: question
+    versions:
+      - key: 01a1b19b-7438-720e-beaa-120468e0f8e6
+        at: 2026-11-06T16:05:17Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "How does release 10 come under schema 6?"
+        header: "Release 10"
+        options:
+          - label: "In place"
+            detail: "Release 10's rows become valid from 10, retired by none, by adding the column in every database: minutes, no rebuild, no 95-minute publish."
+            recommended: true
+          - label: "Rebuild as 11"
+            detail: "Build and publish release 11 whole under schema 6 and prune 10. Cleanest start, but a full build and publish, and release 10's number retired."
+    responses:
+      - key: 01a1b19e-309e-777f-8fc0-71d0a950032c
+        at: 2026-11-06T16:08:16Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "In place"
+  - key: 01a1b19e-7686-704f-89b1-b9d114da8b46
+    id: d-unit
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1b19e-7686-704f-89b1-b9d6adec4ade
+        at: 2026-11-06T16:08:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Rows compared by key and content hash"
+        consequence: "A row index of every row valid in the latest release (key and hash) is kept with the id state; a build writes added and changed rows and retires the rest, so a structure release publishes kilobytes."
+        question: 01a1b19b-7438-720e-beaa-11faef1e24ce
+  - key: 01a1b19e-7686-704f-89b1-b9d22a993a7a
+    id: d-build
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1b19e-7686-704f-89b1-b9d7c959ce09
+        at: 2026-11-06T16:08:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The build stays one whole pass"
+        consequence: "Normalize, cross-match and tiles run in full as now (about 15 minutes); only the writing of the release and its publish follow the change. One path, and a release is what a full build would make."
+        question: 01a1b19b-7438-720e-beaa-11fba3305035
+  - key: 01a1b19e-7686-704f-89b1-b9d334870d4a
+    id: d-files
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a1b19e-7686-704f-89b1-b9d821c8f727
+        at: 2026-11-06T16:08:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "R2 files stored once by content"
+        consequence: "Tiles, grids and rules go under their SHA-256 and each release maps its paths to them in D1; Univ Server reads a release's file through that map, and prune deletes a file only once no kept release maps to it."
+        question: 01a1b19b-7438-720e-beaa-11fc7225413d
+  - key: 01a1b19e-7686-704f-89b1-b9d453cdcf6e
+    id: d-migrate
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a1b19e-7686-704f-89b1-b9d91d30de50
+        at: 2026-11-06T16:08:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 migrates in place"
+        consequence: "Schema 6's migration makes release 10's rows valid from 10 and maps its files by content, with no rebuild; release 11 is the first additive release."
+        question: 01a1b19b-7438-720e-beaa-11fd8c8a9de2
+  - key: 01a1b19e-7686-704f-89b1-b9d55ae89d32
+    id: options-produced
+    kind: note
+    versions:
+      - key: 01a1b19e-7686-704f-89b1-b9da4d87d788
+        at: 2026-11-06T16:08:34Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The shape chosen"
+        markdown: |-
+          ```mermaid
+          flowchart LR
+            B[whole build, 15 min] --> D{compare with the row index}
+            D -->|added or changed| A[rows valid from n]
+            D -->|gone| R[rows retired at n]
+            B --> H{files by SHA-256}
+            H -->|new hash| U[upload once]
+            H -->|known| M[map only]
+            A --> P[publish the change]
+            R --> P
+            U --> P
+            M --> P
+          ```
+
+          | | Today | Shared rows |
+          |---|---|---|
+          | A row | one per release, `release` in its key | one per change, valid from the release that adds it until one retires it |
+          | A release's view | `WHERE release = n` | `from ≤ n` and not retired at or before n |
+          | A tile | `releases/{n}/tiles/…` | stored once by SHA-256, mapped per release |
+          | A structure release | 15 min build + 95 min publish + 37 GB | 15 min build + seconds + kilobytes |
+          | Prune | delete release n's rows | delete only rows and files no kept release sees |
+          | CON-3 | 4.5 GB per release per database | the live rows of every kept release under 10 GB per database |
+
+          ADR-16 (immutable releases) and AC-128 (reads pinned to a release agree) hold: a row is never changed once published, only retired by a later release.
+        tone: success

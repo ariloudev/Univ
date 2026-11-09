@@ -1,0 +1,3805 @@
+# The IAU Catalog of Star Names (CSN) of the IAU Working Group on Star Names (WGSN), read
+# by scripts/snapshot-iau-names.py from the WGSN's table; a new reading is a new snapshot.
+page: "https://exopla.net/star-names/modern-iau-star-names/"
+read_on: 2026-11-07
+positions: >-
+  RA and Dec in degrees, ICRS, from the table's hidden RA and DEC columns, which the page
+  says come from the WGSN's Naked Eye star Catalog (NEC), compiled from SIMBAD data.
+stars:
+  - name: "Alawaidh"
+    designation: "HR 6555"
+    hip: 85829
+    ra_deg: 263.0668438
+    dec_deg: 55.17291813
+    adopted: 2026-05-13
+  - name: "Bawy"
+    designation: "HR 649"
+    hip: 10324
+    ra_deg: 33.25000133
+    dec_deg: 8.846702351
+    adopted: 2026-10-15
+  - name: "Gajahmina"
+    designation: "HR 334"
+    hip: 5364
+    ra_deg: 17.14746389
+    dec_deg: -10.18226443
+    adopted: 2026-10-15
+  - name: "Alnaamaat"
+    designation: "HR 585"
+    hip: 9347
+    ra_deg: 30.0012853
+    dec_deg: -21.07783167
+    adopted: 2026-10-15
+  - name: "Tianhun"
+    designation: "HR 248"
+    hip: 4147
+    ra_deg: 13.25205925
+    dec_deg: -1.144259783
+    adopted: 2026-10-15
+  - name: "Tiancang"
+    designation: "HR 402"
+    hip: 6537
+    ra_deg: 21.00584701
+    dec_deg: -8.183260897
+    adopted: 2026-10-15
+  - name: "Chugao"
+    designation: "HR 708"
+    hip: 11345
+    ra_deg: 36.48752436
+    dec_deg: -12.29047431
+    adopted: 2026-10-15
+  - name: "Anunitu"
+    designation: "HR 671"
+    hip: 3031
+    ra_deg: 34.79510152
+    dec_deg: 46.47226141
+    adopted: 2026-10-15
+  - name: "Kuda"
+    designation: "HR 165"
+    hip: 3092
+    ra_deg: 9.831679638
+    dec_deg: 30.86098358
+    adopted: 2026-10-15
+  - name: "Tianjiu"
+    designation: "HR 27"
+    hip: 841
+    ra_deg: 2.580193752
+    dec_deg: 46.07227104
+    adopted: 2026-10-15
+  - name: "Weixiu"
+    designation: "HR 801"
+    hip: 12719
+    ra_deg: 40.86297616
+    dec_deg: 27.70714941
+    adopted: 2026-10-15
+  - name: "Zuogeng"
+    designation: "HR 646"
+    hip: 10306
+    ra_deg: 33.20035699
+    dec_deg: 21.21099377
+    adopted: 2026-10-15
+  - name: "Lintangkumba"
+    designation: "HR 8679"
+    hip: 112716
+    ra_deg: 342.3979208
+    dec_deg: -13.59262854
+    adopted: 2026-09-22
+  - name: "Puwuh Atarung"
+    designation: "HR 8969"
+    hip: 116771
+    ra_deg: 354.9876692
+    dec_deg: 5.626292753
+    adopted: 2026-09-17
+  - name: "Buranun"
+    designation: "HR 367"
+    hip: 5824
+    ra_deg: 18.67663317
+    dec_deg: 6.995138177
+    adopted: 2026-09-17
+  - name: "Idigna"
+    designation: "HR 463"
+    hip: 7535
+    ra_deg: 24.27469244
+    dec_deg: 12.14178295
+    adopted: 2026-09-17
+  - name: "Simmakh"
+    designation: "HR 80"
+    hip: 1645
+    ra_deg: 5.149425122
+    dec_deg: 8.190271705
+    adopted: 2026-09-17
+  - name: "Zibbatu"
+    designation: "HR 7203"
+    hip: 9353
+    ra_deg: 285.7658552
+    dec_deg: -19.2456835
+    adopted: 2026-09-17
+  - name: "Paushna"
+    designation: "HR 362"
+    hip: 5743
+    ra_deg: 18.43856123
+    dec_deg: 7.57824453
+    adopted: 2026-09-17
+  - name: "Pili"
+    designation: "HR 9072"
+    hip: 118268
+    ra_deg: 359.8278759
+    dec_deg: 6.863322339
+    adopted: 2026-09-17
+  - name: "Yunyu"
+    designation: "HR 8852"
+    hip: 114971
+    ra_deg: 349.2914046
+    dec_deg: 3.282290469
+    adopted: 2026-09-17
+  - name: "Waiping"
+    designation: "HR 224"
+    hip: 3786
+    ra_deg: 12.17060131
+    dec_deg: 7.585081917
+    adopted: 2026-09-17
+  - name: "Jordanus"
+    designation: "HR 5127"
+    hip: 66458
+    ra_deg: 204.3651119
+    dec_deg: 36.29489795
+    adopted: 2026-09-17
+  - name: "Tiangang"
+    designation: "HR 8576"
+    hip: 111188
+    ra_deg: 337.8763772
+    dec_deg: -32.3460753
+    adopted: 2026-09-17
+  - name: "Baijiu"
+    designation: "HR 8305"
+    hip: 107380
+    ra_deg: 326.236707
+    dec_deg: -33.02578182
+    adopted: 2026-09-17
+  - name: "Fenmu"
+    designation: "HR 8597"
+    hip: 111497
+    ra_deg: 338.839089
+    dec_deg: -0.1174974066
+    adopted: 2026-09-17
+  - name: "Pabilsang"
+    designation: "HR 7120"
+    hip: 92845
+    ra_deg: 283.7797394
+    dec_deg: -22.67128379
+    adopted: 2026-08-13
+  - name: "Heryibwia"
+    designation: "HR 6832"
+    hip: 89642
+    ra_deg: 274.4068217
+    dec_deg: -36.76169016
+    adopted: 2026-08-13
+  - name: "Kenemu"
+    designation: "HR 7340"
+    hip: 95168
+    ra_deg: 290.4181661
+    dec_deg: -17.84719859
+    adopted: 2026-08-13
+  - name: "Nandou"
+    designation: "HR 7039"
+    hip: 92041
+    ra_deg: 281.4141231
+    dec_deg: -26.99078265
+    adopted: 2026-08-13
+  - name: "Jian"
+    designation: "HR 7150"
+    hip: 93085
+    ra_deg: 284.4325008
+    dec_deg: -21.10665759
+    adopted: 2026-08-13
+  - name: "Alwasl"
+    designation: "HR 6960"
+    hip: 91014
+    ra_deg: 278.490693
+    dec_deg: -33.01656027
+    adopted: 2026-08-13
+  - name: "Alqiladah"
+    designation: "HR 7217"
+    hip: 93683
+    ra_deg: 286.1707585
+    dec_deg: -21.74149596
+    adopted: 2026-08-13
+  - name: "Gouguo"
+    designation: "HR 7650"
+    hip: 98688
+    ra_deg: 300.6645021
+    dec_deg: -27.70984435
+    adopted: 2026-08-13
+  - name: "Tianyue"
+    designation: "HR 6700"
+    hip: 88116
+    ra_deg: 269.9481519
+    dec_deg: -23.81611471
+    adopted: 2026-08-13
+  - name: "Dhanuśarāgra"
+    designation: "HR 6742"
+    hip: 88567
+    ra_deg: 271.2551101
+    dec_deg: -29.58008951
+    adopted: 2026-08-13
+  - name: "Magur"
+    designation: "HR 6862"
+    hip: 90037
+    ra_deg: 275.5773892
+    dec_deg: -38.65689614
+    adopted: 2026-08-13
+  - name: "Alqubba"
+    designation: "HR 7259"
+    hip: 94160
+    ra_deg: 287.5073197
+    dec_deg: -39.34079269
+    adopted: 2026-08-13
+  - name: "Qedty"
+    designation: "HR 7242"
+    hip: 94005
+    ra_deg: 287.0873737
+    dec_deg: -40.49669798
+    adopted: 2026-08-13
+  - name: "Bie"
+    designation: "HR 6951"
+    hip: 90982
+    ra_deg: 278.3757741
+    dec_deg: -42.31250824
+    adopted: 2026-08-13
+  - name: "Alsamaka"
+    designation: "HR 8538"
+    hip: 110538
+    ra_deg: 335.8900971
+    dec_deg: 52.22904672
+    adopted: 2026-08-13
+  - name: "Neichu"
+    designation: "HR 8454"
+    hip: 109410
+    ra_deg: 332.4968459
+    dec_deg: 33.17822233
+    adopted: 2026-08-13
+  - name: "Jiu"
+    designation: "HR 8430"
+    hip: 109176
+    ra_deg: 331.752773
+    dec_deg: 25.345099
+    adopted: 2026-08-13
+  - name: "Tugongli"
+    designation: "HR 8665"
+    hip: 112447
+    ra_deg: 341.6732494
+    dec_deg: 12.17288579
+    adopted: 2026-08-13
+  - name: "Ligong"
+    designation: "HR 8667"
+    hip: 112440
+    ra_deg: 341.6328246
+    dec_deg: 23.5656561
+    adopted: 2026-08-13
+  - name: "Leidian"
+    designation: "HR 8717"
+    hip: 113186
+    ra_deg: 343.8069537
+    dec_deg: 8.81618146
+    adopted: 2026-08-13
+  - name: "Muning"
+    designation: "HR 5933"
+    hip: 78072
+    ra_deg: 239.1132611
+    dec_deg: 15.66161377
+    adopted: 2026-07-01
+  - name: "Uñallamacha"
+    designation: "HD 155985"
+    hip: 84556
+    ra_deg: 259.2730909
+    dec_deg: -44.77859556
+    adopted: 2026-07-01
+  - name: "Tianjinnan"
+    designation: "HR 8115"
+    hip: 104732
+    ra_deg: 318.2341083
+    dec_deg: 30.22689868
+    adopted: 2026-07-16
+  - name: "Enduri Senggu"
+    designation: "HR 8130"
+    hip: 104887
+    ra_deg: 318.6978855
+    dec_deg: 38.04531782
+    adopted: 2026-07-16
+  - name: "Almighzal"
+    designation: "HR 7615"
+    hip: 98110
+    ra_deg: 299.0765493
+    dec_deg: 35.08342289
+    adopted: 2026-07-16
+  - name: "Dhanishta"
+    designation: "HR 7947"
+    hip: 102531
+    ra_deg: 311.661921
+    dec_deg: 16.12412827
+    adopted: 2026-07-16
+  - name: "Protome"
+    designation: "HR 8098"
+    hip: 104538
+    ra_deg: 317.6304835
+    dec_deg: 10.04891338
+    adopted: 2026-07-16
+  - name: "Tepennekhet"
+    designation: "HR 8123"
+    hip: 104858
+    ra_deg: 318.6200638
+    dec_deg: 10.00697941
+    adopted: 2026-07-16
+  - name: "Sukhurmashu"
+    designation: "HR 7747"
+    hip: 100027
+    ra_deg: 304.4119547
+    dec_deg: -12.50821219
+    adopted: 2026-07-16
+  - name: "Aerostaticus"
+    designation: "HR 8135"
+    hip: 105140
+    ra_deg: 319.4845255
+    dec_deg: -32.17254768
+    adopted: 2026-07-16
+  - name: "Tianbang"
+    designation: "HR 6588"
+    hip: 86414
+    ra_deg: 264.8661954
+    dec_deg: 46.00633138
+    adopted: 2026-06-20
+  - name: "Tianbian"
+    designation: "HR 6973"
+    hip: 91117
+    ra_deg: 278.8017798
+    dec_deg: -8.244070511
+    adopted: 2026-06-18
+  - name: "Telum"
+    designation: "HR 7635"
+    hip: 98337
+    ra_deg: 299.6892843
+    dec_deg: 19.49214613
+    adopted: 2026-06-18
+  - name: "Shakh"
+    designation: "HR 7488"
+    hip: 96837
+    ra_deg: 295.2622456
+    dec_deg: 17.47604241
+    adopted: 2026-06-18
+  - name: "Zuoqi"
+    designation: "HR 7536"
+    hip: 97365
+    ra_deg: 296.84694
+    dec_deg: 18.53431357
+    adopted: 2026-06-18
+  - name: "Guqi"
+    designation: "HR 7377"
+    hip: 95501
+    ra_deg: 291.3745891
+    dec_deg: 3.11477947
+    adopted: 2026-06-18
+  - name: "Arin-majlep"
+    designation: "HR 7176"
+    hip: 93244
+    ra_deg: 284.9056516
+    dec_deg: 15.06828104
+    adopted: 2026-06-18
+  - name: "Pagru"
+    designation: "HR 7570"
+    hip: 97804
+    ra_deg: 298.1182038
+    dec_deg: 1.005658883
+    adopted: 2026-06-18
+  - name: "Hru"
+    designation: "HR 7474"
+    hip: 96665
+    ra_deg: 294.79851
+    dec_deg: 5.397772218
+    adopted: 2026-06-18
+  - name: "Pongaponga"
+    designation: "HR 7051"
+    hip: 91919
+    ra_deg: 281.0847656
+    dec_deg: 39.67012917
+    adopted: 2026-06-18
+  - name: "Niandao"
+    designation: "HR 7157"
+    hip: 92862
+    ra_deg: 283.8337597
+    dec_deg: 43.94608958
+    adopted: 2026-06-18
+  - name: "Kautoki"
+    designation: "HR 7056"
+    hip: 91971
+    ra_deg: 281.1931545
+    dec_deg: 37.60512165
+    adopted: 2026-06-18
+  - name: "Urquchillay"
+    designation: "HR 7057"
+    hip: 91973
+    ra_deg: 281.2008299
+    dec_deg: 37.5945996
+    adopted: 2026-06-18
+  - name: "Jiantai"
+    designation: "HR 7139"
+    hip: 92791
+    ra_deg: 283.6261779
+    dec_deg: 36.89861991
+    adopted: 2026-06-18
+  - name: "Ninnisig"
+    designation: "HR 7314"
+    hip: 94713
+    ra_deg: 289.0920557
+    dec_deg: 38.13374205
+    adopted: 2026-06-18
+  - name: "Yaqana"
+    designation: "HR 6115"
+    hip: 80582
+    ra_deg: 246.7960067
+    dec_deg: -47.55479365
+    adopted: 2026-06-18
+  - name: "Moth"
+    designation: "HD 61005"
+    hip: 36948
+    ra_deg: 113.9477598
+    dec_deg: -32.20390141
+    adopted: 2026-06-13
+  - name: "Butterfly Star"
+    designation: "IRAS 04302+2247"
+    ra_deg: 68.318754
+    dec_deg: 22.889
+    adopted: 2026-06-13
+  - name: "Dust-Ball"
+    designation: "V* V927 Per"
+    ra_deg: 56.21102545
+    dec_deg: 32.31846274
+    adopted: 2026-06-13
+  - name: "Flying Saucer"
+    designation: "2MASS J16281370-2431391"
+    ra_deg: 247.057072
+    dec_deg: -24.5277349
+    adopted: 2026-06-13
+  - name: "Necklace"
+    designation: "IRAS 19417+1701"
+    ra_deg: 295.9979644
+    dec_deg: 17.15026772
+    adopted: 2026-06-13
+  - name: "Peony Star"
+    designation: "WR 102ka"
+    ra_deg: 266.5755
+    dec_deg: -29.02683
+    adopted: 2026-06-13
+  - name: "Rosette Eye"
+    designation: "RAFGL 961"
+    ra_deg: 98.657256
+    dec_deg: 4.212277
+    adopted: 2026-06-13
+  - name: "Southern Crab"
+    designation: "WRAY 16-147"
+    ra_deg: 212.9669185
+    dec_deg: -51.44005198
+    adopted: 2026-06-13
+  - name: "Beehive Proplyd"
+    designation: "HH 540"
+    ra_deg: 83.825
+    dec_deg: -5.5167
+    adopted: 2026-06-13
+  - name: "Frosty Leo"
+    designation: "IRAS 09371+1212"
+    ra_deg: 144.97483
+    dec_deg: 11.98128
+    adopted: 2026-06-13
+  - name: "Speedy Mic"
+    designation: "HD 197890"
+    hip: 102626
+    ra_deg: 311.9375234
+    dec_deg: -36.59465829
+    adopted: 2026-05-09
+  - name: "Red Rectangle"
+    designation: "HD 44179"
+    hip: 30089
+    ra_deg: 94.99257729
+    dec_deg: -10.63741835
+    adopted: 2026-05-09
+  - name: "Nüchuang"
+    designation: "HR 6418"
+    hip: 84380
+    ra_deg: 258.7618094
+    dec_deg: 36.80916155
+    adopted: 2026-05-14
+  - name: "Tianji"
+    designation: "HR 6212"
+    hip: 81693
+    ra_deg: 250.3215043
+    dec_deg: 31.6027187
+    adopted: 2026-05-14
+  - name: "Asuusiha"
+    designation: "HR 6092"
+    hip: 79992
+    ra_deg: 244.9351533
+    dec_deg: 46.3133617
+    adopted: 2026-05-14
+  - name: "Khepdenreret"
+    designation: "HR 6324"
+    hip: 83207
+    ra_deg: 255.072389
+    dec_deg: 30.92640423
+    adopted: 2026-05-14
+  - name: "Aurwandilsta"
+    designation: "HR 5971"
+    hip: 78493
+    ra_deg: 240.3606872
+    dec_deg: 29.85106095
+    adopted: 2026-05-14
+  - name: "Baltesha"
+    designation: "HR 5849"
+    hip: 76952
+    ra_deg: 235.6857056
+    dec_deg: 26.29563438
+    adopted: 2026-05-14
+  - name: "Matrichakra"
+    designation: "HR 5889"
+    hip: 77512
+    ra_deg: 237.3985292
+    dec_deg: 26.06839286
+    adopted: 2026-05-14
+  - name: "Guansuo"
+    designation: "HR 5778"
+    hip: 76127
+    ra_deg: 233.2324295
+    dec_deg: 31.3591431
+    adopted: 2026-05-14
+  - name: "Stephanos"
+    designation: "HR 5855"
+    hip: 77048
+    ra_deg: 235.9970806
+    dec_deg: 32.51580592
+    adopted: 2026-05-14
+  - name: "Bibing"
+    designation: "HR 1239"
+    hip: 18724
+    ra_deg: 60.17006989
+    dec_deg: 12.49034444
+    adopted: 2026-05-17
+  - name: "Lembu"
+    designation: "HR 1547"
+    hip: 22565
+    ra_deg: 72.84359805
+    dec_deg: 18.83985719
+    adopted: 2026-05-17
+  - name: "Shakata"
+    designation: "HR 1407"
+    hip: 20877
+    ra_deg: 67.10987462
+    dec_deg: 16.35967495
+    adopted: 2026-05-17
+  - name: "Pulcherrima"
+    designation: "HR 5505"
+    hip: 72105
+    ra_deg: 221.2464574
+    dec_deg: 27.07498559
+    adopted: 2026-04-15
+  - name: "Maenalus"
+    designation: "HR 5511"
+    hip: 72220
+    ra_deg: 221.562181
+    dec_deg: 1.892883828
+    adopted: 2026-04-15
+  - name: "Alrumh"
+    designation: "HR 5490"
+    hip: 71995
+    ra_deg: 220.8556773
+    dec_deg: 26.52785338
+    adopted: 2026-04-15
+  - name: "Genghe"
+    designation: "HR 5447"
+    hip: 71284
+    ra_deg: 218.6700724
+    dec_deg: 29.74512713
+    adopted: 2026-04-15
+  - name: "Kalasungsang"
+    designation: "HR 5429"
+    hip: 71053
+    ra_deg: 217.9574555
+    dec_deg: 30.37143657
+    adopted: 2026-04-15
+  - name: "Qigong"
+    designation: "HR 5681"
+    hip: 74666
+    ra_deg: 228.8756784
+    dec_deg: 33.31483124
+    adopted: 2026-04-15
+  - name: "Tepiamenit"
+    designation: "HR 5185"
+    hip: 67275
+    ra_deg: 206.8155757
+    dec_deg: 17.45689154
+    adopted: 2026-04-15
+  - name: "Stella Ludoviciana"
+    designation: "HD 116798"
+    ra_deg: 201.2160503
+    dec_deg: 54.89745571
+    adopted: 2026-04-17
+  - name: "Sapaki"
+    designation: "WR 67-1"
+    ra_deg: 229.1540041
+    dec_deg: -58.16632917
+    adopted: 2026-04-18
+  - name: "Bajamar Star"
+    designation: "2MASS J20555125+4352246"
+    ra_deg: 313.9635651
+    dec_deg: 43.87346219
+    adopted: 2026-04-18
+  - name: "Calvera"
+    designation: "PSR J1412+7922"
+    ra_deg: 213.233858
+    dec_deg: 79.36765
+    adopted: 2026-04-18
+  - name: "Holoea"
+    designation: "IRAS 05327+3404"
+    ra_deg: 84.02489466
+    dec_deg: 34.1032964
+    adopted: 2026-04-18
+  - name: "Paloma"
+    designation: "2MASS J05243042+4244506"
+    ra_deg: 81.12693471
+    dec_deg: 42.74735016
+    adopted: 2026-04-19
+  - name: "Krios"
+    designation: "HD 240429"
+    ra_deg: 357.9792861
+    dec_deg: 59.71350024
+    adopted: 2026-03-22
+  - name: "Kronos"
+    designation: "HD 240430"
+    ra_deg: 358.0385141
+    dec_deg: 59.707367
+    adopted: 2026-03-22
+  - name: "Pherkad Minor"
+    designation: "HR 5714"
+    hip: 74793
+    ra_deg: 229.2745394
+    dec_deg: 71.82390204
+    adopted: 2026-03-22
+  - name: "Pistol Star"
+    designation: "V*4647 Sgr"
+    ra_deg: 266.5635
+    dec_deg: -28.834328
+    adopted: 2026-03-22
+  - name: "Ping"
+    designation: "HR 1654"
+    hip: 23685
+    ra_deg: 76.36526836
+    dec_deg: -22.37103449
+    adopted: 2026-03-22
+  - name: "Bade"
+    designation: "HR 1702"
+    hip: 24305
+    ra_deg: 78.23292902
+    dec_deg: -16.2054635
+    adopted: 2026-03-22
+  - name: "Darlugal"
+    designation: "HR 1998"
+    hip: 27288
+    ra_deg: 86.73892235
+    dec_deg: -14.82195016
+    adopted: 2026-03-22
+  - name: "Udang"
+    designation: "HR 8075"
+    hip: 104139
+    ra_deg: 316.4867853
+    dec_deg: -17.23286284
+    adopted: 2026-02-22
+  - name: "Gaja"
+    designation: "HR 1497"
+    hip: 21881
+    ra_deg: 70.56124685
+    dec_deg: 22.95690281
+    adopted: 2026-02-22
+  - name: "Naga"
+    designation: "HR 5020"
+    hip: 64962
+    ra_deg: 199.730407
+    dec_deg: -23.17151401
+    adopted: 2026-02-22
+  - name: "Yuyu"
+    designation: "HR 3475"
+    hip: 43103
+    ra_deg: 131.6742518
+    dec_deg: 28.75989314
+    adopted: 2026-02-22
+  - name: "Lumbung"
+    designation: "HR 4823"
+    hip: 61966
+    ra_deg: 190.4857049
+    dec_deg: -59.68582068
+    adopted: 2026-02-22
+  - name: "Tonglingxing"
+    designation: "HR 2527"
+    hip: 33694
+    ra_deg: 105.0168216
+    dec_deg: 76.97740862
+    adopted: 2026-02-22
+  - name: "Shangwei"
+    designation: "HR 2209"
+    hip: 29997
+    ra_deg: 94.71157297
+    dec_deg: 69.31981424
+    adopted: 2025-12-25
+  - name: "Shangcheng"
+    designation: "HR 932"
+    hip: 14862
+    ra_deg: 47.98445484
+    dec_deg: 74.3936583
+    adopted: 2025-12-25
+  - name: "Shaowei"
+    designation: "HR 1148"
+    hip: 17959
+    ra_deg: 57.58962223
+    dec_deg: 71.33226611
+    adopted: 2025-12-25
+  - name: "Kamelos"
+    designation: "HR 2363"
+    hip: 31940
+    ra_deg: 100.1203209
+    dec_deg: 77.99578275
+    adopted: 2025-12-25
+  - name: "Custos"
+    designation: "HR 1155"
+    hip: 17884
+    ra_deg: 57.38032312
+    dec_deg: 65.5259794
+    adopted: 2025-12-25
+  - name: "Huagai"
+    designation: "HR 707"
+    hip: 11569
+    ra_deg: 37.26632087
+    dec_deg: 67.4023867
+    adopted: 2025-12-25
+  - name: "Gang"
+    designation: "HR 580"
+    hip: 9598
+    ra_deg: 30.85878517
+    dec_deg: 72.42129412
+    adopted: 2025-12-25
+  - name: "Rangifer"
+    designation: "HR 592"
+    hip: 9763
+    ra_deg: 31.38145888
+    dec_deg: 76.11506012
+    adopted: 2025-12-25
+  - name: "Tarandus"
+    designation: "HR 285"
+    hip: 5372
+    ra_deg: 17.18699431
+    dec_deg: 86.25709067
+    adopted: 2025-12-25
+  - name: "Sarvvis"
+    designation: "HR 1122"
+    hip: 17358
+    ra_deg: 55.73122002
+    dec_deg: 47.78749674
+    adopted: 2025-12-25
+  - name: "Áldu"
+    designation: "HR 1220"
+    hip: 18532
+    ra_deg: 59.46349742
+    dec_deg: 40.01019978
+    adopted: 2025-12-25
+  - name: "Cexing"
+    designation: "HR 130"
+    hip: 2599
+    ra_deg: 8.249966182
+    dec_deg: 62.93178142
+    adopted: 2025-11-13
+  - name: "Tiansi"
+    designation: "HR 264"
+    hip: 4427
+    ra_deg: 14.17721289
+    dec_deg: 60.71674002
+    adopted: 2025-11-13
+  - name: "Bagu"
+    designation: "HR 2077"
+    hip: 28358
+    ra_deg: 89.88174341
+    dec_deg: 54.28473796
+    adopted: 2025-11-13
+  - name: "Apdu"
+    designation: "HR 664"
+    hip: 10670
+    ra_deg: 34.32861364
+    dec_deg: 33.84719682
+    adopted: 2025-11-13
+  - name: "Alaybasan"
+    designation: "HR 622"
+    hip: 10064
+    ra_deg: 32.38594634
+    dec_deg: 34.98729706
+    adopted: 2025-11-07
+  - name: "Shengong"
+    designation: "HR 6298"
+    hip: 83100
+    ra_deg: 254.7177803
+    dec_deg: -37.62049285
+    adopted: 2025-10-16
+  - name: "Apamvatsa"
+    designation: "HR 5095"
+    hip: 66006
+    ra_deg: 202.9911861
+    dec_deg: -6.255817661
+    adopted: 2025-10-16
+  - name: "Siwarha"
+    designation: "-"
+    ra_deg: 88.79293899
+    dec_deg: 7.407064
+    adopted: 2025-09-22
+  - name: "Blaze Star"
+    designation: "HR 5958"
+    hip: 78322
+    ra_deg: 239.8756759
+    dec_deg: 25.92017038
+    adopted: 2025-09-22
+  - name: "Shatabhisha"
+    designation: "HR 8698"
+    hip: 112961
+    ra_deg: 343.1536419
+    dec_deg: -7.579596924
+    adopted: 2025-09-22
+  - name: "Junnanmen"
+    designation: "HR 335"
+    hip: 5434
+    ra_deg: 17.3755234
+    dec_deg: 47.24179429
+    adopted: 2025-08-25
+  - name: "Dajiangjunbei"
+    designation: "HR 496"
+    hip: 8068
+    ra_deg: 25.9151582
+    dec_deg: 50.68873142
+    adopted: 2025-08-25
+  - name: "Hydor"
+    designation: "HR 9098"
+    hip: 301
+    ra_deg: 0.9349492958
+    dec_deg: -17.33599144
+    adopted: 2025-08-25
+  - name: "Triminus"
+    designation: "HR 642"
+    hip: 10280
+    ra_deg: 33.09283344
+    dec_deg: 30.30306751
+    adopted: 2025-08-25
+  - name: "Bodu"
+    designation: "HR 6730"
+    hip: 88267
+    ra_deg: 270.3767028
+    dec_deg: 21.59578115
+    adopted: 2025-06-17
+  - name: "Deltoton"
+    designation: "HR 660"
+    hip: 10644
+    ra_deg: 34.26345974
+    dec_deg: 34.22423205
+    adopted: 2025-06-17
+  - name: "Ramus"
+    designation: "HR 6787"
+    hip: 88886
+    ra_deg: 272.1895497
+    dec_deg: 20.81455683
+    adopted: 2025-06-17
+  - name: "Tusizuo"
+    designation: "HR 6895"
+    hip: 90139
+    ra_deg: 275.9245404
+    dec_deg: 21.76975267
+    adopted: 2025-06-17
+  - name: "Paradys"
+    designation: "HR 5470"
+    hip: 72370
+    ra_deg: 221.9654629
+    dec_deg: -79.04475355
+    adopted: 2025-05-18
+  - name: "Honores"
+    designation: "HR 8830"
+    hip: 114570
+    ra_deg: 348.1375146
+    dec_deg: 49.4062072
+    adopted: 2025-05-14
+  - name: "Alfarasalkamil"
+    designation: "HR 8762"
+    hip: 113726
+    ra_deg: 345.4802708
+    dec_deg: 42.32601552
+    adopted: 2025-05-08
+  - name: "Kaffalmusalsala"
+    designation: "HR 8976"
+    hip: 116805
+    ra_deg: 355.1021156
+    dec_deg: 44.33393296
+    adopted: 2025-05-08
+  - name: "Rasalnaqa"
+    designation: "HR 8965"
+    hip: 116631
+    ra_deg: 354.5341679
+    dec_deg: 43.26807305
+    adopted: 2025-05-08
+  - name: "Udkadua"
+    designation: "HR 8961"
+    hip: 116584
+    ra_deg: 354.3910116
+    dec_deg: 46.45815131
+    adopted: 2025-05-08
+  - name: "Kui"
+    designation: "HR 271"
+    hip: 4463
+    ra_deg: 14.30166783
+    dec_deg: 23.41765002
+    adopted: 2025-04-06
+  - name: "Heng"
+    designation: "HR 5190"
+    hip: 67464
+    ra_deg: 207.3761521
+    dec_deg: -41.68770853
+    adopted: 2025-03-16
+  - name: "Shimu"
+    designation: "HR 215"
+    hip: 3693
+    ra_deg: 11.8346905
+    dec_deg: 24.26717855
+    adopted: 2025-03-16
+  - name: "Kulou"
+    designation: "HR 5028"
+    hip: 65109
+    ra_deg: 200.1492201
+    dec_deg: -36.71230458
+    adopted: 2025-02-17
+  - name: "Quadrans"
+    designation: "GJ 575"
+    hip: 73695
+    ra_deg: 225.9467902
+    dec_deg: 47.65397724
+    adopted: 2025-02-17
+  - name: "Hoerikwaggo"
+    designation: "HR 2261"
+    hip: 29271
+    ra_deg: 92.56030243
+    dec_deg: -74.75304398
+    adopted: 2024-12-12
+  - name: "Safina"
+    designation: "HR 8812"
+    hip: 114341
+    ra_deg: 347.3616502
+    dec_deg: -21.17241521
+    adopted: 2024-12-12
+  - name: "Xami"
+    designation: "HR 5463"
+    hip: 71908
+    ra_deg: 220.6267527
+    dec_deg: -64.97513301
+    adopted: 2024-12-12
+  - name: "Zhou"
+    designation: "HR 5867"
+    hip: 77233
+    ra_deg: 236.5468966
+    dec_deg: 15.4218193
+    adopted: 2024-12-05
+  - name: "Solitaire"
+    designation: "HR 5526"
+    hip: 72571
+    ra_deg: 222.5721179
+    dec_deg: -27.96036123
+    adopted: 2024-10-31
+  - name: "Garnet Star"
+    designation: "HR 8316"
+    hip: 107259
+    ra_deg: 325.8769148
+    dec_deg: 58.78004609
+    adopted: 2024-09-19
+  - name: "Lang-Exster"
+    designation: "HR 8502"
+    hip: 110130
+    ra_deg: 334.6254685
+    dec_deg: -60.25962954
+    adopted: 2024-09-19
+  - name: "Rhombus"
+    designation: "HR 1336"
+    hip: 19780
+    ra_deg: 63.60612502
+    dec_deg: -62.47380349
+    adopted: 2024-09-19
+  - name: "Tengshe"
+    designation: "HR 8726"
+    hip: 113288
+    ra_deg: 344.1083266
+    dec_deg: 49.73354408
+    adopted: 2024-09-19
+  - name: "Uridim"
+    designation: "HR 5469"
+    hip: 71860
+    ra_deg: 220.4823158
+    dec_deg: -47.38819875
+    adopted: 2024-09-12
+  - name: "Stellio"
+    designation: "HR 8585"
+    hip: 111169
+    ra_deg: 337.8229226
+    dec_deg: 50.28249164
+    adopted: 2024-08-29
+  - name: "Pipit"
+    designation: "HR 2451"
+    hip: 31685
+    ra_deg: 99.44030261
+    dec_deg: -43.19593569
+    adopted: 2024-08-25
+  - name: "Bake-eo"
+    designation: "HR 6629"
+    hip: 87108
+    ra_deg: 266.9731691
+    dec_deg: 2.707279122
+    adopted: 2024-08-20
+  - name: "Leepwal"
+    designation: "HD 121263"
+    hip: 68002
+    ra_deg: 208.8849402
+    dec_deg: -47.28837451
+    adopted: 2024-07-18
+  - name: "Shaomin"
+    designation: "HD 91316"
+    hip: 51624
+    ra_deg: 158.2027933
+    dec_deg: 9.306584817
+    adopted: 2024-07-18
+  - name: "Yunü"
+    designation: "HD 87837"
+    hip: 49637
+    ra_deg: 151.9761255
+    dec_deg: 9.997506875
+    adopted: 2024-07-18
+  - name: "Antinous"
+    designation: "HD 191692"
+    hip: 99473
+    ra_deg: 302.8261945
+    dec_deg: -0.8214635937
+    adopted: 2024-06-06
+  - name: "Phyllon Kissinou"
+    designation: "23 Com"
+    hip: 61394
+    ra_deg: 188.7128034
+    dec_deg: 22.629206
+    adopted: 2024-05-16
+  - name: "Tianfu"
+    designation: "HR 7669"
+    hip: 98823
+    ra_deg: 301.0346453
+    dec_deg: 7.277964388
+    adopted: 2024-05-16
+  - name: "Aiolos"
+    designation: "HD 95086"
+    hip: 53524
+    adopted: 2023-08-01
+  - name: "Añañuca"
+    designation: "GJ 367"
+    hip: 47780
+    adopted: 2023-08-01
+  - name: "Batsũ̀"
+    designation: "LHS 3844"
+    adopted: 2023-08-01
+  - name: "Danfeng"
+    designation: "L 168-9"
+    hip: 115211
+    adopted: 2023-08-01
+  - name: "Dilmun"
+    designation: "WASP-121"
+    adopted: 2023-08-01
+  - name: "Filetdor"
+    designation: "WASP-166"
+    adopted: 2023-08-01
+  - name: "Gar"
+    designation: "GJ 486"
+    hip: 62452
+    adopted: 2023-08-01
+  - name: "Gnomon"
+    designation: "WASP-43"
+    adopted: 2023-08-01
+  - name: "Guahayona"
+    designation: "HAT-P-26"
+    adopted: 2023-08-01
+  - name: "Kaewkosin"
+    designation: "GJ 3470"
+    adopted: 2023-08-01
+  - name: "Komondor"
+    designation: "HAT-P-12"
+    adopted: 2023-08-01
+  - name: "Kosjenka"
+    designation: "WASP-63"
+    adopted: 2023-08-01
+  - name: "Maru"
+    designation: "WD 0806-661"
+    adopted: 2023-08-01
+  - name: "Matza"
+    designation: "HIP 65426"
+    hip: 65426
+    adopted: 2023-08-01
+  - name: "Noquisi"
+    designation: "GJ 436"
+    hip: 57087
+    adopted: 2023-08-01
+  - name: "Orkaria"
+    designation: "GJ 1214"
+    adopted: 2023-08-01
+  - name: "Uúba"
+    designation: "LTT 9779"
+    hip: 117883
+    adopted: 2023-08-01
+  - name: "Wattle"
+    designation: "WASP-19"
+    adopted: 2023-08-01
+  - name: "Wouri"
+    designation: "WASP-69"
+    adopted: 2023-08-01
+  - name: "Zembra"
+    designation: "HATS-72"
+    adopted: 2023-08-01
+  - name: "Geminga"
+    designation: "PSR B0633+17"
+    ra_deg: 98.475638
+    dec_deg: 17.770253
+    adopted: 2022-04-04
+  - name: "Rana"
+    designation: "HR 1136"
+    hip: 17378
+    ra_deg: 55.81208557
+    dec_deg: -9.763391932
+    adopted: 2022-04-04
+  - name: "Mazaalai"
+    designation: "HAT-P-21"
+    ra_deg: 171.274941
+    dec_deg: 41.027964
+    adopted: 2020-02-24
+  - name: "Absolutno"
+    designation: "XO-5"
+    ra_deg: 116.716506
+    dec_deg: 39.094572
+    adopted: 2019-12-17
+  - name: "Alasia"
+    designation: "HD 168746"
+    hip: 90004
+    ra_deg: 275.457428
+    dec_deg: -11.922682
+    adopted: 2019-12-17
+  - name: "Amadioha"
+    designation: "HD 43197"
+    hip: 29550
+    ra_deg: 93.39859
+    dec_deg: -29.897264
+    adopted: 2019-12-17
+  - name: "Amansinaya"
+    designation: "WASP-34"
+    ra_deg: 165.399575
+    dec_deg: -23.860662
+    adopted: 2019-12-17
+  - name: "Anadolu"
+    designation: "WASP-52"
+    ra_deg: 348.494823
+    dec_deg: 8.76127
+    adopted: 2019-12-17
+  - name: "Aniara"
+    designation: "HD 102956"
+    hip: 57820
+    ra_deg: 177.843796
+    dec_deg: 57.640734
+    adopted: 2019-12-17
+  - name: "Arcalís"
+    designation: "HD 131496"
+    hip: 72845
+    ra_deg: 223.345951
+    dec_deg: 18.235409
+    adopted: 2019-12-17
+  - name: "Atakoraka"
+    designation: "WASP-64"
+    ra_deg: 101.115022
+    dec_deg: -32.858383
+    adopted: 2019-12-17
+  - name: "Axólotl"
+    designation: "HD 224693"
+    hip: 118319
+    ra_deg: 359.974298
+    dec_deg: -22.428116
+    adopted: 2019-12-17
+  - name: "Ayeyarwady"
+    designation: "HD 18742"
+    hip: 13993
+    ra_deg: 45.044402
+    dec_deg: -20.802604
+    adopted: 2019-12-17
+  - name: "Baekdu"
+    designation: "HD 133086"
+    hip: 73136
+    ra_deg: 224.201473
+    dec_deg: 74.900923
+    adopted: 2019-12-17
+  - name: "Belel"
+    designation: "HD 181342"
+    hip: 95124
+    ra_deg: 290.267627
+    dec_deg: -23.61957
+    adopted: 2019-12-17
+  - name: "Bélénos"
+    designation: "HD 8574"
+    hip: 6643
+    ra_deg: 21.302148
+    dec_deg: 28.566695
+    adopted: 2019-12-17
+  - name: "Berehynia"
+    designation: "HAT-P-15"
+    ra_deg: 66.248062
+    dec_deg: 39.460642
+    adopted: 2019-12-17
+  - name: "Bibhā"
+    designation: "HD 86081"
+    hip: 48711
+    ra_deg: 149.024661
+    dec_deg: -3.808423
+    adopted: 2019-12-17
+  - name: "Bosona"
+    designation: "HD 206610"
+    hip: 107251
+    ra_deg: 325.853751
+    dec_deg: -7.408253
+    adopted: 2019-12-17
+  - name: "Bubup"
+    designation: "HD 38283"
+    hip: 26380
+    ra_deg: 84.258403
+    dec_deg: -73.699346
+    adopted: 2019-12-17
+  - name: "Buna"
+    designation: "HD 16175"
+    hip: 12191
+    ra_deg: 39.257963
+    dec_deg: 42.06263
+    adopted: 2019-12-17
+  - name: "Ceibo"
+    designation: "HD 63454"
+    hip: 37284
+    ra_deg: 114.841057
+    dec_deg: -78.278974
+    adopted: 2019-12-17
+  - name: "Chaophraya"
+    designation: "WASP-50"
+    ra_deg: 43.688059
+    dec_deg: -10.898063
+    adopted: 2019-12-17
+  - name: "Chasoň"
+    designation: "HAT-P-5"
+    ra_deg: 274.40547
+    dec_deg: 36.621436
+    adopted: 2019-12-17
+  - name: "Chechia"
+    designation: "HD 192699"
+    hip: 99894
+    ra_deg: 304.0250157
+    dec_deg: 4.580794438
+    adopted: 2019-12-17
+  - name: "Citadelle"
+    designation: "HD 1502"
+    hip: 1547
+    ra_deg: 4.82111
+    dec_deg: 14.054756
+    adopted: 2019-12-17
+  - name: "Citalá"
+    designation: "HD 52265"
+    hip: 33719
+    ra_deg: 105.0751488
+    dec_deg: -5.367161369
+    adopted: 2019-12-17
+  - name: "Cocibolca"
+    designation: "HD 4208"
+    hip: 3479
+    ra_deg: 11.111045
+    dec_deg: -26.515683
+    adopted: 2019-12-17
+  - name: "Dingolay"
+    designation: "HD 96063"
+    hip: 54158
+    ra_deg: 166.185228
+    dec_deg: -2.513218
+    adopted: 2019-12-17
+  - name: "Dìwö"
+    designation: "WASP-17"
+    ra_deg: 239.962287
+    dec_deg: -28.061753
+    adopted: 2019-12-17
+  - name: "Diya"
+    designation: "WASP-72"
+    ra_deg: 41.040041
+    dec_deg: -30.169045
+    adopted: 2019-12-17
+  - name: "Dofida"
+    designation: "HD 117618"
+    hip: 66047
+    ra_deg: 203.106482
+    dec_deg: -47.271365
+    adopted: 2019-12-17
+  - name: "Dombay"
+    designation: "HAT-P-3"
+    ra_deg: 206.094141
+    dec_deg: 48.028668
+    adopted: 2019-12-17
+  - name: "Ebla"
+    designation: "HD 218566"
+    hip: 114322
+    ra_deg: 47.294696
+    dec_deg: -2.260746
+    adopted: 2019-12-17
+  - name: "Emiw"
+    designation: "HD 7199"
+    hip: 5529
+    ra_deg: 17.696756
+    dec_deg: -66.188164
+    adopted: 2019-12-17
+  - name: "Felixvarela"
+    designation: "BD-17 63"
+    hip: 2247
+    ra_deg: 7.142942
+    dec_deg: -16.226345
+    adopted: 2019-12-17
+  - name: "Flegetonte"
+    designation: "HD 102195"
+    hip: 57370
+    ra_deg: 176.42622
+    dec_deg: 2.821479
+    adopted: 2019-12-17
+  - name: "Formosa"
+    designation: "HD 100655"
+    hip: 56508
+    ra_deg: 173.7656384
+    dec_deg: 20.44154527
+    adopted: 2019-12-17
+  - name: "Franz"
+    designation: "HAT-P-14"
+    ra_deg: 260.11616
+    dec_deg: 38.242197
+    adopted: 2019-12-17
+  - name: "Funi"
+    designation: "HD 109246"
+    hip: 61177
+    ra_deg: 188.029952
+    dec_deg: 74.489547
+    adopted: 2019-12-17
+  - name: "Gakyid"
+    designation: "HD 73534"
+    hip: 42446
+    ra_deg: 129.815846
+    dec_deg: 12.960375
+    adopted: 2019-12-17
+  - name: "Gloas"
+    designation: "WASP-13"
+    ra_deg: 140.102977
+    dec_deg: 33.882417
+    adopted: 2019-12-17
+  - name: "Gumala"
+    designation: "HD 179949"
+    hip: 94645
+    ra_deg: 288.8884586
+    dec_deg: -24.17935318
+    adopted: 2019-12-17
+  - name: "Hoggar"
+    designation: "HD 28678"
+    hip: 21109
+    ra_deg: 67.856059
+    dec_deg: 4.575295
+    adopted: 2019-12-17
+  - name: "Horna"
+    designation: "HAT-P-38"
+    ra_deg: 35.383251
+    dec_deg: 32.246136
+    adopted: 2019-12-17
+  - name: "Hunahpú"
+    designation: "HD 98219"
+    hip: 55174
+    ra_deg: 169.448138
+    dec_deg: -23.975415
+    adopted: 2019-12-17
+  - name: "Hunor"
+    designation: "HAT-P-2"
+    hip: 80076
+    ra_deg: 245.151491
+    dec_deg: 41.048086
+    adopted: 2019-12-17
+  - name: "Illyrian"
+    designation: "HD 82886"
+    hip: 47087
+    ra_deg: 143.938267
+    dec_deg: 34.780742
+    adopted: 2019-12-17
+  - name: "Inquill"
+    designation: "HD 156411"
+    hip: 84787
+    ra_deg: 259.964168
+    dec_deg: -48.54932
+    adopted: 2019-12-17
+  - name: "Intan"
+    designation: "HD 20868"
+    hip: 15578
+    ra_deg: 50.177891
+    dec_deg: -33.730104
+    adopted: 2019-12-17
+  - name: "Irena"
+    designation: "WASP-38"
+    ra_deg: 243.959855
+    dec_deg: 10.032579
+    adopted: 2019-12-17
+  - name: "Itonda"
+    designation: "HD 208487"
+    hip: 108375
+    ra_deg: 329.332698
+    dec_deg: -37.763624
+    adopted: 2019-12-17
+  - name: "Jishui"
+    designation: "HR 2930"
+    hip: 37265
+    ra_deg: 114.7913944
+    dec_deg: 34.58430633
+    adopted: 2019-12-17
+  - name: "Kalausi"
+    designation: "HD 83443"
+    hip: 47202
+    ra_deg: 144.299282
+    dec_deg: -43.272204
+    adopted: 2019-12-17
+  - name: "Kamuy"
+    designation: "HD 145457"
+    hip: 79219
+    ra_deg: 242.51631
+    dec_deg: 26.742748
+    adopted: 2019-12-17
+  - name: "Karaka"
+    designation: "HD 137388"
+    hip: 76351
+    ra_deg: 233.916337
+    dec_deg: -80.204594
+    adopted: 2019-12-17
+  - name: "Kaveh"
+    designation: "HD 175541"
+    hip: 92895
+    ra_deg: 283.92035
+    dec_deg: 4.265323
+    adopted: 2019-12-17
+  - name: "Koeia"
+    designation: "HIP 12961"
+    hip: 12961
+    ra_deg: 41.678695
+    dec_deg: -23.08661
+    adopted: 2019-12-17
+  - name: "Koit"
+    designation: "XO-4"
+    ra_deg: 110.388168
+    dec_deg: 58.268087
+    adopted: 2019-12-17
+  - name: "Lerna"
+    designation: "HAT-P-42"
+    ra_deg: 135.344371
+    dec_deg: 6.097227
+    adopted: 2019-12-17
+  - name: "Liesma"
+    designation: "HD 118203"
+    hip: 66192
+    ra_deg: 203.510581
+    dec_deg: 53.728527
+    adopted: 2019-12-17
+  - name: "Lionrock"
+    designation: "HD 212771"
+    hip: 110813
+    ra_deg: 336.762801
+    dec_deg: -17.263656
+    adopted: 2019-12-17
+  - name: "Lucilinburhuc"
+    designation: "HD 45350"
+    hip: 30860
+    ra_deg: 97.190463
+    dec_deg: 38.962962
+    adopted: 2019-12-17
+  - name: "Lusitânia"
+    designation: "HD 45652"
+    hip: 30905
+    ra_deg: 97.304966
+    dec_deg: 10.933891
+    adopted: 2019-12-17
+  - name: "Macondo"
+    designation: "HD 93083"
+    hip: 52521
+    ra_deg: 161.087146
+    dec_deg: -33.577024
+    adopted: 2019-12-17
+  - name: "Mago"
+    designation: "HD 32518"
+    hip: 24003
+    ra_deg: 77.40300153
+    dec_deg: 69.63940411
+    adopted: 2019-12-17
+  - name: "Mahsati"
+    designation: "HD 152581"
+    hip: 82651
+    ra_deg: 253.431594
+    dec_deg: 11.973748
+    adopted: 2019-12-17
+  - name: "Malmok"
+    designation: "WASP-39"
+    ra_deg: 217.32673
+    dec_deg: -3.444501
+    adopted: 2019-12-17
+  - name: "Márohu"
+    designation: "WASP-6"
+    ra_deg: 348.157237
+    dec_deg: -22.673966
+    adopted: 2019-12-17
+  - name: "Moldoveanu"
+    designation: "XO-1"
+    ra_deg: 240.54936
+    dec_deg: 28.169561
+    adopted: 2019-12-17
+  - name: "Mönch"
+    designation: "HD 130322"
+    hip: 72339
+    ra_deg: 221.886361
+    dec_deg: -0.281474
+    adopted: 2019-12-17
+  - name: "Montuno"
+    designation: "WASP-79"
+    ra_deg: 66.370903
+    dec_deg: -30.600447
+    adopted: 2019-12-17
+  - name: "Morava"
+    designation: "WASP-60"
+    ra_deg: 356.666561
+    dec_deg: 31.155937
+    adopted: 2019-12-17
+  - name: "Moriah"
+    designation: "HAT-P-23"
+    ra_deg: 306.123848
+    dec_deg: 16.76217
+    adopted: 2019-12-17
+  - name: "Mouhoun"
+    designation: "HD 30856"
+    hip: 22491
+    ra_deg: 72.574423
+    dec_deg: -24.368843
+    adopted: 2019-12-17
+  - name: "Mpingo"
+    designation: "WASP-71"
+    ra_deg: 29.26335
+    dec_deg: 0.758855
+    adopted: 2019-12-17
+  - name: "Muspelheim"
+    designation: "HAT-P-29"
+    ra_deg: 33.13116
+    dec_deg: 51.778767
+    adopted: 2019-12-17
+  - name: "Naledi"
+    designation: "WASP-62"
+    ra_deg: 87.139974
+    dec_deg: -63.988441
+    adopted: 2019-12-17
+  - name: "Násti"
+    designation: "HD 68988"
+    hip: 40687
+    ra_deg: 124.592386
+    dec_deg: 61.460721
+    adopted: 2019-12-17
+  - name: "Natasha"
+    designation: "HD 85390"
+    hip: 48235
+    ra_deg: 147.510404
+    dec_deg: -49.790266
+    adopted: 2019-12-17
+  - name: "Nenque"
+    designation: "HD 6434"
+    hip: 5054
+    ra_deg: 16.167293
+    dec_deg: -39.488218
+    adopted: 2019-12-17
+  - name: "Nervia"
+    designation: "HD 49674"
+    hip: 32916
+    ra_deg: 102.877151
+    dec_deg: 40.867757
+    adopted: 2019-12-17
+  - name: "Nikawiy"
+    designation: "HD 136418"
+    hip: 74961
+    ra_deg: 229.77576
+    dec_deg: 41.733206
+    adopted: 2019-12-17
+  - name: "Nosaxa"
+    designation: "HD 48265"
+    hip: 31895
+    ra_deg: 100.007196
+    dec_deg: -48.541956
+    adopted: 2019-12-17
+  - name: "Nushagak"
+    designation: "HD 17156"
+    hip: 13192
+    ra_deg: 42.435361
+    dec_deg: 71.753231
+    adopted: 2019-12-17
+  - name: "Nyamien"
+    designation: "WASP-15"
+    ra_deg: 208.927967
+    dec_deg: -32.159615
+    adopted: 2019-12-17
+  - name: "Parumleo"
+    designation: "WASP-32"
+    ra_deg: 3.961699
+    dec_deg: 1.200441
+    adopted: 2019-12-17
+  - name: "Petra"
+    designation: "WASP-80"
+    ra_deg: 303.167372
+    dec_deg: -2.14422
+    adopted: 2019-12-17
+  - name: "Phoenicia"
+    designation: "HD 192263"
+    hip: 99711
+    ra_deg: 303.499356
+    dec_deg: -0.866881
+    adopted: 2019-12-17
+  - name: "Pincoya"
+    designation: "HD 164604"
+    hip: 88414
+    ra_deg: 270.778888
+    dec_deg: -28.560655
+    adopted: 2019-12-17
+  - name: "Pipoltr"
+    designation: "TrES-3 Parent Star"
+    ra_deg: 268.029244
+    dec_deg: 37.546177
+    adopted: 2019-12-17
+  - name: "Poerava"
+    designation: "HD 221287"
+    hip: 116084
+    ra_deg: 352.834742
+    dec_deg: -58.209731
+    adopted: 2019-12-17
+  - name: "Rapeto"
+    designation: "HD 153950"
+    hip: 83547
+    ra_deg: 256.128629
+    dec_deg: -43.30977
+    adopted: 2019-12-17
+  - name: "Rosalíadecastro"
+    designation: "HD 149143"
+    hip: 81022
+    ra_deg: 248.212712
+    dec_deg: 2.084828
+    adopted: 2019-12-17
+  - name: "Sagarmatha"
+    designation: "HD 100777"
+    hip: 56572
+    ra_deg: 173.964679
+    dec_deg: -4.755695
+    adopted: 2019-12-17
+  - name: "Sāmaya"
+    designation: "HD 205739"
+    hip: 106824
+    ra_deg: 324.535016
+    dec_deg: -31.737484
+    adopted: 2019-12-17
+  - name: "Sansuna"
+    designation: "HAT-P-34"
+    ra_deg: 303.195361
+    dec_deg: 18.104833
+    adopted: 2019-12-17
+  - name: "Shama"
+    designation: "HD 99109"
+    hip: 55664
+    ra_deg: 171.072328
+    dec_deg: -1.529073
+    adopted: 2019-12-17
+  - name: "Sharjah"
+    designation: "HIP 79431"
+    hip: 79431
+    ra_deg: 243.174084
+    dec_deg: -18.875503
+    adopted: 2019-12-17
+  - name: "Sika"
+    designation: "HD 181720"
+    hip: 95262
+    ra_deg: 290.72077
+    dec_deg: -32.919053
+    adopted: 2019-12-17
+  - name: "Solaris"
+    designation: "BD+14 4559"
+    hip: 104780
+    ra_deg: 318.399959
+    dec_deg: 14.689385
+    adopted: 2019-12-17
+  - name: "Sterrennacht"
+    designation: "HAT-P-6"
+    ra_deg: 354.774209
+    dec_deg: 42.465973
+    adopted: 2019-12-17
+  - name: "Stribor"
+    designation: "HD 75898"
+    hip: 43674
+    ra_deg: 133.461689
+    dec_deg: 33.056812
+    adopted: 2019-12-17
+  - name: "Taika"
+    designation: "HAT-P-40"
+    ra_deg: 335.512865
+    dec_deg: 45.457366
+    adopted: 2019-12-17
+  - name: "Tangra"
+    designation: "WASP-21"
+    ra_deg: 347.492723
+    dec_deg: 18.396078
+    adopted: 2019-12-17
+  - name: "Tapecue"
+    designation: "HD 63765"
+    hip: 38041
+    ra_deg: 116.957168
+    dec_deg: -54.264144
+    adopted: 2019-12-17
+  - name: "Tevel"
+    designation: "HAT-P-9"
+    ra_deg: 110.168568
+    dec_deg: 37.140651
+    adopted: 2019-12-17
+  - name: "Timir"
+    designation: "HD 148427"
+    hip: 80687
+    ra_deg: 247.117296
+    dec_deg: -13.399636
+    adopted: 2019-12-17
+  - name: "Tislit"
+    designation: "WASP-161"
+    ra_deg: 126.337846
+    dec_deg: -11.500986
+    adopted: 2019-12-17
+  - name: "Tojil"
+    designation: "WASP-22"
+    ra_deg: 52.818029
+    dec_deg: -23.819678
+    adopted: 2019-12-17
+  - name: "Tuiren"
+    designation: "HAT-P-36"
+    ra_deg: 188.266276
+    dec_deg: 44.915333
+    adopted: 2019-12-17
+  - name: "Tupã"
+    designation: "HD 108147"
+    hip: 60644
+    ra_deg: 186.442779
+    dec_deg: -64.022088
+    adopted: 2019-12-17
+  - name: "Tupi"
+    designation: "HD 23079"
+    hip: 17096
+    ra_deg: 54.929567
+    dec_deg: -52.915838
+    adopted: 2019-12-17
+  - name: "Uklun"
+    designation: "HD 102117"
+    hip: 57291
+    ra_deg: 176.210254
+    dec_deg: -58.70371
+    adopted: 2019-12-17
+  - name: "Uruk"
+    designation: "HD 231701"
+    hip: 96078
+    ra_deg: 293.017338
+    dec_deg: 16.474289
+    adopted: 2019-12-17
+  - name: "Xihe"
+    designation: "HD 173416"
+    hip: 91852
+    ra_deg: 280.9004553
+    dec_deg: 36.55660634
+    adopted: 2019-12-17
+  - name: "Gudja"
+    designation: "HR 5879"
+    hip: 77450
+    ra_deg: 237.184905
+    dec_deg: 18.14156491
+    adopted: 2018-08-10
+  - name: "Guniibuu"
+    designation: "* 36 Oph"
+    hip: 84405
+    ra_deg: 258.8365985
+    dec_deg: -26.60169922
+    adopted: 2018-08-10
+  - name: "Imai"
+    designation: "HR 4656"
+    hip: 59747
+    ra_deg: 183.786327
+    dec_deg: -58.74892408
+    adopted: 2018-08-10
+  - name: "La Superba"
+    designation: "HR 4846"
+    hip: 62223
+    ra_deg: 191.2826087
+    dec_deg: 45.44025731
+    adopted: 2018-08-10
+  - name: "Paikauhale"
+    designation: "HR 6165"
+    hip: 81266
+    ra_deg: 248.9706369
+    dec_deg: -28.21601709
+    adopted: 2018-08-10
+  - name: "Toliman"
+    designation: "HR 5460"
+    hip: 71681
+    ra_deg: 219.8960963
+    dec_deg: -60.83752757
+    adopted: 2018-08-10
+  - name: "Alpherg"
+    designation: "HR 437"
+    hip: 7097
+    ra_deg: 22.87086745
+    dec_deg: 15.34583184
+    adopted: 2018-06-01
+  - name: "Alruba"
+    designation: "HR 6618"
+    hip: 86782
+    ra_deg: 265.996537
+    dec_deg: 53.80170722
+    adopted: 2018-06-01
+  - name: "Ashlesha"
+    designation: "HR 3482"
+    hip: 43109
+    ra_deg: 131.693801
+    dec_deg: 6.41880152
+    adopted: 2018-06-01
+  - name: "Azmidi"
+    designation: "HR 3045"
+    hip: 38170
+    ra_deg: 117.3235565
+    dec_deg: -24.85978388
+    adopted: 2018-06-01
+  - name: "Bunda"
+    designation: "HR 8264"
+    hip: 106786
+    ra_deg: 324.4379574
+    dec_deg: -7.854201597
+    adopted: 2018-06-01
+  - name: "Elgafar"
+    designation: "HR 5409"
+    hip: 70755
+    ra_deg: 217.0505788
+    dec_deg: -2.22795806
+    adopted: 2018-06-01
+  - name: "Elkurud"
+    designation: "HR 2177"
+    hip: 29034
+    ra_deg: 91.88180343
+    dec_deg: -37.25291923
+    adopted: 2018-06-01
+  - name: "Fawaris"
+    designation: "HR 7528"
+    hip: 97165
+    ra_deg: 296.2436606
+    dec_deg: 45.13081002
+    adopted: 2018-06-01
+  - name: "Felis"
+    designation: "HR 3923"
+    hip: 48615
+    ra_deg: 148.7175187
+    dec_deg: -19.00933886
+    adopted: 2018-06-01
+  - name: "Fumalsamakah"
+    designation: "HR 8773"
+    hip: 113889
+    ra_deg: 345.9692217
+    dec_deg: 3.82004564
+    adopted: 2018-06-01
+  - name: "Heze"
+    designation: "HR 5107"
+    hip: 66249
+    ra_deg: 203.6732973
+    dec_deg: -0.5958164161
+    adopted: 2018-06-01
+  - name: "Kraz"
+    designation: "HR 4786"
+    hip: 61359
+    ra_deg: 188.5968122
+    dec_deg: -23.39676022
+    adopted: 2018-06-01
+  - name: "Nahn"
+    designation: "HR 3627"
+    hip: 44946
+    ra_deg: 137.3397548
+    dec_deg: 22.04543837
+    adopted: 2018-06-01
+  - name: "Okab"
+    designation: "HR 7235"
+    hip: 93747
+    ra_deg: 286.3525334
+    dec_deg: 13.86347728
+    adopted: 2018-06-01
+  - name: "Piautos"
+    designation: "HR 3268"
+    hip: 40881
+    ra_deg: 125.1339015
+    dec_deg: 24.02231115
+    adopted: 2018-06-01
+  - name: "Tarf"
+    designation: "HR 3249"
+    hip: 40526
+    ra_deg: 124.1288375
+    dec_deg: 9.185543957
+    adopted: 2018-06-01
+  - name: "Ukdah"
+    designation: "HR 3845"
+    hip: 47431
+    ra_deg: 144.9640061
+    dec_deg: -1.142810732
+    adopted: 2018-06-01
+  - name: "Ginan"
+    designation: "HR 4700"
+    hip: 60260
+    ra_deg: 185.3400339
+    dec_deg: -60.40114813
+    adopted: 2017-11-17
+  - name: "Larawag"
+    designation: "HR 6241"
+    hip: 82396
+    ra_deg: 252.5408784
+    dec_deg: -34.29323159
+    adopted: 2017-11-17
+  - name: "Wurren"
+    designation: "HR 338"
+    hip: 5348
+    ra_deg: 17.0961691
+    dec_deg: -55.24576
+    adopted: 2017-11-17
+  - name: "Achird"
+    designation: "HR 219"
+    hip: 3821
+    ra_deg: 12.27622748
+    dec_deg: 57.81517729
+    adopted: 2017-09-05
+  - name: "Ainalrami"
+    designation: "HR 7116"
+    hip: 92761
+    ra_deg: 283.5424087
+    dec_deg: -22.74483962
+    adopted: 2017-09-05
+  - name: "Aladfar"
+    designation: "HR 7298"
+    hip: 94481
+    ra_deg: 288.4395351
+    dec_deg: 39.14596601
+    adopted: 2017-09-05
+  - name: "Albaldah"
+    designation: "HR 7264"
+    hip: 94141
+    ra_deg: 287.4409705
+    dec_deg: -21.02361398
+    adopted: 2017-09-05
+  - name: "Aldhanab"
+    designation: "HR 8353"
+    hip: 108085
+    ra_deg: 328.4821513
+    dec_deg: -37.36487222
+    adopted: 2017-09-05
+  - name: "Aldhibah"
+    designation: "HR 6396"
+    hip: 83895
+    ra_deg: 257.1966155
+    dec_deg: 65.71464533
+    adopted: 2017-09-05
+  - name: "Aldulfin"
+    designation: "HR 7852"
+    hip: 101421
+    ra_deg: 308.3032203
+    dec_deg: 11.30326639
+    adopted: 2017-09-05
+  - name: "Alkaphrah"
+    designation: "HR 3594"
+    hip: 44471
+    ra_deg: 135.9063651
+    dec_deg: 47.15652473
+    adopted: 2017-09-05
+  - name: "Alkarab"
+    designation: "HR 8905"
+    hip: 115623
+    ra_deg: 351.3449286
+    dec_deg: 23.40410081
+    adopted: 2017-09-05
+  - name: "Alsephina"
+    designation: "HR 3485"
+    hip: 42913
+    ra_deg: 120.745063
+    dec_deg: -54.7088194
+    adopted: 2017-09-05
+  - name: "Athebyne"
+    designation: "HR 6132"
+    hip: 80331
+    ra_deg: 245.9978597
+    dec_deg: 61.51420976
+    adopted: 2017-09-05
+  - name: "Brachium"
+    designation: "HR 5603"
+    hip: 73714
+    ra_deg: 226.0175617
+    dec_deg: -25.28196958
+    adopted: 2017-09-05
+  - name: "Castula"
+    designation: "HR 265"
+    hip: 4422
+    ra_deg: 14.16627144
+    dec_deg: 59.18105702
+    adopted: 2017-09-05
+  - name: "Chamukuy"
+    designation: "HR 1412"
+    hip: 20894
+    ra_deg: 67.16559005
+    dec_deg: 15.87087465
+    adopted: 2017-09-05
+  - name: "Dalim"
+    designation: "HR 963"
+    hip: 14879
+    ra_deg: 48.01887418
+    dec_deg: -28.98762199
+    adopted: 2017-09-05
+  - name: "Dziban"
+    designation: "HR 6636"
+    hip: 86614
+    ra_deg: 265.4835932
+    dec_deg: 72.14886878
+    adopted: 2017-09-05
+  - name: "Hatysa"
+    designation: "HR 1899"
+    hip: 26241
+    ra_deg: 83.85827581
+    dec_deg: -5.909888524
+    adopted: 2017-09-05
+  - name: "Iklil"
+    designation: "HR 5928"
+    hip: 78104
+    ra_deg: 239.221155
+    dec_deg: -29.21407444
+    adopted: 2017-09-05
+  - name: "Khambalia"
+    designation: "HR 5359"
+    hip: 69974
+    ra_deg: 214.7774695
+    dec_deg: -13.3710913
+    adopted: 2017-09-05
+  - name: "Lilii Borea"
+    designation: "HR 824"
+    hip: 13061
+    ra_deg: 41.97725865
+    dec_deg: 29.24711827
+    adopted: 2017-09-05
+  - name: "Markeb"
+    designation: "HR 3734"
+    hip: 45941
+    ra_deg: 140.5284067
+    dec_deg: -55.01066713
+    adopted: 2017-09-05
+  - name: "Meleph"
+    designation: "HR 3429"
+    hip: 42556
+    ra_deg: 130.1125421
+    dec_deg: 19.54481231
+    adopted: 2017-09-05
+  - name: "Meridiana"
+    designation: "HR 7254"
+    hip: 94114
+    ra_deg: 287.3680896
+    dec_deg: -37.9044744
+    adopted: 2017-09-05
+  - name: "Minchir"
+    designation: "HR 3418"
+    hip: 42402
+    ra_deg: 129.6893227
+    dec_deg: 3.341435188
+    adopted: 2017-09-05
+  - name: "Miram"
+    designation: "HR 834"
+    hip: 13268
+    ra_deg: 42.67420822
+    dec_deg: 55.89549437
+    adopted: 2017-09-05
+  - name: "Misam"
+    designation: "HR 941"
+    hip: 14668
+    ra_deg: 47.37418183
+    dec_deg: 44.85745829
+    adopted: 2017-09-05
+  - name: "Nembus"
+    designation: "HR 464"
+    hip: 7607
+    ra_deg: 24.49815843
+    dec_deg: 48.62821196
+    adopted: 2017-09-05
+  - name: "Nganurganity"
+    designation: "HR 2646"
+    hip: 33856
+    ra_deg: 105.028652
+    dec_deg: -27.93483034
+    adopted: 2017-09-05
+  - name: "Pipirima"
+    designation: "HR 6252"
+    hip: 82545
+    ra_deg: 253.0839388
+    dec_deg: -38.01753496
+    adopted: 2017-09-05
+  - name: "Polaris Australis"
+    designation: "HR 7228"
+    hip: 104382
+    ra_deg: 317.1952649
+    dec_deg: -88.95649954
+    adopted: 2017-09-05
+  - name: "Polis"
+    designation: "HR 6812"
+    hip: 89341
+    ra_deg: 273.4408702
+    dec_deg: -21.05883169
+    adopted: 2017-09-05
+  - name: "Prima Hyadum"
+    designation: "HR 1346"
+    hip: 20205
+    ra_deg: 64.94834968
+    dec_deg: 15.62764205
+    adopted: 2017-09-05
+  - name: "Salm"
+    designation: "HR 8880"
+    hip: 115250
+    ra_deg: 350.1593593
+    dec_deg: 23.74035506
+    adopted: 2017-09-05
+  - name: "Secunda Hyadum"
+    designation: "HR 1373"
+    hip: 20455
+    ra_deg: 65.73372983
+    dec_deg: 17.54251383
+    adopted: 2017-09-05
+  - name: "Segin"
+    designation: "HR 0542"
+    hip: 8886
+    ra_deg: 28.59889203
+    dec_deg: 63.67010007
+    adopted: 2017-09-05
+  - name: "Tabit"
+    designation: "HR 1543"
+    hip: 22449
+    ra_deg: 72.46004669
+    dec_deg: 6.961277951
+    adopted: 2017-09-05
+  - name: "Terebellum"
+    designation: "HR 7597"
+    hip: 98066
+    ra_deg: 298.959844
+    dec_deg: -26.29935925
+    adopted: 2017-09-05
+  - name: "Tiaki"
+    designation: "HR 8636"
+    hip: 112122
+    ra_deg: 340.6668761
+    dec_deg: -46.88457644
+    adopted: 2017-09-05
+  - name: "Torcular"
+    designation: "HR 510"
+    hip: 8198
+    ra_deg: 26.3484384
+    dec_deg: 9.157750733
+    adopted: 2017-09-05
+  - name: "Xamidimura"
+    designation: "HR 6247"
+    hip: 82514
+    ra_deg: 252.9676181
+    dec_deg: -38.04739946
+    adopted: 2017-09-05
+  - name: "Zubenelhakrabi"
+    designation: "HR 5787"
+    hip: 76333
+    ra_deg: 233.8815784
+    dec_deg: -14.78953551
+    adopted: 2017-09-05
+  - name: "Alsafi"
+    designation: "HR 7462"
+    hip: 96100
+    ra_deg: 293.0899592
+    dec_deg: 69.66117661
+    adopted: 2017-06-30
+  - name: "Alsciaukat"
+    designation: "HR 3275"
+    hip: 41075
+    ra_deg: 125.7087893
+    dec_deg: 43.1881306
+    adopted: 2017-06-30
+  - name: "Alshat"
+    designation: "HR 7773"
+    hip: 100310
+    ra_deg: 305.1658991
+    dec_deg: -12.75908063
+    adopted: 2017-06-30
+  - name: "Alzirr"
+    designation: "HR 2484"
+    hip: 32362
+    ra_deg: 101.322352
+    dec_deg: 12.89559496
+    adopted: 2017-06-30
+  - name: "Angetenar"
+    designation: "HR 850"
+    hip: 13288
+    ra_deg: 42.7596963
+    dec_deg: -21.00401153
+    adopted: 2017-06-30
+  - name: "Anser"
+    designation: "HR 7405"
+    hip: 95771
+    ra_deg: 292.1763747
+    dec_deg: 24.66490585
+    adopted: 2017-06-30
+  - name: "Beemim"
+    designation: "HR 1393"
+    hip: 20535
+    ra_deg: 66.00919306
+    dec_deg: -34.01684951
+    adopted: 2017-06-30
+  - name: "Bharani"
+    designation: "HR 838"
+    hip: 13209
+    ra_deg: 42.49597184
+    dec_deg: 27.26050723
+    adopted: 2017-06-30
+  - name: "Fang"
+    designation: "HR 5944"
+    hip: 78265
+    ra_deg: 239.7129718
+    dec_deg: -26.11410795
+    adopted: 2017-06-30
+  - name: "Fulu"
+    designation: "HR 153"
+    hip: 2920
+    ra_deg: 9.242852031
+    dec_deg: 53.89691044
+    adopted: 2017-06-30
+  - name: "Fuyue"
+    designation: "HR 6630"
+    hip: 87261
+    ra_deg: 267.4645037
+    dec_deg: -37.04327638
+    adopted: 2017-06-30
+  - name: "Haedus"
+    designation: "HR 1641"
+    hip: 23767
+    ra_deg: 76.62872559
+    dec_deg: 41.23447574
+    adopted: 2017-06-30
+  - name: "Hassaleh"
+    designation: "HR 1577"
+    hip: 23015
+    ra_deg: 74.24841676
+    dec_deg: 33.16609377
+    adopted: 2017-06-30
+  - name: "Jabbah"
+    designation: "HR 6027"
+    hip: 79374
+    ra_deg: 242.998891
+    dec_deg: -19.4606906
+    adopted: 2017-06-30
+  - name: "Kang"
+    designation: "HR 5315"
+    hip: 69427
+    ra_deg: 213.2239369
+    dec_deg: -10.27370346
+    adopted: 2017-06-30
+  - name: "Mahasim"
+    designation: "HR 2095"
+    hip: 28380
+    ra_deg: 89.93029218
+    dec_deg: 37.21258463
+    adopted: 2017-06-30
+  - name: "Markab"
+    designation: "HR 8781"
+    hip: 113963
+    ra_deg: 346.1902227
+    dec_deg: 15.20526715
+    adopted: 2017-06-30
+  - name: "Minelauva"
+    designation: "HR 4910"
+    hip: 63090
+    ra_deg: 193.9008693
+    dec_deg: 3.397468904
+    adopted: 2017-06-30
+  - name: "Praecipua"
+    designation: "HR 4247"
+    hip: 53229
+    ra_deg: 163.3278715
+    dec_deg: 34.21489213
+    adopted: 2017-06-30
+  - name: "Revati"
+    designation: "HR 361"
+    hip: 5737
+    ra_deg: 18.43285834
+    dec_deg: 7.575359937
+    adopted: 2017-06-30
+  - name: "Saclateni"
+    designation: "HR 1612"
+    hip: 23453
+    ra_deg: 75.61951435
+    dec_deg: 41.07583199
+    adopted: 2017-06-30
+  - name: "Sceptrum"
+    designation: "HR 1481"
+    hip: 21594
+    ra_deg: 69.5450984
+    dec_deg: -14.3040279
+    adopted: 2017-06-30
+  - name: "Taiyangshou"
+    designation: "HR 4518"
+    hip: 57399
+    ra_deg: 176.5125586
+    dec_deg: 47.77940424
+    adopted: 2017-06-30
+  - name: "Taiyi"
+    designation: "HR 4916"
+    hip: 63076
+    ra_deg: 193.8689524
+    dec_deg: 65.4384742
+    adopted: 2017-06-30
+  - name: "Tianguan"
+    designation: "HR 1910"
+    hip: 26451
+    ra_deg: 84.41118926
+    dec_deg: 21.14254411
+    adopted: 2017-06-30
+  - name: "Tianyi"
+    designation: "HR 4863"
+    hip: 62423
+    ra_deg: 191.8930975
+    dec_deg: 66.79030426
+    adopted: 2017-06-30
+  - name: "Xuange"
+    designation: "HR 5351"
+    hip: 69732
+    ra_deg: 214.09591
+    dec_deg: 46.08830429
+    adopted: 2017-06-30
+  - name: "Zhang"
+    designation: "HR 3903"
+    hip: 48356
+    ra_deg: 147.8694791
+    dec_deg: -14.84662871
+    adopted: 2017-06-30
+  - name: "Almaaz"
+    designation: "HR 1605"
+    hip: 23416
+    ra_deg: 75.49222654
+    dec_deg: 43.82331031
+    adopted: 2017-02-01
+  - name: "Alniyat"
+    designation: "HR 6084"
+    hip: 80112
+    ra_deg: 245.2971488
+    dec_deg: -25.59279208
+    adopted: 2017-02-01
+  - name: "Alrakis"
+    designation: "* mu. Dra"
+    hip: 83608
+    ra_deg: 255.088923
+    dec_deg: 54.4700278
+    adopted: 2017-02-01
+  - name: "Alterf"
+    designation: "HR 3773"
+    hip: 46750
+    ra_deg: 142.9301239
+    dec_deg: 22.96798129
+    adopted: 2017-02-01
+  - name: "Barnard's Star"
+    designation: "GJ 699"
+    hip: 87937
+    ra_deg: 269.454023
+    dec_deg: 4.668288
+    adopted: 2017-02-01
+  - name: "Cujam"
+    designation: "HR 6117"
+    hip: 80463
+    ra_deg: 246.3539778
+    dec_deg: 14.03326724
+    adopted: 2017-02-01
+  - name: "Deneb Algedi"
+    designation: "HR 8322"
+    hip: 107556
+    ra_deg: 326.7601843
+    dec_deg: -16.12728709
+    adopted: 2017-02-01
+  - name: "Diadem"
+    designation: "* alf Com"
+    hip: 64241
+    ra_deg: 197.4970217
+    dec_deg: 17.52945526
+    adopted: 2017-02-01
+  - name: "Giausar"
+    designation: "HR 4434"
+    hip: 56211
+    ra_deg: 172.8509236
+    dec_deg: 69.33107573
+    adopted: 2017-02-01
+  - name: "Kaffaljidhma"
+    designation: "HR 804"
+    hip: 12706
+    ra_deg: 40.8248836
+    dec_deg: 3.23581638
+    adopted: 2017-02-01
+  - name: "Marsic"
+    designation: "* kap Her"
+    hip: 79043
+    ra_deg: 242.0188568
+    dec_deg: 17.04697753
+    adopted: 2017-02-01
+  - name: "Tejat"
+    designation: "HR 2286"
+    hip: 30343
+    ra_deg: 95.74011193
+    dec_deg: 22.51358275
+    adopted: 2017-02-01
+  - name: "Theemin"
+    designation: "HR 1464"
+    hip: 21393
+    ra_deg: 68.88765817
+    dec_deg: -30.56234204
+    adopted: 2017-02-01
+  - name: "Asellus Australis"
+    designation: "HR 3461"
+    hip: 42911
+    ra_deg: 131.1712466
+    dec_deg: 18.15430807
+    adopted: 2016-11-06
+  - name: "Asellus Borealis"
+    designation: "HR 3449"
+    hip: 42806
+    ra_deg: 130.8214464
+    dec_deg: 21.4684988
+    adopted: 2016-11-06
+  - name: "Gienah"
+    designation: "HR 4662"
+    hip: 59803
+    ra_deg: 183.951545
+    dec_deg: -17.54193046
+    adopted: 2016-11-06
+  - name: "Rigil Kentaurus"
+    designation: "HR 5459"
+    hip: 71683
+    ra_deg: 219.9020583
+    dec_deg: -60.83397
+    adopted: 2016-11-06
+  - name: "Yed Prior"
+    designation: "HR 6056"
+    hip: 79593
+    ra_deg: 243.5864126
+    dec_deg: -3.694325785
+    adopted: 2016-11-06
+  - name: "Arkab Posterior"
+    designation: "HR 7343"
+    hip: 95294
+    ra_deg: 290.8047399
+    dec_deg: -44.7997788
+    adopted: 2016-10-05
+  - name: "Arkab Prior"
+    designation: "HR 7337"
+    hip: 95241
+    ra_deg: 290.65958
+    dec_deg: -44.45895838
+    adopted: 2016-10-05
+  - name: "Yed Posterior"
+    designation: "HR 6075"
+    hip: 79882
+    ra_deg: 244.5803759
+    dec_deg: -4.692513153
+    adopted: 2016-10-05
+  - name: "Albali"
+    designation: "HR 7950"
+    hip: 102618
+    ra_deg: 311.9189566
+    dec_deg: -9.495776927
+    adopted: 2016-09-12
+  - name: "Alchiba"
+    designation: "HR 4623"
+    hip: 59199
+    ra_deg: 182.1034053
+    dec_deg: -24.7288756
+    adopted: 2016-09-12
+  - name: "Alkes"
+    designation: "HR 4287"
+    hip: 53740
+    ra_deg: 164.9436048
+    dec_deg: -18.29878622
+    adopted: 2016-09-12
+  - name: "Ancha"
+    designation: "HR 8499"
+    hip: 110003
+    ra_deg: 334.2084862
+    dec_deg: -7.783288743
+    adopted: 2016-09-12
+  - name: "Ascella"
+    designation: "HR 7194"
+    hip: 93506
+    ra_deg: 285.6530427
+    dec_deg: -29.8800633
+    adopted: 2016-09-12
+  - name: "Atik"
+    designation: "HR 1131"
+    hip: 17448
+    ra_deg: 56.07972404
+    dec_deg: 32.28824649
+    adopted: 2016-09-12
+  - name: "Azelfafage"
+    designation: "HR 8301"
+    hip: 107136
+    ra_deg: 325.5235861
+    dec_deg: 51.18962768
+    adopted: 2016-09-12
+  - name: "Azha"
+    designation: "HR 874"
+    hip: 13701
+    ra_deg: 44.10687185
+    dec_deg: -8.898143472
+    adopted: 2016-09-12
+  - name: "Baten Kaitos"
+    designation: "HR 539"
+    hip: 8645
+    ra_deg: 27.86513062
+    dec_deg: -10.33503107
+    adopted: 2016-09-12
+  - name: "Beid"
+    designation: "HR 1298"
+    hip: 19587
+    ra_deg: 62.9664127
+    dec_deg: -6.837579624
+    adopted: 2016-09-12
+  - name: "Botein"
+    designation: "HR 951"
+    hip: 14838
+    ra_deg: 47.9073607
+    dec_deg: 19.72667311
+    adopted: 2016-09-12
+  - name: "Grumium"
+    designation: "HR 6688"
+    hip: 87585
+    ra_deg: 268.3822064
+    dec_deg: 56.87264193
+    adopted: 2016-09-12
+  - name: "Keid"
+    designation: "HR 1325"
+    hip: 19849
+    ra_deg: 63.81799841
+    dec_deg: -7.652869661
+    adopted: 2016-09-12
+  - name: "Kurhah"
+    designation: "HR 8417"
+    hip: 108917
+    ra_deg: 330.9425715
+    dec_deg: 64.62797577
+    adopted: 2016-09-12
+  - name: "Maasym"
+    designation: "HR 6526"
+    hip: 85693
+    ra_deg: 262.6846243
+    dec_deg: 26.11064561
+    adopted: 2016-09-12
+  - name: "Marfik"
+    designation: "HR 6149"
+    hip: 80883
+    ra_deg: 247.7284118
+    dec_deg: 1.98392248
+    adopted: 2016-09-12
+  - name: "Mekbuda"
+    designation: "HR 2650"
+    hip: 34088
+    ra_deg: 106.0272135
+    dec_deg: 20.57029847
+    adopted: 2016-09-12
+  - name: "Menkib"
+    designation: "HR 1228"
+    hip: 18614
+    ra_deg: 59.74126013
+    dec_deg: 35.79103042
+    adopted: 2016-09-12
+  - name: "Merga"
+    designation: "HR 5533"
+    hip: 72487
+    ra_deg: 222.3277931
+    dec_deg: 46.116204
+    adopted: 2016-09-12
+  - name: "Muphrid"
+    designation: "HR 5235"
+    hip: 67927
+    ra_deg: 208.6711622
+    dec_deg: 18.39772072
+    adopted: 2016-09-12
+  - name: "Nusakan"
+    designation: "HR 5747"
+    hip: 75695
+    ra_deg: 231.9573086
+    dec_deg: 29.10569296
+    adopted: 2016-09-12
+  - name: "Rasalas"
+    designation: "HR 3905"
+    hip: 48455
+    ra_deg: 148.1909042
+    dec_deg: 26.00695119
+    adopted: 2016-09-12
+  - name: "Rotanev"
+    designation: "HR 7882"
+    hip: 101769
+    ra_deg: 309.3872554
+    dec_deg: 14.59508875
+    adopted: 2016-09-12
+  - name: "Sarin"
+    designation: "HR 6410"
+    hip: 84379
+    ra_deg: 258.7579607
+    dec_deg: 24.83920697
+    adopted: 2016-09-12
+  - name: "Sham"
+    designation: "HR 7479"
+    hip: 96757
+    ra_deg: 295.0241305
+    dec_deg: 18.01389073
+    adopted: 2016-09-12
+  - name: "Situla"
+    designation: "HR 8610"
+    hip: 111710
+    ra_deg: 339.4390856
+    dec_deg: -4.228054801
+    adopted: 2016-09-12
+  - name: "Sualocin"
+    designation: "HR 7906"
+    hip: 101958
+    ra_deg: 309.9094985
+    dec_deg: 15.91216001
+    adopted: 2016-09-12
+  - name: "Subra"
+    designation: "HR 3852"
+    hip: 47508
+    ra_deg: 145.2876341
+    dec_deg: 9.892307896
+    adopted: 2016-09-12
+  - name: "Syrma"
+    designation: "HR 5338"
+    hip: 69701
+    ra_deg: 214.0036178
+    dec_deg: -6.000547079
+    adopted: 2016-09-12
+  - name: "Tegmine"
+    designation: "HR 3208"
+    hip: 40167
+    ra_deg: 120.203536
+    dec_deg: 17.6477778
+    adopted: 2016-09-12
+  - name: "Tureis"
+    designation: "HR 3185"
+    hip: 39757
+    ra_deg: 121.8860368
+    dec_deg: -24.30432443
+    adopted: 2016-09-12
+  - name: "Zaniah"
+    designation: "HR 4689"
+    hip: 60129
+    ra_deg: 184.9764267
+    dec_deg: -0.6667961981
+    adopted: 2016-09-12
+  - name: "Zibal"
+    designation: "HR 984"
+    hip: 15197
+    ra_deg: 48.95844036
+    dec_deg: -8.819732384
+    adopted: 2016-09-12
+  - name: "Acrab"
+    designation: "* bet Sco"
+    hip: 78820
+    ra_deg: 241.35929
+    dec_deg: -19.80539
+    adopted: 2016-08-21
+  - name: "Adhara"
+    designation: "HR 2618"
+    hip: 33579
+    ra_deg: 104.6564532
+    dec_deg: -28.97208616
+    adopted: 2016-08-21
+  - name: "Adhil"
+    designation: "HR 390"
+    hip: 6411
+    ra_deg: 20.58508365
+    dec_deg: 45.52877674
+    adopted: 2016-08-21
+  - name: "Alfirk"
+    designation: "HR 8238"
+    hip: 106032
+    ra_deg: 322.1649869
+    dec_deg: 70.56071519
+    adopted: 2016-08-21
+  - name: "Algedi"
+    designation: "HR 7754"
+    hip: 100064
+    ra_deg: 304.513565
+    dec_deg: -12.54485212
+    adopted: 2016-08-21
+  - name: "Alkalurops"
+    designation: "HR 5733"
+    hip: 75411
+    ra_deg: 225.408175
+    dec_deg: 37.3771556
+    adopted: 2016-08-21
+  - name: "Alnasl"
+    designation: "HR 6746"
+    hip: 88635
+    ra_deg: 271.4520337
+    dec_deg: -30.42408985
+    adopted: 2016-08-21
+  - name: "Alrescha"
+    designation: "* alf Psc"
+    hip: 9487
+    ra_deg: 30.51125939
+    dec_deg: 30.51175823
+    adopted: 2016-08-21
+  - name: "Alshain"
+    designation: "HR 7602"
+    hip: 98036
+    ra_deg: 298.8283035
+    dec_deg: 6.406764234
+    adopted: 2016-08-21
+  - name: "Altais"
+    designation: "HR 7310"
+    hip: 94376
+    ra_deg: 288.1387557
+    dec_deg: 67.66153866
+    adopted: 2016-08-21
+  - name: "Alya"
+    designation: "* tet Ser"
+    hip: 92946
+    ra_deg: 284.0549467
+    dec_deg: 4.203606136
+    adopted: 2016-08-21
+  - name: "Asterope"
+    designation: "HR 1151"
+    hip: 17579
+    ra_deg: 56.47698521
+    dec_deg: 24.55450992
+    adopted: 2016-08-21
+  - name: "Atlas"
+    designation: "HR 1178"
+    hip: 17847
+    ra_deg: 57.29059607
+    dec_deg: 24.05341713
+    adopted: 2016-08-21
+  - name: "Biham"
+    designation: "HR 8450"
+    hip: 109427
+    ra_deg: 332.5499526
+    dec_deg: 6.197921588
+    adopted: 2016-08-21
+  - name: "Cebalrai"
+    designation: "HR 6603"
+    hip: 86742
+    ra_deg: 265.868133
+    dec_deg: 4.567303668
+    adopted: 2016-08-21
+  - name: "Celaeno"
+    designation: "HR 1140"
+    hip: 17489
+    ra_deg: 56.20089557
+    dec_deg: 24.28946759
+    adopted: 2016-08-21
+  - name: "Dabih"
+    designation: "HR 7776"
+    hip: 100345
+    ra_deg: 305.2527775
+    dec_deg: -14.7814076
+    adopted: 2016-08-21
+  - name: "Diphda"
+    designation: "HR 188"
+    hip: 3419
+    ra_deg: 10.89737874
+    dec_deg: -17.98660632
+    adopted: 2016-08-21
+  - name: "Dschubba"
+    designation: "HR 5953"
+    hip: 78401
+    ra_deg: 240.0833554
+    dec_deg: -22.62170643
+    adopted: 2016-08-21
+  - name: "Electra"
+    designation: "HR 1142"
+    hip: 17499
+    ra_deg: 56.21890454
+    dec_deg: 24.11333785
+    adopted: 2016-08-21
+  - name: "Eltanin"
+    designation: "HR 6705"
+    hip: 87833
+    ra_deg: 269.1515412
+    dec_deg: 51.48889562
+    adopted: 2016-08-21
+  - name: "Hadar"
+    designation: "HR 5267"
+    hip: 68702
+    ra_deg: 210.9558556
+    dec_deg: -60.37303516
+    adopted: 2016-08-21
+  - name: "Homam"
+    designation: "HR 8634"
+    hip: 112029
+    ra_deg: 340.365503
+    dec_deg: 10.83136331
+    adopted: 2016-08-21
+  - name: "Izar"
+    designation: "HR 5506"
+    hip: 72105
+    ra_deg: 221.2467398
+    dec_deg: 27.07422232
+    adopted: 2016-08-21
+  - name: "Kitalpha"
+    designation: "HR 8131"
+    hip: 104987
+    ra_deg: 318.9559882
+    dec_deg: 5.247891952
+    adopted: 2016-08-21
+  - name: "Kornephoros"
+    designation: "HR 6148"
+    hip: 80816
+    ra_deg: 247.5550013
+    dec_deg: 21.48961075
+    adopted: 2016-08-21
+  - name: "Lesath"
+    designation: "HR 6508"
+    hip: 85696
+    ra_deg: 262.690988
+    dec_deg: -37.29581348
+    adopted: 2016-08-21
+  - name: "Matar"
+    designation: "HR 8650"
+    hip: 112158
+    ra_deg: 340.7505369
+    dec_deg: 30.22121471
+    adopted: 2016-08-21
+  - name: "Menkent"
+    designation: "HR 5288"
+    hip: 68933
+    ra_deg: 211.6706147
+    dec_deg: -36.36995474
+    adopted: 2016-08-21
+  - name: "Mesarthim"
+    designation: "* gam Ari"
+    ra_deg: 28.38256
+    dec_deg: 19.293852
+    adopted: 2016-08-21
+  - name: "Mothallah"
+    designation: "HR 544"
+    hip: 8796
+    ra_deg: 28.27043924
+    dec_deg: 29.57881867
+    adopted: 2016-08-21
+  - name: "Muliphein"
+    designation: "HR 2657"
+    hip: 34045
+    ra_deg: 105.9395561
+    dec_deg: -15.633287
+    adopted: 2016-08-21
+  - name: "Naos"
+    designation: "HR 3165"
+    hip: 39429
+    ra_deg: 120.8960314
+    dec_deg: -40.0031478
+    adopted: 2016-08-21
+  - name: "Nashira"
+    designation: "HR 8278"
+    hip: 106985
+    ra_deg: 325.0226893
+    dec_deg: -16.6623712
+    adopted: 2016-08-21
+  - name: "Nekkar"
+    designation: "HR 5602"
+    hip: 73555
+    ra_deg: 225.4865096
+    dec_deg: 40.39056857
+    adopted: 2016-08-21
+  - name: "Nunki"
+    designation: "HR 7121"
+    hip: 92855
+    ra_deg: 283.8163604
+    dec_deg: -26.29672411
+    adopted: 2016-08-21
+  - name: "Pherkad"
+    designation: "HR 5735"
+    hip: 75097
+    ra_deg: 230.182098
+    dec_deg: 71.83402545
+    adopted: 2016-08-21
+  - name: "Proxima Centauri"
+    designation: "GJ 551"
+    hip: 70890
+    ra_deg: 217.428953
+    dec_deg: -62.679484
+    adopted: 2016-08-21
+  - name: "Rastaban"
+    designation: "HR 6536"
+    hip: 85670
+    ra_deg: 262.6081737
+    dec_deg: 52.30138871
+    adopted: 2016-08-21
+  - name: "Ruchbah"
+    designation: "HR 403"
+    hip: 6686
+    ra_deg: 21.45396446
+    dec_deg: 60.23528403
+    adopted: 2016-08-21
+  - name: "Sabik"
+    designation: "HR 6378"
+    hip: 84012
+    ra_deg: 257.59432
+    dec_deg: -15.72490664
+    adopted: 2016-08-21
+  - name: "Sadachbia"
+    designation: "HR 8518"
+    hip: 110395
+    ra_deg: 335.4140482
+    dec_deg: -1.387349194
+    adopted: 2016-08-21
+  - name: "Sadalbari"
+    designation: "HR 8684"
+    hip: 112748
+    ra_deg: 342.5008045
+    dec_deg: 24.60158128
+    adopted: 2016-08-21
+  - name: "Sadalmelik"
+    designation: "HR 8414"
+    hip: 109074
+    ra_deg: 331.4459814
+    dec_deg: -0.3198509554
+    adopted: 2016-08-21
+  - name: "Sadalsuud"
+    designation: "HR 8232"
+    hip: 106278
+    ra_deg: 322.889717
+    dec_deg: -5.571174828
+    adopted: 2016-08-21
+  - name: "Sadr"
+    designation: "HR 7796"
+    hip: 100453
+    ra_deg: 305.557091
+    dec_deg: 40.25667916
+    adopted: 2016-08-21
+  - name: "Sargas"
+    designation: "HR 6553"
+    hip: 86228
+    ra_deg: 264.3297077
+    dec_deg: -42.99782799
+    adopted: 2016-08-21
+  - name: "Schedar"
+    designation: "HR 168"
+    hip: 3179
+    ra_deg: 10.12684601
+    dec_deg: 56.53732922
+    adopted: 2016-08-21
+  - name: "Seginus"
+    designation: "HR 5435"
+    hip: 71075
+    ra_deg: 218.0194653
+    dec_deg: 38.30824808
+    adopted: 2016-08-21
+  - name: "Sheliak"
+    designation: "HR 7106"
+    hip: 92420
+    ra_deg: 282.5199798
+    dec_deg: 33.36266677
+    adopted: 2016-08-21
+  - name: "Skat"
+    designation: "HR 8709"
+    hip: 113136
+    ra_deg: 343.6625261
+    dec_deg: -15.82081957
+    adopted: 2016-08-21
+  - name: "Suhail"
+    designation: "HR 3634"
+    hip: 44816
+    ra_deg: 136.9989911
+    dec_deg: -43.43259091
+    adopted: 2016-08-21
+  - name: "Sulafat"
+    designation: "HR 7178"
+    hip: 93194
+    ra_deg: 284.7359273
+    dec_deg: 32.68955574
+    adopted: 2016-08-21
+  - name: "Tarazed"
+    designation: "HR 7525"
+    hip: 97278
+    ra_deg: 296.5649123
+    dec_deg: 10.61325872
+    adopted: 2016-08-21
+  - name: "Taygeta"
+    designation: "HR 1145"
+    hip: 17531
+    ra_deg: 56.3020833
+    dec_deg: 24.46727376
+    adopted: 2016-08-21
+  - name: "Unukalhai"
+    designation: "HR 5854"
+    hip: 77070
+    ra_deg: 236.0669755
+    dec_deg: 6.42563022
+    adopted: 2016-08-21
+  - name: "Wasat"
+    designation: "HR 2777"
+    hip: 35550
+    ra_deg: 110.0307274
+    dec_deg: 21.98230405
+    adopted: 2016-08-21
+  - name: "Yildun"
+    designation: "HR 6789"
+    hip: 85822
+    ra_deg: 263.0541592
+    dec_deg: 86.58645961
+    adopted: 2016-08-21
+  - name: "Zavijava"
+    designation: "HR 4540"
+    hip: 57757
+    ra_deg: 177.6738271
+    dec_deg: 1.76472265
+    adopted: 2016-08-21
+  - name: "Zubenelgenubi"
+    designation: "HR 5531"
+    hip: 72622
+    ra_deg: 222.7196379
+    dec_deg: -16.04177652
+    adopted: 2016-08-21
+  - name: "Zubeneschamali"
+    designation: "HR 5685"
+    hip: 74785
+    ra_deg: 229.2517243
+    dec_deg: -9.38291441
+    adopted: 2016-08-21
+  - name: "Acamar"
+    designation: "* tet Eri"
+    hip: 13847
+    ra_deg: 44.56531816
+    dec_deg: -40.30467764
+    adopted: 2016-07-20
+  - name: "Acrux"
+    designation: "* alf Cru"
+    hip: 60718
+    ra_deg: 186.649563
+    dec_deg: -63.0990929
+    adopted: 2016-07-20
+  - name: "Acubens"
+    designation: "HR 3572"
+    hip: 44066
+    ra_deg: 134.6216842
+    dec_deg: 11.8576804
+    adopted: 2016-07-20
+  - name: "Adhafera"
+    designation: "HR 4031"
+    hip: 50335
+    ra_deg: 154.1725632
+    dec_deg: 23.41731699
+    adopted: 2016-07-20
+  - name: "Albireo"
+    designation: "HR 7417"
+    hip: 95947
+    ra_deg: 292.680315
+    dec_deg: 27.95967363
+    adopted: 2016-07-20
+  - name: "Alderamin"
+    designation: "HR 8162"
+    hip: 105199
+    ra_deg: 319.6448847
+    dec_deg: 62.58557446
+    adopted: 2016-07-20
+  - name: "Algieba"
+    designation: "* gam Leo"
+    hip: 50583
+    ra_deg: 154.9931273
+    dec_deg: 19.84148867
+    adopted: 2016-07-20
+  - name: "Algorab"
+    designation: "HR 4757"
+    hip: 60965
+    ra_deg: 187.4660632
+    dec_deg: -16.51543126
+    adopted: 2016-07-20
+  - name: "Alhena"
+    designation: "HR 2421"
+    hip: 31681
+    ra_deg: 99.42796043
+    dec_deg: 16.39928043
+    adopted: 2016-07-20
+  - name: "Almach"
+    designation: "HR 603"
+    hip: 9640
+    ra_deg: 30.97480121
+    dec_deg: 42.32972842
+    adopted: 2016-07-20
+  - name: "Alnair"
+    designation: "HR 8425"
+    hip: 109268
+    ra_deg: 332.0582697
+    dec_deg: -46.96097438
+    adopted: 2016-07-20
+  - name: "Alnilam"
+    designation: "HR 1903"
+    hip: 26311
+    ra_deg: 84.05338894
+    dec_deg: -1.20191914
+    adopted: 2016-07-20
+  - name: "Alnitak"
+    designation: "* zet Ori"
+    hip: 26727
+    ra_deg: 85.18969443
+    dec_deg: -1.94257359
+    adopted: 2016-07-20
+  - name: "Alphard"
+    designation: "HR 3748"
+    hip: 46390
+    ra_deg: 141.8968446
+    dec_deg: -8.65859953
+    adopted: 2016-07-20
+  - name: "Alphecca"
+    designation: "HR 5793"
+    hip: 76267
+    ra_deg: 233.671952
+    dec_deg: 26.714685
+    adopted: 2016-07-20
+  - name: "Aludra"
+    designation: "HR 2827"
+    hip: 35904
+    ra_deg: 111.0237595
+    dec_deg: -29.30310551
+    adopted: 2016-07-20
+  - name: "Alula Australis"
+    designation: "* ksi UMa"
+    hip: 55203
+    ra_deg: 169.5455495
+    dec_deg: 31.5292889
+    adopted: 2016-07-20
+  - name: "Alula Borealis"
+    designation: "HR 4377"
+    hip: 55219
+    ra_deg: 169.6197384
+    dec_deg: 33.09430607
+    adopted: 2016-07-20
+  - name: "Ankaa"
+    designation: "HR 99"
+    hip: 2081
+    ra_deg: 6.57104752
+    dec_deg: -42.30598719
+    adopted: 2016-07-20
+  - name: "Arneb"
+    designation: "HR 1865"
+    hip: 25985
+    ra_deg: 83.18256716
+    dec_deg: -17.82228927
+    adopted: 2016-07-20
+  - name: "Aspidiske"
+    designation: "HR 3699"
+    hip: 45556
+    ra_deg: 139.2725286
+    dec_deg: -59.27523203
+    adopted: 2016-07-20
+  - name: "Atria"
+    designation: "HR 6217"
+    hip: 82273
+    ra_deg: 252.1662295
+    dec_deg: -69.02771185
+    adopted: 2016-07-20
+  - name: "Avior"
+    designation: "HR 3307"
+    hip: 41037
+    ra_deg: 125.6284802
+    dec_deg: -59.50948419
+    adopted: 2016-07-20
+  - name: "Chara"
+    designation: "HR 4785"
+    hip: 61317
+    ra_deg: 188.435601
+    dec_deg: 41.35747815
+    adopted: 2016-07-20
+  - name: "Chertan"
+    designation: "HR 4359"
+    hip: 54879
+    ra_deg: 168.5600236
+    dec_deg: 15.42957109
+    adopted: 2016-07-20
+  - name: "Copernicus"
+    designation: "HR 3522"
+    hip: 43587
+    ra_deg: 120.876614
+    dec_deg: 28.3308208
+    adopted: 2016-07-20
+  - name: "Cor Caroli"
+    designation: "HR 4915"
+    hip: 63125
+    ra_deg: 194.00694
+    dec_deg: 38.31837644
+    adopted: 2016-07-20
+  - name: "Cursa"
+    designation: "HR 1666"
+    hip: 23875
+    ra_deg: 76.96239535
+    dec_deg: -5.086496984
+    adopted: 2016-07-20
+  - name: "Elnath"
+    designation: "HR 1791"
+    hip: 25428
+    ra_deg: 81.57297133
+    dec_deg: 28.60745172
+    adopted: 2016-07-20
+  - name: "Enif"
+    designation: "HR 8308"
+    hip: 107315
+    ra_deg: 326.0464839
+    dec_deg: 9.875008653
+    adopted: 2016-07-20
+  - name: "Furud"
+    designation: "HR 2282"
+    hip: 30122
+    ra_deg: 95.07830017
+    dec_deg: -30.06336673
+    adopted: 2016-07-20
+  - name: "Gacrux"
+    designation: "HR 4763"
+    hip: 61084
+    ra_deg: 187.7914984
+    dec_deg: -57.11321346
+    adopted: 2016-07-20
+  - name: "Gomeisa"
+    designation: "HR 2845"
+    hip: 36188
+    ra_deg: 111.7876739
+    dec_deg: 8.289315763
+    adopted: 2016-07-20
+  - name: "Hamal"
+    designation: "HR 617"
+    hip: 9884
+    ra_deg: 31.7933571
+    dec_deg: 23.46241755
+    adopted: 2016-07-20
+  - name: "Kaus Australis"
+    designation: "HR 6879"
+    hip: 90185
+    ra_deg: 276.0429934
+    dec_deg: -34.38461649
+    adopted: 2016-07-20
+  - name: "Kaus Borealis"
+    designation: "HR 6913"
+    hip: 90496
+    ra_deg: 276.9926697
+    dec_deg: -25.4216985
+    adopted: 2016-07-20
+  - name: "Kaus Media"
+    designation: "HR 6859"
+    hip: 89931
+    ra_deg: 275.2485121
+    dec_deg: -29.82810226
+    adopted: 2016-07-20
+  - name: "Kochab"
+    designation: "HR 5563"
+    hip: 72607
+    ra_deg: 222.6763575
+    dec_deg: 74.15550394
+    adopted: 2016-07-20
+  - name: "Maia"
+    designation: "HR 1149"
+    hip: 17573
+    ra_deg: 56.45670065
+    dec_deg: 24.36774377
+    adopted: 2016-07-20
+  - name: "Mebsuta"
+    designation: "HR 2473"
+    hip: 32246
+    ra_deg: 100.9830298
+    dec_deg: 25.13112719
+    adopted: 2016-07-20
+  - name: "Meissa"
+    designation: "HR 1879"
+    hip: 26207
+    ra_deg: 83.78448367
+    dec_deg: 9.93415587
+    adopted: 2016-07-20
+  - name: "Menkalinan"
+    designation: "HR 2088"
+    hip: 28360
+    ra_deg: 89.88217887
+    dec_deg: 44.94743257
+    adopted: 2016-07-20
+  - name: "Merope"
+    designation: "HR 1156"
+    hip: 17608
+    ra_deg: 56.58160786
+    dec_deg: 23.94835894
+    adopted: 2016-07-20
+  - name: "Miaplacidus"
+    designation: "HR 3685"
+    hip: 45238
+    ra_deg: 138.2999061
+    dec_deg: -69.7172076
+    adopted: 2016-07-20
+  - name: "Mimosa"
+    designation: "HR 4853"
+    hip: 62434
+    ra_deg: 191.9302866
+    dec_deg: -59.688772
+    adopted: 2016-07-20
+  - name: "Mintaka"
+    designation: "HR 1852"
+    hip: 25930
+    ra_deg: 83.00166706
+    dec_deg: -0.29909511
+    adopted: 2016-07-20
+  - name: "Mirfak"
+    designation: "HR 1017"
+    hip: 15863
+    ra_deg: 51.08070872
+    dec_deg: 49.86117929
+    adopted: 2016-07-20
+  - name: "Mirzam"
+    designation: "HR 2294"
+    hip: 30324
+    ra_deg: 95.67493897
+    dec_deg: -17.95591871
+    adopted: 2016-07-20
+  - name: "Muscida"
+    designation: "HR 3323"
+    hip: 41704
+    ra_deg: 127.5661257
+    dec_deg: 60.71816822
+    adopted: 2016-07-20
+  - name: "Nihal"
+    designation: "HR 1829"
+    hip: 25606
+    ra_deg: 82.06134537
+    dec_deg: -20.75944389
+    adopted: 2016-07-20
+  - name: "Peacock"
+    designation: "HR 7790"
+    hip: 100751
+    ra_deg: 306.4119044
+    dec_deg: -56.73508973
+    adopted: 2016-07-20
+  - name: "Phact"
+    designation: "HR 1956"
+    hip: 26634
+    ra_deg: 84.9122543
+    dec_deg: -34.07410972
+    adopted: 2016-07-20
+  - name: "Phecda"
+    designation: "HR 4554"
+    hip: 58001
+    ra_deg: 178.4576972
+    dec_deg: 53.69475973
+    adopted: 2016-07-20
+  - name: "Porrima"
+    designation: "HR 4825"
+    hip: 61941
+    ra_deg: 190.4151176
+    dec_deg: -1.449403952
+    adopted: 2016-07-20
+  - name: "Propus"
+    designation: "HR 2216"
+    hip: 29655
+    ra_deg: 93.71935536
+    dec_deg: 22.50678733
+    adopted: 2016-07-20
+  - name: "Rasalhague"
+    designation: "HR 6556"
+    hip: 86032
+    ra_deg: 263.7336227
+    dec_deg: 12.56003739
+    adopted: 2016-07-20
+  - name: "Rukbat"
+    designation: "HR 7348"
+    hip: 95347
+    ra_deg: 290.9715642
+    dec_deg: -40.6159372
+    adopted: 2016-07-20
+  - name: "Saiph"
+    designation: "HR 2004"
+    hip: 27366
+    ra_deg: 86.93912017
+    dec_deg: -9.669604919
+    adopted: 2016-07-20
+  - name: "Shaula"
+    designation: "HR 6527"
+    hip: 85927
+    ra_deg: 263.4021672
+    dec_deg: -37.10382355
+    adopted: 2016-07-20
+  - name: "Sheratan"
+    designation: "HR 553"
+    hip: 8903
+    ra_deg: 28.66004579
+    dec_deg: 20.80803147
+    adopted: 2016-07-20
+  - name: "Talitha"
+    designation: "HR 3569"
+    hip: 44127
+    ra_deg: 134.8018881
+    dec_deg: 48.04182614
+    adopted: 2016-07-20
+  - name: "Tania Australis"
+    designation: "HR 4069"
+    hip: 50801
+    ra_deg: 155.5821987
+    dec_deg: 41.49953826
+    adopted: 2016-07-20
+  - name: "Tania Borealis"
+    designation: "HR 4033"
+    hip: 50372
+    ra_deg: 154.2740802
+    dec_deg: 42.91441381
+    adopted: 2016-07-20
+  - name: "Tonatiuh"
+    designation: "HR 4609"
+    hip: 58952
+    ra_deg: 180.087533
+    dec_deg: 76.9057341
+    adopted: 2016-07-20
+  - name: "Vindemiatrix"
+    designation: "HR 4932"
+    hip: 63608
+    ra_deg: 195.5441542
+    dec_deg: 10.95914872
+    adopted: 2016-07-20
+  - name: "Wazn"
+    designation: "HR 2040"
+    hip: 27628
+    ra_deg: 87.73996785
+    dec_deg: -35.76830962
+    adopted: 2016-07-20
+  - name: "Wezen"
+    designation: "HR 2693"
+    hip: 34444
+    ra_deg: 107.0978502
+    dec_deg: -26.39319958
+    adopted: 2016-07-20
+  - name: "Zaurak"
+    designation: "HR 1231"
+    hip: 18543
+    ra_deg: 59.50735759
+    dec_deg: -13.50851481
+    adopted: 2016-07-20
+  - name: "Zosma"
+    designation: "HR 4357"
+    hip: 54872
+    ra_deg: 168.5270893
+    dec_deg: 20.52371814
+    adopted: 2016-07-20
+  - name: "Achernar"
+    designation: "HR 472"
+    hip: 7588
+    ra_deg: 24.42852283
+    dec_deg: -57.23675281
+    adopted: 2016-06-30
+  - name: "Alcor"
+    designation: "HR 5062"
+    hip: 65477
+    ra_deg: 201.3064076
+    dec_deg: 54.98795966
+    adopted: 2016-06-30
+  - name: "Alcyone"
+    designation: "HR 1165"
+    hip: 17702
+    ra_deg: 56.8711523
+    dec_deg: 24.10513565
+    adopted: 2016-06-30
+  - name: "Aldebaran"
+    designation: "HR 1457"
+    hip: 21421
+    ra_deg: 68.98016279
+    dec_deg: 16.50930235
+    adopted: 2016-06-30
+  - name: "Algenib"
+    designation: "HR 39"
+    hip: 1067
+    ra_deg: 3.308968121
+    dec_deg: 15.18359843
+    adopted: 2016-06-30
+  - name: "Algol"
+    designation: "HR 936"
+    hip: 14576
+    ra_deg: 47.04221856
+    dec_deg: 40.95564667
+    adopted: 2016-06-30
+  - name: "Alioth"
+    designation: "HR 4905"
+    hip: 62956
+    ra_deg: 193.50729
+    dec_deg: 55.95982296
+    adopted: 2016-06-30
+  - name: "Aljanah"
+    designation: "HR 7949"
+    hip: 102488
+    ra_deg: 311.5528012
+    dec_deg: 33.97032834
+    adopted: 2016-06-30
+  - name: "Alkaid"
+    designation: "HR 5191"
+    hip: 67301
+    ra_deg: 206.8851573
+    dec_deg: 49.31326673
+    adopted: 2016-06-30
+  - name: "Alpheratz"
+    designation: "HR 15"
+    hip: 677
+    ra_deg: 2.09691619
+    dec_deg: 29.09043112
+    adopted: 2016-06-30
+  - name: "Altair"
+    designation: "HR 7557"
+    hip: 97649
+    ra_deg: 297.6958273
+    dec_deg: 8.8683212
+    adopted: 2016-06-30
+  - name: "Antares"
+    designation: "HR 6134"
+    hip: 80763
+    ra_deg: 247.3519154
+    dec_deg: -26.43200261
+    adopted: 2016-06-30
+  - name: "Arcturus"
+    designation: "HR 5340"
+    hip: 69673
+    ra_deg: 213.9153003
+    dec_deg: 19.18240916
+    adopted: 2016-06-30
+  - name: "Bellatrix"
+    designation: "HR 1790"
+    hip: 25336
+    ra_deg: 81.28276356
+    dec_deg: 6.34970326
+    adopted: 2016-06-30
+  - name: "Betelgeuse"
+    designation: "HR 2061"
+    hip: 27989
+    ra_deg: 88.79293899
+    dec_deg: 7.407064
+    adopted: 2016-06-30
+  - name: "Canopus"
+    designation: "HR 2326"
+    hip: 30438
+    ra_deg: 95.98795783
+    dec_deg: -52.69566138
+    adopted: 2016-06-30
+  - name: "Capella"
+    designation: "HR 1708"
+    hip: 24608
+    ra_deg: 79.17232794
+    dec_deg: 45.99799147
+    adopted: 2016-06-30
+  - name: "Caph"
+    designation: "HR 21"
+    hip: 746
+    ra_deg: 2.29452158
+    dec_deg: 59.1497811
+    adopted: 2016-06-30
+  - name: "Castor"
+    designation: "HR 2891"
+    hip: 36850
+    ra_deg: 113.6494716
+    dec_deg: 31.88828222
+    adopted: 2016-06-30
+  - name: "Deneb"
+    designation: "HR 7924"
+    hip: 102098
+    ra_deg: 310.3579798
+    dec_deg: 45.28033881
+    adopted: 2016-06-30
+  - name: "Denebola"
+    designation: "HR 4534"
+    hip: 57632
+    ra_deg: 177.2649098
+    dec_deg: 14.57205806
+    adopted: 2016-06-30
+  - name: "Dubhe"
+    designation: "HR 4301"
+    hip: 54061
+    ra_deg: 165.9316619
+    dec_deg: 61.75087309
+    adopted: 2016-06-30
+  - name: "Megrez"
+    designation: "HR 4660"
+    hip: 59774
+    ra_deg: 183.8564994
+    dec_deg: 57.03261698
+    adopted: 2016-06-30
+  - name: "Menkar"
+    designation: "HR 911"
+    hip: 14135
+    ra_deg: 45.5698878
+    dec_deg: 4.08973877
+    adopted: 2016-06-30
+  - name: "Merak"
+    designation: "HR 4295"
+    hip: 53910
+    ra_deg: 165.4603323
+    dec_deg: 56.38243365
+    adopted: 2016-06-30
+  - name: "Mira"
+    designation: "HR 681"
+    hip: 10826
+    ra_deg: 30.3224417
+    dec_deg: -2.97763889
+    adopted: 2016-06-30
+  - name: "Mirach"
+    designation: "HR 337"
+    hip: 5447
+    ra_deg: 17.43301617
+    dec_deg: 35.62055765
+    adopted: 2016-06-30
+  - name: "Mizar"
+    designation: "HR 5054"
+    hip: 65378
+    ra_deg: 195.398762
+    dec_deg: 54.9253611
+    adopted: 2016-06-30
+  - name: "Pleione"
+    designation: "HR 1180"
+    hip: 17851
+    ra_deg: 57.29673582
+    dec_deg: 24.1367102
+    adopted: 2016-06-30
+  - name: "Polaris"
+    designation: "HR 424"
+    hip: 11767
+    ra_deg: 37.95456067
+    dec_deg: 89.26410897
+    adopted: 2016-06-30
+  - name: "Procyon"
+    designation: "HR 2943"
+    hip: 37279
+    ra_deg: 114.8254979
+    dec_deg: 5.22498756
+    adopted: 2016-06-30
+  - name: "Rasalgethi"
+    designation: "* alf Her"
+    hip: 84345
+    ra_deg: 255.244128
+    dec_deg: 14.3903333
+    adopted: 2016-06-30
+  - name: "Regulus"
+    designation: "HR 3982"
+    hip: 49669
+    ra_deg: 152.0929624
+    dec_deg: 11.96720878
+    adopted: 2016-06-30
+  - name: "Rigel"
+    designation: "HR 1713"
+    hip: 24436
+    ra_deg: 78.63446707
+    dec_deg: -8.20163836
+    adopted: 2016-06-30
+  - name: "Scheat"
+    designation: "HR 8775"
+    hip: 113881
+    ra_deg: 345.9435728
+    dec_deg: 28.08278712
+    adopted: 2016-06-30
+  - name: "Sirius"
+    designation: "HR 2491"
+    hip: 32349
+    ra_deg: 101.2871553
+    dec_deg: -16.71611586
+    adopted: 2016-06-30
+  - name: "Spica"
+    designation: "HR 5056"
+    hip: 65474
+    ra_deg: 201.2982474
+    dec_deg: -11.16131949
+    adopted: 2016-06-30
+  - name: "Thuban"
+    designation: "HR 5291"
+    hip: 68756
+    ra_deg: 211.0973233
+    dec_deg: 64.37586962
+    adopted: 2016-06-30
+  - name: "Vega"
+    designation: "HR 7001"
+    hip: 91262
+    ra_deg: 279.2347348
+    dec_deg: 38.78368896
+    adopted: 2016-06-30
+  - name: "Ain"
+    designation: "HR 1409"
+    hip: 20889
+    ra_deg: 67.15416773
+    dec_deg: 19.18043421
+    adopted: 2015-12-15
+  - name: "Cervantes"
+    designation: "HR 6585"
+    hip: 86796
+    ra_deg: 266.0362631
+    dec_deg: -51.83405322
+    adopted: 2015-12-15
+  - name: "Chalawan"
+    designation: "HR 4277"
+    hip: 53721
+    ra_deg: 150.991104
+    dec_deg: 40.4302558
+    adopted: 2015-12-15
+  - name: "Edasich"
+    designation: "HR 5744"
+    hip: 75458
+    ra_deg: 231.2323909
+    dec_deg: 58.96606586
+    adopted: 2015-12-15
+  - name: "Errai"
+    designation: "HR 8974"
+    hip: 116727
+    ra_deg: 345.655808
+    dec_deg: 77.6323642
+    adopted: 2015-12-15
+  - name: "Fafnir"
+    designation: "HR 6945"
+    hip: 90344
+    ra_deg: 276.496404
+    dec_deg: 65.56348093
+    adopted: 2015-12-15
+  - name: "Fomalhaut"
+    designation: "HR 8728"
+    hip: 113368
+    ra_deg: 344.4126927
+    dec_deg: -29.62223703
+    adopted: 2015-12-15
+  - name: "Helvetios"
+    designation: "HR 8729"
+    hip: 113357
+    ra_deg: 344.3665854
+    dec_deg: 20.76883251
+    adopted: 2015-12-15
+  - name: "Intercrus"
+    designation: "HR 3743"
+    hip: 46471
+    ra_deg: 142.1666195
+    dec_deg: 45.60148087
+    adopted: 2015-12-15
+  - name: "Libertas"
+    designation: "HR 7595"
+    hip: 97938
+    ra_deg: 298.5620063
+    dec_deg: 8.461454288
+    adopted: 2015-12-15
+  - name: "Lich"
+    designation: "PSR B1257+12"
+    adopted: 2015-12-15
+  - name: "Musica"
+    designation: "HR 8030"
+    hip: 103527
+    ra_deg: 314.6080564
+    dec_deg: 10.83928635
+    adopted: 2015-12-15
+  - name: "Ogma"
+    designation: "HD 149026"
+    hip: 80838
+    ra_deg: 247.623409
+    dec_deg: 38.347311
+    adopted: 2015-12-15
+  - name: "Pollux"
+    designation: "HR 2990"
+    hip: 37826
+    ra_deg: 116.3289578
+    dec_deg: 28.02619889
+    adopted: 2015-12-15
+  - name: "Ran"
+    designation: "HR 1084"
+    hip: 16537
+    ra_deg: 53.23268538
+    dec_deg: -9.458260971
+    adopted: 2015-12-15
+  - name: "Titawin"
+    designation: "HR 458"
+    hip: 7513
+    ra_deg: 24.19933977
+    dec_deg: 41.40545871
+    adopted: 2015-12-15
+  - name: "Veritate"
+    designation: "HR 8930"
+    hip: 116076
+    ra_deg: 345.521504
+    dec_deg: 39.2361985
+    adopted: 2015-12-15

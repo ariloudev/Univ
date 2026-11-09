@@ -79,6 +79,13 @@ mirrors:
   - "https://gea.esac.esa.int/tap-server/tap"
   - "https://gaia.ari.uni-heidelberg.de/tap"
   - "https://gaia.aip.de/tap"
+designation:
+  form: "Gaia DR3 {identifier}"
+  cite: >-
+    Gaia DR3 documentation, Datamodel description, gaia_source, designation: 'A source designation,
+    unique across all Gaia Data Releases, that is constructed from the prefix Gaia DRx followed by a
+    string of digits corresponding to source_id' (the archive's gaiadr3.gaia_source.designation
+    reads 'Gaia DR3 <source_id>', checked 2026-11-07)
 normalization:
   colours:
     - { bands: [BP, RP], column: bp_rp }

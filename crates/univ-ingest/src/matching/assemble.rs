@@ -170,9 +170,34 @@ pub(super) fn build(
             });
         }
     }
+    relate(
+        rules,
+        &mut objects,
+        &object_of,
+        &designations,
+        relations,
+        &mut report,
+    );
+    report.objects = objects.len() as u64;
+    Matched { objects, report }
+}
+
+/// Relates the objects of `relations`' group and galaxy entries, one relation for each pair of
+/// objects and kind.
+fn relate(
+    rules: &MatchingRules,
+    objects: &mut [Box<Object>],
+    object_of: &[usize],
+    designations: &[Designation],
+    relations: Vec<GroupRelation>,
+    report: &mut MatchReport,
+) {
+    // One relation for each pair of objects and kind: a galaxy that two sources carry the
+    // identifier of, such as Cosmicflows-4's and OpenNGC's PGC number, is related once.
+    let mut related = std::collections::HashSet::new();
     for r in relations {
         let (og, ox) = (object_of[r.group], object_of[r.galaxy]);
-        if og == ox {
+        if og == ox || !related.insert((og, ox, r.dominant)) {
             continue;
         }
         report.group_relations += 1;
@@ -195,8 +220,6 @@ pub(super) fn build(
             });
         }
     }
-    report.objects = objects.len() as u64;
-    Matched { objects, report }
 }
 
 /// The designations and common names the object's entries carry beside their own, each with
@@ -215,7 +238,7 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
             }
         }
         for rule in rules.names.iter().filter(|r| &r.source == source) {
-            if let Some(text) = rule.field.read(entry) {
+            for text in rule.names(entry) {
                 let name = CommonName {
                     name: text.to_owned(),
                     source: source.clone(),

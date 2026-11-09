@@ -21,7 +21,7 @@ use univ_ingest::tiles::{Built, Context, TileRules, build as build_tiles};
 use univ_model::derive::Release;
 use univ_model::release::manifest::Target;
 use univ_model::release::shards::Database;
-use univ_model::release::{ReleaseManifest, keys};
+use univ_model::release::{ReleaseManifest, Scope, TABLES, keys, valid_in};
 
 /// Sources each fetched in one query: Hipparcos stars with the spectral types the Hipparcos
 /// catalogue gives them, nearby galaxies and cosmic web galaxies.
@@ -167,25 +167,65 @@ pub fn read_manifest(dir: &Path) -> ReleaseManifest {
     serde_norway::from_str(&text).unwrap()
 }
 
-/// The release in `dir`, its manifest `m`: its D1 files, of every database, executed in path
-/// order into a fresh in-memory database.
+/// The release in `dir`, its manifest `m`, as it reads with every database in one: see
+/// [`loaded_in`].
 pub fn loaded(dir: &Path, m: &ReleaseManifest) -> rusqlite::Connection {
     loaded_where(dir, m, |_| true)
 }
 
-/// The D1 database `database` of the release in `dir`, its manifest `m`: its files executed in
-/// path order into a fresh in-memory database.
+/// The D1 database `database` of the release in `dir`, its manifest `m`, as release `m.release`
+/// reads it: the files of each release built before it beside `dir`, then its own, executed in
+/// path order into a fresh in-memory database, and the rows not valid in it deleted. A release
+/// writes only what changed from the one before, so its own files hold only that.
 pub fn loaded_in(dir: &Path, m: &ReleaseManifest, database: Database) -> rusqlite::Connection {
     let prefix = format!("{}/{}/", keys::D1_DIR, database.dir());
     loaded_where(dir, m, |path| path.starts_with(&prefix))
 }
 
+/// The D1 files `keep` selects of the releases up to the one in `dir`, loaded, with the rows
+/// not valid in it deleted.
 fn loaded_where(
     dir: &Path,
     m: &ReleaseManifest,
     keep: impl Fn(&str) -> bool,
 ) -> rusqlite::Connection {
     let db = rusqlite::Connection::open_in_memory().unwrap();
+    // The builds the release is the change from, by its parent, back to one written whole.
+    let mut chain = vec![(dir.to_path_buf(), m.clone())];
+    while let Some(parent) = chain.last().unwrap().1.parent {
+        let at = dir.parent().unwrap().join(parent.to_string());
+        let earlier = read_manifest(&at);
+        chain.push((at, earlier));
+    }
+    for (at, each) in chain.iter().rev() {
+        load_into(&db, at, each, &keep);
+    }
+    for t in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
+        let held: i64 = db
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+                [t.name],
+                |r| r.get(0),
+            )
+            .unwrap();
+        if held > 0 {
+            db.execute_batch(&format!(
+                "DELETE FROM {} WHERE NOT ({});",
+                t.name,
+                valid_in("", m.release)
+            ))
+            .unwrap();
+        }
+    }
+    db
+}
+
+fn load_into(
+    db: &rusqlite::Connection,
+    dir: &Path,
+    m: &ReleaseManifest,
+    keep: &impl Fn(&str) -> bool,
+) {
     for f in m
         .files
         .iter()
@@ -194,7 +234,6 @@ fn loaded_where(
         let sql = std::fs::read_to_string(dir.join(&f.path)).unwrap();
         db.execute_batch(&sql).unwrap();
     }
-    db
 }
 
 /// The text of the release's D1 file of `table`.

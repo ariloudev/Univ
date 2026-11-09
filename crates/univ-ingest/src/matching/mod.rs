@@ -7,6 +7,7 @@ mod assemble;
 mod cross_id;
 pub mod extent;
 mod fibres;
+mod fields;
 mod groups;
 mod index;
 mod pieces;

@@ -49,6 +49,11 @@ pub enum LeftOutReason {
     /// whole from a file: the rule's basis says why, such as another survey's redshift that a
     /// compilation re-serves, or a star in a galaxy survey.
     OutsideSelection,
+    /// The source marks the row a duplicate of another of its rows, which names the same object.
+    DuplicateObject,
+    /// The source marks the row an object that does not exist, such as an NGC entry no later
+    /// observer found.
+    NonexistentObject,
 }
 
 /// A rule on the rows whose cells meet a condition, and every condition in `and`: they are left

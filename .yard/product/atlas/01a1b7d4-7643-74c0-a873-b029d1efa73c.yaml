@@ -1,0 +1,132 @@
+key: 01a1b7d4-7643-74c0-a873-b029d1efa73c
+id: w-atlas
+versions:
+  - key: 01a1b7d4-7643-74c0-a873-b030462edb5b
+    at: 2026-11-07T21:05:16Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Atlas revamp"
+    goal: "The explorer is framed as a star atlas: graticule frame with live ticks, panels docked in its margins, atlas key, italic structure names"
+    status: planned
+  - key: 01a1b851-4d1f-7430-8d3b-8d5ebb891079
+    at: 2026-11-07T23:21:38Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Atlas revamp"
+    goal: "The explorer is framed as a star atlas: graticule frame with live ticks, panels docked in its margins, atlas key, italic structure names"
+    status: active
+  - key: 01a1b870-af8d-72af-8370-734db8294cb1
+    at: 2026-11-07T23:55:55Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Atlas revamp"
+    goal: "The explorer is framed as a star atlas: graticule frame with live ticks, panels docked in its margins, atlas key, italic structure names"
+    status: done
+blocks:
+  - key: 01a1b7e5-22ce-727d-bcf2-72a993478ac5
+    id: t3-tokens
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bbfc76648b
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Atlas tokens and fonts"
+        detail: "The colour tokens and self-hosted Spectral and Barlow Semi Condensed in `styles.css`. Done when the build passes."
+        state: open
+      - key: 01a1b870-af8d-72af-8370-7348a8c26dea
+        at: 2026-11-07T23:55:55Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Atlas tokens and fonts"
+        detail: "Done on stage/atlas-w3."
+        state: done
+  - key: 01a1b7e5-22ce-727d-bcf2-72aaf6eaaab3
+    id: t3-graticule
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bccd4de872
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Graticule ticks on the view's edges"
+        detail: "`scene/graticule.ts` and `AtlasFrame`. Done when the tick tests pass (steps, RA in hours, edge names, following the view)."
+        state: open
+      - key: 01a1b870-af8d-72af-8370-734960099068
+        at: 2026-11-07T23:55:55Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Graticule ticks on the view's edges"
+        detail: "Done on stage/atlas-w3; right ascension steps by round time (minor spec change)."
+        state: done
+  - key: 01a1b7e5-22ce-727d-bcf2-72ab44aad15b
+    id: t3-margins
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bd3e359b4c
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Panels in margins, folding below 1,024 px"
+        detail: "SidePanels and Panels recomposed into the left, right and bottom margins. Done when the placement tests and e2e at 1,280 and 800 px pass."
+        state: open
+      - key: 01a1b870-af8d-72af-8370-734aad2a2aa2
+        at: 2026-11-07T23:55:55Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Panels in margins, folding below 1,024 px"
+        detail: "Done on stage/atlas-w3 as design D: top bar, rail and drawers, record margin, bottom bar."
+        state: done
+  - key: 01a1b7e5-22ce-727d-bcf2-72acc0392538
+    id: t3-scale
+    kind: task
+    versions:
+      - key: 01a1b7e5-22ce-727d-bcf2-72bedc746efb
+        at: 2026-11-07T21:23:29Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Scale bar and italic structure names"
+        detail: "`ScaleBar` with round lengths; structures named in italic and objects in upright type. Done when their tests pass."
+        state: open
+      - key: 01a1b870-af8d-72af-8370-734bfc19d6d8
+        at: 2026-11-07T23:55:55Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Scale bar and italic structure names"
+        detail: "Done on stage/atlas-w3."
+        state: done
+  - key: 01a1b870-af8d-72af-8370-734798190545
+    id: w3-merged
+    kind: note
+    versions:
+      - key: 01a1b870-af8d-72af-8370-734c6a4f36c9
+        at: 2026-11-07T23:55:55Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W3 merged"
+        markdown: "stage/atlas-w3 merged at 7be0b4c after the review fixes, the full gate and integration (11 explorer e2e tests, among them the layout at 1,280 and 800 px). The owner asked for screenshots after W5."
+        tone: success

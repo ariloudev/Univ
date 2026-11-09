@@ -4,6 +4,7 @@
 pub mod access;
 pub mod acquire;
 pub mod crossmatch;
+pub mod designations;
 pub mod display;
 pub mod events;
 pub mod fetch;
@@ -21,6 +22,7 @@ pub mod ranking;
 pub mod release;
 pub mod run;
 pub mod source;
+pub mod star_names;
 pub mod stars;
 pub mod state;
 pub mod structures;

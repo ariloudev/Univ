@@ -13,7 +13,7 @@ pub const PARAMS: usize = 4;
 row! {
     /// A distinct transformation chain, its per-object numbers left as `"$1"` to `"$4"` and its
     /// native value as `"$native"` (see [`crate::release::chains`]).
-    ChainRow => "chains", scope: PerRelease, key: ["release", "id"], indexes: [], {
+    ChainRow => "chains", scope: PerRelease, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u32,
         /// JSON array of the chain's steps.
@@ -28,7 +28,7 @@ row! {
 row! {
     /// An object with its preferred measurements and, when placed, its derived position. Term
     /// columns are `u32`; entries are numbered by their place among the object's.
-    ObjectRow => "objects", scope: PerRelease, key: ["release", "id"], indexes: [], {
+    ObjectRow => "objects", scope: PerRelease, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u64,
         kind: u32,
@@ -83,7 +83,7 @@ row! {
 
 row! {
     /// A catalogue entry of an object: the object's entry number `entry`.
-    EntryRow => "entries", scope: PerRelease, key: ["release", "object_id", "entry"],
+    EntryRow => "entries", scope: PerRelease, key: ["object_id", "entry", "release"],
     indexes: [], {
         release: u32,
         object_id: u64,
@@ -124,7 +124,7 @@ row! {
     /// `supergalactic_velocity_x`, `_y` or `_z`, `n` its place among the entry's values of
     /// that quantity.
     MeasurementRow => "measurements", scope: PerRelease,
-    key: ["release", "object_id", "entry", "quantity", "n"], indexes: [], {
+    key: ["object_id", "entry", "quantity", "n", "release"], indexes: [], {
         release: u32,
         object_id: u64,
         entry: u32,
@@ -160,7 +160,7 @@ row! {
 row! {
     /// A designation an object carries.
     DesignationRow => "designations", scope: PerRelease,
-    key: ["release", "source", "identifier", "object_id"], indexes: [["release", "object_id"]], {
+    key: ["source", "identifier", "object_id", "release"], indexes: [["object_id", "release"]], {
         release: u32,
         source: u32,
         identifier: String,
@@ -173,8 +173,8 @@ row! {
     /// part of the primary key: two spellings an object's source gives, such as `M 31` and
     /// `M31`, share a key and are both kept.
     NameRow => "names", scope: PerRelease,
-    key: ["release", "key", "object_id", "source", "name"],
-    indexes: [], {
+    key: ["key", "object_id", "source", "name", "release"],
+    indexes: [["object_id", "release"]], {
         release: u32,
         key: String,
         object_id: u64,

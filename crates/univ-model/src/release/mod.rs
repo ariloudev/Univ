@@ -55,6 +55,15 @@
 //! `object_shards`, the shard of each object id; `shard_cells`, the run of cells each shard holds
 //! in each scale domain; and `release_shards`, each shard's objects and estimate. CON-3's cap
 //! applies to each database, and so does the budget of one release.
+//!
+//! # How sources are read (schema version 7)
+//!
+//! Version 7 adds one table, changing none of version 6's: `source_reading`, the form each
+//! source's catalogue writes a designation in, the meaning of each value of its flags, the rank
+//! the designation rules give it and the clause of its terms that requires data adapted from it
+//! to be shared alike. Univ Server formats, orders and explains an object's designations and
+//! flags by it. A database of version 6 takes version 7's table as the next publish creates it:
+//! nothing is migrated.
 
 pub mod cells;
 pub mod chains;
@@ -64,7 +73,9 @@ pub mod manifest;
 pub mod read;
 pub mod rows;
 pub mod shards;
+pub mod shared;
 pub mod sql;
+pub mod statements;
 pub mod uncertainty;
 
 /// The real local state, relative to the workspace: the local D1 and R2 that `univ-ingest
@@ -73,15 +84,26 @@ pub mod uncertainty;
 /// lands where nothing reads it, as release 10's once did in Wrangler's own `.wrangler/state`.
 pub const REAL_LOCAL_STATE: &str = ".cache/univ-ingest/wrangler";
 
+/// Where Wrangler keeps the local D1's `SQLite` files, within its state directory: one file a
+/// database, each named by a hash of its id, so what each holds tells which it is.
+pub const LOCAL_D1_FILES: &str = "v3/d1/miniflare-D1DatabaseObject";
+
 pub use cells::{Cell, CellRange, CellSpace};
 pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};
 pub use rows::TABLES;
-pub use sql::{ColumnKind, Row, Scope, SqlValue, Statements, Table, Tree};
+pub use shared::{RETIRED, valid_in};
+pub use sql::{ColumnKind, Row, Scope, SqlValue, Table, Tree};
+pub use statements::Statements;
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 7;
+
+/// The first schema version whose tables share rows between releases. Every later version only
+/// adds tables, which a publish creates, so a database at this version or later takes a release
+/// of [`SCHEMA_VERSION`] without a migration.
+pub const SHARED_ROWS_SINCE: u32 = 6;
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");

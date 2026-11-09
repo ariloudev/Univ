@@ -18,11 +18,12 @@ const overlaps = (a: LabelBox, b: LabelBox): boolean =>
 export const contains = (box: LabelBox, x: number, y: number): boolean =>
   Math.abs(x - box.x) * 2 <= box.width && Math.abs(y - box.y) * 2 <= box.height;
 
-/** The names to draw: the nearest first, each clear of those before it. */
-export function clearLabels(boxes: readonly LabelBox[]): LabelBox[] {
-  const kept: LabelBox[] = [];
+/** The names to draw: the nearest first, each clear of those before it and of `around`, labels
+ * placed already. */
+export function clearLabels<T extends LabelBox>(boxes: readonly T[], around: readonly LabelBox[] = []): T[] {
+  const kept: T[] = [];
   for (const box of [...boxes].sort((p, q) => p.depth - q.depth)) {
-    if (!kept.some((other) => overlaps(box, other))) kept.push(box);
+    if (!kept.some((other) => overlaps(box, other)) && !around.some((other) => overlaps(box, other))) kept.push(box);
   }
   return kept;
 }
