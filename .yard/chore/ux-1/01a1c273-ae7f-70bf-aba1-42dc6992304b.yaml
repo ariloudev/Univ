@@ -1,0 +1,25 @@
+key: 01a1c273-ae7f-70bf-aba1-42dc6992304b
+id: design
+versions:
+  - key: 01a1c273-ae7f-70bf-aba1-42e32318533c
+    at: 2026-11-09T22:35:23Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Design: the Structures drawer"
+    goal: "Options for a redesigned Structures drawer, built from the release's real structures, put to the owner to choose"
+    status: active
+blocks:
+  - key: 01a1c273-ae7f-70bf-aba1-42ddfdc09ec4
+    id: design-why
+    kind: note
+    versions:
+      - key: 01a1c273-ae7f-70bf-aba1-42e4a1e39e95
+        at: 2026-11-09T22:35:23Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Why"
+        markdown: "The owner asked for the Structures drawer to be redesigned using the frontend-design and dataviz skills. Today it lists 54 structures alphabetically, each as an italic name followed by its kind in parentheses. Long names wrap onto a second line, and the list says nothing of where each structure lies or how large it is, although the explorer reads every structure's placed shape."

@@ -4076,10 +4076,10 @@ links:
         body: a14bb66ba866f36cebf91054670415c73b681091973d70818ab7faf27d3ea656
       - file: "clients/explorer/src/ui/useWorld.test.ts"
         name: "chooses what its first click found, though that click has moved the view"
-        body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
+        body: 3f7e3036a4cf5f4beefea0aba557af67821cd6b77439458393165ed6ab663889
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
-        body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
+        body: 3399d49cc77f05671f0cf4e410968d4cfd89d87e7a20b62b201bb40c45477567
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
@@ -4241,7 +4241,7 @@ links:
         body: 16f74791cef77f650b24db0a1ec29717276620a0d683369d39130de07c9545aa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+        body: 4195789c46c267d24b98d2f4cd420f60913ad815c15c899d0d9a6cdf925c076e
   - node: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
     reviewed: b9ee14b78d7cda09bc75088b59ba3b163850a2c383f8a1449f5089c72ea34bf5
     tests:
@@ -4253,7 +4253,7 @@ links:
         body: 611c7e569dd2070f841d5a2287d1e45a36ab4c56ef0f82f3bd962d84af0bca68
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+        body: 4195789c46c267d24b98d2f4cd420f60913ad815c15c899d0d9a6cdf925c076e
   - node: 01a1bcf9-343a-712a-a28c-7503bb8fdbb5
     reviewed: 8ae59225422c44a47018aaa3dfdebdb7846d7284052dafc3b3f603ab9c48f092
     tests:
@@ -4340,7 +4340,7 @@ links:
         body: 58d8b29d9611f125988b75f7af23978662647738766f3960aae1578adc66ebfb
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+        body: 4195789c46c267d24b98d2f4cd420f60913ad815c15c899d0d9a6cdf925c076e
   - node: 01a1bd07-e8b7-762f-97dc-651bd7d745b2
     reviewed: d6ffc4f2f2983da968fc0cb4243701e69e3980bea7a1a7aad80ea0391a4110c5
     tests:
@@ -4601,7 +4601,7 @@ links:
         body: 3a65636cde9ef0c0cf6469b2bbe9b78692c74f9cb12da7ed9bb5aa259594eaf9
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
-        body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
+        body: 3399d49cc77f05671f0cf4e410968d4cfd89d87e7a20b62b201bb40c45477567
   - node: 01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b
     reviewed: 3e800388d3729b9777126bb76f570400a1ce3302661a7f44a3a79f3cef0a8b0f
     tests:
@@ -4730,7 +4730,7 @@ links:
         body: dd5e140113436aff7d7dba4b826229869a2105acfbaf5573af0e11666a7d0bc5
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
-        body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
+        body: 3399d49cc77f05671f0cf4e410968d4cfd89d87e7a20b62b201bb40c45477567
   - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
     reviewed: f5e9428163f38d2682e6453b05420681f7f758a5b74a53bc71d46565379a3def
     tests:
@@ -4809,6 +4809,39 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens a drawer and the record over the view below 1,024 pixels, and closes them again"
         body: 39065a74196d0cffe42a654275ff3e49a4dc2c47bfc0a3220f077a2735820bcd
+  - node: 01a1c25f-d5cd-76b6-b0cb-7da07ed45c84
+    reviewed: 391fddf98c1f30e7ccfe02de16f2968bf6cd801cb7fd4cc010e996a93931b974
+    tests:
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "keeps each drawer opened, and that none is once it closes"
+        body: a2daf614e783016859d700698ef9981a2874c8508eeadd20a3bd28772c06d0fa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the drawer open across a reload, and none once it is closed"
+        body: 4abcc5920ec559636a7157f91896586208d4902e80cd2c710e6a3f7c7bfe7c4a
+  - node: 01a1c25f-d5cd-76b6-b0cb-7da1d8eca54a
+    reviewed: 88f0c27b59357b279878114b3cc11ae4eda01bb137d9de0493d458cdb91306b1
+    tests:
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens the drawer kept"
+        body: 9357f98e9ce0aee04e8be86beeb384cba81c5e8c3bda985407525593ea6ddea4
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the drawer open across a reload, and none once it is closed"
+        body: 4abcc5920ec559636a7157f91896586208d4902e80cd2c710e6a3f7c7bfe7c4a
+  - node: 01a1c25f-d5cd-76b6-b0cb-7da23d69692f
+    reviewed: 178896a3bd3f143a05893267d191079db45121fca36b589b09fe02ed69c3fa67
+    tests:
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens no drawer where none is kept"
+        body: 53a518aa248d496ca6ffe731ba6c9c25d66adf3cfbcbe92bfdb6b88a2f00a841
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens no drawer where the one kept is not one the rail opens"
+        body: e2b7f2c5e7d837bbd503ec7f92bf06911a4e06e273a2d1f8118f209dd8bce4ef
+      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
+        name: "opens no drawer, and keeps none without failing, where the browser refuses local storage"
+        body: e6d2b07a724f33c4db87f6497c981ec197d61f6eddf3f77d3c1ea67e647e5e69
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the drawer open across a reload, and none once it is closed"
+        body: 4abcc5920ec559636a7157f91896586208d4902e80cd2c710e6a3f7c7bfe7c4a
   - node: 01a1b7d7-c032-73ad-803e-b10fa8776879
     reviewed: 163b967ec532229a528957a4bb55336691657fe22294ff0b7981de48f0ada787
     tests:
@@ -5145,6 +5178,45 @@ links:
       - file: "clients/explorer/src/ui/useChosen.test.tsx"
         name: "is let go of, leaving the address naming none"
         body: 76cc124c699310591f32ace5b8d67513819352c57ea278a56e1c8b2d6f508718
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d95dbb0dc01
+    reviewed: 5d170ef3abf90ab3d64043c6c3da95117c3a9b75005fbf3c41308d5ee2e72827
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "is on the chosen object's point, and on no other point"
+        body: cc44d413dd46c2f49ceeac531637671611531c0c6112176676363d75fe86f55b
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "lets it go, and chooses nothing"
+        body: 6614d0fa582c63f6d8a434b4496aee71466fb00a9c34d73d2a4f937d4bee5041
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d969cb2496a
+    reviewed: 8b43bd15679c496deea294c14b3d54233bf2c38c9b6535b034dfdd864c227569
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "closes its record, and then makes Earth the focus again"
+        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d97b9058d19
+    reviewed: 5b6f6f036bab1121b6c08893d6f4d40e316818db22ebd467b094174d6993c4cc
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d98f8d78c05
+    reviewed: bbd9ca1d20eda42ee6d99a2538b76b6d4d5f0e932fb95f7d0dc9d927ade887d4
+    tests:
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "leaves the second click of a double-click to the double-click, letting nothing go"
+        body: 47df893545dfe7a989199a5676399aa6203c3a50f3b92b3d5c2c8b7e28e13a95
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "is chosen by a double-click, which lets nothing go"
+        body: 2694abdfa97a38f1b3c0be4e238bf43ffcc1a77fcad2b35c8e7d6c7611d4c15a
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
   - node: 01a1a497-e843-728a-bce8-3fee23d1c65a
     reviewed: 7e45f65eb420b5b929a6974834b750c1b64e6f1cbfcaf95e00a177b22e6ec457
     tests:
@@ -5264,7 +5336,7 @@ links:
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "chooses a structure by the name it shows in the view, and still zooms over it"
-        body: 1cdbba7e9b65296c56541e89391af9cddd6fa5dc7f4519faedbb199a881610f2
+        body: 59f26ec1c3f747453f5039b6a4b8395d6093e4a7549bc920a08c06ab7b3c7f48
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "draws each structure's name at its centre"
         body: 3058b5f259b766cd4c67628a18fbcc9b6f06a92524ce9be5458831401b6784db
@@ -5300,7 +5372,7 @@ links:
         body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
-        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+        body: d0e14b959e30e4d19703235125b3daa1b2a2d0ece99edb62d1fc76da8799a79a
   - node: 01a1bd21-49d6-7489-b3d6-aa0ada007939
     reviewed: 8826ab30bae9fbabe176c5b59368a24c932e0028f9c5f779fc66ddbb1ca392e8
     tests:
@@ -5321,7 +5393,7 @@ links:
         body: f721eb4250512c60b9db3d8ccabf3a5e3d68a5d0876942739e3759fecb0f19fa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
-        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+        body: d0e14b959e30e4d19703235125b3daa1b2a2d0ece99edb62d1fc76da8799a79a
   - node: 01a1bd21-49d6-7489-b3d6-aa0cc77cd12b
     reviewed: b0ad613c3200faf6dfec379490e008c471c226d7f1044503e7d31f4c57945db6
     tests:
@@ -5345,19 +5417,19 @@ links:
         body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
-        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+        body: d0e14b959e30e4d19703235125b3daa1b2a2d0ece99edb62d1fc76da8799a79a
   - node: 01a1bd21-49d6-7489-b3d6-aa0eae4110b0
     reviewed: 00770c00d7a6e6d08759e3e06fd8eb0fd8c8c27dee51d13d8e4e4ea2c11547da
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
-        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+        body: d0e14b959e30e4d19703235125b3daa1b2a2d0ece99edb62d1fc76da8799a79a
   - node: 01a1a497-e843-728a-bce8-3ff996141e6c
     reviewed: 8bbf3b8f19a86fd4634f08d612679436835df6f69b55574a5a50cead55b4e775
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the release's structures and reads one, culling the view to it from the top bar"
-        body: 40693e4309f5a3d2518cf3b4bba4ed56036395516385a96b6869b8abab86e44a
+        body: d3616e276f4922980aae1674f13491ac7c1097b47ebc1b2e76157650429b1ae7
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "are listed by name and kind, each to choose"
         body: 4478fbed723711539ef4f5494c7ca35e1ee630a4fb5fe9b4e77d33aff48ff6fa
@@ -5475,6 +5547,48 @@ links:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say an attractor's or a repeller's sphere is a symbol and which way its arrows point, and only for them"
         body: bd1eef12ecdd0d86bb60a6a66b0125128c2f5623a721941ebb57ce384739f271
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9ae7ac1094
+    reviewed: 5fcfec9cd60740d3439d0cca049bfe150d56974485dbf21637310fed8e9c337d
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "is on the chosen structure's name, and on no other name"
+        body: ec980b026947037299593b777102b938c6eca47841dded36eb84c6b883c0b89d
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9b40b85965
+    reviewed: dfd2c76a73a995dae3a2ac849bdc366172957a56a229168bd353dcecd9793d25
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the release's structures and reads one, culling the view to it from the top bar"
+        body: d3616e276f4922980aae1674f13491ac7c1097b47ebc1b2e76157650429b1ae7
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
+    reviewed: bfc7c0c216c9076ca7eacd0066db15d72b4773269fe0ff39809742d2df4a1aa6
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "is the one the renderer draws as chosen, until another is chosen or none"
+        body: 1551c8b75dc6542272f5f2ea759e09ea208d28d1b14b5d140aba772f532bd123
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c
+    reviewed: 268cb39173191206d7a5c8b848ab4b7924e8454513b272d15b648488d04cb5ac
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "closes its record, and then makes Earth the focus again"
+        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+  - node: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
+    reviewed: 20427d2f854c1d3283b46647eb06758061c5bd3caaf265881ea3d29f1ad18852
+    tests:
+      - file: "clients/explorer/src/ui/useWorld.test.ts"
+        name: "is chosen by a double-click, which lets nothing go"
+        body: 2694abdfa97a38f1b3c0be4e238bf43ffcc1a77fcad2b35c8e7d6c7611d4c15a
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
+        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
   - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
     reviewed: 0bb887b3e772297bd79e8a2955746d05e19763fc1739607c18c2fc09843548fa
     tests:
@@ -5483,7 +5597,7 @@ links:
         body: 01897f84ff1eff69ac0f755b93b9d60afae4f4dfa73fd86db5aa5d1af112a017
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the release's structures and reads one, culling the view to it from the top bar"
-        body: 40693e4309f5a3d2518cf3b4bba4ed56036395516385a96b6869b8abab86e44a
+        body: d3616e276f4922980aae1674f13491ac7c1097b47ebc1b2e76157650429b1ae7
       - file: "clients/explorer/src/ui/inside.test.ts"
         name: "is kept in the address beside what else it holds, and leaves it once off"
         body: 0f720741a6e5c89db0f960ee12ef21e5c47dca98dac9eff13efc03c302402d14
@@ -5619,79 +5733,3 @@ links:
       - file: "clients/explorer/src/ui/inside.test.ts"
         name: "is named in the address by the structure it culls to"
         body: 7665828ee4ed91a37092c6c24760fcc830d9489f939ec269e8731992d2510874
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d95dbb0dc01
-    tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "is on the chosen object's point, and on no other point"
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "lets it go, and chooses nothing"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d969cb2496a
-    tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "closes its record, and then makes Earth the focus again"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d97b9058d19
-    tests:
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d98f8d78c05
-    tests:
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "leaves the second click of a double-click to the double-click, letting nothing go"
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "is chosen by a double-click, which lets nothing go"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d9ae7ac1094
-    tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "is on the chosen structure's name, and on no other name"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d9b40b85965
-    tests:
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the release's structures and reads one, culling the view to it from the top bar"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
-    tests:
-      - file: "clients/explorer/src/ui/useStructures.test.ts"
-        name: "is the one the renderer draws as chosen, until another is chosen or none"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c
-    tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "closes its record, and then makes Earth the focus again"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
-    tests:
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "is chosen by a double-click, which lets nothing go"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7da07ed45c84
-    tests:
-      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
-        name: "keeps each drawer opened, and that none is once it closes"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "keeps the drawer open across a reload, and none once it is closed"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7da1d8eca54a
-    tests:
-      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
-        name: "opens the drawer kept"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "keeps the drawer open across a reload, and none once it is closed"
-  - node: 01a1c25f-d5cd-76b6-b0cb-7da23d69692f
-    tests:
-      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
-        name: "opens no drawer where none is kept"
-      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
-        name: "opens no drawer where the one kept is not one the rail opens"
-      - file: "clients/explorer/src/ui/storedDrawer.test.ts"
-        name: "opens no drawer, and keeps none without failing, where the browser refuses local storage"
-      - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "keeps the drawer open across a reload, and none once it is closed"
