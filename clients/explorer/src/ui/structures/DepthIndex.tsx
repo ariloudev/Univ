@@ -48,7 +48,7 @@ function Row({ row, chosen, onChoose }: { row: DepthRow; chosen: boolean; onChoo
         <span className="col-span-2 mt-0.5 flex items-center justify-between gap-2">
           <span className="flex min-w-0 items-center gap-1.5 text-xs text-dim">
             <span className="h-2 w-2 shrink-0 rounded-sm" style={{ background: row.colour }} />
-            <span className="truncate">{words(row.kind)}</span>
+            <span className="leading-tight">{words(row.kind)}</span>
           </span>
           <Track row={row} />
         </span>
@@ -71,9 +71,9 @@ const Legend = () => (
   </p>
 );
 
-/** The axis's ticks, labelled, over the rows' axes. */
+/** The axis's ticks, labelled, over the rows' axes: inset by a row's own padding. */
 const Ticks = () => (
-  <svg width={AXIS} height={14} aria-hidden="true" className="ml-auto block overflow-visible">
+  <svg width={AXIS} height={14} aria-hidden="true" className="mr-1.5 ml-auto block overflow-visible">
     {DEPTH_TICKS.map((t, i) => (
       <text key={t.mpc} x={depthX(t.mpc, AXIS)} y={10} fontSize="10.5" fill="var(--color-dim)" textAnchor={i === 0 ? "start" : i === DEPTH_TICKS.length - 1 ? "end" : "middle"}>
         {t.text}
