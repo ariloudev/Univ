@@ -1,0 +1,329 @@
+key: 01a1c2a8-e07e-7277-9581-532295e648db
+id: followups
+versions:
+  - key: 01a1c2a8-e07e-7277-9581-53254b2e161f
+    at: 2026-11-09T23:33:29Z
+    revision: 31
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Follow-ups: closing returns to Earth; the list remembered"
+    goal: "Closing a record with its close button lets go as choosing again does, and the depth index keeps its order and find text across visits"
+    status: active
+blocks:
+  - key: 01a1c2a8-e07e-7277-9581-5323dad5cc8a
+    id: followups-why
+    kind: note
+    versions:
+      - key: 01a1c2a8-e07e-7277-9581-53265625519d
+        at: 2026-11-09T23:33:29Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Why"
+        markdown: |-
+          The owner answered "yes x2" to the two questions left open after the depth index was built:
+
+          1. Should the order switch and the find box be remembered across visits, like the open drawer?
+          2. Should closing a record with its close button also return the focus to Earth?
+  - key: 01a1c2a8-e07e-7277-9581-532494385035
+    id: spec-change-followups
+    kind: loft
+    versions:
+      - key: 01a1c2a8-e07e-7277-9581-5327be66c783
+        at: 2026-11-09T23:33:29Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        view: spec-change
+        note: "This is a minor spec change following the owner's answers, so it was not sent for approval. Both let-go statements now also cover closing the record, each with a criterion for the close button, and the depth index gains three criteria for keeping its order and find text in local storage. Two LQ-005 (info) findings are left in place: the widened let-go statement, whose two triggers have one outcome, and the existing no-match message criterion."
+        base: "f97a1ef"
+        recorded:
+          commit: "f97a1efb335837f33013e559e0ba84ac9e98fa21"
+          branch: "chore/ux-1"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-09T23:33:29Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 7,
+              "graph.edges": 0,
+              "graph.nodes": 12,
+              "status.base.added": 5,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person clicks the drawn point of the object already chosen, or closes its record, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                  "words": {
+                    "after": "When the person clicks the drawn point of the object already chosen, or closes its record, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                    "before": "When the person clicks the drawn point of the object already chosen, Univ Explorer shall let the object go, closing its record and making Earth the focus again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08ecd8fc538a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Closing the object's record with its close button lets the object go as a click on its point does.",
+                  "words": {
+                    "after": "Closing the object's record with its close button lets the object go as a click on its point does."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the structure already chosen, in the view or from the list of structures, or closes its record, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                  "words": {
+                    "after": "When the person chooses the structure already chosen, in the view or from the list of structures, or closes its record, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                    "before": "When the person chooses the structure already chosen, in the view or from the list of structures, Univ Explorer shall let the structure go, closing its record and making Earth the focus again."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08edc266ef00",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Closing the structure's record with its close button lets the structure go as a click on its name does.",
+                  "words": {
+                    "after": "Closing the structure's record with its close button lets the structure go as a click on its name does."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08ee84d5f646",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The order chosen and the text in the find box are kept in the browser's local storage each time they change.",
+                  "words": {
+                    "after": "The order chosen and the text in the find box are kept in the browser's local storage each time they change."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08efaed02a8a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "When the explorer opens, the list takes the order and the text that local storage keeps.",
+                  "words": {
+                    "after": "When the explorer opens, the list takes the order and the text that local storage keeps."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08f063f64c50",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where local storage keeps no order or text, or the browser refuses local storage, the list opens nearest first with an empty find box.",
+                  "words": {
+                    "after": "Where local storage keeps no order or text, or the browser refuses local storage, the list opens nearest first with an empty find box."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fe32aecd7d3",
+                  "kind": "feature",
+                  "label": "F-38",
+                  "name": "Read an object",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person clicks the drawn point of the object already chosen, or closes its record, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                  "parent": "01a1a497-e843-728a-bce8-3fe32aecd7d3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08ecd8fc538a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Closing the object's record with its close button lets the object go as a click on its point does.",
+                  "parent": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the structure already chosen, in the view or from the list of structures, or closes its record, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08edc266ef00",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Closing the structure's record with its close button lets the structure go as a click on its name does.",
+                  "parent": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c278-094a-7307-be66-e7839dd2fba6",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08ee84d5f646",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The order chosen and the text in the find box are kept in the browser's local storage each time they change.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08efaed02a8a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "When the explorer opens, the list takes the order and the text that local storage keeps.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c2a8-c234-72f0-adea-08f063f64c50",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where local storage keeps no order or text, or the browser refuses local storage, the list opens nearest first with an empty find box.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1c2a8-c234-72f0-adea-08ecd8fc538a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 88,
+                    "name": "Closing the object's record with its close button lets the object go as a click on its point does.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c2a8-c234-72f0-adea-08edc266ef00",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 110,
+                    "name": "Closing the structure's record with its close button lets the structure go as a click on its name does.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c2a8-c234-72f0-adea-08ee84d5f646",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 146,
+                    "name": "The order chosen and the text in the find box are kept in the browser's local storage each time they change.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c2a8-c234-72f0-adea-08efaed02a8a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 148,
+                    "name": "When the explorer opens, the list takes the order and the text that local storage keeps.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c2a8-c234-72f0-adea-08f063f64c50",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 150,
+                    "name": "Where local storage keeps no order or text, or the browser refuses local storage, the list opens nearest first with an empty find box.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 10,
+                    "key": "01a1c25f-d5cd-76b6-b0cb-7d943afeab40",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 79,
+                    "name": "When the person clicks the drawn point of the object already chosen, or closes its record, Univ Explorer shall let the object go, closing its record and making Earth the focus again.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1c25f-d5cd-76b6-b0cb-7d992a5c3980",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 99,
+                    "name": "When the person chooses the structure already chosen, in the view or from the list of structures, or closes its record, Univ Explorer shall let the structure go, closing its record and making Earth the focus again.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "commit": "f97a1efb335837f33013e559e0ba84ac9e98fa21",
+                "removed": [],
+                "revision": "f97a1ef"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 7,
+                "publishedAt": "2026-11-09T22:08:34Z",
+                "stateRoot": "379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "chore/ux-1",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/read-an-object.yaml",
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
