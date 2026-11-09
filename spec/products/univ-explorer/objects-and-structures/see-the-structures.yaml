@@ -46,6 +46,25 @@ requirements:
         name: "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
       - key: 01a1a497-e843-728a-bce8-3ff70e744c39
         name: "Names that would overlap are not drawn over one another."
+  - key: 01a1bd21-49d6-7489-b3d6-aa081e95ee07
+    statement:
+      form: state_driven
+      while: "the person has turned the structures' outlines off"
+      system: "Univ Explorer"
+      shall: "draw no structure's outline or markers but the chosen structure's, and keep every drawn structure's name in the view."
+    criteria:
+      - key: 01a1bd21-49d6-7489-b3d6-aa09864c3462
+        name: "A switch beside the distance rings' switch in the top bar turns the structures' outlines on and off."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0ada007939
+        name: "The outlines are on when the view opens on an address that does not turn them off."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0b73233bed
+        name: "The page's address keeps the outlines turned off, so that a reload or a shared link keeps them off."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0cc77cd12b
+        name: "While the outlines are off, no structure's outline, markers or flow symbol is drawn but the chosen structure's."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0d05b88cc6
+        name: "While the outlines are off, each structure of a kind turned on is named in the view as where the outlines are on."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0eae4110b0
+        name: "While the outlines are off, a structure is still chosen by a click on its name in the view, as where they are on."
   - key: 01a1a497-e843-728a-bce8-3ff8d753cd12
     statement:
       form: event_driven
@@ -61,6 +80,18 @@ requirements:
         name: "The chosen structure's outline is drawn in lines thicker than any other structure's, until another structure is chosen or its panel is closed."
       - key: 01a1a497-e843-728a-bce8-3ffa426590e2
         name: "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from."
+      - key: 01a1bcba-dd8e-750a-886c-c22b9a7cd9e8
+        name: "The panel opens with a sentence saying what kind of structure it is, how far away it lies, and how large it is where its record gives a length."
+      - key: 01a1bcba-dd8e-750a-886c-c22cfc5bc92f
+        name: "The panel draws a structure's depth as a band on one axis of comoving distance, from its near bound to its far, with each velocity its record gives within them marked, a velocity placed at the comoving distance of z = cz/c under the release cosmology."
+      - key: 01a1bcba-dd8e-750a-886c-c22db388ecdc
+        name: "The panel draws a structure's published lengths as bars on one axis for each unit, a lower limit fading out at its end, each length in the release cosmology where its paper assumed another, with the published value beneath."
+      - key: 01a1bcba-dd8e-750a-886c-c22effd4e2a0
+        name: "The panel of a structure placed by its members draws each member as a tick on one axis of comoving distance."
+      - key: 01a1bcba-dd8e-750a-886c-c22f7aaaa8d4
+        name: "The panel of a disputed structure says so above its values, naming each paper that disputes it."
+      - key: 01a1bcba-dd8e-750a-886c-c230ee335b2d
+        name: "The panel names the structure's papers once, by first author and year, beside a value only where the structure cites more than one paper, and holds the record's notes, quotes and every value under one link that opens them."
       - key: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
         name: "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle."
       - key: 01a1b7a9-f2af-7290-9cdf-77a50a274427
@@ -68,12 +99,12 @@ requirements:
   - key: 01a1b13c-1e10-748d-8008-e7e063283348
     statement:
       form: event_driven
-      when: "the person checks \"Only what lies inside\" in the panel of the chosen structure"
+      when: "the person checks \"Only what lies inside\" in the top bar while a structure is chosen"
       system: "Univ Explorer"
       shall: "draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed."
     criteria:
       - key: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
-        name: "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on."
+        name: "While a structure drawn as a volume is chosen, the top bar offers a checkbox \"Only what lies inside\" beside the level-of-detail switch, cleared unless the page's address turns it on."
       - key: 01a1b13c-1e10-748d-8008-e7e2ed4a3967
         name: "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox."
       - key: 01a1b13c-1e10-748d-8008-e7e33e6ecd76
@@ -83,13 +114,13 @@ requirements:
       - key: 01a1b13c-1e10-748d-8008-e7e5419cfeb6
         name: "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box."
       - key: 01a1b13c-1e10-748d-8008-e7e6a6d53737
-        name: "The panel says the cull is approximate for a structure culled by a box that is not its published shape."
+        name: "While the cull is on, the panel says the cull is approximate for a structure culled by a box that is not its published shape."
       - key: 01a1b13c-1e10-748d-8008-e7e71f42aabb
         name: "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin."
       - key: 01a1b166-0bb4-703d-a861-7c307a08ae0b
         name: "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them."
       - key: 01a1b13c-1e10-748d-8008-e7e859257b94
-        name: "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn."
+        name: "While the cull is on, the panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn."
       - key: 01a1b13c-1e10-748d-8008-e7e934fc10cf
         name: "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it."
       - key: 01a1b13c-1e10-748d-8008-e7ea46d6c6e6

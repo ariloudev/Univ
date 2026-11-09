@@ -1,13 +1,13 @@
 import type { Switch } from "./addressSwitch.ts";
 
-/** A switch in the top bar: a checkbox with the role of a switch, named by `label`, whose text is
- * set by `textClass`. */
-export function SwitchBox({ label, state: [on, set], textClass }: { label: string; state: Switch; textClass: string }) {
+/** A checkbox in the top bar, named by `label`, whose text is set by `textClass`: with the role of
+ * a switch, as the view's settings are, unless `role` makes it a plain checkbox. */
+export function SwitchBox({ label, state: [on, set], textClass, role = "switch" }: { label: string; state: Switch; textClass: string; role?: "switch" | "checkbox" }) {
   return (
-    <label className="flex items-center gap-1.5">
+    <label className="flex items-center gap-1.5" title={label}>
       <input
         type="checkbox"
-        role="switch"
+        role={role === "switch" ? "switch" : undefined}
         checked={on}
         onChange={(event) => {
           set(event.currentTarget.checked);

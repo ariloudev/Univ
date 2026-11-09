@@ -4,7 +4,7 @@
       "source": {
         "source": "github",
         "repo": "Ask-Loft/loft",
-        "ref": "v2.3.0-alpha.5"
+        "ref": "v2.3.0"
       }
     }
   },

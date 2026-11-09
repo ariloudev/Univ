@@ -10,6 +10,8 @@ import { KeyBar, type Tally, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { Scene } from "./Scene.tsx";
 import { createStore } from "./store.ts";
 
+const PLANCK_2018 = { name: "Planck 2018", hubble_constant: 67.66, omega_matter: 0.3111 };
+
 function controller(): Controller {
   const made = fakeController();
   made.setRotations(manifestOf("stars").rotations);
@@ -32,7 +34,7 @@ function show(catalogue: Tally, made = controller()) {
   const frame = createStore(0);
   render(
     <>
-      <Whereabouts controller={made} frame={frame} grid={[false, () => undefined]} rings={[false, () => undefined]} />
+      <Whereabouts controller={made} frame={frame} grid={[false, () => undefined]} rings={[false, () => undefined]} outlines={[true, () => undefined]} />
       <ViewDrawer controller={made} frame={frame} cosmology="Planck 2018" />
       <KeyBar catalogue={() => catalogue} frame={frame} release={7} />
     </>,
@@ -112,7 +114,7 @@ describe("the bars and the view's drawer", () => {
 
 describe("the view", () => {
   it("marks Earth as the Solar System barycentre, and says when it cannot draw", async () => {
-    render(<Scene release={7} cosmology="Planck 2018" levelOfDetail place={{ topBar: null, drawer: undefined, onDrawer: () => undefined }} />);
+    render(<Scene release={7} cosmology={PLANCK_2018} levelOfDetail place={{ topBar: null, drawer: undefined, onDrawer: () => undefined }} />);
     expect(screen.getByTitle("The Solar System barycentre, within about 1 AU of Earth").textContent).toContain("Earth");
     expect((await screen.findByRole("alert")).textContent).toContain("cannot draw with WebGL2");
   });

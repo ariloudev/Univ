@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useRef } from "react";
 
-import type { Rotations } from "../api/schemas.ts";
+import type { Cosmology, Rotations } from "../api/schemas.ts";
 import type { StructureDetail } from "../api/structures.ts";
 import type { Domain } from "../catalogue/tiles.ts";
 
 import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
-import { choicesOf } from "./ShowPanel.tsx";
+import { choicesOf } from "./show/choices.ts";
 import { Atlas, type AtlasPlace, type Selection } from "./Atlas.tsx";
 import { useHidden } from "./hidden.ts";
+import { useOutlines } from "./outlinesSwitch.ts";
 import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
-import { type StructureChoice, useStructureChoice } from "./inside.ts";
-import type { Inside } from "./StructuresPanel.tsx";
+import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 
 /** The structure `choice` names, and the cull to its volume, where it has one
@@ -57,7 +57,7 @@ export function Scene({
   place,
 }: {
   release: number;
-  cosmology: string;
+  cosmology: Cosmology | undefined;
   levelOfDetail: boolean;
   place: AtlasPlace;
 }) {
@@ -69,7 +69,7 @@ export function Scene({
     structure: (id) => selection.structureById(id),
   });
   const { chosen, choose } = useChosen(release, world);
-  const [hidden, toggle] = useHidden();
+  const [hidden, apply] = useHidden();
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
   const { domain, source, kind } = hidden;
   useEffect(() => {
@@ -79,7 +79,8 @@ export function Scene({
   useEffect(() => {
     world?.catalogue?.setLevelOfDetail(levelOfDetail);
   }, [world, domains, levelOfDetail]);
-  const structures = useStructures(release, world, rotations, structureId, hidden.structure);
+  const outlines = useOutlines();
+  const structures = useStructures(release, world, rotations, structureId, hidden.structure, outlines[0]);
   const { detail, inside } = useCulledStructure(world, domains, rotations, structures, structureChoice);
   const choices = useMemo(() => choicesOf(domains, structures.list), [domains, structures.list]);
   const context = useRecordContext(release, rotations, structures, {
@@ -114,7 +115,8 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onToggle: toggle }}
+      show={{ choices, hidden, onApply: apply }}
+      outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">
         <canvas

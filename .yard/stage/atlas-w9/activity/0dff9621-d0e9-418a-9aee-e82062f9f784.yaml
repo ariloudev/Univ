@@ -1,0 +1,322 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-09T18:58:25Z
+turns:
+  - started: 2026-11-08T19:55:39Z
+    ended: 2026-11-08T20:30:38Z
+  - started: 2026-11-08T20:32:10Z
+    ended: 2026-11-08T20:32:17Z
+  - started: 2026-11-08T20:32:22Z
+    ended: 2026-11-08T20:32:29Z
+  - started: 2026-11-08T20:32:30Z
+    ended: 2026-11-08T20:32:37Z
+  - started: 2026-11-08T20:33:29Z
+    ended: 2026-11-08T20:44:37Z
+  - started: 2026-11-08T20:45:40Z
+    ended: 2026-11-08T20:46:29Z
+  - started: 2026-11-08T20:47:51Z
+    ended: 2026-11-08T20:48:11Z
+  - started: 2026-11-08T20:48:31Z
+    ended: 2026-11-08T20:49:08Z
+  - started: 2026-11-08T20:49:30Z
+    ended: 2026-11-08T20:50:18Z
+  - started: 2026-11-08T20:53:40Z
+    ended: 2026-11-08T20:56:55Z
+  - started: 2026-11-08T21:01:22Z
+    ended: 2026-11-08T21:15:39Z
+  - started: 2026-11-08T21:16:29Z
+    ended: 2026-11-08T21:16:33Z
+  - started: 2026-11-08T21:16:49Z
+    ended: 2026-11-08T21:16:53Z
+  - started: 2026-11-08T21:16:55Z
+    ended: 2026-11-08T21:17:48Z
+  - started: 2026-11-08T21:18:16Z
+    ended: 2026-11-08T21:27:20Z
+  - started: 2026-11-08T21:28:38Z
+    ended: 2026-11-08T21:29:36Z
+  - started: 2026-11-08T21:34:26Z
+    ended: 2026-11-08T21:35:02Z
+  - started: 2026-11-08T21:38:27Z
+    ended: 2026-11-08T21:39:15Z
+  - started: 2026-11-08T21:46:24Z
+    ended: 2026-11-08T21:53:42Z
+  - started: 2026-11-08T21:54:23Z
+    ended: 2026-11-08T21:56:07Z
+  - started: 2026-11-08T22:00:53Z
+    ended: 2026-11-08T22:01:19Z
+  - started: 2026-11-08T22:08:52Z
+    ended: 2026-11-09T18:58:25Z
+subagents:
+  - agent: af8c4de3d60bffab5
+    type: general-purpose
+    started: 2026-11-08T20:30:04Z
+    ended: 2026-11-08T20:32:30Z
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - agent: a315711c65beeabea
+    type: general-purpose
+    started: 2026-11-08T20:30:04Z
+    ended: 2026-11-08T20:32:10Z
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - agent: a042084dd1e93530e
+    type: general-purpose
+    started: 2026-11-08T20:30:04Z
+    ended: 2026-11-08T20:32:22Z
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - agent: a25d74dce7de172c6
+    type: general-purpose
+    started: 2026-11-08T20:30:04Z
+    ended: 2026-11-08T20:34:05Z
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - agent: ae71b4e9fc156a906
+    type: general-purpose
+    started: 2026-11-08T21:15:35Z
+    ended: 2026-11-08T21:17:00Z
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - agent: ae86f48fdb4546d24
+    type: general-purpose
+    started: 2026-11-08T21:15:35Z
+    ended: 2026-11-08T21:16:49Z
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - agent: a918b2820e1ddefdd
+    type: general-purpose
+    started: 2026-11-08T21:15:35Z
+    ended: 2026-11-08T21:16:29Z
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - agent: a21c3eba6f84f9c8f
+    type: general-purpose
+    started: 2026-11-08T21:15:35Z
+    ended: 2026-11-08T21:17:17Z
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+plan:
+  - started: 2026-11-08T19:56:15Z
+    ended: 2026-11-08T20:03:08Z
+  - started: 2026-11-08T21:06:07Z
+    ended: 2026-11-08T21:09:49Z
+  - started: 2026-11-08T21:21:25Z
+    ended: 2026-11-08T21:22:02Z
+  - started: 2026-11-08T21:49:24Z
+    ended: 2026-11-08T21:49:55Z
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T20:30:10Z
+    ended: 2026-11-08T20:30:11Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T20:30:15Z
+    ended: 2026-11-08T20:30:16Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T20:30:19Z
+    ended: 2026-11-08T20:30:20Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - commands:
+      - fmt
+      - reconcile
+    agent: main
+    started: 2026-11-08T20:44:02Z
+    ended: 2026-11-08T20:44:04Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - commands:
+      - reconcile
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T20:44:14Z
+    ended: 2026-11-08T20:44:17Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe4ed7486d7
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T20:49:51Z
+    ended: 2026-11-08T20:49:53Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - skill
+    agent: main
+    started: 2026-11-08T21:01:44Z
+    ended: 2026-11-08T21:01:44Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - skill
+    agent: main
+    started: 2026-11-08T21:01:48Z
+    ended: 2026-11-08T21:01:51Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:03:30Z
+    ended: 2026-11-08T21:03:32Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - check
+    agent: main
+    started: 2026-11-08T21:03:34Z
+    ended: 2026-11-08T21:03:35Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:03:41Z
+    ended: 2026-11-08T21:03:42Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - check
+      - terms
+    agent: main
+    started: 2026-11-08T21:03:46Z
+    ended: 2026-11-08T21:03:48Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:17:08Z
+    ended: 2026-11-08T21:17:09Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:19:26Z
+    ended: 2026-11-08T21:19:28Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:19:34Z
+    ended: 2026-11-08T21:19:36Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:26:37Z
+    ended: 2026-11-08T21:26:38Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:27:06Z
+    ended: 2026-11-08T21:27:07Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:27:14Z
+    ended: 2026-11-08T21:27:15Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:29:26Z
+    ended: 2026-11-08T21:29:27Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:38:36Z
+    ended: 2026-11-08T21:38:38Z
+    failed: false
+    stage: 01a1bcf9-c1ac-7528-b670-8ac6236a4feb
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:47:17Z
+    ended: 2026-11-08T21:47:20Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - check
+    agent: main
+    started: 2026-11-08T21:47:22Z
+    ended: 2026-11-08T21:47:25Z
+    failed: false
+    stage: 01a1bcbb-1314-7392-88cc-1fe5f52b7c0e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-08T21:48:28Z
+    ended: 2026-11-08T21:48:32Z
+    failed: false
+    stage: 01a1bd21-8c90-748a-88c0-607edb4600bb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:53:15Z
+    ended: 2026-11-08T21:53:16Z
+    failed: false
+    stage: 01a1bd21-8c90-748a-88c0-607edb4600bb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:53:25Z
+    ended: 2026-11-08T21:53:26Z
+    failed: false
+    stage: 01a1bd21-8c90-748a-88c0-607edb4600bb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:53:37Z
+    ended: 2026-11-08T21:53:38Z
+    failed: false
+    stage: 01a1bd21-8c90-748a-88c0-607edb4600bb
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-08T21:55:51Z
+    ended: 2026-11-08T21:55:54Z
+    failed: false
+    stage: 01a1bd21-8c90-748a-88c0-607edb4600bb

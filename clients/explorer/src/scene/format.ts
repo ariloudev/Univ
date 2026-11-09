@@ -26,21 +26,39 @@ export function figures(value: number, digits = 3): string {
     format = new Intl.NumberFormat("en-GB", { maximumSignificantDigits: digits });
     FIGURES.set(digits, format);
   }
-  return format.format(value);
+  return minusSign(format.format(value));
 }
+
+/** A number's text with a true minus sign, U+2212, in place of the hyphen its format gives. */
+export const minusSign = (text: string): string => text.replace("-", "−");
+
+/** A whole number, rounded, with thousands separated and a true minus sign. */
+export const whole = (value: number): string => minusSign(Math.round(value).toLocaleString("en-GB"));
 
 /** A format for each number of significant figures, made once: making one costs more than using it. */
 const FIGURES = new Map<number, Intl.NumberFormat>();
 
-function inUnits(value: number, units: readonly (readonly [number, string])[]): string {
+/** The unit of `units` that suits `value`: the largest no larger than it, or the smallest. */
+function unitOf(value: number, units: readonly (readonly [number, string])[]): { size: number; name: string } {
   const [size, name] = units.find(([unit]) => value >= unit) ?? units[units.length - 1] ?? [1, ""];
+  return { size, name };
+}
+
+function inUnits(value: number, units: readonly (readonly [number, string])[]): string {
+  const { size, name } = unitOf(value, units);
   return `${figures(value / size)} ${name}`;
 }
+
+/** The parsec unit that suits a distance given in megaparsecs: its size in parsecs and its name. */
+export const pcUnit = (mpc: number): { size: number; name: string } => unitOf(mpc * 1e6, PC_UNITS);
 
 /** A distance given in megaparsecs, in the parsec unit that suits it. */
 export function shortDistance(mpc: number): string {
   return inUnits(mpc * 1e6, PC_UNITS);
 }
+
+/** A distance given in megaparsecs, in light-years, in the unit that suits it. */
+export const lightYears = (mpc: number): string => inUnits(mpc * 1e6 * LY_PER_PC, LY_UNITS);
 
 /** A distance given in megaparsecs, in the parsec unit that suits it, with light-years beside. */
 export function formatDistance(mpc: number): string {

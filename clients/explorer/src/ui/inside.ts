@@ -39,3 +39,11 @@ export function useStructureChoice(): StructureChoice {
     setInside,
   };
 }
+
+/** Whether the view is culled to the chosen structure's volume, whether that volume is a box
+ * rather than its published shape, and the way to turn it on or off. */
+export interface Inside {
+  on: boolean;
+  approximate: boolean;
+  set: (on: boolean) => void;
+}

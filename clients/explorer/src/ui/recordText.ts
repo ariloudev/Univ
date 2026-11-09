@@ -62,12 +62,16 @@ function mergedDesignations(record: ObjectRecord): (Listed & { formed: boolean }
   return [...merged.values()];
 }
 
-/** A galactic longitude and latitude, degrees to four decimals, the longitude 0 to 360 after its
+/** A galactic longitude and latitude, degrees to `places` decimals, the longitude 0 to 360 after its
  * rounding. */
-export function galacticText({ l, b }: { l: number; b: number }): string {
-  const lon = (Math.round(l * 1e4) / 1e4) % 360;
-  return `l ${lon.toFixed(4)}°, b ${signed(b < 0, `${Math.abs(b).toFixed(4)}°`)}`;
+export function galacticText({ l, b }: { l: number; b: number }, places = 4): string {
+  const k = 10 ** places;
+  const lon = (Math.round(l * k) / k) % 360;
+  return `l ${lon.toFixed(places)}°, b ${signed(b < 0, `${Math.abs(b).toFixed(places)}°`)}`;
 }
+
+/** The epoch of a position, as a Julian year. */
+export const epochText = (epoch: number | null | undefined): string => (epoch === null || epoch === undefined ? "epoch not given" : `epoch J${epoch}`);
 
 /** A sky position's published error in milliarcseconds, to two figures. */
 export const masText = (mas: number | null | undefined): string => (mas === null || mas === undefined ? "no uncertainty reported" : `± ${figures(mas, 2)} mas`);
@@ -140,4 +144,18 @@ export function flagsOf(entry: Entry, detail: SourceDetail | undefined): { colum
     const meanings = detail?.flags?.[column];
     return { column, value, meaning: meanings?.values[value], cite: meanings?.cite };
   });
+}
+
+/** The object's sky position where it has one: right ascension and declination, galactic
+ * longitude and latitude where `toGalactic` is known, and the entry it is taken from. */
+export function skyOf(record: ObjectRecord, toGalactic: Mat3 | undefined) {
+  const sky = record.sky_position;
+  if (sky === null || sky === undefined || sky.ra === undefined || sky.dec === undefined) return undefined;
+  return {
+    ...sky,
+    ra: sky.ra,
+    dec: sky.dec,
+    galactic: toGalactic === undefined ? undefined : galacticOf(sky.ra, sky.dec, toGalactic),
+    from: sky.entry === undefined ? undefined : record.entries[sky.entry],
+  };
 }

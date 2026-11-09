@@ -120,14 +120,22 @@ export const namesOf = (structures: Structures, shown: ReadonlySet<string>): Nam
       : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name, below: d.symbol === undefined ? undefined : SYMBOL_REACH }],
   );
 
+/** The renderer's names of the outlines not drawn (see-the-structures, choose-what-is-drawn): of
+ * each structure drawn but not `named`, its kind turned off, and, while the `outlines` are off,
+ * of every other but the `chosen` one, whose name stays in the view all the same. */
+export const hiddenOutlines = (drawn: Iterable<string>, named: ReadonlySet<string>, chosen: string | undefined, outlines: boolean): Set<string> =>
+  new Set([...drawn].filter((id) => !named.has(id) || (!outlines && id !== chosen)).map(drawnAs));
+
 /** The structures of `release`, drawn into `world` once the rotations of its frames are read,
- * the one `chosen` in the chosen colour, none of a kind in `hiddenKinds`. */
+ * the one `chosen` in the chosen colour, none of a kind in `hiddenKinds`, and, while `outlines`
+ * is false, no outline but the chosen one's, though every name. */
 export function useStructures(
   release: number,
   world: World | undefined,
   rotations: Rotations | undefined,
   chosen: string | undefined,
   hiddenKinds: ReadonlySet<string>,
+  outlines = true,
 ): ShownStructures {
   const [structures, setStructures] = useState<Structures>(NONE);
   // The names are worked out as the page renders, so that their elements are there for the
@@ -138,11 +146,10 @@ export function useStructures(
   }, [structures, hiddenKinds]);
   useEffect(() => {
     if (world === undefined) return;
-    const named = new Set(shown.shown.map((s) => s.id));
-    world.renderer.hideNames(new Set([...shown.drawings.keys()].filter((id) => !named.has(id)).map(drawnAs)));
+    world.renderer.hideNames(hiddenOutlines(shown.drawings.keys(), new Set(shown.shown.map((s) => s.id)), chosen, outlines));
     world.names = shown.names;
     world.controller.invalidate();
-  }, [world, shown]);
+  }, [world, shown, chosen, outlines]);
   // After the render that holds them: a frame drawn before React has added the names' elements
   // would place none, and a still view draws no other.
   useEffect(() => {

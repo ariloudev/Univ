@@ -1,18 +1,22 @@
 import { type ReactNode, useState } from "react";
 import { createPortal } from "react-dom";
 
+import type { Cosmology } from "../api/schemas.ts";
 import type { StructureDetail } from "../api/structures.ts";
 import { AtlasFrame } from "./AtlasFrame.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import { useGrid } from "./gridSwitch.ts";
+import type { Inside } from "./inside.ts";
 import { useDrawnRings } from "./ringsSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
 import { ScaleBar } from "./ScaleBar.tsx";
 import { SearchBox } from "./SearchBox.tsx";
-import { ShowPanel, type ShowPanelProps } from "./ShowPanel.tsx";
-import { type Inside, StructureList, StructurePanel } from "./StructuresPanel.tsx";
+import { ShowPanel, type ShowPanelProps } from "./show/ShowPanel.tsx";
+import { StructureRecordPanel } from "./record/StructureRecordPanel.tsx";
+import { StructureList } from "./StructuresPanel.tsx";
+import { SwitchBox } from "./SwitchBox.tsx";
 import type { ChooseOptions, ChosenObject } from "./useChosen.ts";
 import type { ShownStructures } from "./useStructures.ts";
 import type { World } from "./useWorld.ts";
@@ -46,12 +50,15 @@ interface AtlasProps {
   /** The view's world, once made. */
   world: World | undefined;
   release: number;
-  cosmology: string;
+  /** The release cosmology: its name, and what places a structure's velocities. */
+  cosmology: Cosmology | undefined;
   place: AtlasPlace;
   structures: ShownStructures;
   selection: Selection;
   /** What can be turned off, what is, and the way to turn it on or off. */
   show: ShowPanelProps;
+  /** The structures' outlines' switch, which the structures drawn follow. */
+  outlines: Switch;
   /** The view: its canvas and what is drawn over it. */
   children: ReactNode;
 }
@@ -93,14 +100,14 @@ export function AtlasPage({ start, end, slot, children }: { start: ReactNode; en
  * line; the record on the right while something is chosen; the bottom bar of scale, key and
  * credits; and, in the top bar, the eye's distance, the axes and the search. Below 1,024 pixels a
  * drawer and the record open over the view. */
-export function Atlas({ world, release, cosmology, place, structures, selection, show, children }: AtlasProps) {
+export function Atlas({ world, release, cosmology, place, structures, selection, show, outlines, children }: AtlasProps) {
   const { drawer, onDrawer } = place;
   const key = chosenKey(selection);
   const grid = useGrid();
   const rings = useDrawnRings(world?.controller);
   return (
     <>
-      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} grid={grid} rings={rings} />, place.topBar)}
+      {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} switches={{ grid, rings, outlines }} />, place.topBar)}
       <div className="relative flex min-h-0">
         <Rail
           open={drawer}
@@ -118,7 +125,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
           {children}
           {world === undefined ? null : <AtlasFrame world={world} grid={grid[0]} />}
         </section>
-        {key === undefined ? null : <Chosen key={key} selection={selection} />}
+        {key === undefined ? null : <Chosen key={key} selection={selection} cosmology={cosmology} />}
       </div>
       <footer className="flex min-w-0 items-center gap-5 border-t border-line bg-panel px-3 text-sm whitespace-nowrap">
         {world === undefined ? null : (
@@ -138,29 +145,35 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
 }
 
 /** The record of what `selection` holds chosen, in the right margin. */
-function Chosen({ selection }: { selection: Selection }) {
+function Chosen({ selection, cosmology }: { selection: Selection; cosmology: Cosmology | undefined }) {
   return (
     <Record>
       <ObjectPanel chosen={selection.chosen} onChoose={(id) => selection.object(id, { fly: true })} onClose={selection.close} context={selection.context} />
       {selection.structure === undefined ? null : (
-        <StructurePanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} onClose={selection.close} />
+        <StructureRecordPanel detail={selection.structure} approximate={selection.approximate} inside={selection.inside} cosmology={cosmology} onClose={selection.close} />
       )}
     </Record>
   );
 }
 
-/** The view's parts of the top bar: the eye's distance with the axes and the switches of the grid
- * and the distance rings, and the search. */
-function TopBarParts({ world, release, selection, grid, rings }: { world: World; release: number; selection: Selection; grid: Switch; rings: Switch }) {
+/** The view's parts of the top bar: the eye's distance with the axes and the switches of the grid,
+ * the distance rings and the structures' outlines, the search, and, while a structure drawn as a
+ * volume is chosen, the cull to it beside the level-of-detail switch that follows. */
+function TopBarParts({ world, release, selection, switches }: { world: World; release: number; selection: Selection; switches: Record<"grid" | "rings" | "outlines", Switch> }) {
   return (
     <>
-      <Whereabouts controller={world.controller} frame={world.frame} grid={grid} rings={rings} />
-      <div className="ml-auto">
+      <Whereabouts controller={world.controller} frame={world.frame} {...switches} />
+      <div className="ml-auto flex items-center gap-4">
         <SearchBox release={release} onFound={(id, record, as) => selection.object(id, { record, as, fly: true })} />
+        {selection.inside === undefined ? null : <InsideBox inside={selection.inside} />}
       </div>
     </>
   );
 }
+
+/** The checkbox that culls the view to the chosen structure's volume: its words shown from 1,536
+ * pixels, where the top bar has room for them beside the rest. */
+const InsideBox = ({ inside }: { inside: Inside }) => <SwitchBox label="Only what lies inside" state={[inside.on, inside.set]} textClass="max-2xl:sr-only" role="checkbox" />;
 
 /** The drawer `name` the rail opened, beside the view, or over it below 1,024 pixels. */
 function Drawer({
@@ -177,7 +190,7 @@ function Drawer({
       aria-label={drawerTitle(name)}
       className="w-[300px] shrink-0 overflow-y-auto border-r border-line bg-panel p-3 text-sm max-lg:absolute max-lg:inset-y-0 max-lg:left-[52px] max-lg:z-20 max-lg:shadow-2xl"
     >
-      {name === "view" ? <ViewDrawer controller={world.controller} frame={world.frame} cosmology={cosmology} /> : null}
+      {name === "view" ? <ViewDrawer controller={world.controller} frame={world.frame} cosmology={cosmology?.name ?? ""} /> : null}
       {name === "show" ? <ShowPanel {...show} /> : null}
       {name === "structures" ? (
         <>

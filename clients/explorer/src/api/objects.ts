@@ -28,6 +28,10 @@ const Measurement = z.looseObject({
   band: z.string().nullable().optional(),
   /** The two magnitudes a colour index was computed from, where its source publishes no colour. */
   derived_from: z.array(z.string()).nullable().optional(),
+  /** A distance's kind, such as `geometric` or `photogeometric`. */
+  distance: z.looseObject({ kind: z.string().optional() }).nullable().optional(),
+  /** A redshift's kind, spectroscopic or photometric, and the frame its source published it in. */
+  redshift: z.looseObject({ kind: z.string().optional(), published_frame: z.string().optional() }).nullable().optional(),
 });
 export type Measurement = z.infer<typeof Measurement>;
 
@@ -37,6 +41,10 @@ const Preferred = z.looseObject({
   rule: z.string(),
   measurement: MeasurementKey,
   distance_mpc: z.number(),
+  /** The rank of the measurement preferred, such as `geometric` or `photometric_redshift`, and
+   * what decided between it and the runner-up. */
+  rank: z.string().optional(),
+  decided: z.string().optional(),
   /** Fractional: the uncertainty over the distance. */
   uncertainty: z.looseObject({ form: z.string(), total: z.number().nullable().optional() }),
 });
@@ -98,6 +106,9 @@ const ObjectRecord = z.looseObject({
   sky_position: SkyPosition.nullable().optional(),
 });
 export type ObjectRecord = z.infer<typeof ObjectRecord>;
+
+/** A record as Univ Server gives it, read and checked. */
+export const readRecord = (raw: unknown): ObjectRecord => ObjectRecord.parse(raw);
 
 const ObjectChoices = z.looseObject({
   objects: z.array(z.looseObject({ id: z.number().int(), names: z.array(z.string()).optional() })),
@@ -197,7 +208,8 @@ export function placeOf(record: ObjectRecord): [number, number, number] | undefi
   return [position.x * k, position.y * k, position.z * k];
 }
 
-const sameKey = (m: Measurement, key: z.infer<typeof MeasurementKey>) =>
+/** Whether `m` is the measurement `key` names. */
+export const sameKey = (m: Measurement, key: z.infer<typeof MeasurementKey>) =>
   m.entry === key.entry && m.quantity === key.quantity && m.n === key.n;
 
 /** The measurement the preferred distance was taken from, and every other distance. */

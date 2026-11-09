@@ -8,7 +8,8 @@ import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
 import { KINDS, POINT_CSS } from "../scene/kinds.ts";
 import { Mark } from "./Mark.tsx";
-import { GREY_CSS, KEY_TEMPERATURES, STAR_GRADIENT } from "../scene/starColour.ts";
+import { GREY_CSS, STAR_GRADIENT } from "../scene/starColour.ts";
+import { StarScale } from "./record/charts.tsx";
 import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
 import type { Controller } from "../scene/controller.ts";
 import { FLOATING } from "./floating.ts";
@@ -30,13 +31,14 @@ function ringsText(controller: Controller): string {
     : `Rings: every ${shortDistance(rings.step)} from the Solar System barycentre, in the ${controller.axes} equator.`;
 }
 
-/** The top bar's part: the eye's distance from the focus, and the axes with the grid's switch. */
-export function Whereabouts({ controller, frame, grid, rings }: ViewProps & { grid: Switch; rings: Switch }) {
+/** The top bar's part: the eye's distance from the focus, and the axes with the switches of the
+ * grid, the distance rings and the structures' outlines. */
+export function Whereabouts({ controller, frame, grid, rings, outlines }: ViewProps & { grid: Switch; rings: Switch; outlines: Switch }) {
   useStore(frame);
   return (
     <div className="flex shrink-0 items-center gap-3 text-sm">
       <p data-testid="distance" className="whitespace-nowrap">
-        <span className="text-dim max-xl:sr-only">Eye to focus </span>
+        <span className="text-dim max-2xl:sr-only">Eye to focus </span>
         {formatDistance(controller.view.distance)}
       </p>
       <label className="flex items-center gap-1.5">
@@ -57,6 +59,7 @@ export function Whereabouts({ controller, frame, grid, rings }: ViewProps & { gr
       </label>
       <SwitchBox label="Grid" state={grid} textClass="text-dim" />
       <SwitchBox label="Rings" state={rings} textClass="text-dim" />
+      <SwitchBox label="Outlines" state={outlines} textClass="text-dim" />
     </div>
   );
 }
@@ -148,12 +151,7 @@ function Key({ catalogue }: { catalogue: Tally }) {
     <div className="space-y-2">
       <h2 className="font-semibold">Stars, by colour index</h2>
       <div data-testid="star-key" className="space-y-1">
-        <div className="h-3 rounded" style={{ background: STAR_GRADIENT }} />
-        <div className="flex justify-between text-xs text-dim">
-          {KEY_TEMPERATURES.map((t) => (
-            <span key={t}>{t.toLocaleString("en-GB")} K</span>
-          ))}
-        </div>
+        <StarScale />
         <p className="text-xs">
           {catalogue.stars.coloured.toLocaleString("en-GB")} stars in the colour of the temperature their colour index gives,
           estimated along the dwarf sequence of {DWARF_SEQUENCE_CITATION}, as observed and not corrected for reddening. The

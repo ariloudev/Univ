@@ -20,6 +20,8 @@
   --color-dim: #8e96ab;
   --color-accent: #e8b04b;
   --color-warn: #f08a6c;
+  --color-raised: #16213a;
+  --color-edge: #3a4a6e;
   --font-sans: "Barlow Semi Condensed", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Spectral", Georgia, serif;
 }

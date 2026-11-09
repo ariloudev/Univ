@@ -38,7 +38,7 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Name, designation or id"
           aria-label="Find an object by id, source:identifier or name"
-          className="w-40 min-w-0 rounded border border-line bg-space px-2 py-0.5 xl:w-60"
+          className="w-40 min-w-0 rounded border border-line bg-space px-2 py-0.5 2xl:w-60"
         />
         <button type="submit" className="rounded border border-accent px-2 py-0.5 text-accent hover:bg-accent hover:text-space">
           Find

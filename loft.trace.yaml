@@ -3626,7 +3626,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "marks Earth as the Solar System barycentre, and says when it cannot draw"
-        body: 982a6c9bc0e4b0dcba5fe420b75ad62d01bd95db1bf858aba0820d44056d2ae1
+        body: d9afef1fd10632860f549c0983d70fee35cdd357e2cf39457769f3c87bb3c455
   - node: 01a1a497-e843-728a-bce8-40026e7286d2
     reviewed: c351be9f44274d24780c20b9925fd09dc4e021d26e7cf3ce0502f2f699a0a1c8
     tests:
@@ -4079,7 +4079,7 @@ links:
         body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
-        body: 4fc582810eb7196583cd79e0a94157d124312d8a6ae53cd6cb9494e09816554c
+        body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
   - node: 01a1a8e8-6326-709f-aa5e-4610311af683
     reviewed: 1174f20dd1a7c960a058c69bc1a4f4b5ec2af79cfc50772ad17920a33030d44c
     tests:
@@ -4192,22 +4192,22 @@ links:
         name: "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
         body: 768ac26ce29ceb3b685ad257aae80ab47868725463553c0dbeeb45ba2277b5d6
   - node: 01a1a8cc-3d02-7585-85fb-455a3c55e223
-    reviewed: 651043b0559b020ad34b1b42ca4607e462f3153b731744f210ecb9a3c02c8584
+    reviewed: 0d737e117717266b2b460cb0a5d169c9ac0571264cffa8d076943d3dde79985b
     tests:
-      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
-        name: "offers every domain, every source once by its title, the four kinds and each kind of structure with its count"
-        body: 20259281dca2ca65a8ca33bdd340ce945bcac1eec32224b61c21ce515113aa8f
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
+        body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
   - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
-    reviewed: b071004bd59d15698d699c866972d0e78d80c999cd25be7768fed6e3d4ee10f2
+    reviewed: a305dafb5da2bdd558a29351e46dc2a71f745cf604150f5baad2a228784b2c65
     tests:
-      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
-        name: "offers every domain, every source once by its title, the four kinds and each kind of structure with its count"
-        body: 20259281dca2ca65a8ca33bdd340ce945bcac1eec32224b61c21ce515113aa8f
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
+        body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "are none by default, so everything is drawn"
         body: d9258b0b6c9b5b51b88faff5fd4beb49a89df81d979bb179cd1116dfcb973fc5
   - node: 01a1a8cc-3d02-7585-85fb-455d411f618e
-    reviewed: 53babcdf157e4664c27920e9a64bd7cdbc1bd474beb685572ba67fcd88d97772
+    reviewed: fbae5362e75b7f989e50eeee7efacaf6969a43db565dd97c5d0fd7a2cbf79a3e
     tests:
       - file: "clients/explorer/src/scene/masks.test.ts"
         name: "tell which points are drawn: by domain, source and kind"
@@ -4222,14 +4222,14 @@ links:
         name: "set a kind's bit at its index among the kinds"
         body: d02a93b255b2c6e5e758b32170611b917b732eae6510359fefa23a6d16bbff53
   - node: 01a1a8cc-3d02-7585-85fb-455ef6890107
-    reviewed: 9208c4a1b24049ba045412534ba0dda611a46c79c1e69fc6bba569fa2b2ce02e
+    reviewed: ff270dd4f6447073ec040e061259f1eaf790691965d9492450a6ed2a673d1138
     tests:
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "draws and names no structure of a kind turned off, and draws it again once turned on"
         body: 0fa94d94e75066201515b8528ee30582df297bf095f63a5a9ea163a45d0aed69
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
-        name: "lists no structure of a kind turned off, and holds the checkboxes of what is drawn"
-        body: 6ed841c574050c1a0c49c2cec391d6935812924ef179ed519ea9dc7dec675e6c
+        name: "lists no structure of a kind turned off, and holds the switches of what is drawn"
+        body: 164b19b01e01101cf01aff580b2879123ebecf06676ed7727dbeacdfd55b4ffe
   - node: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
     reviewed: 51a1d42e822a90e1465311acfbb103a1d2ff7ef95ea401205ad27a469141f1a6
     tests:
@@ -4241,19 +4241,217 @@ links:
         body: 16f74791cef77f650b24db0a1ec29717276620a0d683369d39130de07c9545aa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 225111d5c5faefdfd10ba1f571ae76959a37c1bd9d134c2de75aacf7ce4676e1
+        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
   - node: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
     reviewed: b9ee14b78d7cda09bc75088b59ba3b163850a2c383f8a1449f5089c72ea34bf5
     tests:
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "go through the address and back, each group by its name"
-        body: ae9cc8c4b0ad3c43e245dc8ccef8644bc6ffb18cf450f3d5446befe8abd93e34
+        body: 425b6bbe1158c50019027c8d9413909ec0d59dea365bcb187a94d149d2a8db5e
       - file: "clients/explorer/src/ui/hidden.test.ts"
         name: "are kept in the address with its other parameters"
-        body: 3dd5b554771e6163f0fce4623b24584dc7e90c2b09cdeb0839b49dc2c6c06b1a
+        body: 611c7e569dd2070f841d5a2287d1e45a36ab4c56ef0f82f3bd962d84af0bca68
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 225111d5c5faefdfd10ba1f571ae76959a37c1bd9d134c2de75aacf7ce4676e1
+        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+  - node: 01a1bcf9-343a-712a-a28c-7503bb8fdbb5
+    reviewed: 8ae59225422c44a47018aaa3dfdebdb7846d7284052dafc3b3f603ab9c48f092
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "sums up what is on, and offers to show everything only while a group is off"
+        body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers"
+        body: 4fa21c607bd552de2fdf2f1cb5cfd22ac89ea90834d558126718839b64da9012
+  - node: 01a1bcf9-343a-712a-a28c-75049b84e0eb
+    reviewed: 105c1bca89abcde5f6d38331efba9fd8b8a1bfd9a2097fb52e747d66610ffca0
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "sums up what is on, and offers to show everything only while a group is off"
+        body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers"
+        body: 4fa21c607bd552de2fdf2f1cb5cfd22ac89ea90834d558126718839b64da9012
+  - node: 01a1bcf9-343a-712a-a28c-7505bbe87412
+    reviewed: 8705f66b5a2ca7ffa949646e94e17121efadb01af8eb91d73cee1b173dc7f75d
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "sums up what is on, and offers to show everything only while a group is off"
+        body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every group that is off on at once"
+        body: 41dbc76fe62ac70f0c422a0f179f05d75aec30f301f81b0c32fbc905a70dbcd4
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "shows only one catalogue from its line, every other one off, and everything again from the summary"
+        body: 4e8bcd43272b27a65de7f73f328a86f5e1cf1679b98550b2787d520a5eadc969
+  - node: 01a1bcf9-343a-712a-a28c-750761703f4d
+    reviewed: 54c11f0bfe16bacc18779d136c479b6b824073882b7b9e3587957a00ce898b73
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "writes a domain's points short, in millions from what would round to a thousand thousands"
+        body: 5980bd1578fee5c4458578f9da9cbdbf08c0a719cd096b7bb4558025489ff2fe
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "heads a column for each scale domain with its switch and its number of points"
+        body: 2ce6bb911c995f8d302ab9296a3842cd17aea9bc277b726fe650e3f5e5a07853
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "gives each scale domain its column with its number of points, from the smallest scale up whatever the order they come in"
+        body: a4abb56bd6dbd2602f66ae002f9a508bbfde5ef8984db66a5a60ed940337ae9e
+  - node: 01a1bcf9-343a-712a-a28c-7509e80a8d25
+    reviewed: 01c489c567c1bf9413e4528ceaa5c97d987a40b327da6532b69be3cc49d75977
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in"
+        body: 8f63cf691a39efef53674df92840b7d74f01b45757b93b055f0655fd90d245de
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "lists each source once by its short name and title, with every domain whose points it places, grouped by the smallest"
+        body: fe5191d3b494a14eab9aa556c9a54c2afd02ecbc48bc30a1930a2996638de1d1
+      - file: "clients/explorer/src/ui/record/names.test.ts"
+        name: "give each source of release 12 its own short name"
+        body: 97481ffbdb725dafcd8089b5b6f9368e770da46d9be0f342cdb4badead89ff16
+  - node: 01a1bd07-c9c2-7632-a4e5-d6277e9ea870
+    reviewed: eeb18aad6dbb5edbf969f2663f543f98010b80acbab6b4ba3b3f99c0f2155803
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in"
+        body: 8f63cf691a39efef53674df92840b7d74f01b45757b93b055f0655fd90d245de
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "lists each source once by its short name and title, with every domain whose points it places, grouped by the smallest"
+        body: fe5191d3b494a14eab9aa556c9a54c2afd02ecbc48bc30a1930a2996638de1d1
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "gives each scale domain its column with its number of points, from the smallest scale up whatever the order they come in"
+        body: a4abb56bd6dbd2602f66ae002f9a508bbfde5ef8984db66a5a60ed940337ae9e
+  - node: 01a1bcf9-343a-712a-a28c-750ae9ac17b6
+    reviewed: 368e31bd2d4efd93b08112342890b8bfe4b695d8812cab3c20501cc76a4b0a14
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "lists each source once on one line by its short name, its title on hover, grouped by its smallest domain and marked in each domain it is in"
+        body: 8f63cf691a39efef53674df92840b7d74f01b45757b93b055f0655fd90d245de
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "lists each source once by its short name and title, with every domain whose points it places, grouped by the smallest"
+        body: fe5191d3b494a14eab9aa556c9a54c2afd02ecbc48bc30a1930a2996638de1d1
+  - node: 01a1bcf9-343a-712a-a28c-750c2cd7edc7
+    reviewed: 1bfc0f8820cfaa7f46cc0704f4415cffc009edf8886948560946415db4aabfcd
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns a scale domain off or on alone, leaving every source's switch as it is"
+        body: b049fdf616dba4be1fcf153e50e003aa805652b0800af084e7d7a58690a619d0
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn a scale domain off or on alone, leaving every source's switch as it is"
+        body: 58d8b29d9611f125988b75f7af23978662647738766f3960aae1578adc66ebfb
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
+        body: 92d1df25e0fe1bfc8212159b5a37052c115c26e3c45dd5adfbb9f6aadd0fc25c
+  - node: 01a1bd07-e8b7-762f-97dc-651bd7d745b2
+    reviewed: d6ffc4f2f2983da968fc0cb4243701e69e3980bea7a1a7aad80ea0391a4110c5
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns a scale domain off or on alone, leaving every source's switch as it is"
+        body: b049fdf616dba4be1fcf153e50e003aa805652b0800af084e7d7a58690a619d0
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn a scale domain off or on alone, leaving every source's switch as it is"
+        body: 58d8b29d9611f125988b75f7af23978662647738766f3960aae1578adc66ebfb
+  - node: 01a1bcf9-343a-712a-a28c-750fb1df213e
+    reviewed: 99310359c662a4f85e26a99f88e1bc022ae2dff1086ffa0390ef1d4e74bebfd6
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "marks each kind of value as the key does, hollow and not pressed while off"
+        body: d662d0460621c5619c8ff6f2f2cfeed3708388538c7527c71ff6f1220adfc867
+  - node: 01a1bcf9-343a-712a-a28c-751026f05121
+    reviewed: ecfb4472bbca412651cf11a6bce85d79f75465877684988631716fd29c6ce239
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "marks each kind of value as the key does, hollow and not pressed while off"
+        body: d662d0460621c5619c8ff6f2f2cfeed3708388538c7527c71ff6f1220adfc867
+  - node: 01a1bcf9-343a-712a-a28c-751205a93cd4
+    reviewed: b39f2c804d2ebd634d3a9848f62672ae0a321dbb43bb4f854ad72623a5630b7c
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
+  - node: 01a1bcf9-343a-712a-a28c-7513e662d7d4
+    reviewed: 9eab7b797d6f86328b5c7b047c60a25651798e6b610a9cfdc5495be370f83ea7
+    tests:
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "groups the kinds of structure by family, with their counts, any other kind under other"
+        body: ae524dbfdc7901708b537c9a56d9dee41d2bc7c4dd2a880823525c7f65d2e6b5
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "keeps each kind of structure's family with its colour, every kind with a colour in one family"
+        body: 62c1b9d07ce018d7dac53075333800cc2c66f0906d9bf7739da7b044073d576e
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
+  - node: 01a1bcf9-343a-712a-a28c-7514105b3d9c
+    reviewed: 04c623de4934d11ea7a6c369aeace26d376855c2ae4179f7c80252e4ee8f0576
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
+  - node: 01a1bcf9-343a-712a-a28c-75169b137491
+    reviewed: baad58a0ba8963215ade79cd9a150c98d0232d1d5065a2618b54d3afb09f5072
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn only a source on, with each scale domain whose points it places, and every other source off"
+        body: 3cdc4941ef79915a5b7632c766215ac3959e5f85de020d7b7c5402e40a1ab001
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers only one source or kind of structure on its line, reachable by the keyboard"
+        body: 760b46b6febfde2dc777e08274cff65e3a5b9d1a7be1bb3018cedfd1eec27655
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "shows only one catalogue from its line, every other one off, and everything again from the summary"
+        body: 4e8bcd43272b27a65de7f73f328a86f5e1cf1679b98550b2787d520a5eadc969
+  - node: 01a1bcf9-343a-712a-a28c-75170d5cc323
+    reviewed: 0898ca25fa62d2426dae659b1f5c6ccad3e8eb742f43660e6f233ceca3807b8c
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn only a kind of structure on, and every other kind off"
+        body: 6a0d993fbedaacdfaf8e53e4b251f98dc15425105a36540580cd57a60dbe41e3
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers only one source or kind of structure on its line, reachable by the keyboard"
+        body: 760b46b6febfde2dc777e08274cff65e3a5b9d1a7be1bb3018cedfd1eec27655
+  - node: 01a1bcf9-343a-712a-a28c-7518d12d9fa0
+    reviewed: 95049d4a4b197a67df301cb8ab6c958fb2f476ecddb9d1338854fd7aac034b7b
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers only one source or kind of structure on its line, reachable by the keyboard"
+        body: 760b46b6febfde2dc777e08274cff65e3a5b9d1a7be1bb3018cedfd1eec27655
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "shows only one catalogue from its line, every other one off, and everything again from the summary"
+        body: 4e8bcd43272b27a65de7f73f328a86f5e1cf1679b98550b2787d520a5eadc969
+  - node: 01a1bcf9-343a-712a-a28c-751a2eefe88f
+    reviewed: 216e30158e111b5cd7e8f8e2463654b6e8dc61393783d741ed221f9b2562055e
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every group of the points on, or every scale domain off"
+        body: f251c614eaa23e117425828d325ac8a2e150f167e01e1a36db56df8ebdd2d7f2
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
+  - node: 01a1bcf9-343a-712a-a28c-751b082d1288
+    reviewed: 216c0dd14d5fcbbf727a12971ecfee7bfa6ba6a93048435e41f53d64cab4224d
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every group of the points on, or every scale domain off"
+        body: f251c614eaa23e117425828d325ac8a2e150f167e01e1a36db56df8ebdd2d7f2
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
+  - node: 01a1bcf9-343a-712a-a28c-751c56321a25
+    reviewed: 754b004692a2f2dbdb335fe45cdf32e5937a010401bc10337b6a057bb9657e02
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every kind of structure on, or off"
+        body: 9b21dca9bc59e4b1b365003173130305167038c4816cbd93c66c3f716d475f79
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
+  - node: 01a1bcf9-343a-712a-a28c-751ddc8c2d45
+    reviewed: e0bc76401dce0260e42e467b61bdb94a61915c6cff283ccad848e0aa71983a12
+    tests:
+      - file: "clients/explorer/src/ui/show/actions.test.ts"
+        name: "turn every kind of structure on, or off"
+        body: 9b21dca9bc59e4b1b365003173130305167038c4816cbd93c66c3f716d475f79
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "turns every group of the points or the structures on, or off, from their All and None"
+        body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
   - node: 01a1b7d7-c032-73ad-803e-b103f2a0c853
     reviewed: fb983fbd6b6225e1aabff010b9d7b76a7373c69b7b1de62f02b9332b2211704b
     tests:
@@ -4403,7 +4601,7 @@ links:
         body: 3a65636cde9ef0c0cf6469b2bbe9b78692c74f9cb12da7ed9bb5aa259594eaf9
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
-        body: 4fc582810eb7196583cd79e0a94157d124312d8a6ae53cd6cb9494e09816554c
+        body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
   - node: 01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b
     reviewed: 3e800388d3729b9777126bb76f570400a1ce3302661a7f44a3a79f3cef0a8b0f
     tests:
@@ -4532,10 +4730,13 @@ links:
         body: dd5e140113436aff7d7dba4b826229869a2105acfbaf5573af0e11666a7d0bc5
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
-        body: 4fc582810eb7196583cd79e0a94157d124312d8a6ae53cd6cb9494e09816554c
+        body: e575956c940e0889007a30c71cfba152da3944e56cbdd70f3de4f11bb5e2cc57
   - node: 01a1b7f5-f51b-71f9-80de-cd24519fb4d6
-    reviewed: 1288628f3fac9b6efeda328f950bd02499d127a56a9ee1c5ddd896d2a69d4c99
+    reviewed: f5e9428163f38d2682e6453b05420681f7f758a5b74a53bc71d46565379a3def
     tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the release, the eye's distance with the axes, the search and the switch in its top bar"
         body: c6ad34563ab4cacd2bf5570e7f9a21ba898b90bed0a0a9d8857c03c149012928
@@ -4548,6 +4749,9 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "draws the distance rings from their switch beside the grid's, labelled, low over the plane without a WebGL error, and keeps them across a reload"
         body: 3ffc96f6d43fa429f5258a8a817df565c04d03f1d98e74c8171a4259f7177d12
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers \"Only what lies inside\" in the top bar beside the level-of-detail switch while a structure drawn as a volume is chosen, and not in the record"
+        body: 01897f84ff1eff69ac0f755b93b9d60afae4f4dfa73fd86db5aa5d1af112a017
   - node: 01a1b7f5-f51b-71f9-80de-cd251f348c42
     reviewed: 1872ff6a009aea30596b02dc96eb32775aef1c5673945137202b23afe7a86e45
     tests:
@@ -4625,7 +4829,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/names.test.tsx"
         name: "names structures in italic type, in the view, in their list and in their panel"
-        body: 7aecca08c56e6e5d37b8ff484707d20b047a01823ab1b7f7f892adeddd95ae00
+        body: 5574429bdf1fd8d6588f0c3a550139875ebe1cfb6e0ecec634206763b0c5bd9a
   - node: 01a1b7d7-c032-73ad-803e-b11383d20219
     reviewed: a2a6f68da8bd77881a49afa223c9a38432108b956983417ead29db28136e27c1
     tests:
@@ -4700,16 +4904,82 @@ links:
         body: 0900dc071c93eb41a2ba1f460ecc0726e7bc170af51fbab925b9ebea0bf86677
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "is headed by the name the object was found by, with its id beside it"
-        body: eecae235cb90df636a321bf44d9b9c154112754adb3836d0ee65b27919585268
+        body: 023bd701f8762709a6ef38739670929668a3808f193dfc7efb24829e602646a1
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "is headed, when opened from the view, by the first proper name its sources give, or else its first designation in its catalogue's form"
-        body: a1fd76a3e77c0dc86e8216b630be2d8749e089650a8285b64f9844cc14116558
+        body: 37efb67aeeb32dcf0b95235dcb19f03458c40ade0e4b9babf8c011bb589ca628
   - node: 01a1a6b2-b217-764e-93d0-da8ac9eeac60
     reviewed: b50e335a6ecb06d3274361f87e0018abb49a097f3871c3fd20358cbc762dd372
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "names a galaxy group as such, and the scale domain of every object, not \"body\""
-        body: 5314d46ab79d66492161d895a945bad596c2c3bc163cb9308957ae0b55866310
+        body: 4673bdbb62c4b0ca731ef20a08f3a22f0997eb48109cd3b3ef3098480eea0f58
+  - node: 01a1bcba-dd8e-750a-886c-c224b6290cc7
+    reviewed: 31b9d4985d5ed46f45acddf223a6f22afe7df15a661dc8ecd7c64ebdd3cd4408
+    tests:
+      - file: "clients/explorer/src/ui/record/objectRecordText.test.ts"
+        name: "says what the object is as far as its record tells, how far, and in which domain"
+        body: b7d13c9fa12fe8fc8dade2e76f4fa037b6a6a2e2beb7d11335c22c35afb3d754
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "leads with one sentence of what the object is, and names its other names and id beneath its name"
+        body: 97d87542f840149bb90bf57278e942888f09fff1b4f1064a69c6e51d03d36574
+  - node: 01a1bcba-dd8e-750a-886c-c225087c12cf
+    reviewed: c58ff9c84caef26f2f85ba7a934160a4a0bd7f67f3f5d30842e0a30d33bae962
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives each value on a line of label, value with its source's short name, and its kind's mark"
+        body: 876ddbae7e3e4799def1d128bc9ddb3f67aac0d93a6e8e7b63bde8d71cf911cb
+  - node: 01a1bcba-dd8e-750a-886c-c226b8b0863f
+    reviewed: 21ac5b6f42f201fb702bf74b6ec31e71e3679b903413e09c1ba3fd19fbba4d1f
+    tests:
+      - file: "clients/explorer/src/ui/record/names.test.ts"
+        name: "name a source by its short name, else by its title, else by its id"
+        body: 44534c5266da885bc33fbac5e1d62acc7c515c00c750e9a5dbf5bf77d8b03861
+      - file: "clients/explorer/src/ui/record/objectRecordText.test.ts"
+        name: "gives one line for each band, each colour and each type, with its source by its short name"
+        body: b171f0c4f7f6f816412abd39a212a30d30c03043ef9b37433bdc08885de11ad3
+  - node: 01a1bcba-dd8e-750a-886c-c227aa642e74
+    reviewed: 777d58f010f096fbf958002e14999e7749ac5f8cf0e5c9de9da9b50a1738643c
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "says how many catalogues hold the object, and keeps every name, value and flag behind one link"
+        body: 03d8204d04d778362982fe5706bdce54aa375da6af553dcd558fe2915b32cf37
+      - file: "clients/explorer/src/ui/record/RecordPanel.test.tsx"
+        name: "makes the whole record only once its link opens it"
+        body: 59421c4a4a8dedf5172672aace3e1d92168c658b0da307519256b6add1d3a0eb
+      - file: "clients/explorer/src/ui/record/objectRecordText.test.ts"
+        name: "leads with the preferred distance and its uncertainty, in the unit that suits it"
+        body: fdd76040bf73edf7b4b11249276f4ed0fa39ef18b6039f74a852f32a4463f336
+  - node: 01a1bcba-dd8e-750a-886c-c22847d3d38d
+    reviewed: 61b1ed853e5d9ce4ff4126163891ac9d50835eec35941333b9ae64f4a89fa303
+    tests:
+      - file: "clients/explorer/src/ui/record/objectRecordText.test.ts"
+        name: "puts every distance and parallax on one axis, a parallax at its inverse and labelled so, the preferred marked"
+        body: 23ffbae8b9179b0d19751ef7e0dfd914793865df26d52aebe30b257f8b42075a
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "draws every distance on one axis, a parallax at its inverse, and says what preferred the one it leads with"
+        body: bda67bcf3390ec79aa7202fa0e0ac096674978a417045e700de0352fc0983b33
+      - file: "clients/explorer/src/ui/record/charts.test.tsx"
+        name: "draw distances as dots on one axis, the preferred in the accent, and name each in words"
+        body: b5ac711a855f14bbcf1f52186d2e23dffa641bee53362dee7076cefb65637c04
+  - node: 01a1bcba-dd8e-750a-886c-c229e5489bf9
+    reviewed: db1a4caa19f34b1a0605f76e05c3f9524c91bd95c763061beced895d72b34e82
+    tests:
+      - file: "clients/explorer/src/ui/record/objectRecordText.test.ts"
+        name: "gives a galaxy's velocity by frame, once for each source, and many redshifts of one source as a strip"
+        body: 79b4125baa08a2cdd93e6ddcc580157b302f8f78fb62d888986a4903947c94e2
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "draws the many redshifts one source gives as ticks, marked with another source's velocity"
+        body: 3e0cd545e5ab47e91cc06264ec26445eb5f4b5192e50948a1d7adb36eb3329a2
+  - node: 01a1bcba-dd8e-750a-886c-c22aa107cee9
+    reviewed: abf1b351cd84cd403bfa25bf59ba285397b505105a47bf11dc8e1974f81da79f
+    tests:
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "draws a star's BP−RP on the colour scale stars are drawn in"
+        body: e9ba6a88cb2fd83fab65a8c9fc3ead877b7539b7d35ecdd591cd7eefeec728fa
+      - file: "clients/explorer/src/ui/record/charts.test.tsx"
+        name: "place a star's BP−RP on the key's gradient by the temperature it gives"
+        body: 49a8ecb95b7d7d2945bee8595ab08c5d1a3ad1a713ad5b002d8dfd84ad056256
   - node: 01a1a497-e843-728a-bce8-3fe7201a1670
     reviewed: ca74ec294dbe6afda230bdbce4bb8a429762d21dbd26da95b0f7dd791f44d21b
     tests:
@@ -4730,7 +5000,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives the preferred distance with its uncertainty, kind, source and rule"
-        body: d48ec37b8a59649e051192b3e7c7dbb50b29cc76d894dbb7a1ba16bc8e907580
+        body: e3b94625df7c827ebdf240c5bded91e184f8ebbdc112bc3e5f45d76349c33624
       - file: "clients/explorer/src/ui/text.test.ts"
         name: "give the preferred distance with its fractional uncertainty, also as a distance"
         body: db01b1ebebf048eec7ca7d86ff9caac5a7d2c285b561a54b27c04f4fc618b3b2
@@ -4742,7 +5012,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "lists each other distance measurement beside the preferred one"
-        body: 371e3449192e269b2406266121f7b10578aebb212cbb13be478aaee25866cf22
+        body: 9cf9871cdcbecb9dad27a572ef5be3c038075f0ed48f68a90f3e7254ad776991
       - file: "clients/explorer/src/ui/text.test.ts"
         name: "give a published value with its unit and uncertainty as the source gave them"
         body: a1b15c7e16ef70583682c2484488cb594c5073d862164f13564bff90fc308002
@@ -4754,37 +5024,37 @@ links:
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives the frame and epoch of the object's position"
-        body: aaae8cd5260df5e924d616314d66d9eb8efe8f6bb99fb78b9d4589970a0eac66
+        body: 536557a5398546b49ae5b1af0c7a4958f9635897a6179868cab8f77ac9425983
   - node: 01a1a8ac-052e-72b3-a33e-b33a18c5c77c
     reviewed: a857c08bdb5e21ea214e3f8302445ce55a94d8356a19e3940766f27d24ecd6eb
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives each published spectral type with its source and kind of value, and each colour index with its bands"
-        body: 24e8575d34f3e00f8e9549d2e18036b91f680c47c825dcabbe44e3fdffcbfbe9
+        body: 0583dea0c8b641e192ab29ce3b62e127259cf3c76fcf8bbc76fb3976bb898a9c
   - node: 01a1a8ac-052e-72b3-a33e-b33ba7b45072
     reviewed: cd1f1fdec9fc545b1871c21fbb28200c5e346ecd256855588620f98b3dbcede7
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives each published spectral type with its source and kind of value, and each colour index with its bands"
-        body: 24e8575d34f3e00f8e9549d2e18036b91f680c47c825dcabbe44e3fdffcbfbe9
+        body: 0583dea0c8b641e192ab29ce3b62e127259cf3c76fcf8bbc76fb3976bb898a9c
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "estimates the class from the colour index the star is drawn by, and marks a derived index"
-        body: e177d3871da820e2aca198d59a168ff915ccc6d15b8e406ee431dac94ba089fd
+        body: b9356fc1f0905b4f7209a8edb40baa83e9920b2e33b9a85d4f462827fb28803a
   - node: 01a1a8ac-052e-72b3-a33e-b33c05d6a7a7
     reviewed: 9e0a95b550b6a6dc530ccc09911e7659b04dca6ec0a020f27a0b29d2e0918f28
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives the class a colour index suggests, labelled as estimated and cited, where no source gives a type"
-        body: 3bf27e914802d5a223bc723b5200c94de36fdeb7108357969987e573dc398aba
+        body: aa53543af1e36598270b870f93c1369f7df19415f4b5cce0415524709fe6e8f5
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "estimates the class from the colour index the star is drawn by, and marks a derived index"
-        body: e177d3871da820e2aca198d59a168ff915ccc6d15b8e406ee431dac94ba089fd
+        body: b9356fc1f0905b4f7209a8edb40baa83e9920b2e33b9a85d4f462827fb28803a
   - node: 01a1a8ac-052e-72b3-a33e-b33dc8e38c1d
     reviewed: 26f8226d5312ee5196c5413ac8f2e7f932a5dabcd59b752f7b23d97e2aaa5df3
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "names the papers of a researched entry"
-        body: d68b782bbbbdf920f7742cf1d6c2ca694cdb9b16cd4146a9d185aa9ef5110a7e
+        body: 7aa0ff0664b2cca6dcf62d962f3f5f7694f400f543e7580f449711e24f810aac
   - node: 01a1b7d7-c032-73ad-803e-b0fa7a60e532
     reviewed: 563cee2d78eb4c17d541e67bbcd9133c9bddf59f7573f19b74f5262ae20c3ecd
     tests:
@@ -4799,7 +5069,7 @@ links:
         body: 34d3d6ae35593b9cf2a7355ae2171f5b8e6ebdc22ed363c30f824d3fd3be6949
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "reads an object's record as a gazetteer entry: on the sky, its catalogues, and each value marked with its kind"
-        body: d93749e37df4ad3c6b243bc03a66fd3241fcac37d31109ebf194acb68dfc561c
+        body: 10ac3c4b950287f8b521199e7438c2b275ad0c5ea54081c2f053e8917f1d9287
   - node: 01a1b7d7-c032-73ad-803e-b0fb367dbf6d
     reviewed: 5052b40214dc41e4a2fc587218724be3c5788ff12ed1ae6ce16d8b06b2bb52c7
     tests:
@@ -4811,7 +5081,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
         name: "gives the proper motion, radial velocity and redshift with uncertainty, kind of value and source"
-        body: 885f395959330c3dc7bf643ecd38db814d7b1ebf3155f6bc5d06121a811e42b3
+        body: 58c8a591f883ddb082d7485b7e65c013932822b41d0e2269094e785dfbfc4107
   - node: 01a1b7d7-c032-73ad-803e-b0fdf7abeef3
     reviewed: e1fba182eeca608335377160b4aa954d7f8b640bd9c590ebda1b29a9f5a8cea3
     tests:
@@ -4850,7 +5120,7 @@ links:
         body: 1cc53a0d31f11384a8faffbcddd5eda5985a11a819b44da08d60e38cf544e76e
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "reads an object's record as a gazetteer entry: on the sky, its catalogues, and each value marked with its kind"
-        body: d93749e37df4ad3c6b243bc03a66fd3241fcac37d31109ebf194acb68dfc561c
+        body: 10ac3c4b950287f8b521199e7438c2b275ad0c5ea54081c2f053e8917f1d9287
   - node: 01a1a497-e843-728a-bce8-3febf4df9871
     reviewed: bca7d8b112819f648054c466978ba0a83c9a97cb103d987537d411ecf16209af
     tests:
@@ -4896,9 +5166,9 @@ links:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
         body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
-      - file: "clients/explorer/src/ui/ShowPanel.test.tsx"
-        name: "shows each kind of structure's colour beside its box"
-        body: 36027fd57d2e962e3d067e174e71d4baa24e5e7367441320f936101aa6886a1f
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
+        body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
   - node: 01a1a497-e843-728a-bce8-3ff2f42a8c13
     reviewed: e1cc72ff569ef79da218abd83bb3344b2fc602ac03f482cae2232f1de175d9d3
     tests:
@@ -5012,7 +5282,7 @@ links:
         body: 2fb9725e8726725fa2e67bb414395aa6e204d6098ca936eb5c8be71977a41802
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel"
-        body: 38e5707b97e69324c34acbfb111a21b7f402e20fdcaa4b6aeaffeae7990a32a7
+        body: d675804ba31e64cd7cf9998d47b4319595f4bd6a739f03cd97a3a61752979edf
   - node: 01a1a497-e843-728a-bce8-3ff70e744c39
     reviewed: bfba018f2e87e6cb478b58ef354c5a48d2622f35bfe07831bafdc10ce1748a20
     tests:
@@ -5022,12 +5292,72 @@ links:
       - file: "clients/explorer/src/ui/overlay.test.ts"
         name: "hides a structure's name that would overlap a nearer one"
         body: e8922b92aad908d2334513eaa572736a5a6fa0b85791b1a592bb8d3b5984cf3a
+  - node: 01a1bd21-49d6-7489-b3d6-aa09864c3462
+    reviewed: 8a123c0b63e90d7eab69d1b599c1934e6ecd76e505a09878d097b8396e74dc98
+    tests:
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+  - node: 01a1bd21-49d6-7489-b3d6-aa0ada007939
+    reviewed: 8826ab30bae9fbabe176c5b59368a24c932e0028f9c5f779fc66ddbb1ca392e8
+    tests:
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "is on unless the address turns the outlines off"
+        body: 259a386dac3b964507a3ac4c53a463662d9edf7168ec303eecf8e9f5955c429c
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "is kept off in the address, beside what else it holds, and leaves it once on again"
+        body: 3e716e20d456f5796c6bfe925a5d0eaa9eab7344f657cc992128fc1a12998d5d
+  - node: 01a1bd21-49d6-7489-b3d6-aa0b73233bed
+    reviewed: e0d819e66f48d34d706ad3edda5b0036c9d9c0d7df7dde20989345d4a8ba4b8a
+    tests:
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "is kept off in the address, beside what else it holds, and leaves it once on again"
+        body: 3e716e20d456f5796c6bfe925a5d0eaa9eab7344f657cc992128fc1a12998d5d
+      - file: "clients/explorer/src/ui/outlinesSwitch.test.ts"
+        name: "starts off where the address turns the outlines off, as after a reload"
+        body: f721eb4250512c60b9db3d8ccabf3a5e3d68a5d0876942739e3759fecb0f19fa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+  - node: 01a1bd21-49d6-7489-b3d6-aa0cc77cd12b
+    reviewed: b0ad613c3200faf6dfec379490e008c471c226d7f1044503e7d31f4c57945db6
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws no outline but the chosen one's while the outlines are off, naming every structure all the same"
+        body: ad088446d2dad7933e513e22a3715624d997a7bc385a7f1d91136262ac1f5520
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "hides only structures' outlines, by their own names, whatever else the renderer draws"
+        body: b4f9b9e3f1d44f02df07724db1714c312c60b125bb938a66b178468ef7e9dad5
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
+  - node: 01a1bd21-49d6-7489-b3d6-aa0d05b88cc6
+    reviewed: 2efb0c1cdc6878f8314651f8aba340f6adbaa8de93db57fd3885f77c448b1ed5
+    tests:
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws no outline but the chosen one's while the outlines are off, naming every structure all the same"
+        body: ad088446d2dad7933e513e22a3715624d997a7bc385a7f1d91136262ac1f5520
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers the structures' outlines' switch beside the rings', on, and keeps it off in the address"
+        body: 3b78fbcb99dc593eccdc38db24c2265a8916dc1fa1dae2aa9757b0220f427efa
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
+  - node: 01a1bd21-49d6-7489-b3d6-aa0eae4110b0
+    reviewed: 00770c00d7a6e6d08759e3e06fd8eb0fd8c8c27dee51d13d8e4e4ea2c11547da
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload"
+        body: 1efb01bc88e5910669fb66b6607f56b5ddbb6bb1d37395531b6622bc52ef51e3
   - node: 01a1a497-e843-728a-bce8-3ff996141e6c
     reviewed: 8bbf3b8f19a86fd4634f08d612679436835df6f69b55574a5a50cead55b4e775
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the release's structures and reads one"
-        body: 81fc61d094fbeaca15b1631db0997adeb63393adecf05d27eac04a01d19694ea
+        name: "lists the release's structures and reads one, culling the view to it from the top bar"
+        body: 40693e4309f5a3d2518cf3b4bba4ed56036395516385a96b6869b8abab86e44a
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "are listed by name and kind, each to choose"
         body: 4478fbed723711539ef4f5494c7ca35e1ee630a4fb5fe9b4e77d33aff48ff6fa
@@ -5060,28 +5390,100 @@ links:
     tests:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
-        body: f387652673e5b20c0fce3d90eacad7d4514dce1f79de873c736a0993368343b1
+        body: 9b44efa60ea5163834f0b1a7370812db39f803bd306ce37263e88fd00f9e21ff
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "name a primitive shape by its form"
         body: 3200f915dd9bdb858982604758ed2be53848840e4c807849ff79cd061569f9ee
+  - node: 01a1bcba-dd8e-750a-886c-c22b9a7cd9e8
+    reviewed: b2b9d25b2162abc4287aabdffbb28feea250ae8c84174cc5ac3473b1648b1209
+    tests:
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "says what kind of structure it is, how far away, and how long its longest length"
+        body: 93f3e7bf51e69632817128ed5429b1fc95032d4f471e440c8f931ce8b455a2d1
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "leaves a radius out of the span its sentence gives, whatever its case"
+        body: 6d8b40fb2e73835e5e08f35160d870c1b32dc6d954c3f061d9b47fb1eeb05a2f
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "leads with one sentence of what it is, and draws its depth as a band with its walls marked"
+        body: 1f470e64649b0373a4b7136c16feaee3f1b4c342fae6ffe4a335d6bd8e3dd0cf
+  - node: 01a1bcba-dd8e-750a-886c-c22cfc5bc92f
+    reviewed: c17bdd1075e576132b78bb71ccdb9f44f17905f39988d2eb49d485ac8d7b355b
+    tests:
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "places a sky region's velocities at the comoving distance of z = cz/c, with the velocities within marked"
+        body: 85d13ac4a4c90e12753a69c642f029414bf819dec3960c695b891bc2ff9f7a8c
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "rescales a published distance or radius to the release cosmology, and marks a redshift within it"
+        body: 4ffa604ed076339d8e922fae6fbafccc90bb1179618fc0bd5e78471610bf87c2
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "takes lengths, depths and other measures apart, an infall velocity being no depth"
+        body: 3295d36ef64dfe0d445c5dc1e1da700d14844410a1234d15279b0dc27c049417
+      - file: "clients/explorer/src/scene/cosmology.test.ts"
+        name: "gives the comoving distance of z = cz/c under flat ΛCDM, as Univ Server places a structure's velocities"
+        body: 6160ba51d7908fd41b0da8b99daf3602e82a7412dce243db648cde40eef14057
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "leads with one sentence of what it is, and draws its depth as a band with its walls marked"
+        body: 1f470e64649b0373a4b7136c16feaee3f1b4c342fae6ffe4a335d6bd8e3dd0cf
+  - node: 01a1bcba-dd8e-750a-886c-c22db388ecdc
+    reviewed: 2d2955b337edd0c388f6cf6e9109a9a50d40e91679a4a2c01055546a2b92d053
+    tests:
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "gives its lengths in the release cosmology, one group for each unit, a lower limit open, with what they were published as"
+        body: 87bd9d39e8cbeb87cb1b3478e56de72569494d2c0b3b4be71430aec2245f37cc
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "draws its lengths as bars on one axis for each unit, a lower limit open, with what they were published as"
+        body: 1ab26779e4c77edf849bd8c6faffdf487c44805f93bfed0d6d399927f7e1ff6c
+  - node: 01a1bcba-dd8e-750a-886c-c22effd4e2a0
+    reviewed: 24e8a6d0df4071323d99db46855dba87932bbe176000daecfbeb652c9b83a710
+    tests:
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "gives a structure placed by its members each member's distance, with its mean redshift marked"
+        body: e6ee87c74f65d8eed2d9e4fb38d0e9789998898f1fdbea820ab904c6c3a0fd9d
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "draws each member of a structure placed by its members as a tick"
+        body: 4ed6a90a5d67bbbc139824677c2525ca7df4ea2b9c9ae6f11375061b458cdaae
+  - node: 01a1bcba-dd8e-750a-886c-c22f7aaaa8d4
+    reviewed: d41e764a2995927b11a583f7d4d15e4143c65bbeacf6dc7f8e1f524e20bb7bfa
+    tests:
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "names each paper that disputes it"
+        body: 378cd14e0534d09a144d728650faa32150f589d7599d756b1999aeb28289f5cc
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "says a disputed structure is disputed, above its values, naming each paper that disputes it"
+        body: d2560dfaa1cf2420cf8bba26da7bd0edbb59d0ffb11de003c7f12d6e65410994
+  - node: 01a1bcba-dd8e-750a-886c-c230ee335b2d
+    reviewed: 249757d102e11ae88bfd59cc1a97e6a5482d3487b17d0584fa206d1b070476c9
+    tests:
+      - file: "clients/explorer/src/ui/record/names.test.ts"
+        name: "name a paper by its first author and year, and keep the rest of its reference"
+        body: 1248f7c01d0f4c48ff556d2005807a8cfc6decc6da29d724847c5b7b664600c4
+      - file: "clients/explorer/src/ui/record/structureText.test.ts"
+        name: "gives its other values on lines, each with its paper only where it cites more than one"
+        body: 1664ce7a3a41de3b429af64fff851646a47a34ea77deda2b302e08285c74b110
+      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+        name: "names its papers once by first author and year, and holds its notes, quotes and every value under one link"
+        body: c237a160ed461214609d222bf079c9afb764b351b96824a2d676fb310ef0b680
   - node: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
     reviewed: 2c7296accced82ce68b41e74f0c895b20f2900d1eed84a1f07849ab93fcca516
     tests:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say a structure drawn by its extents has unknown bounds, and only then"
-        body: b407b42fc3eef6aeeebed30623ea0fd1e4e0508d9b660a27fdf90877760f6521
+        body: 965ce7a2b6b85638a61c733e955556e92c3b0846677571bb0a7d310367116161
   - node: 01a1b7a9-f2af-7290-9cdf-77a50a274427
     reviewed: e39f6dceb1ab6b5dd197298480ac21a55bcd087c887eb469edd05dcdba858033
     tests:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
         name: "say an attractor's or a repeller's sphere is a symbol and which way its arrows point, and only for them"
-        body: c32032581d2b3938ebc1d2b961ac189ead130e362a87f130cf5d3b14c2009689
+        body: bd1eef12ecdd0d86bb60a6a66b0125128c2f5623a721941ebb57ce384739f271
   - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
-    reviewed: d63fb94e1efce06f6668abab935caaaabd14436f5a20736f89667cc294395495
+    reviewed: 0bb887b3e772297bd79e8a2955746d05e19763fc1739607c18c2fc09843548fa
     tests:
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
-        name: "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
-        body: d89c6505d168f5760de71b4ec62fd38d89b3df7663407c37aa5a0c15fbbbb49b
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers \"Only what lies inside\" in the top bar beside the level-of-detail switch while a structure drawn as a volume is chosen, and not in the record"
+        body: 01897f84ff1eff69ac0f755b93b9d60afae4f4dfa73fd86db5aa5d1af112a017
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the release's structures and reads one, culling the view to it from the top bar"
+        body: 40693e4309f5a3d2518cf3b4bba4ed56036395516385a96b6869b8abab86e44a
       - file: "clients/explorer/src/ui/inside.test.ts"
         name: "is kept in the address beside what else it holds, and leaves it once off"
         body: 0f720741a6e5c89db0f960ee12ef21e5c47dca98dac9eff13efc03c302402d14
@@ -5091,9 +5493,9 @@ links:
       - file: "clients/explorer/src/scene/volume.test.ts"
         name: "is none for a structure drawn as a point, a path, a ray or a range alone, or with neither a shape nor bounds"
         body: 9fe07cf317440747b313f561f9169f4c34bf1a9ccda6bee1a7e5dd95b631282e
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
-        name: "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
-        body: d89c6505d168f5760de71b4ec62fd38d89b3df7663407c37aa5a0c15fbbbb49b
+      - file: "clients/explorer/src/ui/Atlas.test.tsx"
+        name: "offers \"Only what lies inside\" in the top bar beside the level-of-detail switch while a structure drawn as a volume is chosen, and not in the record"
+        body: 01897f84ff1eff69ac0f755b93b9d60afae4f4dfa73fd86db5aa5d1af112a017
   - node: 01a1b13c-1e10-748d-8008-e7e33e6ecd76
     reviewed: 12ed190b87e410b4f054f5c408b4637e51717a6d627b37c3a022a26e93dcc50f
     tests:
@@ -5137,11 +5539,11 @@ links:
         name: "is the bounding box of a structure with no shape, approximate"
         body: d286d572cbe32923235fbd196bf7def3d3375764a4c528ccb3653090255d1e29
   - node: 01a1b13c-1e10-748d-8008-e7e6a6d53737
-    reviewed: 018fe936ff4a24bbef13ba2ab9c61366f936612afeb8da5bea2879ac84327dd8
+    reviewed: 10c06ad8935c407e0e05124eb18a18a88ef65fff347c6de6f6fc09d753fab538
     tests:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
-        name: "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
-        body: 69773c0644b9c0c0de6b23e04fde43451e35aeb97074c468be4c91c43907094f
+        name: "say, only with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+        body: b1aa375a65a759dc48ffe17465d11d6785a3122848ee2637935de2783c33231a
   - node: 01a1b13c-1e10-748d-8008-e7e71f42aabb
     reviewed: 0733e22659d58cffd715875dd2db7dcd14f8979d13095aab033b602f36ddf1f5
     tests:
@@ -5158,11 +5560,11 @@ links:
         name: "are drawn fully opaque inside a structure the view is culled to, twice as bright as the brightest without it"
         body: d553521c83f3f9e5e44476c577339d44374bec2a5ed7885dae7f1094b46b43c2
   - node: 01a1b13c-1e10-748d-8008-e7e859257b94
-    reviewed: 0b794c1cc9e9db9b28e278653c25b002f60c2eda7e53bb0a5ed79cc4cdc3aa9e
+    reviewed: 6f5139ce1acaab0641a8b2190cb4505fe24912bc4b1623dab60a3e9148b25e7f
     tests:
       - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
-        name: "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
-        body: 69773c0644b9c0c0de6b23e04fde43451e35aeb97074c468be4c91c43907094f
+        name: "say, only with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+        body: b1aa375a65a759dc48ffe17465d11d6785a3122848ee2637935de2783c33231a
   - node: 01a1b13c-1e10-748d-8008-e7e934fc10cf
     reviewed: a35c5f0b49cf807da6580558bed132d233fdc807d61e4863f2ed629db423a897
     tests:
