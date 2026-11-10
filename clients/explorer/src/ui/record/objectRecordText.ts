@@ -8,7 +8,7 @@ import { figures, lightYears, pcUnit, shortDistance } from "../../scene/format.t
 import type { StarColourIndex } from "../../scene/starColour.ts";
 import { toMpc } from "../../scene/units.ts";
 import { colourIndices, drawnColourIndex, publishedTypes } from "../starText.ts";
-import { bandsText, words } from "../text.ts";
+import { KIND_NOUNS, bandsText, words } from "../text.ts";
 import type { DotRow } from "./charts.tsx";
 import { counted, sentence, shortWithUncertainty, spread, withArticle } from "./wording.ts";
 
@@ -43,6 +43,9 @@ function nounOf(record: ObjectRecord): string {
     const n = membersOf(record).length;
     return n === 0 ? "galaxy group" : `group of ${n.toLocaleString("en-GB")} galaxies`;
   }
+  // A tracer is what its source names it, before the type its Gaia star's entry may give.
+  const kind = KIND_NOUNS[record.kind];
+  if (kind !== undefined) return kind;
   const type = publishedTypes(record).find((t) => /^[OBAFGKM]/i.test(t.text));
   if (type !== undefined) return `${type.text.charAt(0).toUpperCase()}-type star`;
   return NOUNS[record.entries[0]?.source ?? ""] ?? "object";
