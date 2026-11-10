@@ -810,7 +810,7 @@ checks:
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
   - id: inferred-share-of-gaia-stars
-    title: Between 3% and 8% of Bailer-Jones distances inferred, resting on a parallax below five times its error
+    title: Between 2% and 8% of Bailer-Jones distances inferred, resting on a parallax below five times its error
     severity: fail
     select:
       kind: query
@@ -820,7 +820,7 @@ checks:
         ON e.release = m.release AND e.object_id = m.object_id AND e.entry = m.entry
         WHERE m.release = :release AND m.quantity = term('distance')
         AND e.source = source('bailer-jones-2021')
-    expect: { at_least: 0.03, at_most: 0.08 }
+    expect: { at_least: 0.02, at_most: 0.08 }
     cite:
       - paper: "Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1), gaiadr3.gaia_source"
         locator: "a 1% random sample, random_index < 18,117,098, grouped by FLOOR(phot_g_mean_mag)"
@@ -831,7 +831,8 @@ checks:
     note: >-
       The ranking rule's prior_led_parallax_ratio (5) makes a Bailer-Jones distance inferred below
       it (normalize-records). Distances of the sample's sources without a parallax are absent from
-      the Bailer-Jones table, so the release's share sits a little under 4.6%; a share far above 8%
+      the Bailer-Jones table (128,016 of 16,844,156 below G = 14, 0.76%), so the release's share
+      sits near 3.8%, and the floor of 2% leaves room for weighting by distance; a share far above 8%
       means the rule reads the wrong column. Both distances of a star count, a star with no
       photogeometric distance once.
 

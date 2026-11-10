@@ -15,6 +15,9 @@ access:
   count: >-
     SELECT COUNT(*) AS n FROM gaiadr3.gaia_source AS g JOIN external.gaiaedr3_distance AS d
     ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 14
+  # Each chunk runs as a job, as gaia-dr3-bright's do: a chunk of a join with gaia_source can
+  # outlast the synchronous endpoint's request. Chunk 0 ran as a job in 33 s on 2026-11-10.
+  run: async
 cuts:
   - >-
     Inner join of external.gaiaedr3_distance to gaiadr3.gaia_source on source_id, for
@@ -299,9 +302,13 @@ normalization:
         The ranking rule's prior_led_parallax_ratio (rules/ranking.yaml), held equal to this bound by
         a test. Bailer-Jones et al. 2021 combine the parallax with a prior from a model of the
         Galaxy; below five times its error, a parallax no longer carries the distance, which then
-        rests mostly on that prior. A negative or zero parallax is below the bound too.
-    - when: { column: parallax_over_error, is: [""] }
+        rests mostly on that prior. A negative or zero parallax is below the bound too. The ratio is
+        gaia_source's, of the parallax as published; the zero point of about -0.017 mas
+        (Lindegren et al. 2021) that Bailer-Jones et al. take off moves it by a few hundredths at
+        the faint end, within the bound's own roughness.
+    - when: { column: parallax_over_error, is: ["", "null", "NaN"] }
       kind_of_value: { columns: [r_med_geo, r_med_photogeo], kind: inferred }
       basis: >-
         A source with no parallax ratio has no parallax the distance could rest on, so its distance
-        is the prior's alone.
+        is the prior's alone. The archive writes a null as a blank cell in CSV; "null" and "NaN"
+        are named too, should another writer give them.

@@ -180,3 +180,27 @@ fn two_inferred_distances_still_compete_by_uncertainty() {
     );
     assert_eq!(preferred.decided, Decided::Uncertainty);
 }
+
+#[test]
+fn an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside() {
+    // A prior-led Bailer-Jones distance at 30% beside an estimated indicator distance at 120%:
+    // the estimated one could not place the star, so the inferred one still competes, wins by
+    // uncertainty and places it.
+    let mut loose = with_distance(
+        entry("skowron-2025-cepheids", "c", 84.0, -1.0),
+        3_500e-6,
+        Some(4_200e-6),
+        (DistanceKind::PrimaryIndicator, Method::Cepheids),
+    );
+    if let Some(d) = loose.distances.last_mut() {
+        d.kind_of_value = KindOfValue::Estimated;
+    }
+    let mut object = ranked(vec![prior_led(3_000.0, 900.0), loose]);
+    let preferred = object.preferred_distance.clone().unwrap();
+    assert!(
+        near(preferred.distance_mpc, 3_000e-6, 1e-12),
+        "{preferred:?}"
+    );
+    assert_eq!(preferred.decided, Decided::Uncertainty);
+    assert!(place(&mut object, &Release::planck_2018(), &ranking_rules()).is_some());
+}

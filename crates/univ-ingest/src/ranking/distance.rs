@@ -202,7 +202,8 @@ struct Steps {
 
 /// The candidates left once those in `excluded` are, read once for every set of [`Steps`]: the
 /// leading redshift, whether a geometric or indicator candidate exists, and whether a measured
-/// or estimated one does, beside which an inferred one is set aside.
+/// or estimated one precise enough to place the object does, beside which an inferred one is
+/// set aside.
 struct Pool {
     open: Vec<usize>,
     lead: Option<usize>,
@@ -217,6 +218,13 @@ impl Pool {
         excluded: &[usize],
         rules: &RankingRules,
     ) -> Self {
+        // A measured or estimated distance sets an inferred one aside only where it could place
+        // the object: with an uncertainty, and not too uncertain to place.
+        let places = |c: &Candidate| {
+            c.uncertainty
+                .total()
+                .is_some_and(|f| f <= rules.too_uncertain_above)
+        };
         let open = open(candidates, excluded);
         let lead = redshift::leading(object, candidates, &open, rules);
         let (mut indicator, mut firm) = (false, false);
@@ -227,7 +235,7 @@ impl Pool {
                 firm |= matches!(
                     c.kind_of_value,
                     KindOfValue::Measured | KindOfValue::Estimated
-                );
+                ) && places(c);
             }
         }
         Self {
