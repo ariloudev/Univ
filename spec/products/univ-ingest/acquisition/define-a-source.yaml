@@ -106,7 +106,7 @@ requirements:
       - key: 01a1c319-7860-76e8-92ac-c5f9f47eb4b7
         name: "The Gaia DR3 stars and the Bailer-Jones 2021 distances take every Gaia DR3 source with a G magnitude below 14."
       - key: 01a1c319-7860-76e8-92ac-c5fae6ebd0d3
-        name: "The Bailer-Jones 2021 distances carry the Gaia DR3 parallax and parallax error of each source they give a distance to."
+        name: "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to."
       - key: 01a1c319-7860-76e8-92ac-c5fb497eb9df
         name: "The star cluster sources are Hunt & Reffert 2023 open clusters and Baumgardt & Vasiliev 2021 globular clusters."
       - key: 01a1c319-7860-76e8-92ac-c5fc305bf6e9
