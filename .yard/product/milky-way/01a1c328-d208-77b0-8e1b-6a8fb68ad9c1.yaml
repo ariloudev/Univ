@@ -10,3 +10,12 @@ versions:
     title: "Wave 4: explorer drawing"
     goal: "The explorer draws tracers by source colour at twice size, inferred stars at half opacity and the dust map as a ray-marched volume, merged into product/milky-way"
     status: planned
+  - key: 01a1c46c-ca0a-71f6-9aa9-d47f71b11b42
+    at: 2026-11-10T07:47:06Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 4: explorer drawing"
+    goal: "The explorer colours the Galaxy's tracers by kind, draws stars with only an inferred distance apart, and ray-marches the dust map among the stars, merged into product/milky-way"
+    status: active
