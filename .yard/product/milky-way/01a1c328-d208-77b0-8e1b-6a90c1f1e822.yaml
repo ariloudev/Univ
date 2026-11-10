@@ -39,3 +39,46 @@ blocks:
           - **First run** stopped at 108 of 768 Bailer-Jones chunks for the FITS-grid fix and restarted; the fetched chunks are hits.
           - **Not done:** the prunes of releases 10, 11 and 12 in this stage's goal wait for the owner's word, and are not part of the run.
         tone: info
+  - key: 01a1c734-0d28-75cc-b44b-656b1fae1890
+    id: release-13-published
+    kind: note
+    versions:
+      - key: 01a1c734-0d28-75cc-b44b-656c3925e172
+        at: 2026-11-10T20:43:59Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Release 13 built, published, checked and benched"
+        markdown: |-
+          **Run.** Build from `b0f88fc`. The fetch stalled once on five Gaia chunks after the ESA archive aborted one job (12:34 UTC). I stopped the build by its PID, cleared its lock and restarted; the fetched chunks were hits and the five came in at 12:57–12:59. The build finished at 15:37, with every build check passing.
+
+          | | Release 13 |
+          |---|---|
+          | Objects | 53,364,009 (53,049,877 placed; 138,827 too uncertain, 175,305 with no distance) |
+          | Stars (G < 14) | 16,932,166 points |
+          | Cosmic web / tracers / nearby galaxies | 35,958,407 / 146,361 / 12,943 |
+          | D1 rows valid in 13 | 489.9 M, about 268 M of them written by this release |
+          | Object shards | 14 (shard 0's star cells moved to new shards 8–13) |
+
+          **Science from the builds failed to load.** Release 10's build is schema 5 and release 11's updates its `retired` column, which only `univ-ingest migrate` added on the store. So:
+          1. The real state was cloned on APFS (copy-on-write) to `r13/wrangler-check`.
+          2. Release 13 was published there: 45.7 GB in 3 h 14 min, every file checked.
+          3. The science checks ran with `--store`: 33 PASS, 3 FAIL, 3 CONCERN, 3 INFO.
+
+          The failures and concerns match release 12's exactly:
+          - local-group-duplicates: 33 pairs.
+          - twompp-sdss-sourced: 97.27%.
+          - fingerprints: the `--store` loader takes shared rows as release 13's own, so only the `release` column, and the content hashes that include it, differ.
+          - Concerns: redshift-conflicts 288, placed-high 110, coma-ngc4889.
+
+          The new checks pass: inferred share 3.84%, largest tile 654,168 bytes, D1 budget 4,499,999,847 bytes.
+
+          **Swap.** On the owner's word (19:4x UTC) the real state was moved to `.cache/univ-ingest/wrangler-r12` and the published clone put in its place. `latest` is 13.
+
+          **Benches on release 13:**
+          - lookup: p50 3.6 ms, p95 5.4 ms, p99 17.2 ms (QA-2 met).
+          - first points: p95 291 ms (bound 3 s).
+
+          **Left open:** the prunes of releases 10, 11 and 12 wait for the owner's word. The backup `wrangler-r12` can be removed once release 13 is accepted.
+        tone: success
