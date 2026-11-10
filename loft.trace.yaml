@@ -1678,20 +1678,11 @@ links:
         name: "a_file_two_releases_hold_is_kept_once_under_its_sha256"
         body: dc5b686da25a1bd173ad2c430c6e2edcc9cccae445ade7a4655663d163ae6b94
   - node: 01a19f23-636f-72bd-b194-152c99726521
-    reviewed: 87e70caff91e22db3af9bd64231ab9ce0b69a4a2a61ce1d2f50b32707638c3a8
-    tests:
-      - file: "crates/univ-ingest/tests/tiles.rs"
-        name: "each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs"
-        body: 2afde87ecde8de0cb4478fa65cfbb9a9b27bf2d5dffd1088a18d6dd28074e9d1
+    reviewed: e43a0cfb8c20279af6fe3b54ca8b91d168337266050d916a2f9a58f91aeec376
+    unverified: "Release 13 adds the Galaxy tracers root in parsecs; wave 2 (stage/milky-way-2) builds it and restores the test each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs in crates/univ-ingest/tests/tiles.rs, extended to the fourth domain."
   - node: 01a19f23-636f-72bd-b194-152dec6f0f74
-    reviewed: 3a8cfbb6f1d7d5d0020ccfd0f066d8e0942ba85cc582eb3c908331768287db1e
-    tests:
-      - file: "crates/univ-ingest/tests/tiles.rs"
-        name: "an_object_s_scale_domain_follows_its_placed_distance_and_a_star_stays_a_star"
-        body: f16140df9dfa1e4c441e36b456f86aa512aef8da0296adb489913d91ead58e2f
-      - file: "crates/univ-ingest/tests/release_reads.rs"
-        name: "every_placed_object_s_scale_domain_follows_its_placed_distance"
-        body: 1420dc8e23c6aecb8eb236beeb5b8bcee1be8ffae832df188bdae09bc9061ab4
+    reviewed: bb5baa11a69fb801df18b2c9108773ddc258c4e6f01dc0a7ea8a0ba393db8684
+    unverified: "Release 13 puts an object with any tracer entry in the Galaxy tracers domain; wave 2 (stage/milky-way-2) builds it and restores the tests an_object_s_scale_domain_follows_its_placed_distance_and_a_star_stays_a_star (crates/univ-ingest/tests/tiles.rs) and every_placed_object_s_scale_domain_follows_its_placed_distance (crates/univ-ingest/tests/release_reads.rs)."
   - node: 01a19f23-636f-72bd-b194-152e3b4f79ee
     reviewed: f274d01a590838dfb25db67d359fb0c1a74e5cad49d941b46cdf3a1c37355537
     tests:
@@ -2644,11 +2635,8 @@ links:
         name: "structures_are_listed_in_pages_and_read_with_their_citations"
         body: 4d76b7d6b2c99042f48abdb180f41d9084dbd0abcfaa6836ae2ca3f321c22bdb
   - node: 01a19f1f-9fd6-77e0-931c-f9865de3a042
-    reviewed: 61ad88a8b9f09b8494ca4c0f540407a1514309c1428dd3d8f546ae7d45b199d3
-    tests:
-      - file: "crates/univ-api/src/bulk_tests.rs"
-        name: "the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit"
-        body: 311b938e2072c2e12c16c8b887d9eed82dc16476033bbd174550d590ef53cd55
+    reviewed: ad42beb3517b79b56a059b0b8505c621cc84c981fa81d119bf21fa2123c2d5c1
+    unverified: "Release 13 lists a fourth scale domain, Galaxy tracers; wave 2 (stage/milky-way-2) serves it and restores the test the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit in crates/univ-api/src/bulk_tests.rs."
   - node: 01a19f1f-9fd6-77e0-931c-f987e3fef734
     reviewed: 14263806128ee09399f4e94268928c014ba22ea2aa2e5ffc705f93c91fac6ca5
     tests:
@@ -4012,11 +4000,8 @@ links:
         name: "state the tiles that failed their check, and those that could not be read"
         body: eddaaa991540ec699571322f43e215e0db9a8433185691df244d9880fd03da63
   - node: 01a1a497-e843-728a-bce8-400b9b581384
-    reviewed: 4704df3bae54b0df61e7cd72be5e0ff47813c2af2c2eafcf8b406ca1b0132374
-    tests:
-      - file: "clients/explorer/src/scene/kinds.test.ts"
-        name: "are drawn in one colour, in one order whatever a manifest lists"
-        body: 340dc9e183c96b138a8e6152bd544705b763166959b433268874aa6fd5ab88a1
+    reviewed: b0bf277a06376d447a74fb605d1c0df9bfd3046b63bd5420907971bbc05f1bdc
+    unverified: "Release 13 draws the Galaxy tracers by source colour, so one colour holds for the two galaxy domains only; wave 4 (stage/milky-way-4) draws it and restores the test \"are drawn in one colour, in one order whatever a manifest lists\" in clients/explorer/src/scene/kinds.test.ts."
   - node: 01a1a497-e843-728a-bce8-400c71ad8ebe
     reviewed: f58b703866d7f6f3a757209f121ad7bcefb18a7a2ca7fb0b09291987c2594cf2
     tests:
