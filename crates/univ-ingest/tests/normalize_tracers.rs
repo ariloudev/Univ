@@ -57,6 +57,29 @@ fn an_open_cluster_keeps_its_members_parallax_distance_and_percentiles_as_an_est
 }
 
 #[test]
+fn a_globular_cluster_keeps_its_combined_distance_and_error_as_an_estimate() {
+    // Recorded 2026-11-10: five rows of the prepared orbits table; 47 Tuc (NGC 104) at
+    // 4.52 ± 0.03 kpc.
+    let n = normalized_fixture("baumgardt-vasiliev-2021");
+    assert_eq!(n.report.published, 5);
+    let (value, unit, kind, method, of, uncertainty) = distance(&n, "NGC_104");
+    assert_eq!((value, unit), (4.52, Unit::Kiloparsec));
+    assert_eq!(kind, DistanceKind::PrimaryIndicator);
+    assert_eq!(
+        method,
+        Method::Mixed(vec![
+            Method::TrigonometricParallax,
+            Method::Other("kinematic distance".to_owned()),
+            Method::Other("literature distances".to_owned()),
+        ])
+    );
+    assert_eq!(of, KindOfValue::Estimated);
+    assert_eq!(uncertainty, Uncertainty::Symmetric { sigma: 0.03 });
+    // Pal 4, in the far halo at 101 kpc, is kept as published.
+    assert_eq!(distance(&n, "Pal_4").0, 101.39);
+}
+
+#[test]
 fn a_cepheid_keeps_its_mid_infrared_distance_its_pulsation_mode_and_its_gaia_source_id() {
     // Recorded 2026-11-10: the first five Cepheids of Skowron et al. 2025; CG Cas at 3,174 ± 131
     // pc, pulsating in the fundamental mode.

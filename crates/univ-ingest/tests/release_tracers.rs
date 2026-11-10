@@ -16,8 +16,9 @@ use simulated::{bare, designation, entry, matching_rules};
 use univ_ingest::matching::match_entries;
 
 /// The recorded tracer sources and the kind of object each names.
-const TRACERS: [(&str, &str); 4] = [
+const TRACERS: [(&str, &str); 5] = [
     ("hunt-reffert-2023", "open_cluster"),
+    ("baumgardt-vasiliev-2021", "globular_cluster"),
     ("skowron-2025-cepheids", "classical_cepheid"),
     ("li-2023-rr-lyrae", "rr_lyrae_star"),
     ("reid-2019-masers", "star_forming_region"),

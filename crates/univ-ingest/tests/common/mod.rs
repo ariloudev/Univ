@@ -187,6 +187,7 @@ pub fn definition_of(id: &str) -> SourceDefinition {
 pub fn fixture_of(definition: &SourceDefinition) -> PathBuf {
     let extension = match definition.access {
         univ_ingest::source::Access::VizierTsv { .. } => "tsv",
+        univ_ingest::source::Access::Prepared(_) => "csv.gz",
         _ => "csv",
     };
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -213,7 +214,14 @@ pub fn normalized_fixture(id: &str) -> Normalized {
 /// The recorded answer of `definition`'s source, normalized as `definition`, which a test may
 /// have changed.
 pub fn normalized_definition(definition: &SourceDefinition) -> Normalized {
-    let body = std::fs::read(fixture_of(definition)).expect("a recorded answer");
+    let file = fixture_of(definition);
+    // A prepared file is read whole, as a run reads it, not as an answer.
+    if matches!(definition.access, univ_ingest::source::Access::Prepared(_)) {
+        let correction = CmbCorrection::new(DipoleModel::Planck2018);
+        return univ_ingest::normalize::normalize(definition, &[file], &correction)
+            .unwrap_or_else(|e| panic!("{e}"));
+    }
+    let body = std::fs::read(file).expect("a recorded answer");
     normalize_body(definition, &body)
 }
 
