@@ -5189,7 +5189,7 @@ links:
         body: e2a66140eaf3e4ae92849d598b51a602d20d736dddb965aa83782c9c97dc2937
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
+        body: 196a950b15e6b79fa456381247deab228be590efb81f8373eb009734425373e9
   - node: 01a1c2a8-c234-72f0-adea-08ecd8fc538a
     reviewed: 8d7174600660adabb471577126451c08cca2d1c282abe20c5d3729a779674ea4
     tests:
@@ -5201,13 +5201,13 @@ links:
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
+        body: 196a950b15e6b79fa456381247deab228be590efb81f8373eb009734425373e9
   - node: 01a1c25f-d5cd-76b6-b0cb-7d97b9058d19
     reviewed: 5b6f6f036bab1121b6c08893d6f4d40e316818db22ebd467b094174d6993c4cc
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
+        body: 196a950b15e6b79fa456381247deab228be590efb81f8373eb009734425373e9
   - node: 01a1c25f-d5cd-76b6-b0cb-7d98f8d78c05
     reviewed: bbd9ca1d20eda42ee6d99a2538b76b6d4d5f0e932fb95f7d0dc9d927ade887d4
     tests:
@@ -5216,7 +5216,7 @@ links:
         body: 864ede29b0ca138495a873b19654f9d62463fe4ed2b18a9c945e957cfee6c829
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
+        body: 196a950b15e6b79fa456381247deab228be590efb81f8373eb009734425373e9
   - node: 01a1a497-e843-728a-bce8-3fee23d1c65a
     reviewed: 7e45f65eb420b5b929a6974834b750c1b64e6f1cbfcaf95e00a177b22e6ec457
     tests:

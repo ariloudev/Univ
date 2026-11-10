@@ -221,3 +221,21 @@ blocks:
         title: "rusqlite 0.32 → 0.41 (RUSTSEC-2026-0459)"
         detail: "Done in 276377f: univ-api, univ-ingest and xtask are on `rusqlite` 0.41.1 (`libsqlite3-sys` 0.39.1, SQLite 3.54.x). Two API changes were fixed: `column_names()` now returns an iterator (8 call sites), and `u64` conversion now needs the `fallible_uint` feature, which keeps 0.32's checked conversion. `cargo clippy --workspace --all-targets` and `cargo deny check` pass."
         state: done
+  - key: 01a1c2ed-bf44-70ec-8c13-5c42ab3135b1
+    id: gate-issues
+    kind: note
+    versions:
+      - key: 01a1c2ed-bf44-70ec-8c13-5c433b2a202c
+        at: 2026-11-10T00:48:43Z
+        revision: 43
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Gate issues after the upgrade"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | 1 | My first rerun reported success though the gate and integration had both failed, because the background command ended in an `echo` | Reading the logs | The rerun's exit status is now the gate's and integration's own | fixed |
+          | 2 | `api_fixture` failed: SQLite 3.54 writes reals with the fewest digits that round-trip, so testkit_objects.sql no longer matched what ingest writes | `cargo xtask check` | Regenerated with `UPDATE_FIXTURES=1`. A script confirmed that 111 lines changed and all 1,774 numbers are equal as doubles, with no other text changed (1097787) | fixed, awaiting the gate |
+          | 3 | The object let-go e2e test read the distance before the double-click's fly-in was drawn, and passed earlier only by timing | `cargo xtask integration` (1 failed, 20 passed) | The test waits until the distance has changed before reading it (1097787) | fixed, awaiting integration |
+        tone: warning
