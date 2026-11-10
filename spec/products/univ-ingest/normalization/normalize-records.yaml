@@ -125,3 +125,39 @@ requirements:
         name: "Cosmicflows-4's SGX, SGY and SGZ columns are read as km/s, as the evidence shows, although VizieR labels them Mpc."
       - key: 01a19f22-2ad9-716e-876f-18790159a9dd
         name: "The source's provenance lists each fix applied with the number of entries it changed."
+  - key: 01a1c319-7860-76e8-92ac-c601520a52af
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c6027604a178
+        name: "A Bailer-Jones distance of a star whose parallax is less than five times its error is inferred."
+      - key: 01a1c319-7860-76e8-92ac-c603c8d6589e
+        name: "A Bailer-Jones distance of a star whose parallax is zero or negative, or that has none, is inferred."
+      - key: 01a1c319-7860-76e8-92ac-c6045ac7b6f1
+        name: "A Bailer-Jones distance of a star whose parallax is at least five times its error is estimated."
+      - key: 01a1c319-7860-76e8-92ac-c605905af8ee
+        name: "The ratio of five and its basis are stated in the ranking rule, which the release records."
+      - key: 01a1c319-7860-76e8-92ac-c606e2fa0dcc
+        name: "A star keeps the Gaia DR3 parallax and parallax error that its distance's kind of value rests on, as measured values."
+      - key: 01a1c319-7860-76e8-92ac-c6074783ae9b
+        name: "A star whose only distance is inferred is still placed, at that distance."
+  - key: 01a1c319-7860-76e8-92ac-c608fc0fd4c3
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c609c99b51a3
+        name: "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star or star-forming region."
+      - key: 01a1c319-7860-76e8-92ac-c60af84ad06b
+        name: "A Cepheid or RR Lyrae star keeps its pulsation type as its source publishes it."
+      - key: 01a1c319-7860-76e8-92ac-c60bab2a9a0e
+        name: "A Cepheid's or RR Lyrae star's distance is an estimated primary-indicator distance whose method names the relation its source used."
+      - key: 01a1c319-7860-76e8-92ac-c60c55259d8f
+        name: "An open or globular cluster's distance is an estimated distance whose method names how its source derived it."
+      - key: 01a1c319-7860-76e8-92ac-c60d21b0fe2e
+        name: "A maser's parallax is kept as measured with its error, and a distance is derived from it only under the parallax rule of the ranking rule."
+      - key: 01a1c319-7860-76e8-92ac-c60efaeb5601
+        name: "A Cepheid or RR Lyrae star joins the object of its Gaia DR3 source by the source id its source gives, as a published cross-identification."

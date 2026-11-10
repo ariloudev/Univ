@@ -1,0 +1,12 @@
+key: 01a1c312-5acc-71e3-a32a-827f9f5061a5
+id: wave-dust
+versions:
+  - key: 01a1c312-5acc-71e3-a32a-8285a9868292
+    at: 2026-11-10T01:28:42Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave: 3D dust map"
+    goal: "A release holds the Edenhofer 2024 dust density as a grid, and the explorer draws it"
+    status: planned

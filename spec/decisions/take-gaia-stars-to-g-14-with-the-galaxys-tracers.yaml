@@ -1,0 +1,100 @@
+key: 01a1c319-7860-76e8-92ac-c5da24c9d23c
+slug: take-gaia-stars-to-g-14-with-the-galaxys-tracers
+title: "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers"
+context: "The owner asked how many more Milky Way stars a release can hold, and for a much more detailed Milky Way. Since release 10, objects are sharded across eight D1 databases of 10 GB each, and release 12 holds 36.9 million objects in about 32 GB, about 0.9 KB an object, so one database no longer bounds the stars. A 1% random sample of Gaia DR3 drawn on 2026-11-10 counts 3.1 million sources below G = 12, 7.4 million below 13, 16.8 million below 14 and 36.9 million below 15. A magnitude limit shows a bubble about the Sun, giants to kiloparsecs and dwarfs to a few hundred parsecs, so the Galaxy's disk, arms, warp and halo need tracers chosen for them."
+state:
+  kind: accepted
+  selectedOption: 01a1c319-7860-76e8-92ac-c5de07377e8b
+  outcome: "Release 13 takes Gaia DR3 stars below G = 14 with their Bailer-Jones 2021 distances, beside the Gaia Catalogue of Nearby Stars and Hipparcos, and adds open and globular clusters, classical Cepheids, RR Lyrae stars, maser parallaxes and the Edenhofer 2024 dust map."
+drivers:
+  - key: 01a1c319-7860-76e8-92ac-c5db9e108bc3
+    kind: local
+    label: "Fits the shards"
+    statement: "A release fits the eight object shards the deployment binds."
+  - key: 01a1c319-7860-76e8-92ac-c5dc9443868c
+    kind: local
+    label: "Shows the Galaxy"
+    statement: "The Milky Way scale shows the Galaxy's structure from real stars and tracers, not a schematic."
+  - key: 01a1c319-7860-76e8-92ac-c5dd591b8f4a
+    kind: local
+    label: "Measured distances"
+    statement: "Most stars drawn rest on a parallax measured to better than 20%."
+options:
+  - key: 01a1c319-7860-76e8-92ac-c5de07377e8b
+    title: "G < 14 with tracers"
+    description: "Gaia DR3 below G = 14, about 16.8 million sources, with clusters, Cepheids, RR Lyrae, masers and the dust map."
+  - key: 01a1c319-7860-76e8-92ac-c5dfec4c7da7
+    title: "G < 12 with tracers"
+    description: "Gaia DR3 below G = 12, about 3.1 million sources, with the same tracers."
+  - key: 01a1c319-7860-76e8-92ac-c5e0b8d7a046
+    title: "G < 15 with tracers"
+    description: "Gaia DR3 below G = 15, about 36.9 million sources, with the same tracers."
+  - key: 01a1c319-7860-76e8-92ac-c5e15ea5c2d4
+    title: "Bright stars only"
+    description: "Keep Gaia DR3 below G = 10 and add nothing."
+assessments:
+  - option: 01a1c319-7860-76e8-92ac-c5de07377e8b
+    driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
+    rating: supports
+    rationale: "about 15 GB more takes the shards from about 32 to 47 of their 80 GB"
+  - option: 01a1c319-7860-76e8-92ac-c5de07377e8b
+    driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
+    rating: supports
+    rationale: "twenty times the stars, and tracers that reach across the disk and into the halo"
+  - option: 01a1c319-7860-76e8-92ac-c5de07377e8b
+    driver: 01a1c319-7860-76e8-92ac-c5dd591b8f4a
+    rating: supports
+    rationale: "95% of the sources have a parallax above five times its error"
+  - option: 01a1c319-7860-76e8-92ac-c5dfec4c7da7
+    driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
+    rating: supports
+    rationale: "about 2.5 GB more"
+  - option: 01a1c319-7860-76e8-92ac-c5dfec4c7da7
+    driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
+    rating: neutral
+    rationale: "four times the stars; the tracers carry the structure"
+  - option: 01a1c319-7860-76e8-92ac-c5dfec4c7da7
+    driver: 01a1c319-7860-76e8-92ac-c5dd591b8f4a
+    rating: supports
+    rationale: "98% of the sources have a parallax above five times its error"
+  - option: 01a1c319-7860-76e8-92ac-c5e0b8d7a046
+    driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
+    rating: conflicts
+    rationale: "about 33 GB more needs more shards bound"
+  - option: 01a1c319-7860-76e8-92ac-c5e0b8d7a046
+    driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
+    rating: supports
+    rationale: "the most stars"
+  - option: 01a1c319-7860-76e8-92ac-c5e0b8d7a046
+    driver: 01a1c319-7860-76e8-92ac-c5dd591b8f4a
+    rating: neutral
+    rationale: "92% of the sources have a parallax above five times its error, but only a third of those added lie within 1 kpc"
+  - option: 01a1c319-7860-76e8-92ac-c5e15ea5c2d4
+    driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
+    rating: supports
+    rationale: "nothing grows"
+  - option: 01a1c319-7860-76e8-92ac-c5e15ea5c2d4
+    driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
+    rating: conflicts
+    rationale: "the Galaxy stays a bubble of bright stars"
+  - option: 01a1c319-7860-76e8-92ac-c5e15ea5c2d4
+    driver: 01a1c319-7860-76e8-92ac-c5dd591b8f4a
+    rating: supports
+    rationale: "nearly every distance rests on a good parallax"
+consequences:
+  - key: 01a1c319-7860-76e8-92ac-c5e2d22d2e86
+    kind: cost
+    statement: "The object shards grow by about 15 GB, and fetching the Gaia DR3 stars and their distances takes hours."
+  - key: 01a1c319-7860-76e8-92ac-c5e339d3c600
+    kind: obligation
+    statement: "Stellar distances still come from Bailer-Jones 2021, never from an inverted parallax, and the faint stars whose parallax cannot carry their distance are marked as such."
+  - key: 01a1c319-7860-76e8-92ac-c5e41bee4ab7
+    kind: risk
+    statement: "Stars below G = 14 are still a magnitude-limited sample, densest about the Sun and thinned by dust in the Galactic plane."
+subjects:
+  - role: affected
+    node: 01a19f22-2ad9-716e-876f-18279019d046
+  - role: outcome
+    node: 01a19f22-2ad9-716e-876f-1826edbc9607
+  - role: outcome
+    node: 01a1c319-7860-76e8-92ac-c5f854eb67f1

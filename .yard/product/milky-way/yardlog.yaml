@@ -1,0 +1,121 @@
+format: yardlog/1
+key: 01a1c30f-7cd8-7194-88b1-fe9710dd85ec
+branch: "product/milky-way"
+base: "develop"
+title: "product/milky-way"
+revision: 9
+opened:
+  at: 2026-11-10T01:25:34Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "918a7610-2359-46e7-a590-437534c76364"
+stages:
+  - key: 01a1c30f-7cd8-7194-88b1-fe984c71dadd
+    id: scope
+  - key: 01a1c30f-7cd8-7194-88b1-fe992ff7072d
+    id: spec-change
+  - key: 01a1c30f-7cd8-7194-88b1-fe9a7faddf8a
+    id: wave-stars
+  - key: 01a1c30f-7cd8-7194-88b1-fe9bc689b522
+    id: wave-tracers
+  - key: 01a1c312-5acc-71e3-a32a-827f9f5061a5
+    id: wave-dust
+submissions:
+  - key: 01a1c30f-7cd8-7194-88b1-fea830d649de
+    blocks:
+      - 01a1c30f-7cd8-7194-88b1-fe9dc4e5d613
+      - 01a1c30f-7cd8-7194-88b1-fe9ea529a8a9
+      - 01a1c30f-7cd8-7194-88b1-fe9feadab0fd
+    changes:
+      - what: sent
+        at: 2026-11-10T01:25:34Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+      - what: answered
+        at: 2026-11-10T01:28:32Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+  - key: 01a1c315-58d0-7641-ab12-9ecf8afee97b
+    blocks:
+      - 01a1c315-58d0-7641-ab12-9eca2d2767d5
+      - 01a1c315-58d0-7641-ab12-9ecb6ed1dd43
+    changes:
+      - what: sent
+        at: 2026-11-10T01:31:58Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+      - what: answered
+        at: 2026-11-10T01:33:02Z
+        revision: 5
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+  - key: 01a1c319-d76d-773e-bb9f-5474e73c5851
+    blocks:
+      - 01a1c319-d76d-773e-bb9f-547233d2eb38
+    changes:
+      - what: sent
+        at: 2026-11-10T01:36:53Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+      - what: answered
+        at: 2026-11-10T01:37:07Z
+        revision: 9
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+acts:
+  - at: 2026-11-10T01:25:34Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+  - at: 2026-11-10T01:28:32Z
+    revision: 2
+    by:
+      name: "ariloudev"
+      email: "contact@askloft.ai"
+  - at: 2026-11-10T01:28:42Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+  - at: 2026-11-10T01:31:58Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+  - at: 2026-11-10T01:33:02Z
+    revision: 5
+    by:
+      name: "ariloudev"
+      email: "contact@askloft.ai"
+  - at: 2026-11-10T01:33:06Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+  - at: 2026-11-10T01:36:42Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+  - at: 2026-11-10T01:36:53Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+  - at: 2026-11-10T01:37:07Z
+    revision: 9
+    by:
+      name: "ariloudev"
+      email: "contact@askloft.ai"

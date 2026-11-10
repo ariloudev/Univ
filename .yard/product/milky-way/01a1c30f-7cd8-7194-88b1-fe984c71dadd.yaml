@@ -1,0 +1,199 @@
+key: 01a1c30f-7cd8-7194-88b1-fe984c71dadd
+id: scope
+versions:
+  - key: 01a1c30f-7cd8-7194-88b1-fea040542f8c
+    at: 2026-11-10T01:25:34Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Scope the more detailed Milky Way"
+    goal: "The owner has chosen how deep the Gaia stars go, which stars get a 3D position, and which Galaxy tracers join them"
+    status: active
+  - key: 01a1c312-5acc-71e3-a32a-8283e94ca896
+    at: 2026-11-10T01:28:42Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Scope the more detailed Milky Way"
+    goal: "The owner has chosen how deep the Gaia stars go, which stars get a 3D position, and which Galaxy tracers join them"
+    status: done
+blocks:
+  - key: 01a1c30f-7cd8-7194-88b1-fe9c5b5a8339
+    id: findings
+    kind: note
+    versions:
+      - key: 01a1c30f-7cd8-7194-88b1-fea403d67e69
+        at: 2026-11-10T01:25:34Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "How many more stars Gaia DR3 offers"
+        markdown: |-
+          **Today** release 12 draws **780,457 stars**: Gaia DR3 G < 10 (482,106 rows), the Gaia Catalogue of Nearby Stars (331,312) and Hipparcos (117,955), merged by cross-match. The decision *Take Gaia's nearby and bright stars* capped them to keep one release inside D1's 10 GB. Objects are now sharded across 8 D1 databases. Release 12 holds 36.9M objects in about 32 GB, roughly 0.9 KB per object, so that cap no longer applies.
+
+          **Gaia DR3 by G limit.** These counts come from a 1% random sample of `gaiadr3.gaia_source` (`random_index < 18,117,098`) queried 2026-11-10 and scaled by 100. The sample's G < 10 count, 0.48M, matches the measured 482,106.
+
+          | Cut | Sources | Added over today's G < 10 | ϖ/σ > 5 | ϖ/σ > 5 and ϖ > 1 mas (within ~1 kpc) |
+          |---|---|---|---|---|
+          | G < 10 | 0.48M | (today) | 0.47M | 0.39M |
+          | G < 12 | 3.11M | +2.6M | 3.04M | 1.89M |
+          | G < 13 | 7.40M | +6.9M | 7.18M | 4.00M |
+          | G < 14 | 16.8M | +16.4M | 16.1M | 7.65M |
+          | G < 15 | 36.9M | +36.4M | 33.9M | 12.7M |
+          | G < 16 | 78.0M | +77.5M | 66.3M | 19.1M |
+          | all | 1.81B | | 192M | 64.6M |
+
+          **What scales already:** the stars octree (tiles of at most 61,678 points, 0.25 pc leaves) and the explorer's view-dependent loading within a 6M-point budget take any of these cuts unchanged. Shards split stars by 10 pc cells.
+
+          **Two science caveats:**
+          - *A magnitude cut gives a bubble, not a galaxy.* It sees giants out to kiloparsecs but dwarfs only to a few hundred parsecs, and dust hides the disk plane. More stars make the Sun's neighbourhood richer, but they don't draw the disk, bar or arms. Tracers chosen for structure (clusters, Cepheids, a dust map) show those.
+          - *Faint stars' distances lean on a prior.* Where ϖ/σ is low, Bailer-Jones 2021 distances come mostly from their Galaxy model. Placing those stars would draw the model's shape and present it as data.
+        tone: info
+  - key: 01a1c30f-7cd8-7194-88b1-fe9dc4e5d613
+    id: q-depth
+    kind: question
+    versions:
+      - key: 01a1c30f-7cd8-7194-88b1-fea5c79ccb9d
+        at: 2026-11-10T01:25:34Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "How deep should the Gaia DR3 stars go?"
+        header: "Star depth"
+        context: "Counts come from the 1% Gaia sample above. Storage assumes about 0.9 KB per object, as measured in release 12. Fetch time scales from G < 10, where 30,000-row chunks ran as async jobs of about 11 s each."
+        options:
+          - label: "G < 12"
+            detail: "3.1M stars (+2.6M). About 2.5 GB more D1, under an hour to fetch. A safe first step, but only about 4× today's stars."
+          - label: "G < 13"
+            detail: "7.4M stars (+6.9M). About 6 GB more D1, about an hour to fetch. A tenfold increase with room to spare."
+          - label: "G < 14"
+            detail: "16.8M stars (+16.4M), 96% of them with ϖ/σ > 5. About 15 GB more D1, so the 8 shards go from about 32 to 47 of their 80 GB. A few hours to fetch with the Bailer-Jones join. Recommended: twentyfold detail, distances still mostly measured, and it fits the deployment as bound."
+            recommended: true
+          - label: "G < 15"
+            detail: "36.9M stars (+36.4M). About 33 GB more D1, which doubles the store and needs more shard bindings. Several hours to fetch. Only 34% of the added stars lie within 1 kpc with ϖ/σ > 5."
+    responses:
+      - key: 01a1c312-328e-7044-a266-54b6a2fd6ecf
+        at: 2026-11-10T01:28:32Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        chosen:
+          - "G < 14"
+  - key: 01a1c30f-7cd8-7194-88b1-fe9ea529a8a9
+    id: q-placement
+    kind: question
+    versions:
+      - key: 01a1c30f-7cd8-7194-88b1-fea6e85968d3
+        at: 2026-11-10T01:25:34Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "Which of the added stars get a 3D position?"
+        header: "Placement"
+        context: "An object without a position stays in the catalogue, where lookups and names find it, but in no tile. The spec already requires Bailer-Jones distances and never an inverted parallax."
+        options:
+          - label: "Constrained only"
+            detail: "Fetch the whole cut, but place only stars whose Bailer-Jones distance is constrained: (r_hi − r_lo)/2 under 20% of r_med, about ϖ/σ > 5. The rest are records without a point. Recommended: the drawn Galaxy then comes from measurements, not from the distance prior."
+            recommended: true
+          - label: "Place all, flag"
+            detail: "Place every star and mark prior-dominated distances in its record. Every point gets drawn, but beyond about 1 kpc the shape shown partly comes from the Bailer-Jones Galaxy model."
+          - label: "Fetch constrained"
+            detail: "Leave stars with ϖ/σ ≤ 5 out of the fetch entirely. This saves storage (about 4% at G < 14, 8% at G < 15), but those stars are absent from lookups too."
+    responses:
+      - key: 01a1c312-328e-7044-a266-54b74299252b
+        at: 2026-11-10T01:28:32Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        chosen:
+          - "Place all, flag"
+  - key: 01a1c30f-7cd8-7194-88b1-fe9feadab0fd
+    id: q-tracers
+    kind: question
+    versions:
+      - key: 01a1c30f-7cd8-7194-88b1-fea793950cba
+        at: 2026-11-10T01:25:34Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "Which tracers of the Galaxy's structure should join the stars?"
+        header: "Tracers"
+        context: "These tracers show the disk, arms, warp and halo, which no magnitude cut reveals. Each is a cited source with its own distance method, kept as its own kind of value."
+        options:
+          - label: "Open clusters"
+            detail: "Hunt & Reffert 2023 (A&A 673, A114): about 7,200 clusters with distances and ages. They trace the local arms, the Radcliffe wave and Gould Belt structure out to a few kpc. Small, and fits the existing catalogue. Recommended."
+            recommended: true
+          - label: "Cepheids, RR Lyrae"
+            detail: "Gaia DR3 vari_cepheid (Ripepi et al. 2023) and vari_rrlyrae (Clementini et al. 2023). Classical Cepheids map the disk and its warp to about 20 kpc, RR Lyrae the halo and bulge. Distances come from period-luminosity relations, kept as estimated. Recommended: the only option that reaches across the Galaxy."
+            recommended: true
+          - label: "3D dust map"
+            detail: "Edenhofer et al. 2024 (A&A 685, A82), dust density to 1.25 kpc: the Local Bubble, the Radcliffe wave, molecular clouds. Served as a grid like the CF4++ density field and drawn by the explorer. The source is large and would be resampled to the release's grid. Recommended."
+            recommended: true
+          - label: "Globulars, masers"
+            detail: "Baumgardt & Vasiliev 2021 (MNRAS 505, 5957), about 165 globular clusters with distances, and Reid et al. 2019 (ApJ 885, 131), about 200 maser parallaxes of star-forming regions that define the spiral arms. Small and precise, but only a few hundred points in all."
+        multiple: true
+    responses:
+      - key: 01a1c312-328e-7044-a266-54b866d14870
+        at: 2026-11-10T01:28:32Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        chosen:
+          - "Open clusters"
+          - "Cepheids, RR Lyrae"
+          - "3D dust map"
+          - "Globulars, masers"
+  - key: 01a1c312-5acc-71e3-a32a-827cee411a3b
+    id: d-depth
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1c312-5acc-71e3-a32a-82803ee642e7
+        at: 2026-11-10T01:28:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Gaia DR3 stars to G < 14"
+        consequence: "About 16.8M Gaia rows with Bailer-Jones distances replace the G < 10 set; the store grows by about 15 GB within the 8 bound shards, and the fetch runs for hours in the background after the owner approves the full ingest."
+        question: 01a1c30f-7cd8-7194-88b1-fe9dc4e5d613
+  - key: 01a1c312-5acc-71e3-a32a-827d500da6c3
+    id: d-placement
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1c312-5acc-71e3-a32a-82816e24b04c
+        at: 2026-11-10T01:28:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Place every star, flag prior-dominated distances"
+        consequence: "Every star of the cut gets a point; the spec must define when a Bailer-Jones distance counts as prior-dominated, carry that flag in the record, and let the explorer tell those points apart."
+        question: 01a1c30f-7cd8-7194-88b1-fe9ea529a8a9
+  - key: 01a1c312-5acc-71e3-a32a-827eefb057af
+    id: d-tracers
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1c312-5acc-71e3-a32a-8282ad94558c
+        at: 2026-11-10T01:28:42Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "All four tracer families join the stars"
+        consequence: "Open clusters, Cepheids and RR Lyrae, globular clusters and masers come in as catalogue sources with their own distance kinds, and the Edenhofer 2024 dust map as a grid; the work splits into a stars wave, a tracers wave and a dust-map wave."
+        question: 01a1c30f-7cd8-7194-88b1-fe9feadab0fd

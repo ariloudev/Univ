@@ -1,0 +1,64 @@
+key: 01a1c319-7860-76e8-92ac-c5c2933651bd
+slug: draw-the-dust-map-as-a-translucent-volume
+title: "Draw the dust map as a translucent volume"
+context: "The Edenhofer et al. 2024 dust map gives dust density at parsec scale within 1.25 kpc of the Sun. The explorer draws no volume grid yet: the structures outlined from grids are drawn as outlines."
+state:
+  kind: accepted
+  selectedOption: 01a1c319-7860-76e8-92ac-c5c5e2bb53ef
+  outcome: "The explorer ray-marches the mean dust density grid as a WebGL2 3D texture among the stars, switched in the Show drawer."
+drivers:
+  - key: 01a1c319-7860-76e8-92ac-c5c3c522bc95
+    kind: local
+    label: "Shows the source"
+    statement: "The dust is drawn as the map gives it, with no threshold of our own."
+  - key: 01a1c319-7860-76e8-92ac-c5c4fdbe5839
+    kind: local
+    label: "Among the stars"
+    statement: "Dust dims the stars behind it and not those in front."
+options:
+  - key: 01a1c319-7860-76e8-92ac-c5c5e2bb53ef
+    title: "Translucent volume"
+    description: "Ray-march the grid, its opacity rising with density."
+  - key: 01a1c319-7860-76e8-92ac-c5c69359699f
+    title: "Iso-surfaces"
+    description: "Outline the dust above one or two thresholds as shells."
+  - key: 01a1c319-7860-76e8-92ac-c5c7e83b0066
+    title: "Data only"
+    description: "Serve the grids and leave drawing them to a later change."
+assessments:
+  - option: 01a1c319-7860-76e8-92ac-c5c5e2bb53ef
+    driver: 01a1c319-7860-76e8-92ac-c5c3c522bc95
+    rating: supports
+    rationale: "every density shows, the faint as well as the dense"
+  - option: 01a1c319-7860-76e8-92ac-c5c5e2bb53ef
+    driver: 01a1c319-7860-76e8-92ac-c5c4fdbe5839
+    rating: supports
+    rationale: "the ray stops at each star's depth"
+  - option: 01a1c319-7860-76e8-92ac-c5c69359699f
+    driver: 01a1c319-7860-76e8-92ac-c5c3c522bc95
+    rating: conflicts
+    rationale: "the threshold is ours, and the faint dust disappears"
+  - option: 01a1c319-7860-76e8-92ac-c5c69359699f
+    driver: 01a1c319-7860-76e8-92ac-c5c4fdbe5839
+    rating: neutral
+    rationale: "shells hide or show stars whole"
+  - option: 01a1c319-7860-76e8-92ac-c5c7e83b0066
+    driver: 01a1c319-7860-76e8-92ac-c5c3c522bc95
+    rating: neutral
+    rationale: "nothing is drawn"
+  - option: 01a1c319-7860-76e8-92ac-c5c7e83b0066
+    driver: 01a1c319-7860-76e8-92ac-c5c4fdbe5839
+    rating: conflicts
+    rationale: "nothing is drawn"
+consequences:
+  - key: 01a1c319-7860-76e8-92ac-c5c8792afd1e
+    kind: cost
+    statement: "The explorer gains a volume renderer and a depth texture of the points it draws."
+  - key: 01a1c319-7860-76e8-92ac-c5c9977aa2d4
+    kind: obligation
+    statement: "The key says the dust is reconstructed, and cells without data add nothing."
+subjects:
+  - role: affected
+    node: 01a1c319-7860-76e8-92ac-c5c1af17c21a
+  - role: outcome
+    node: 01a1c319-7860-76e8-92ac-c5edd3803528

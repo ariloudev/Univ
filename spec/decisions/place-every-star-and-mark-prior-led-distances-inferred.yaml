@@ -1,0 +1,64 @@
+key: 01a1c319-7860-76e8-92ac-c5d2eaeea3ec
+slug: place-every-star-and-mark-prior-led-distances-inferred
+title: "Place every star, and mark distances that lean on the prior as inferred"
+context: "Bailer-Jones et al. 2021 combine each Gaia parallax with a prior from a model of the Galaxy. Where the parallax is small against its error, the distance follows the prior more than the measurement, so drawing those stars draws the model's shape. Below G = 14 about 5% of Gaia DR3 sources have a parallax under five times its error, a share that grows quickly with fainter limits."
+state:
+  kind: accepted
+  selectedOption: 01a1c319-7860-76e8-92ac-c5d5ff883ab1
+  outcome: "Every star of the cut is placed. A Bailer-Jones distance resting on a parallax below five times its error is inferred rather than estimated, and the explorer draws those stars fainter and can hide them by their kind of value."
+drivers:
+  - key: 01a1c319-7860-76e8-92ac-c5d302cc55c2
+    kind: local
+    label: "Every star drawn"
+    statement: "Each star of the release has a point."
+  - key: 01a1c319-7860-76e8-92ac-c5d40353bfa0
+    kind: local
+    label: "Model kept apart"
+    statement: "A position shaped by a model is never shown as one measured."
+options:
+  - key: 01a1c319-7860-76e8-92ac-c5d5ff883ab1
+    title: "Place all, mark inferred"
+    description: "Place every star, with the distances that lean on the prior classified as inferred."
+  - key: 01a1c319-7860-76e8-92ac-c5d63b050774
+    title: "Place constrained only"
+    description: "Fetch the whole cut, place only stars whose parallax is at least five times its error, and keep the rest as records without a point."
+  - key: 01a1c319-7860-76e8-92ac-c5d7f11a107c
+    title: "Fetch constrained only"
+    description: "Leave stars whose parallax is under five times its error out of the fetch."
+assessments:
+  - option: 01a1c319-7860-76e8-92ac-c5d5ff883ab1
+    driver: 01a1c319-7860-76e8-92ac-c5d302cc55c2
+    rating: supports
+    rationale: "every star has a point"
+  - option: 01a1c319-7860-76e8-92ac-c5d5ff883ab1
+    driver: 01a1c319-7860-76e8-92ac-c5d40353bfa0
+    rating: supports
+    rationale: "the inferred kind of value marks them, in the record, the tile and the key"
+  - option: 01a1c319-7860-76e8-92ac-c5d63b050774
+    driver: 01a1c319-7860-76e8-92ac-c5d302cc55c2
+    rating: conflicts
+    rationale: "faint and distant stars have no point"
+  - option: 01a1c319-7860-76e8-92ac-c5d63b050774
+    driver: 01a1c319-7860-76e8-92ac-c5d40353bfa0
+    rating: supports
+    rationale: "no point rests on the prior"
+  - option: 01a1c319-7860-76e8-92ac-c5d7f11a107c
+    driver: 01a1c319-7860-76e8-92ac-c5d302cc55c2
+    rating: conflicts
+    rationale: "those stars are absent altogether"
+  - option: 01a1c319-7860-76e8-92ac-c5d7f11a107c
+    driver: 01a1c319-7860-76e8-92ac-c5d40353bfa0
+    rating: supports
+    rationale: "no point rests on the prior"
+consequences:
+  - key: 01a1c319-7860-76e8-92ac-c5d8647c2b61
+    kind: obligation
+    statement: "The ratio of five between a parallax and its error is stated with its basis in the ranking rule, and an inferred distance never outranks a measured or estimated one."
+  - key: 01a1c319-7860-76e8-92ac-c5d93dc2ff5f
+    kind: risk
+    statement: "Beyond about a kiloparsec, part of what the stars draw is the Bailer-Jones prior's Galaxy, told apart only by the stars' kind of value."
+subjects:
+  - role: outcome
+    node: 01a1c319-7860-76e8-92ac-c5e9e544de53
+  - role: outcome
+    node: 01a1c319-7860-76e8-92ac-c601520a52af

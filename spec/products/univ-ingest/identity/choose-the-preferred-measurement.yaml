@@ -43,6 +43,8 @@ requirements:
         name: "Only the redshift distance that ranks first among the object's redshift distances, its leading redshift distance, is compared with the object's other candidates."
       - key: 01a1a147-6018-75e1-9409-3f77617e6ee1
         name: "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, the leading redshift distance is set aside if its fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states."
+      - key: 01a1c319-7860-76e8-92ac-c600a1803611
+        name: "Where any measured or estimated geometric, primary-indicator or secondary-indicator distance is a candidate, an inferred one, such as a Bailer-Jones distance resting on a parallax below five times its error, is set aside."
       - key: 01a1a147-6018-75e1-9409-3f788275d038
         name: "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads."
       - key: 01a19f23-636e-7035-8185-ab9ac704109a

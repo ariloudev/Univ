@@ -1,0 +1,30 @@
+key: 01a1c319-7860-76e8-92ac-c60f36189336
+slug: resample-the-dust-map
+name: "Resample the dust map"
+body: |
+  Turning the Edenhofer et al. 2024 dust map, published on HEALPix pixels in logarithmic distance
+  bins about the Sun, into Cartesian volume grids that Univ Server serves and a client draws as a
+  volume, without inventing dust where the map has no data.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+requirements:
+  - key: 01a1c319-7860-76e8-92ac-c610df135a9d
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "publish the Edenhofer 2024 dust map as two volume grids, its posterior mean dust density and its posterior standard deviation, resampled onto one Cartesian grid about the Sun."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c6115fb30760
+        name: "Each grid is a cube of 2,500 pc a side centred on the Sun in cells of 10 pc, 250 cells a side, with its axes along the galactic Cartesian axes of the Hipparcos catalogue's transformation."
+      - key: 01a1c319-7860-76e8-92ac-c612e2d9ee1a
+        name: "Each cell holds the mean of the source's values at the centres of the source's voxels that fall within it, or, where none does, the source's value at the cell's centre, and the grid's header names this resampling."
+      - key: 01a1c319-7860-76e8-92ac-c613ec2ab0d2
+        name: "A cell whose centre lies nearer than 69 pc or farther than 1,250 pc from the Sun, outside the distances the map covers, holds a value that marks no data, never zero."
+      - key: 01a1c319-7860-76e8-92ac-c614a12c8ab8
+        name: "The grids keep the source's unit, extinction in the units of Zhang, Green & Rix 2023 per parsec, and name it."
+      - key: 01a1c319-7860-76e8-92ac-c6153bd22a56
+        name: "The kind of value of both grids is reconstructed."
+      - key: 01a1c319-7860-76e8-92ac-c6161d503573
+        name: "The standard deviation grid names the mean grid it is the uncertainty of."
+      - key: 01a1c319-7860-76e8-92ac-c617cbb3fe81
+        name: "Two builds from the same source files give grids with the same SHA-256."
