@@ -10,3 +10,32 @@ versions:
     title: "Release 13"
     goal: "Releases 10 and 11 are pruned under the guard, release 13 is built, checked, published and benched, and release 12 is pruned"
     status: planned
+  - key: 01a1c4a1-56d2-715c-bf0e-0619c35e1262
+    at: 2026-11-10T08:44:30Z
+    revision: 20
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Release 13"
+    goal: "Releases 10 and 11 are pruned under the guard, release 13 is built, checked, published and benched, and release 12 is pruned"
+    status: active
+blocks:
+  - key: 01a1c4a1-56d2-715c-bf0e-06153f84c1f8
+    id: release-13-running
+    kind: note
+    versions:
+      - key: 01a1c4a1-56d2-715c-bf0e-0618989b7165
+        at: 2026-11-10T08:44:30Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "The full ingest is running (the owner's word, 2026-11-10)"
+        markdown: |-
+          The owner asked for the full ingest in the background without a separate confirmation.
+
+          - **Binary:** `.cache/univ-ingest/r13/univ-ingest`, built from `b0f88fc`, whose ingest code is product/milky-way's after wave 4.
+          - **Order:** build (every source, the real cache and state) → `cargo xtask science` → publish to `.cache/univ-ingest/wrangler`, each only if the one before passed. Logs in `.cache/univ-ingest/r13/`.
+          - **First run** stopped at 108 of 768 Bailer-Jones chunks for the FITS-grid fix and restarted; the fetched chunks are hits.
+          - **Not done:** the prunes of releases 10, 11 and 12 in this stage's goal wait for the owner's word, and are not part of the run.
+        tone: info
