@@ -102,7 +102,7 @@
       "index": 0,
       "id": "gaia-dr3-bright",
       "role": "distance_and_position",
-      "title": "Gaia DR3 bright stars (G < 10)",
+      "title": "Gaia DR3 stars (G < 14)",
       "citation": "Gaia Collaboration, Vallenari A., Brown A.G.A., Prusti T., et al. 2023, \"Gaia Data Release 3: Summary of the content and survey properties\", A&A 674, A1. 2023A&A...674A...1G, doi:10.1051/0004-6361/202243940. Gaia Collaboration, Prusti T., de Bruijne J.H.J., et al. 2016, \"The Gaia mission\", A&A 595, A1. 2016A&A...595A...1G, doi:10.1051/0004-6361/201629272.",
       "credit": "The Gaia data are open and free to use, provided credit is given to ‘ESA/Gaia/DPAC’. This work has made use of data from the European Space Agency (ESA) mission Gaia ( https://www.cosmos.esa.int/gaia ), processed by the Gaia Data Processing and Analysis Consortium (DPAC, https://www.cosmos.esa.int/web/gaia/dpac/consortium ). Funding for the DPAC has been provided by national institutions, in particular the institutions participating in the Gaia Multilateral Agreement. Cite both the Gaia mission paper (Gaia Collaboration, Prusti et al. 2016) and the Gaia DR3 release paper (Gaia Collaboration, Vallenari et al. 2023), link the CC BY-NC 3.0 IGO licence and say what was changed."
     },

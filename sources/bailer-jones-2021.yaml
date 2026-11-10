@@ -1,22 +1,26 @@
 id: bailer-jones-2021
-title: "Bailer-Jones et al. 2021 distances for Gaia DR3 bright stars (G < 10)"
+title: "Bailer-Jones et al. 2021 distances for Gaia DR3 stars (G < 14)"
 provider: gaia-archive
 access:
   method: tap
-  # The same G < 10 selection and the same 16 random_index chunks as gaia-dr3-bright, each well
+  # The same G < 14 selection and the same 768 random_index chunks as gaia-dr3-bright, each well
   # under the ESA archive's silent 50,000-row anonymous cap.
   query: >-
     SELECT d.source_id, d.r_med_geo, d.r_lo_geo, d.r_hi_geo, d.r_med_photogeo, d.r_lo_photogeo,
     d.r_hi_photogeo, d.flag, g.parallax_over_error FROM gaiadr3.gaia_source AS g
     JOIN external.gaiaedr3_distance AS d
-    ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 10
+    ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 14
     AND MOD(g.random_index, {chunks}) = {chunk}
-  chunks: 16
+  chunks: 768
   count: >-
     SELECT COUNT(*) AS n FROM gaiadr3.gaia_source AS g JOIN external.gaiaedr3_distance AS d
-    ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 10
+    ON d.source_id = g.source_id WHERE g.phot_g_mean_mag < 14
 cuts:
-  - "Inner join of external.gaiaedr3_distance to gaiadr3.gaia_source on source_id, for phot_g_mean_mag < 10 (PROVISIONAL, as gaia-dr3-bright); sources without a distance are absent."
+  - >-
+    Inner join of external.gaiaedr3_distance to gaiadr3.gaia_source on source_id, for
+    phot_g_mean_mag < 14, as gaia-dr3-bright; sources without a distance are absent. Measured
+    2026-11-10 by COUNT(*) as an archive job: 16,716,140 rows, 128,016 fewer than gaia-dr3-bright's
+    16,844,156.
   - "EDR3 and DR3 share an identical source list, so EDR3 source_ids join DR3 directly; they cannot be matched to DR1 or DR2 ids."
   - >-
     The distances are model-based estimates (Bayesian posterior quantiles with a Galaxy-model prior),
