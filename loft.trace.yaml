@@ -524,7 +524,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/normalize.rs"
         name: "normalized_values_use_degrees_km_s_parsecs_for_stars_and_megaparsecs_beyond"
-        body: 57e598096bc982277a407cc249762f0ea4cf72e0aa8bdc945ed82d9c75f35fde
+        body: f2b13b99be43ec34f21dd73190514c7e8036128182d7ef0eb2381920a19860c4
   - node: 01a19f22-2ad9-716e-876f-1867aeb456fd
     reviewed: 6a21749c3f954f00ed0ba376b5d9d9fe424f2c80e0c1d468acddc6b825cef645
     tests:
@@ -2105,7 +2105,7 @@ links:
         body: 3865bcea175091acc530652737068b37c56161d5aaacb67f6c3e96858d3d7369
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: f7124cda2e0928f7e93230e34812f587cb272f7b387ec0935ed891dd8b31844b
+        body: 4de2db3923c04f0e98854b06114bac6130f89a8f04a8a2a0defdc6c9faecf9af
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
         body: 435d98a083f7eb1a153b38630dceeaaca68da936c9a3946fccf977954aaa91b4
@@ -2180,7 +2180,7 @@ links:
         body: 82b975c4785d473109110da1c61fa98f2f1c72ffc16fcea510ab30d1bb3b310e
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: f7124cda2e0928f7e93230e34812f587cb272f7b387ec0935ed891dd8b31844b
+        body: 4de2db3923c04f0e98854b06114bac6130f89a8f04a8a2a0defdc6c9faecf9af
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
@@ -2210,7 +2210,7 @@ links:
         body: 3865bcea175091acc530652737068b37c56161d5aaacb67f6c3e96858d3d7369
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: f7124cda2e0928f7e93230e34812f587cb272f7b387ec0935ed891dd8b31844b
+        body: 4de2db3923c04f0e98854b06114bac6130f89a8f04a8a2a0defdc6c9faecf9af
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "the_fetch_ends_with_what_it_got_hit_failed_and_fetched"
         body: 7f2007f98ba30b6948371bd583e8ff2a05ae7b197fab612e3e13dbb352831138
