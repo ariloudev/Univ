@@ -125,6 +125,15 @@ blocks:
         title: "Edenhofer source definition and release wiring"
         detail: "sources/edenhofer-2024-dust.yaml; Zenodo, CC BY 4.0; release grid reading"
         state: active
+      - key: 01a1c454-5252-75dd-9039-51a815213de3
+        at: 2026-11-10T07:20:22Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer source definition and release wiring"
+        detail: "25c3835: sources/edenhofer-2024-dust.yaml (Zenodo file with size and SHA-256, CC BY 4.0, stars domain, fields density and density_error in the new unit); release::is_grid and read take it whole. A release-level test checks the header, the deviation named under its mean, the shared no-data cells, and the same SHA-256 from two builds."
+        state: done
   - key: 01a1c440-c1ed-745b-a8c9-b0413099e9be
     id: w3-t5
     kind: task
@@ -138,6 +147,15 @@ blocks:
         title: "Fetch and resample the real map once"
         detail: "measure time, memory and sizes"
         state: open
+      - key: 01a1c454-5252-75dd-9039-51a91bf5bca4
+        at: 2026-11-10T07:20:22Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Fetch and resample the real map once"
+        detail: "Fetched 3,252,715,200 bytes; MD5 matches Zenodo's 10c823a5…. Resampling whole in release mode."
+        state: active
   - key: 01a1c440-c1ed-745b-a8c9-b043c15391d1
     id: w3-build-issues
     kind: note

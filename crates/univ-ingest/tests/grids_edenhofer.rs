@@ -373,3 +373,59 @@ fn the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_t
     assert_eq!(nan(mean), nan(sigma));
     assert!(nan(mean).contains(&true) && nan(mean).contains(&false));
 }
+
+/// Run by hand on the real map, `UNIV_EDENHOFER_FILE` naming `mean_and_std_healpix.fits`:
+/// `cargo test --release -p univ-ingest --test grids_edenhofer -- --ignored --nocapture`.
+#[test]
+#[ignore = "reads the real 3.25 GB map"]
+fn the_real_map_resamples_whole() {
+    let path = PathBuf::from(std::env::var("UNIV_EDENHOFER_FILE").unwrap());
+    let started = std::time::Instant::now();
+    let grid = read_edenhofer(&path, Window::Whole, CELLS).unwrap();
+    let seconds = started.elapsed().as_secs_f64();
+    let (mean, std) = (reals(&grid.fields[0].samples), sigma(&grid));
+    let g = &grid.geometry;
+    let held: Vec<usize> = (0..mean.len()).filter(|&i| !mean[i].is_nan()).collect();
+    // The cells within 69–1,250 pc of the Sun: a spherical shell's share of the cube.
+    let shell = std::f64::consts::FRAC_PI_6 * (1.0 - (NEAREST_PC / FARTHEST_PC).powi(3));
+    #[expect(clippy::cast_precision_loss)]
+    let share = held.len() as f64 / mean.len() as f64;
+    assert!((share - shell).abs() < 0.002, "{share} not {shell}");
+    assert!(
+        held.iter()
+            .all(|&i| mean[i] >= 0.0 && std[i] >= 0.0 && !std[i].is_nan())
+    );
+    let mut sorted: Vec<f64> = held.iter().map(|&i| mean[i]).collect();
+    sorted.sort_by(f64::total_cmp);
+    let quantile = |q: f64| {
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            clippy::cast_precision_loss
+        )]
+        let at = ((sorted.len() - 1) as f64 * q) as usize;
+        sorted[at]
+    };
+    let peak = held
+        .iter()
+        .copied()
+        .max_by(|&a, &b| mean[a].total_cmp(&mean[b]))
+        .unwrap();
+    let at = |i: usize| {
+        let (n, m) = (g.shape[1] * g.shape[2], g.shape[2]);
+        g.centre([i / n, (i % n) / m, i % m])
+    };
+    let c = at(peak);
+    let r = c.iter().map(|v| v * v).sum::<f64>().sqrt();
+    let l = c[1].atan2(c[0]).to_degrees().rem_euclid(360.0);
+    let b = (c[2] / r).asin().to_degrees();
+    eprintln!(
+        "resampled in {seconds:.1} s; {} of {} cells hold data ({share:.4}); density per pc \
+         median {:.3e}, 99th percentile {:.3e}, max {:.3e} at l {l:.1}, b {b:.1}, {r:.0} pc",
+        held.len(),
+        mean.len(),
+        quantile(0.5),
+        quantile(0.99),
+        mean[peak]
+    );
+}
