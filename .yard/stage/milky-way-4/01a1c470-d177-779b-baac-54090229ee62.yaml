@@ -220,6 +220,15 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Playwright: dust switch, failure path, no WebGL errors"
         state: active
+      - key: 01a1c47e-75e8-7658-b005-d09404edfefe
+        at: 2026-11-10T08:06:24Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Playwright: dust switch, failure path, no WebGL errors"
+        detail: "Two tests in e2e/explorer.spec.ts; run with the wave's one integration. xtask gains UNIV_LOCAL_STATE (serve, explore, bench first-points) for a scratch state."
+        state: done
   - key: 01a1c470-d177-779b-baac-5415ae9f81c9
     id: w4-build-issues
     kind: note
@@ -234,3 +243,36 @@ blocks:
         markdown: |-
           | # | Issue | Found by | Fix | State |
           |---|---|---|---|---|
+  - key: 01a1c47e-75e8-7658-b005-d09307fb27c1
+    id: w4-t-preview
+    kind: task
+    versions:
+      - key: 01a1c47e-75e8-7658-b005-d09576906478
+        at: 2026-11-10T08:06:24Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Screenshots on a preview release (the owner asked)"
+        detail: "Scratch release in .cache/univ-ingest/preview: 16 of the 768 Gaia chunks (1 in 48 stars to G < 14) with Bailer-Jones, Hipparcos, the five tracer sources and the dust map; own state and Wrangler dir; explore via UNIV_LOCAL_STATE."
+        state: active
+  - key: 01a1c47f-4958-715e-a6b7-4ea1f6119a87
+    id: w4-release-13-run
+    kind: note
+    versions:
+      - key: 01a1c47f-4958-715e-a6b7-4ea2fda1c864
+        at: 2026-11-10T08:07:18Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Release 13: full ingest started in the background (the owner's word)"
+        markdown: |-
+          The owner asked, on 2026-11-10, for the full ingest to run in the background while the explorer work goes on, without a separate confirmation.
+
+          - **Code:** a frozen copy of the ingest binary at `.cache/univ-ingest/r13/univ-ingest`, built from `658a862`. The ingest code is the same as product/milky-way's after wave 3; wave 4 touches only the explorer and xtask.
+          - **Order:** `build` (every source, the real cache and state, so release 13), then `cargo xtask science` on the build, then `publish` to the real local state, only if the build and the checks pass.
+          - **The dust file:** the copy already checked against Zenodo's MD5, linked into the shared cache with its provenance, so it is not downloaded again.
+          - **Logs:** `.cache/univ-ingest/r13/{run,build,science,publish}.log`.
+          - **Not done:** no prune; that still needs the owner's word.
+        tone: info

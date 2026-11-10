@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { DustMap } from "../api/dust.ts";
 import type { Rotations } from "../api/schemas.ts";
-import type { Renderer } from "../scene/renderer.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { fakeWorld } from "../test/world.ts";
 import { useDustMap } from "./useDustMap.ts";
@@ -23,9 +22,8 @@ const MAP: DustMap = {
 
 /** A world whose renderer records the dust it is given, built once, outside the hook. */
 function world() {
-  const setDust = vi.fn();
   const made = fakeWorld();
-  made.renderer = { ...made.renderer, setDust } as unknown as Renderer;
+  const setDust = vi.spyOn(made.renderer, "setDust");
   return { made, setDust };
 }
 

@@ -4,7 +4,7 @@
 // the view by the release's galactic rotation. A cell that marks no data (NaN) counts as no dust,
 // so it adds nothing to the volume.
 
-import { type Mat3, type Vec3, apply, multiply, transpose } from "./vec.ts";
+import { type Mat3, type Vec3, add, apply, multiply, norm, scale, sub, transpose } from "./vec.ts";
 
 /** Parsecs in a megaparsec, the view's unit. */
 const PC_PER_MPC = 1e6;
@@ -27,24 +27,29 @@ export interface GridShape {
   origin: readonly [number, number, number];
 }
 
-/** `samples`, a cubic grid of `shape`, averaged over blocks of 2 × 2 × 2 cells (a lone cell at an
- * odd end alone), no data as no dust, and laid out X fastest. */
-export function coarsened(samples: Float32Array, { shape, cell, origin }: GridShape): DustVolume {
+/** The side of the cube `samples` fills, checked: an even number of cells, centred alike on
+ * each axis. */
+function sideOf(samples: Float32Array, { shape, origin }: GridShape): number {
   const [side, ny, nz] = shape;
   if (side !== ny || ny !== nz || samples.length !== side ** 3) throw new Error(`not a cube of ${side ** 3} samples: ${samples.length}`);
+  if (side % 2 !== 0) throw new Error(`a cube of ${side} cells a side, which does not halve`);
   if (origin[0] !== origin[1] || origin[1] !== origin[2]) throw new Error("not a cube centred alike on each axis");
-  const n = Math.ceil(side / 2);
-  const sums = new Float32Array(n * n * n);
-  const counts = new Uint8Array(n * n * n);
+  return side;
+}
+
+/** `samples`, a cubic grid of `shape` with an even side, averaged over blocks of 2 × 2 × 2
+ * cells, no data as no dust, and laid out X fastest. */
+export function coarsened(samples: Float32Array, grid: GridShape): DustVolume {
+  const side = sideOf(samples, grid);
+  const n = side / 2;
+  const densities = new Float32Array(n * n * n);
+  // Sample i is cell (x, y, z), Z fastest; its block's place has X fastest.
   samples.forEach((value, i) => {
-    // Sample i is cell (x, y, z) with Z fastest; its block's place has X fastest.
-    const [x, y, z] = [Math.floor(i / (side * side)), Math.floor(i / side) % side, i % side];
-    const at = ((z >> 1) * n + (y >> 1)) * n + (x >> 1);
-    sums[at] = (sums[at] ?? 0) + (Number.isNaN(value) ? 0 : value);
-    counts[at] = (counts[at] ?? 0) + 1;
+    if (Number.isNaN(value)) return;
+    const at = ((i % side) >> 1) * n * n + ((Math.floor(i / side) % side) >> 1) * n + (Math.floor(i / side / side) >> 1);
+    densities[at] = (densities[at] ?? 0) + value / 8;
   });
-  const densities = sums.map((sum, i) => sum / (counts[i] ?? 1));
-  return { n, corner: origin[0] - cell / 2, edge: side * cell, densities };
+  return { n, corner: grid.origin[0] - grid.cell / 2, edge: side * grid.cell, densities };
 }
 
 /** The density at the cell holding the texture coordinate `t` (each in 0–1), 0 outside. */
@@ -64,19 +69,26 @@ export interface DustFrame {
 
 /** The dust frame of an eye at `eye` (ICRS megaparsecs) looking along `axes`. */
 export function dustFrame(volume: DustVolume, eye: Vec3, axes: Mat3, toGalactic: Mat3): DustFrame {
-  const toTexture = (v: Vec3): Vec3 => v.map((c) => (c * PC_PER_MPC - volume.corner) / volume.edge) as unknown as Vec3;
-  const scaled = (m: Mat3): Mat3 => m.map((row) => row.map((c) => (c * PC_PER_MPC) / volume.edge)) as unknown as Mat3;
-  return { eye: toTexture(apply(toGalactic, eye)), axes: scaled(multiply(toGalactic, transpose(axes))) };
+  const k = PC_PER_MPC / volume.edge;
+  const corner: Vec3 = [volume.corner, volume.corner, volume.corner];
+  const [x, y, z] = multiply(toGalactic, transpose(axes));
+  return {
+    eye: scale(sub(scale(apply(toGalactic, eye), PC_PER_MPC), corner), 1 / volume.edge),
+    axes: [scale(x, k), scale(y, k), scale(z, k)],
+  };
 }
 
 /** The texture coordinate of `place`, a position in the eye's axes relative to the eye. */
-export const textureOf = (frame: DustFrame, place: Vec3): Vec3 => {
-  const step = apply(frame.axes, place);
-  return [frame.eye[0] + step[0], frame.eye[1] + step[1], frame.eye[2] + step[2]];
-};
+export const textureOf = (frame: DustFrame, place: Vec3): Vec3 => add(frame.eye, apply(frame.axes, place));
 
-/** Steps of the integral from the eye to a star, as the point shader takes them. */
+/** The most steps of the integral from the eye to a star, as the point shader takes them: one a
+ * cell the segment crosses, up to this. */
 export const STAR_STEPS = 32;
+
+/** The steps of an integral over `fraction` of the segment `d` (texture coordinates) through a
+ * grid of `n` cells a side: about one a cell crossed, at least one, at most `most`. */
+const stepsOf = (fraction: number, d: Vec3, n: number, most: number): number =>
+  Math.min(most, Math.max(1, Math.ceil(fraction * norm(d) * n)));
 
 /** The part of the segment from the eye to `place` inside the grid, as fractions of it; none
  * where it misses the grid. */
@@ -100,12 +112,12 @@ export function columnTo(volume: DustVolume, frame: DustFrame, place: Vec3): num
   const inside = clipped(frame, place);
   if (inside === undefined) return 0;
   const [t0, t1] = inside;
+  const steps = stepsOf(t1 - t0, apply(frame.axes, place), volume.n, STAR_STEPS);
   let column = 0;
-  for (let s = 0; s < STAR_STEPS; s += 1) {
-    const f = t0 + ((t1 - t0) * (s + 0.5)) / STAR_STEPS;
-    column += densityAt(volume, textureOf(frame, [place[0] * f, place[1] * f, place[2] * f]));
+  for (let s = 0; s < steps; s += 1) {
+    column += densityAt(volume, textureOf(frame, scale(place, t0 + ((t1 - t0) * (s + 0.5)) / steps)));
   }
-  return (column * (t1 - t0) * Math.hypot(...place) * PC_PER_MPC) / STAR_STEPS;
+  return (column * (t1 - t0) * norm(place) * PC_PER_MPC) / steps;
 }
 
 /** How strongly a dust column dims the stars behind it, for display: a star is drawn

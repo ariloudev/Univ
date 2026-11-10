@@ -74,7 +74,7 @@ Run them from this directory.
   http://127.0.0.1:5317/, until Ctrl-C. The explorer's dev server passes its reads on to the
   Worker with an extended-tier key it issues for the run (and revokes the keys earlier runs left),
   so the key never reaches the browser. Its Wrangler log is `target/explore/wrangler.log`.
-- `UNIV_LOCAL_STATE=<wrangler-dir>` runs `serve`, `explore` and `bench first-points` on another
+- `UNIV_LOCAL_STATE=<wrangler-dir>` runs `serve`, `explore` and the benches on another
   local state, such as a scratch release published with `univ-ingest publish --persist-to`, in place of
   the real one.
 - Every run on the real state (`serve`, `explore` and the benches) gives the Worker the owner

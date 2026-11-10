@@ -4,7 +4,7 @@ import { Swatch } from "./Swatch.tsx";
 import { SwitchBox } from "./SwitchBox.tsx";
 import type { Switch } from "./addressSwitch.ts";
 import type { DustMap } from "../api/dust.ts";
-import type { Catalogue } from "../catalogue/catalogue.ts";
+import type { Catalogue, TracerLine } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
 import { KINDS, POINT_CSS, css } from "../scene/kinds.ts";
@@ -87,7 +87,7 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
 }
 
 /** What the key reads of the catalogue. */
-export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "failed" | "unread" | "credits">;
+export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "tracerKinds" | "failed" | "unread" | "credits">;
 
 /** A part of the bottom bar that opens upward over the view. */
 function Popover({ label, children, width = "w-96", side = "left-0" }: { label: string; children: ReactNode; width?: string; side?: string }) {
@@ -179,7 +179,7 @@ function Key({ catalogue }: { catalogue: Tally }) {
           opaque, whose preferred distance leans on its source's prior more than on their parallax.
         </p>
       </div>
-      <TracerKey lines={catalogue.tracers()} />
+      <TracerKey lines={catalogue.tracers()} kinds={catalogue.tracerKinds} />
       <h2 className="flex items-center gap-2 font-semibold">
         <Swatch colour={POINT_CSS} />
         Other points, by the kind of value of each distance
@@ -207,7 +207,7 @@ function Key({ catalogue }: { catalogue: Tally }) {
 }
 
 /** The Galaxy's tracers in the key: each source in its colour, with its points drawn. */
-function TracerKey({ lines }: { lines: ReturnType<Tally["tracers"]> }) {
+function TracerKey({ lines, kinds }: { lines: TracerLine[]; kinds: readonly number[] }) {
   if (lines.length === 0) return null;
   return (
     <>
@@ -220,6 +220,14 @@ function TracerKey({ lines }: { lines: ReturnType<Tally["tracers"]> }) {
           </li>
         ))}
       </ul>
+      <p data-testid="tracer-kinds" className="flex flex-wrap gap-x-3 text-xs">
+        {KINDS.map((kind, i) => (
+          <span key={kind} className="flex items-center">
+            <Mark kind={kind} />
+            {kind} {(kinds[i] ?? 0).toLocaleString("en-GB")}
+          </span>
+        ))}
+      </p>
     </>
   );
 }

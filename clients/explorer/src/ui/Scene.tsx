@@ -49,9 +49,6 @@ function useCulledStructure(
   return { detail, inside: volume === undefined ? undefined : { on: inside, approximate: volume.approximate, set: setInside } };
 }
 
-/** The view of `release`: the canvas, its overlay, and the rail, margins and bottom bar about it,
- * with its parts of the top bar, all in `place`; its tiles at the detail the view needs, or every one where `levelOfDetail` is
- * off. */
 /** Applies what is hidden of the points and the level of detail to `world`'s catalogue. */
 function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, levelOfDetail: boolean): void {
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
@@ -65,6 +62,9 @@ function usePointSettings(world: World | undefined, domains: readonly Domain[], 
   }, [world, domains, levelOfDetail]);
 }
 
+/** The view of `release`: the canvas, its overlay, and the rail, margins and bottom bar about it,
+ * with its parts of the top bar, all in `place`; its tiles at the detail the view needs, or every one where `levelOfDetail` is
+ * off. */
 export function Scene({
   release,
   cosmology,

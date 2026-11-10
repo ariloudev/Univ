@@ -132,6 +132,8 @@ export class Catalogue implements DrawnDetail {
   readonly stars = { coloured: 0, grey: 0, inferred: 0 };
   /** The Galaxy's tracers drawn, by their source's index in the domain's manifest. */
   private readonly tracerPoints: number[] = [];
+  /** The Galaxy's tracers drawn of each kind of value, by its index in `KINDS`. */
+  readonly tracerKinds = [0, 0, 0, 0];
   /** The points counted of each domain. */
   private readonly domainPoints = new Map<string, number>();
   /** Each drawn tile's points by cell, and which lie inside the volume the view is culled to, by
@@ -372,7 +374,7 @@ export class Catalogue implements DrawnDetail {
       const kind = Math.floor(at / 2 / sources);
       const source = Math.floor(at / 2) % sources;
       if (n === 0 || !isPointShown(this.masks, domain, source, kind)) return;
-      if (domain === TRACERS_DOMAIN) this.tracerPoints[source] = (this.tracerPoints[source] ?? 0) + by * n;
+      if (domain === TRACERS_DOMAIN) this.countTracer(source, kind, by * n);
       else this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
       this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * n);
     });
@@ -387,6 +389,12 @@ export class Catalogue implements DrawnDetail {
     if (coloured) this.stars.coloured += n;
     else this.stars.grey += n;
     if (kind === KIND_INDEX.inferred) this.stars.inferred += n;
+  }
+
+  /** Counts `n` tracers of `source` and `kind` (their indices). */
+  private countTracer(source: number, kind: number, n: number): void {
+    this.tracerPoints[source] = (this.tracerPoints[source] ?? 0) + n;
+    this.tracerKinds[kind] = (this.tracerKinds[kind] ?? 0) + n;
   }
 
   /** Each source of the Galaxy's tracers, its colour and its points drawn. */
@@ -408,6 +416,7 @@ export class Catalogue implements DrawnDetail {
     this.stars.grey = 0;
     this.stars.inferred = 0;
     this.tracerPoints.length = 0;
+    this.tracerKinds.fill(0);
     this.domainPoints.clear();
     for (const batch of [...this.drawn.values(), ...this.kept.values()]) this.tally(batch, 1);
     this.events.onChange();

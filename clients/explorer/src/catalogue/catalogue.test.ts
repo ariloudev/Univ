@@ -175,6 +175,8 @@ describe("the catalogue", () => {
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.reduce((sum, line) => sum + line.points, 0)).toBe(points.length);
     expect(catalogue.kinds.reduce((a, b) => a + b, 0)).toBe(0);
+    // Their kinds of value counted apart, so that the key still says how many are inferred.
+    expect(catalogue.tracerKinds.reduce((a, b) => a + b, 0)).toBe(points.length);
     expect(new Set(lines.map((line) => line.colour)).size).toBe(Math.min(lines.length, 5));
   });
 

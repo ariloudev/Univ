@@ -358,10 +358,11 @@ export class Renderer implements Drawer {
     gl.clearColor(0.02, 0.027, 0.05, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
     this.dust.drawHaze(frame);
+    // Everything after the haze adds up where it crowds.
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     this.drawOutlines(frame, width, height, ratio);
     this.drawPoints(frame, sight, view.distance);
     this.drawMarkers(frame);
@@ -400,7 +401,7 @@ export class Renderer implements Drawer {
     const now = performance.now();
     for (const id of this.fades.gone(now)) this.forget(id);
     this.use(this.points, frame);
-    this.dust.usePoints(frame);
+    this.dust.usePoints();
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
@@ -436,8 +437,6 @@ export class Renderer implements Drawer {
   private drawMarkers(frame: Frame): void {
     const gl = this.gl;
     gl.uniform1f(this.opacity, 1);
-    // The dust dims no marker: a structure's place is shown whatever lies before it.
-    this.dust.usePoints(frame, false);
     // Every marker drawn: one level holding all, and a slice that ranks every point first.
     this.useDetail(EVERYTHING);
     gl.uniform2f(this.detailAt.slice, 0, 0);

@@ -42,8 +42,9 @@ describe("the dust map's grid", () => {
     expect(volume.densities.every((d) => Number.isFinite(d))).toBe(true);
   });
 
-  it("refuses samples that do not fill a cube", () => {
+  it("refuses samples that do not fill a cube, or a cube that does not halve", () => {
     expect(() => coarsened(new Float32Array(7), { shape: [2, 2, 2], cell: 10, origin: [-5, -5, -5] })).toThrow(/not a cube/);
+    expect(() => coarsened(new Float32Array(27), { shape: [3, 3, 3], cell: 10, origin: [-10, -10, -10] })).toThrow(/does not halve/);
   });
 
   it("lies at the galactic position of each place in the view, however the eye is turned", () => {

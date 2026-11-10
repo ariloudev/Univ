@@ -5,6 +5,7 @@
 
 import type { Rgba } from "./drawing.ts";
 import { POINT_OPACITY } from "./kinds.ts";
+import { toBytes } from "./starColour.ts";
 
 /** The scale domain of the Galaxy's tracers. */
 export const TRACERS_DOMAIN = "galaxy_tracers";
@@ -29,7 +30,7 @@ export function tracerColour(index: number): Rgba {
   return colour;
 }
 
-const BYTES = TRACER_COLOURS.map((rgba) => Uint8Array.from(rgba, (c) => Math.round(c * 255)));
+const BYTES = TRACER_COLOURS.map(toBytes);
 
 /** Each point's colour, as red, green, blue and opacity bytes, from its source's index. */
 export function tracerBytes(sources: Uint16Array): Uint8Array {

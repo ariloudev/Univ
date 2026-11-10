@@ -114,17 +114,26 @@ pub fn serve(root: &Path) -> bool {
 /// a scratch release's, in place of the real one.
 const STATE_VARIABLE: &str = "UNIV_LOCAL_STATE";
 
-/// The real local state, or the one `UNIV_LOCAL_STATE` names, its release tables and the
-/// univ-layers migrations brought up to date; none, having said why.
-pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
-    let state = std::env::var_os(STATE_VARIABLE)
-        .map_or_else(|| root.join(REAL_STATE), std::path::PathBuf::from);
-    if state != root.join(REAL_STATE) {
-        eprintln!(
-            "on the local state {} that {STATE_VARIABLE} names",
-            state.display()
-        );
+/// The local state the Worker runs on: the real one, or the one `UNIV_LOCAL_STATE` names, made
+/// absolute, since Wrangler runs from the Worker's directory.
+pub(crate) fn local_state(root: &Path) -> std::path::PathBuf {
+    match std::env::var_os(STATE_VARIABLE) {
+        Some(named) => {
+            let state = std::path::absolute(&named).unwrap_or_else(|_| named.into());
+            eprintln!(
+                "on the local state {} that {STATE_VARIABLE} names",
+                state.display()
+            );
+            state
+        }
+        None => root.join(REAL_STATE),
     }
+}
+
+/// The local state, its release tables and the univ-layers migrations brought up to date; none,
+/// having said why.
+pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
+    let state = local_state(root);
     if !state.is_dir() {
         eprintln!(
             "{} holds no published release: run `univ-ingest publish` first",

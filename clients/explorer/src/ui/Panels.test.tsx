@@ -26,6 +26,7 @@ function tally(failed = 0, unread = 0): Tally {
     kinds: [1200, 30, 4, 0],
     stars: { coloured: 98_500, grey: 1500, inferred: 4000 },
     tracers: () => [],
+    tracerKinds: [0, 0, 0, 0],
     failed,
     unread,
     credits: () => (SOURCE === undefined ? [] : [{ ...SOURCE, domain: "stars" }]),
@@ -81,7 +82,10 @@ describe("the bars and the view's drawer", () => {
       { id: "hunt-reffert-2023", title: "Open clusters", colour: tracerColour(0), points: 6818 },
       { id: "li-2023-rr-lyrae", title: "RR Lyrae stars", colour: tracerColour(1), points: 12 },
     ];
-    show({ ...tally(), tracers: () => lines });
+    show({ ...tally(), tracers: () => lines, tracerKinds: [0, 6818, 12, 0] });
+    const kinds = screen.getByTestId("tracer-kinds").textContent ?? "";
+    expect(kinds).toContain("estimated 6,818");
+    expect(kinds).toContain("inferred 12");
     const items = within(screen.getByTestId("tracer-key")).getAllByRole("listitem");
     expect(items.map((li) => li.textContent)).toEqual(["Open clusters: 6,818 points", "RR Lyrae stars: 12 points"]);
     const probe = document.createElement("span");
