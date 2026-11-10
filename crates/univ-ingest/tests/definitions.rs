@@ -8,7 +8,7 @@ use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
 /// The sources by id, with their scale domains: those of the first release, the Cosmicflows-4
 /// galaxies added for the second, the Hipparcos spectral types added for the eighth, and the
 /// galaxy surveys added for the tenth.
-const SOURCES: [(&str, ScaleDomain); 35] = [
+const SOURCES: [(&str, ScaleDomain); 36] = [
     ("sdss-dr17-galaxies", ScaleDomain::CosmicWeb),
     ("boss-dr17-great-wall", ScaleDomain::CosmicWeb),
     ("sixdfgs-dr3", ScaleDomain::CosmicWeb),
@@ -28,6 +28,7 @@ const SOURCES: [(&str, ScaleDomain); 35] = [
     ("cf4pp-density", ScaleDomain::CosmicWeb),
     ("cf4-basins", ScaleDomain::CosmicWeb),
     ("twompp-reconstruction", ScaleDomain::CosmicWeb),
+    ("edenhofer-2024-dust", ScaleDomain::Stars),
     ("erass1-clusters", ScaleDomain::CosmicWeb),
     ("researched-structures", ScaleDomain::CosmicWeb),
     // Release 10.

@@ -79,6 +79,9 @@ fn a_grid_is_written_as_its_header_and_float_samples_in_its_own_layout() {
             .contains("2025")
     );
     assert_eq!(header["unit"], "megaparsec_over_h");
+    // Published on its source's own cells: neither resampled nor holding cells of no data.
+    assert!(header["resampling"].is_null() && header["no_data"].is_null());
+    assert!(header.get("resampling").is_some() && header.get("no_data").is_some());
     assert_eq!(header["shape"], serde_json::json!(grid.geometry.shape));
     assert_eq!(header["axes"], serde_json::json!(grid.geometry.axes));
     assert_eq!(header["frame"], serde_json::json!(grid.geometry.frame));

@@ -6041,7 +6041,8 @@
           "megaparsec",
           "megaparsec_over_h",
           "magnitude",
-          "dimensionless"
+          "dimensionless",
+          "extinction_zgr23_per_parsec"
         ],
         "type": "string"
       },

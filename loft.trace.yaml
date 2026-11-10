@@ -225,6 +225,15 @@ links:
       - file: "crates/univ-ingest/tests/normalize_tracers.rs"
         name: "a_maser_keeps_its_parallax_as_measured_and_no_distance"
         body: 4baa8ab432771d3f9f2335c12d0d37513ebce4e414dd74b3b5b8860eebd1eff5
+  - node: 01a1c319-7860-76e8-92ac-c5fe0e6a94b9
+    reviewed: 21cdfa85201d13a5a8b2c9fc262f975610500bfc899e2d8551e29bf6da2a0f29
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+      - file: "crates/univ-ingest/tests/definitions.rs"
+        name: "every_source_has_a_valid_definition"
+        body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
   - node: 01a1c319-7860-76e8-92ac-c5ff9e1131e1
     reviewed: 33adf9c65e8ad7ac370fb244e95719fd36ad01ff857ad33aeecf2bc7e754da31
     tests:
@@ -1047,6 +1056,69 @@ links:
       - file: "crates/univ-ingest/tests/star_distances.rs"
         name: "a_star_without_a_published_distance_keeps_its_file_and_adds_no_entry"
         body: 1fa39d0ed6312e61d2d08a4161ace26739308de18861d65dded07e4d735ed918
+  - node: 01a1c319-7860-76e8-92ac-c6115fb30760
+    reviewed: 0d10e3a52a346aeb6ad992586f86ebcc80b81415626aa3d2ff45dcff2019600d
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_grid_is_a_galactic_cube_of_2500_pc_about_the_sun_in_10_pc_cells"
+        body: 69d8afddc55c83e59bdf32b3a63d4c9c1d39d940e65bad35dd24c746aabd83f1
+  - node: 01a1c319-7860-76e8-92ac-c612e2d9ee1a
+    reviewed: 853cc7e8f273cdd23959d0ccf47ebfb5cddf5fab35fd691031d31c5233b32c0f
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "each_cell_holds_the_mean_of_the_voxels_in_it_or_the_voxel_at_its_centre_or_no_data"
+        body: e5bee49c203fb30625f93ca47d74349bcbba6a296ad5382a080e1f6db5639853
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+        body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
+  - node: 01a1c319-7860-76e8-92ac-c613ec2ab0d2
+    reviewed: 3eca9e9fbd97ea68e388e2508e54661f9fc2a02c7c7f3a0167a85aece377b73c
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "each_cell_holds_the_mean_of_the_voxels_in_it_or_the_voxel_at_its_centre_or_no_data"
+        body: e5bee49c203fb30625f93ca47d74349bcbba6a296ad5382a080e1f6db5639853
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_cells_beyond_the_map_s_reach_hold_no_data_never_zero"
+        body: 93dfe6e841f3420d2d4b59b85fd8dae986a236aa091188ae25b0dc9e71b748e2
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "a_map_holding_a_value_that_is_not_finite_is_refused_so_nan_marks_only_no_data"
+        body: 659553873f6376074d7f92ce3906814d824bac5c8611b736f669347867d973d1
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+  - node: 01a1c319-7860-76e8-92ac-c614a12c8ab8
+    reviewed: fa2dacdbdbb0faaca7cc4ef6ece519185d1bbea62dfbbec9b8378cef1e0f3141
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+        body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+  - node: 01a1c319-7860-76e8-92ac-c6153bd22a56
+    reviewed: 2b5b206161c6ed2e136e5a75b11ff860af61422e8231fe559749d287737335c0
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+        body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+  - node: 01a1c319-7860-76e8-92ac-c6161d503573
+    reviewed: 2348a54d971060421fd926e83b5072198156348b1b0d89d7f95ddfae16d9a1f5
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+  - node: 01a1c319-7860-76e8-92ac-c617cbb3fe81
+    reviewed: 1e4287d290f4ff120e1ceec9f92cd92caf52a0ac32216e4a4a23f1b8465c18f1
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+        body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
   - node: 01a19f23-636e-7035-8185-ab998407d632
     reviewed: 7630424b0e1f46a63129bb35234a4a81243755014dfcfb33e42850be779fd1ec
     tests:
@@ -2871,6 +2943,15 @@ links:
       - file: "crates/univ-api/src/bulk_tests.rs"
         name: "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
         body: 7af71ebf909091bd7c67243eb312c235e2f787a4391bb24504af66da55601387
+  - node: 01a1c458-8e2a-7709-bb65-69dcbddd18b8
+    reviewed: 11f14cfe5755d5c72d6e3d06f314abf184382c5d44f13aef5fbb4ce48a6ded37
+    tests:
+      - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
+        name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+      - file: "crates/univ-ingest/tests/release_grids.rs"
+        name: "a_grid_is_written_as_its_header_and_float_samples_in_its_own_layout"
+        body: ca5253bf3506efa2476d4b6b5a68d58c2b9520c6ddc867a1de8c11d3d13e31ac
   - node: 01a19f1f-9fd6-77e0-931c-f99c3b94bb2d
     reviewed: 90948200e52564bcd4e6274cb3b44b26f73945a5f504b22a90e0e5c6b984286b
     tests:

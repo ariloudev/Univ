@@ -7,6 +7,7 @@
 
 pub mod basins;
 pub mod cf4pp;
+pub mod edenhofer;
 pub mod fits;
 pub mod npy;
 pub mod twompp;
@@ -25,6 +26,7 @@ use univ_model::units::Unit;
 
 pub use basins::read_cf4_basins;
 pub use cf4pp::{Cf4pp, read_cf4pp};
+pub use edenhofer::read_edenhofer;
 pub use twompp::read_twompp;
 
 /// A grid file that cannot be read.
