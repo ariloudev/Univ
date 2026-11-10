@@ -1,0 +1,128 @@
+key: 01a1c372-ae0b-7370-9f4f-cb63b56726de
+id: w2-build
+versions:
+  - key: 01a1c372-ae0b-7370-9f4f-cb6ec54d7e6e
+    at: 2026-11-10T03:13:55Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 2"
+    goal: "A fourth scale domain, Galaxy tracers, is built, tiled, served and listed, and five tracer sources normalize into it with their kinds and distances, each verified by its focused test"
+    status: active
+blocks:
+  - key: 01a1c372-ae0b-7370-9f4f-cb6528aae295
+    id: w2-plan
+    kind: note
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb70b1035aba
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 2 plan (pre-approved by the owner)"
+        markdown: |-
+          Cut from `product/milky-way` at the merge of wave 1. Each task ends with its focused tests.
+
+          | Task | Change | Criteria | Done when |
+          |---|---|---|---|
+          | t1 domain | `ScaleDomain::GalaxyTracers` and `CellSpace::GalaxyTracers` (100 pc cells) appended after the others, so the existing RNG streams and shard places keep their order. Units in pc. One membership rule for both callers: Galaxy tracers if any entry's source is a tracer source, else as before. | AC-91, AC-92 and the tracer-source criterion | `tiles.rs` and `release_reads.rs` tests cover a Cepheid joined to its Gaia star landing in tracers and a plain star staying in stars; the stars tiles' SHA-256 is unchanged |
+          | t2 server | `/v1/scale-domains` and the volume query cover the new space | AC-166 | `bulk_tests` lists four domains |
+          | t3 kind of object | `normalization.object_kind` in a definition, kept as the entry's `object_kind` flag | the tracer kind criterion | a normalize test |
+          | t4 sources | `hunt-reffert-2023`, `baumgardt-vasiliev-2021`, `skowron-2025-cepheids`, `li-2023-rr-lyrae` and `reid-2019-masers` (VizieR), each with its terms, recorded fixtures and distances; Skowron and Li join `gaia-source-id` | the release 13 source criteria and the tracer distance criteria | definition and normalize tests per source |
+          | t5 explorer plumbing | schemas, Show-drawer column, domain order, fixtures | none of its own (wave 4 draws them) | `pnpm check` targets for the touched files |
+          | t6 science checks | `counts-by-scale-domain` with tracers, `tracers-in-tracer-domain`, `cepheids-joined-to-gaia` | none | xtask science rule tests |
+          | t7 review | `/simplify`, `/code-review`, the gate and integration once, the trace, close and merge | none | green |
+  - key: 01a1c372-ae0b-7370-9f4f-cb667d62ab0d
+    id: w2-t1
+    kind: task
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb7136eae1f1
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Galaxy tracers scale domain"
+        detail: "Both enums, units, membership, tests; restore AC-91 and AC-92."
+        state: active
+  - key: 01a1c372-ae0b-7370-9f4f-cb676c06876c
+    id: w2-t2
+    kind: task
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb723fef7ee8
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Server lists and queries the fourth domain"
+        detail: "Restore AC-166."
+        state: open
+  - key: 01a1c372-ae0b-7370-9f4f-cb68ace47843
+    id: w2-t3
+    kind: task
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb73344cc40b
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "A definition's kind of object kept on its entries"
+        detail: "normalization.object_kind kept as an object_kind flag."
+        state: open
+  - key: 01a1c372-ae0b-7370-9f4f-cb69aba04094
+    id: w2-t4
+    kind: task
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb74caa6345c
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Five tracer source definitions with fixtures"
+        detail: "Hunt & Reffert, Baumgardt & Vasiliev, Skowron, Li and Reid."
+        state: open
+  - key: 01a1c372-ae0b-7370-9f4f-cb6ab7d17e72
+    id: w2-t5
+    kind: task
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb7576b89ef2
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer knows the fourth domain"
+        detail: "Schemas, drawer column, domain order, fixtures."
+        state: open
+  - key: 01a1c372-ae0b-7370-9f4f-cb6b94dd85d8
+    id: w2-t6
+    kind: task
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb76ffb467cf
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Science checks of the tracers"
+        detail: "counts-by-scale-domain, tracers-in-tracer-domain, cepheids-joined-to-gaia."
+        state: open
+  - key: 01a1c372-ae0b-7370-9f4f-cb6d1d8fc0fb
+    id: w2-build-issues
+    kind: note
+    versions:
+      - key: 01a1c372-ae0b-7370-9f4f-cb78685e7331
+        at: 2026-11-10T03:13:55Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|

@@ -261,6 +261,9 @@ pub enum ScaleDomain {
     Stars,
     NearbyGalaxies,
     CosmicWeb,
+    /// The tracers of the Galaxy's structure: clusters, pulsating stars and star-forming
+    /// regions, in parsecs (give-the-galaxys-tracers-a-scale-domain).
+    GalaxyTracers,
 }
 
 /// A correction to a source as published.

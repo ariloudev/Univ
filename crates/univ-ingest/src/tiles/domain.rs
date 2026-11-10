@@ -1,8 +1,10 @@
 //! Which scale domain each placed object belongs to, and its point there, and its derived ICRS
-//! Cartesian position taken into the domain's unit. An object whose preferred distance comes
-//! from a source whose definition names the stars domain is in stars; any other is in nearby
-//! galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`] of the barycentre and in cosmic web beyond,
-//! whatever source its distance came from (AC-92, the owner's decision of 2026-11-03).
+//! Cartesian position taken into the domain's unit. An object with an entry of a source whose
+//! definition names the Galaxy tracers domain is in Galaxy tracers, whichever entry places it.
+//! Otherwise one whose preferred distance comes from a source whose definition names the stars
+//! domain is in stars, and any other is in nearby galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`]
+//! of the barycentre and in cosmic web beyond, whatever source its distance came from (AC-92,
+//! the owner's decisions of 2026-11-03 and 2026-11-10).
 
 use std::collections::BTreeMap;
 
@@ -18,11 +20,13 @@ use super::TilesError;
 use crate::crossmatch::ReleaseObject;
 use crate::source::{ScaleDomain, SourceDefinition};
 
-/// Every scale domain, in the order of their manifests and RNG streams.
-pub const DOMAINS: [ScaleDomain; 3] = [
+/// Every scale domain, in the order of their manifests and RNG streams: Galaxy tracers, added
+/// for release 13, last, so that every earlier domain keeps its stream and its tiles.
+pub const DOMAINS: [ScaleDomain; 4] = [
     ScaleDomain::Stars,
     ScaleDomain::NearbyGalaxies,
     ScaleDomain::CosmicWeb,
+    ScaleDomain::GalaxyTracers,
 ];
 
 /// The depth of the nearby galaxies domain, Mpc: that of the Updated Nearby Galaxy Catalog
@@ -31,19 +35,24 @@ pub const DOMAINS: [ScaleDomain; 3] = [
 pub const NEARBY_GALAXIES_DEPTH_MPC: f64 = 11.0;
 
 /// The scale domain of an object placed `placed_mpc` from the barycentre whose preferred
-/// distance's source definition names `source_domain`: stars stay stars; any other object is in
-/// nearby galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`], and in cosmic web beyond it.
+/// distance's source definition names `source_domain`, `tracer` when any of its entries' sources
+/// names Galaxy tracers: a tracer is in Galaxy tracers; stars stay stars; any other object is
+/// in nearby galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`], and in cosmic web beyond it.
 #[must_use]
-pub fn domain_of(source_domain: ScaleDomain, placed_mpc: f64) -> ScaleDomain {
+pub fn domain_of(source_domain: ScaleDomain, tracer: bool, placed_mpc: f64) -> ScaleDomain {
+    if tracer {
+        return ScaleDomain::GalaxyTracers;
+    }
     match source_domain {
-        ScaleDomain::Stars => ScaleDomain::Stars,
+        ScaleDomain::Stars | ScaleDomain::GalaxyTracers => ScaleDomain::Stars,
         _ if placed_mpc <= NEARBY_GALAXIES_DEPTH_MPC => ScaleDomain::NearbyGalaxies,
         _ => ScaleDomain::CosmicWeb,
     }
 }
 
 /// The unit of a scale domain's positions, univ-model's rule
-/// ([`univ_model::units::scale_domain_unit`]): parsecs for stars, megaparsecs otherwise.
+/// ([`univ_model::units::scale_domain_unit`]): parsecs for stars and Galaxy tracers,
+/// megaparsecs otherwise.
 #[must_use]
 pub fn unit_of(domain: ScaleDomain) -> Unit {
     scale_domain_unit(name_of(domain))
@@ -53,7 +62,7 @@ pub fn unit_of(domain: ScaleDomain) -> Unit {
 #[must_use]
 pub fn unit_symbol(domain: ScaleDomain) -> &'static str {
     match domain {
-        ScaleDomain::Stars => "pc",
+        ScaleDomain::Stars | ScaleDomain::GalaxyTracers => "pc",
         ScaleDomain::NearbyGalaxies | ScaleDomain::CosmicWeb => "Mpc",
     }
 }
@@ -65,6 +74,7 @@ pub fn name_of(domain: ScaleDomain) -> &'static str {
         ScaleDomain::Stars => "stars",
         ScaleDomain::NearbyGalaxies => "nearby_galaxies",
         ScaleDomain::CosmicWeb => "cosmic_web",
+        ScaleDomain::GalaxyTracers => "galaxy_tracers",
     }
 }
 
@@ -220,8 +230,14 @@ pub fn assign(
         let mpc = position
             .cartesian(Frame::Icrs)
             .ok_or(TilesError::NotFinite(id))?;
+        let tracer = o.object.entries.iter().any(|e| {
+            by_id
+                .get(&e.entry.designation.source)
+                .is_some_and(|&i| definitions[i].scale_domain == ScaleDomain::GalaxyTracers)
+        });
         let domain = domain_of(
             definitions[distance].scale_domain,
+            tracer,
             position.distance().value,
         );
         let factor = Unit::Megaparsec

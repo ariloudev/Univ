@@ -310,7 +310,7 @@ pub struct DerivedPositionRecord {
     pub frame: String,
     /// "Solar System barycentre".
     pub origin: String,
-    /// The scale domain it is tiled in: `stars`, `nearby_galaxies` or `cosmic_web`.
+    /// The scale domain it is tiled in: `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.
     pub scale_domain: String,
     /// The scale domain's unit: parsecs for stars, megaparsecs otherwise.
     pub unit: Unit,

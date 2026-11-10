@@ -195,12 +195,20 @@ impl<'a> ObjectWriter<'a> {
         Ok(())
     }
 
-    /// The scale domain of a placed object: its preferred distance's source's, or, for any
-    /// source but a star source, the one its placed distance falls in.
+    /// The scale domain of a placed object: Galaxy tracers for one with a tracer source's entry;
+    /// else its preferred distance's source's, or, for any source but a star source, the one its
+    /// placed distance falls in.
     fn domain(&self, o: &ReleaseObject) -> Option<ScaleDomain> {
         let preferred = o.object.preferred_distance.as_ref()?;
         let source = self.domains.get(&preferred.measurement.entry().source)?;
-        Some(domain_of(*source, o.position.as_ref()?.distance().value))
+        let tracer = o.object.entries.iter().any(|e| {
+            self.domains.get(&e.entry.designation.source) == Some(&ScaleDomain::GalaxyTracers)
+        });
+        Some(domain_of(
+            *source,
+            tracer,
+            o.position.as_ref()?.distance().value,
+        ))
     }
 
     /// The object's own row, its chain numbered, its derived position checked against it.

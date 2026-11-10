@@ -495,7 +495,7 @@
             "type": "string"
           },
           "scale_domain": {
-            "description": "The scale domain it is tiled in: `stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "The scale domain it is tiled in: `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "unit": {
@@ -4420,7 +4420,7 @@
             "type": "string"
           },
           "name": {
-            "description": "`stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "`stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "nodes": {
@@ -4800,7 +4800,7 @@
             "type": "string"
           },
           "scale_domain": {
-            "description": "The scale domain its points are tiled in: `stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "The scale domain its points are tiled in: `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "title": {
@@ -5231,7 +5231,7 @@
             "$ref": "#/components/schemas/Sampling"
           },
           "scale_domain": {
-            "description": "`stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "`stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "sources": {

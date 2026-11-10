@@ -234,8 +234,13 @@ fn every_placed_object_s_scale_domain_follows_its_placed_distance() {
             continue;
         };
         let source = &o.object.preferred_distance.as_ref().unwrap().measurement;
+        let tracer = o.object.entries.iter().any(|e| {
+            domain_of_source(&e.entry.designation.source)
+                == univ_ingest::source::ScaleDomain::GalaxyTracers
+        });
         let expected = univ_ingest::tiles::domain_of(
             domain_of_source(&source.entry().source),
+            tracer,
             position.distance().value,
         );
         let name = &terms[&term.unwrap()];
