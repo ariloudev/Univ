@@ -188,6 +188,36 @@ blocks:
         markdown: |-
           | # | Issue | Found by | Fix | State |
           |---|---|---|---|---|
+      - key: 01a1c45f-cfff-75b7-9016-83e637feb9a3
+        at: 2026-11-10T07:32:55Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build and review issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | My HEALPix module overwrote univ-model's existing `healpix.rs` | `git status` right after writing it | Restored; the reader uses the existing `hash` and `centre` | fixed |
+          | 2 | Column fields come from a fixed list (`dust_density` refused) | `definitions` test | `density` and `density_error`, the unit telling the dust apart | fixed |
+          | 3 | The spec said two grids; the code (rightly, as CF4++) publishes one grid with the deviation as its uncertainty | `/simplify` altitude, `/code-review` | Spec reworded, `337bb45` | fixed |
+          | 4 | No data used the paper's rounded 69 and 1,250 pc, overlapping the file's 68.62–1,248.10 pc bins | `/simplify` altitude | No data outside the file's own bins; the paper's values kept as a 1% layout check | fixed |
+          | 5 | Header notes written only when present, by patching the JSON | `/simplify`, `/code-review` | Always written, null where none, with a new criterion in fetch-a-volume-grid | fixed |
+          | 6 | Two passes over 405 M voxels computed each cell twice | `/simplify` efficiency, `/code-review` | One streaming pass; the centre-value cells read only their bins. Real map 6.4 s → 4.6 s | fixed |
+          | 7 | Hand-written FITS decoding, padding and short-read checks | `/simplify` reuse, `/code-review` | `read_numbers`, `fits::sample`, one seek per HDU | fixed |
+          | 8 | A table with PCOUNT or GCOUNT, or a MEAN that is not an IMAGE, would be misread | `/code-review` | XTENSION, PCOUNT 0 and GCOUNT 1 required | fixed |
+          | 9 | A NaN voxel would make an in-range cell NaN, read as no data | `/code-review` | Non-finite values refused; the real file has none | fixed |
+          | 10 | A cell's deviation is the mean of its voxels' deviations, not the deviation of its mean | `/code-review` | The resampling note says so: equal where the voxels vary together, an upper bound otherwise | fixed |
+          | 11 | The dimension's generic name would let another extinction scale convert 1:1 | `/simplify` altitude | `ExtinctionZgr23Density` | fixed |
+          | 12 | `is_grid` and `read` were two parallel lists of grid ids | `/simplify` altitude | One table of readers | fixed |
+          | 13 | Tests not linked in the trace | `/code-review` | Nine nodes linked and accepted | fixed |
+
+          **Skipped, with reasons:**
+          - A typed no-data marker: NaN in f32 marks it, and the header's note explains it.
+          - `Cutout` carrying its shape: it changes the other readers for no gain to them.
+          - A hand-written cell indexer: it would save about 0.4 s and duplicate `cell_at`.
+          - A shared test FITS writer: one test uses it.
+          - `HEADER_VERSION` stays 1: the two keys are additive.
   - key: 01a1c454-eb54-7644-8aec-6c091b6835a4
     id: w3-measured
     kind: note
