@@ -107,3 +107,19 @@ fn a_gaia_parallax_is_ranked_and_placed_after_its_zero_point_and_a_hipparcos_one
         ));
     }
 }
+
+#[test]
+fn the_prior_led_parallax_ratio_is_the_rule_s_parameter_recorded_for_the_manifest() {
+    let rules = ranking_rules();
+    assert!((rules.prior_led_parallax_ratio - 5.0).abs() < 1e-12);
+    let yaml = rules.record().unwrap();
+    for text in ["prior_led_parallax_ratio: 5.0", "prior_led_parallax_basis:"] {
+        assert!(yaml.contains(text), "{text}");
+    }
+    for refused in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        let mut bad = rules.clone();
+        bad.prior_led_parallax_ratio = refused;
+        let (field, _) = bad.check().unwrap_err();
+        assert_eq!(field, "prior_led_parallax_ratio", "{refused}");
+    }
+}

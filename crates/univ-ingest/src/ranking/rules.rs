@@ -32,6 +32,10 @@ pub struct RankingRules {
     /// An object whose preferred distance has a fractional uncertainty above this is not placed.
     pub too_uncertain_above: f64,
     pub too_uncertain_basis: String,
+    /// A Bailer-Jones distance whose Gaia parallax is less than this many times its error leans
+    /// on its prior more than on the parallax, and is inferred rather than estimated.
+    pub prior_led_parallax_ratio: f64,
+    pub prior_led_parallax_basis: String,
     pub parallax_max_fractional_error: f64,
     pub parallax_basis: String,
     pub parallax_zero_point: ZeroPointRule,
@@ -100,6 +104,10 @@ impl RankingRules {
         let u = self.too_uncertain_above;
         if !(u.is_finite() && u > 0.0) {
             return bad("too_uncertain_above", "is not a positive number");
+        }
+        let r = self.prior_led_parallax_ratio;
+        if !(r.is_finite() && r > 0.0) {
+            return bad("prior_led_parallax_ratio", "is not a positive number");
         }
         let mut seen = std::collections::HashSet::new();
         if let Some(s) = self.source_order.iter().find(|s| !seen.insert(*s)) {
