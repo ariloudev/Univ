@@ -142,7 +142,7 @@ requirements:
       - key: 01a1c319-7860-76e8-92ac-c606e2fa0dcc
         name: "A star keeps the Gaia DR3 parallax and parallax error that its distance's kind of value rests on, as measured values."
       - key: 01a1c319-7860-76e8-92ac-c6074783ae9b
-        name: "A star whose only distance is inferred is still placed, at that distance."
+        name: "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place."
   - key: 01a1c319-7860-76e8-92ac-c608fc0fd4c3
     statement:
       form: ubiquitous
