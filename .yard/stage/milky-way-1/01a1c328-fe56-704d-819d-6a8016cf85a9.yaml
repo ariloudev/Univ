@@ -19,6 +19,15 @@ versions:
     title: "Build wave 1"
     goal: "G < 14 sources, the inferred rule, the ranking set-aside, four more shards and the prune-then-change tests are in, each verified by its focused test"
     status: active
+  - key: 01a1c348-6515-7452-a90d-89f1b0a6b581
+    at: 2026-11-10T02:27:44Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 1"
+    goal: "G < 14 sources, the inferred rule, the ranking set-aside, four more shards and the prune-then-change tests are in, each verified by its focused test"
+    status: done
 blocks:
   - key: 01a1c32a-9ac8-73c6-af9b-d55150783726
     id: t0-spec-fix
@@ -210,6 +219,15 @@ blocks:
         title: "Prune-then-change tests"
         detail: "tests/prune_then_change.rs, cases (a) and (b). Done when both pass."
         state: active
+      - key: 01a1c348-6515-7452-a90d-89f0e29eebe8
+        at: 2026-11-10T02:27:44Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Prune-then-change tests"
+        detail: "tests/prune_then_change.rs. (a) Prune 1 and 2, then build 4 as a change: reads of 3 and 4 equal the unpruned run's, 4 adds the same rows, and nothing valid only in 1–2 is left. (b) Release 2, at half release 1's shard budget, moves objects between shards; pruning 1 leaves release 2's reads unchanged and each moved object once, in its new shard. The read helpers moved to tests/valid_rows/ for shared_rows.rs and this file."
+        state: done
   - key: 01a1c32a-9ac8-73c6-af9b-d55aaa5b6821
     id: build-issues
     kind: note
@@ -552,3 +570,27 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1c348-6515-7452-a90d-89ef857c68f0
+    id: w1-build-produced
+    kind: note
+    versions:
+      - key: 01a1c348-6515-7452-a90d-89f25079898e
+        at: 2026-11-10T02:27:44Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "What the build produced"
+        markdown: |-
+          | Task | Commit | Verified by |
+          |---|---|---|
+          | t0 spec fix | `2cfb2ef`, `e97cb9d` | `loft check`, spec-change views |
+          | t1 prior-led ratio | `9eeca01` | `ranking_parallax` ratio test |
+          | t2 inferred Bailer-Jones | `f1d9a1c` | `normalize_bailer_jones_kind` (4 tests on recorded rows) |
+          | t3 ranking set-aside | `69203dd` | `ranking_parallax` (3 new tests) |
+          | t4 G < 14 | `92818b2` | live count 16,844,156 / 16,716,140; decoder fixture regenerated |
+          | t5 shards 8–11 | `3753505` | `config`, `publish::wrangler` tests |
+          | t6 prune-then-change | this stage's last commit | `prune_then_change` (2), with `prune` and `shared_rows` green |
+
+          Pruning followed by a change build keeps additive releases intact, in the cases the owner asked about. The guard still applies to the real store.
+        tone: success

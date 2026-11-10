@@ -809,6 +809,51 @@ checks:
         quote: "Univ Ingest shall keep every tile within 1 MiB."
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
+  - id: inferred-share-of-gaia-stars
+    title: The share of Bailer-Jones distances inferred, resting on a parallax below five times its error
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT avg(m.kind_of_value = term('inferred')) FROM measurements m JOIN entries e
+        ON e.release = m.release AND e.object_id = m.object_id AND e.entry = m.entry
+        WHERE m.release = :release AND m.quantity = term('distance')
+        AND e.source = source('bailer-jones-2021')
+    expect: { at_least: 0.03 }
+    cite:
+      - paper: "Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1), gaiadr3.gaia_source"
+        locator: "a 1% random sample, random_index < 18,117,098, grouped by FLOOR(phot_g_mean_mag)"
+        quote: >-
+          Below G = 14: 168,410 sources in the sample, of which 160,693 have parallax_over_error
+          > 5 (95.4%), so 4.6% are under the ratio or have no parallax.
+        fetched: "https://gea.esac.esa.int/tap-server/tap/sync, 2026-11-10"
+    note: >-
+      The ranking rule's prior_led_parallax_ratio (5) makes a Bailer-Jones distance inferred below
+      it (normalize-records). Distances of the sample's sources without a parallax are absent from
+      the Bailer-Jones table, so the release's share sits a little under 4.6%; 3% is the floor and
+      inferred-share-of-gaia-stars-ceiling the roof. Both distances of a star count, a star with no
+      photogeometric distance once.
+
+  - id: inferred-share-of-gaia-stars-ceiling
+    title: Bailer-Jones distances inferred at most 8%
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT avg(m.kind_of_value = term('inferred')) FROM measurements m JOIN entries e
+        ON e.release = m.release AND e.object_id = m.object_id AND e.entry = m.entry
+        WHERE m.release = :release AND m.quantity = term('distance')
+        AND e.source = source('bailer-jones-2021')
+    expect: { at_most: 0.08 }
+    cite:
+      - paper: "Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1), gaiadr3.gaia_source"
+        locator: "as inferred-share-of-gaia-stars"
+        quote: "Below G = 14, 4.6% of the sample's sources are under the ratio or have no parallax."
+        fetched: "https://gea.esac.esa.int/tap-server/tap/sync, 2026-11-10"
+    note: "The roof of inferred-share-of-gaia-stars: a share far above the sample's means the rule reads the wrong column."
+
   - id: d1-budget
     title: The manifest's D1 estimate of each database within the 4.5 GB release budget
     severity: fail

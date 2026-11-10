@@ -292,11 +292,11 @@ mod tests {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let toml = std::fs::read_to_string(root.join("wrangler.toml")).unwrap();
         assert!(toml.contains(&format!("database_name = \"{CATALOGUE_NAME}\"")));
-        assert_eq!(bound_shards(&toml), 12);
+        assert_eq!(bound_shards(&toml), 16);
         // Univ Server binds the same (univ-server's tests/config.rs checks their ids).
         let server =
             std::fs::read_to_string(root.join("crates/univ-server/wrangler.toml")).unwrap();
-        assert_eq!(bound_shards(&server), 12);
+        assert_eq!(bound_shards(&server), 16);
         assert!(toml.contains(&format!("bucket_name = \"{BUCKET}\"")));
         assert!(!toml.contains("main ="), "no Worker entry");
         assert_eq!(

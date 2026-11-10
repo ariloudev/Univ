@@ -10,6 +10,15 @@ versions:
     title: "Measure on one chunk"
     goal: "A one-chunk scratch build gives the D1 bytes per star and the cells that leave shard 0"
     status: planned
+  - key: 01a1c348-6515-7452-a90d-89f3241967eb
+    at: 2026-11-10T02:27:44Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Measure on one chunk"
+    goal: "A one-chunk scratch build gives the D1 bytes per star and the cells that leave shard 0"
+    status: active
 blocks:
   - key: 01a1c32a-9ac8-73c6-af9b-d5581350ff25
     id: t7-measure
@@ -24,3 +33,76 @@ blocks:
         title: "Measure a one-chunk scratch build"
         detail: "Bytes per star and the cells leaving shard 0, plus the inferred-share science check. Done when the note is written."
         state: open
+      - key: 01a1c348-6515-7452-a90d-89f4c49213d0
+        at: 2026-11-10T02:27:44Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Measure a one-chunk scratch build"
+        detail: "Bytes per star and the cells leaving shard 0, plus the inferred-share science check. Done when the note is written."
+        state: active
+  - key: 01a1c34b-f676-77d9-8cb8-362f4b701e06
+    id: measure-result
+    kind: note
+    versions:
+      - key: 01a1c34b-f676-77d9-8cb8-36319646c188
+        at: 2026-11-10T02:31:37Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "One chunk measured: a star costs twice what I assumed"
+        markdown: |-
+          **The scratch build** (its own cache, state and output under `.cache/univ-ingest/scratch/`; the real store is untouched) took chunk 0 of the 768 G < 14 chunks. It holds 21,937 Gaia sources and 21,792 Bailer-Jones distances, giving 21,937 objects, 21,792 placed and 145 with no distance.
+
+          | Table (shard) | Rows | Bytes per star |
+          |---|---|---|
+          | measurements | 172,693 (7.9 a star) | 793 |
+          | entries | 43,729 (2 a star) | 417 |
+          | objects | 21,937 | 305 |
+          | designations | 43,729 (2 a star: `Gaia DR3` and `Gaia EDR3`, the same source_id) | 225 |
+          | object_cells | 21,792 | 33 |
+          | object_shards (catalogue) | 21,937 | 24 |
+          | **all** | | **≈ 1,797** |
+
+          **What that means for release 13:**
+          - My earlier estimate used release 12's average, 0.9 KB an object. A Gaia star with its distances costs 1.8 KB.
+          - About 16.36M new Gaia objects × 1.77 KB ≈ **29 GB more** in the object shards, plus about 0.4 GB in the catalogue. The decision and the plan said about 15 GB.
+          - The shards then hold about 32.3 + 29 ≈ **61 GB** for release 13. At the 4.5 GB per-release budget that needs at least 14 object shards, and **16** to leave slack for packing whole cells. Twelve are bound now.
+
+          **Fetch time:** each chunk was one archive job of about 33 s, with chunks fetched one after another. 768 chunks of each of two sources take about **14 hours**. The run resumes from the chunks on disk if it stops.
+
+          **Also seen:** each star is designated twice, as `Gaia DR3 <id>` and `Gaia EDR3 <id>` (Bailer-Jones names its source EDR3). That is 225 B a star, about 3.7 GB over the cut, for one identifier written two ways.
+        tone: warning
+  - key: 01a1c34b-f676-77d9-8cb8-36309cffa3b9
+    id: q-capacity
+    kind: question
+    versions:
+      - key: 01a1c34b-f676-77d9-8cb8-3632dcc02da5
+        at: 2026-11-10T02:31:37Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "Release 13 at G < 14 needs about 29 GB more, not 15. How should it fit?"
+        header: "Capacity"
+        context: "Measured on one real chunk of 21,937 stars: 1.8 KB a star in D1. Release 12's shards hold 32.3 GB; with G < 14 the shards hold about 61 GB, against 4.5 GB per shard for each release."
+        options:
+          - label: "Bind 16 shards"
+            detail: "Keep G < 14 and bind four more object shards, 16 in all (72 GB of per-release budget). This is a config change and a test, as for shards 8–11. Local disk grows by about 30 GB for D1 and 30 GB for the build, with 1 TB free. Recommended: the owner's choice of G < 14 stands, and nothing about the rows changes."
+            recommended: true
+          - label: "Slim rows first"
+            detail: "Before release 13, a task in wave 1 stops designating each star twice. Gaia DR3 and EDR3 share the identifier, so the Bailer-Jones entry would carry no second designation, saving about 225 B a star, 3.7 GB. It would then look for other savings in measurements. Twelve shards may still not be enough. It changes a spec criterion (AC-73: each designation keeps the source that gave it)."
+          - label: "G < 13 instead"
+            detail: "7.4M stars, about 12 GB more, within the 12 shards now bound. Half the detail asked for. The decision would be superseded again."
+    responses:
+      - key: 01a1c34c-2cd3-7502-b96c-d8e8227fc3e1
+        at: 2026-11-10T02:31:51Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        chosen:
+          - "Bind 16 shards"
