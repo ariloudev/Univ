@@ -19,6 +19,15 @@ versions:
     title: "Review and gate wave 3"
     goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
     status: active
+  - key: 01a1c46c-55b1-7219-b912-9fad7c6b1cef
+    at: 2026-11-10T07:46:36Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 3"
+    goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
+    status: done
 blocks:
   - key: 01a1c440-c1ed-745b-a8c9-b0428e497cb5
     id: w3-t6
@@ -40,6 +49,15 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Review, gate, trace and merge wave 3"
         state: active
+      - key: 01a1c46c-55b1-7219-b912-9fac35c1a72f
+        at: 2026-11-10T07:46:36Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate, trace and merge wave 3"
+        detail: "Review findings fixed in 337bb45 (spec), 6041e34 and a96dda8. Integration passed on a96dda8. The gate first failed on the missing recorded head, added in 693d251, then passed 13 gates (loft verify skipped off develop). Trace recorded."
+        state: done
   - key: 01a1c458-ac17-7652-8286-e12eb240de92
     id: w3-spec-review
     kind: loft
@@ -2232,5 +2250,546 @@ blocks:
                 "stopped": null
               },
               "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1c46c-55b1-7219-b912-9faae296c65a
+    id: w3-trace
+    kind: loft
+    versions:
+      - key: 01a1c46c-55b1-7219-b912-9fab9706faf8
+        at: 2026-11-10T07:46:36Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: trace
+        note: "Wave 3 links nine nodes: the dust source, the seven criteria of resample-the-dust-map, and the grid header's new criterion on resampling and no-data notes. The 14 still unlinked are wave 4's explorer criteria (draw-the-dust-map, tracer colours, inferred stars)."
+        base: "product/milky-way"
+        recorded:
+          commit: "693d251b776b4ae60c387c697794f4f0c7ed1ae8"
+          branch: "stage/milky-way-3"
+          loft: 2.3.0
+          at: 2026-11-10T07:46:36Z
+        report: |
+          {
+            "base": "product/milky-way",
+            "commit": "61660cae27e79f8a8dd3602c86c39286b2308e23",
+            "counts": {
+              "features": 2
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c6115fb30760",
+                    "label": null,
+                    "name": "The grid is a cube of 2,500 pc a side centred on the Sun in cells of 10 pc, 250 cells a side, with its axes along the galactic Cartesian axes of the Hipparcos catalogue's transformation.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 257,
+                            "lastLine": 276
+                          }
+                        ],
+                        "name": "the_grid_is_a_galactic_cube_of_2500_pc_about_the_sun_in_10_pc_cells"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c612e2d9ee1a",
+                    "label": null,
+                    "name": "Each cell holds the mean of the source's values at the centres of the source's voxels that fall within it, or, where none does, the source's value at the cell's centre, and the grid's header names this resampling.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 243
+                          }
+                        ],
+                        "name": "each_cell_holds_the_mean_of_the_voxels_in_it_or_the_voxel_at_its_centre_or_no_data"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 278,
+                            "lastLine": 318
+                          }
+                        ],
+                        "name": "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c613ec2ab0d2",
+                    "label": null,
+                    "name": "A cell whose centre lies outside the map's distance bins, nearer than their inner boundary or farther than their outer one (68.6 pc and 1,248.1 pc in the published file), holds a value that marks no data, never zero, in the mean and in its standard deviation.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 243
+                          }
+                        ],
+                        "name": "each_cell_holds_the_mean_of_the_voxels_in_it_or_the_voxel_at_its_centre_or_no_data"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 245,
+                            "lastLine": 255
+                          }
+                        ],
+                        "name": "the_cells_beyond_the_map_s_reach_hold_no_data_never_zero"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 440,
+                            "lastLine": 457
+                          }
+                        ],
+                        "name": "a_map_holding_a_value_that_is_not_finite_is_refused_so_nan_marks_only_no_data"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 328,
+                            "lastLine": 380
+                          }
+                        ],
+                        "name": "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c614a12c8ab8",
+                    "label": null,
+                    "name": "The mean and its standard deviation keep the source's unit, extinction in the units of Zhang, Green & Rix 2023 per parsec, and name it.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 278,
+                            "lastLine": 318
+                          }
+                        ],
+                        "name": "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 328,
+                            "lastLine": 380
+                          }
+                        ],
+                        "name": "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c6153bd22a56",
+                    "label": null,
+                    "name": "The kind of value of the mean and of its standard deviation is reconstructed.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 278,
+                            "lastLine": 318
+                          }
+                        ],
+                        "name": "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 328,
+                            "lastLine": 380
+                          }
+                        ],
+                        "name": "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c6161d503573",
+                    "label": null,
+                    "name": "The standard deviation is published as samples of its own, which the grid's header names as the uncertainty of the mean.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 328,
+                            "lastLine": 380
+                          }
+                        ],
+                        "name": "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c617cbb3fe81",
+                    "label": null,
+                    "name": "Two builds from the same source files give grids with the same SHA-256.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 328,
+                            "lastLine": 380
+                          }
+                        ],
+                        "name": "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 278,
+                            "lastLine": 318
+                          }
+                        ],
+                        "name": "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1c319-7860-76e8-92ac-c60f36189336",
+                "label": null,
+                "name": "Resample the dust map",
+                "requirements": [
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c610df135a9d",
+                    "label": null,
+                    "name": "Univ Ingest shall publish the Edenhofer 2024 dust map as a volume grid of its posterior mean dust density, with its posterior standard deviation as each cell's uncertainty, resampled onto a Cartesian grid about the Sun.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "publish the Edenhofer 2024 dust map as a volume grid of its posterior mean dust density, with its posterior standard deviation as each cell's uncertainty, resampled onto a Cartesian grid about the Sun.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9932c971a53",
+                    "label": "AC-175",
+                    "name": "Each listed volume grid gives its id, quantity, unit, grid shape and source.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f9923b48cc13",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 125,
+                            "lastLine": 140
+                          }
+                        ],
+                        "name": "each_listed_grid_gives_its_id_quantities_unit_shape_and_source"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 285,
+                            "lastLine": 294
+                          }
+                        ],
+                        "name": "the_grids_are_listed_and_an_unknown_grid_answers_404"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9953002e188",
+                    "label": "AC-176",
+                    "name": "The header names the quantity, its unit and the kind of value, which is reconstructed for a reconstruction.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9962004b264",
+                    "label": "AC-177",
+                    "name": "The header names the frame, the order of the axes in the samples, the grid shape and the origin.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9979ac5e915",
+                    "label": "AC-178",
+                    "name": "The header gives the cell size in the unit its source published and, where that unit is h⁻¹ Mpc, rescaled to the release cosmology.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9986bc2748c",
+                    "label": "AC-179",
+                    "name": "The samples are little-endian 32-bit floats laid out in the axis order the header names.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
+                      },
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 196,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "a_fields_uncertainty_is_served_where_it_was_published"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9995066da08",
+                    "label": "AC-180",
+                    "name": "A grid of labels, such as basins of attraction, gives the table that names each label.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f99a5e76e0b0",
+                    "label": "AC-181",
+                    "name": "The header cites the grid's source and names the release that published it.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "a_grid_header_and_its_samples_are_served_from_the_bucket_as_published"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c458-8e2a-7709-bb65-69dcbddd18b8",
+                    "label": null,
+                    "name": "The header says how a grid resampled from its source's cells was resampled and which sample value marks a cell of no data, and holds null for each where the grid has none.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/grids_edenhofer.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 328,
+                            "lastLine": 380
+                          }
+                        ],
+                        "name": "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_grids.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 64,
+                            "lastLine": 122
+                          }
+                        ],
+                        "name": "a_grid_is_written_as_its_header_and_float_samples_in_its_own_layout"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f99c3b94bb2d",
+                    "label": "AC-182",
+                    "name": "The response status is 404 with problem details that name the requested id.",
+                    "requirement": "01a19f1f-9fd6-77e0-931c-f99b99d555ba",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-api/src/bulk_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 162,
+                            "lastLine": 177
+                          }
+                        ],
+                        "name": "an_unknown_grid_or_field_answers_404_naming_it"
+                      },
+                      {
+                        "file": "crates/univ-server/tests/e2e.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 285,
+                            "lastLine": 294
+                          }
+                        ],
+                        "name": "the_grids_are_listed_and_an_unknown_grid_answers_404"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f1f-9fd6-77e0-931c-f99189987122",
+                "label": "F-19",
+                "name": "Fetch a volume grid",
+                "requirements": [
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f9923b48cc13",
+                    "label": "RQ-65",
+                    "name": "When a client lists volume grids, Univ Server shall return each volume grid of the release with its quantity, source and kind of value.",
+                    "statement": {
+                      "condition": "a client lists volume grids",
+                      "form": "event_driven",
+                      "shall": "return each volume grid of the release with its quantity, source and kind of value.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f99446dc3f36",
+                    "label": "RQ-66",
+                    "name": "When a client requests a volume grid, Univ Server shall return its header and its binary samples.",
+                    "statement": {
+                      "condition": "a client requests a volume grid",
+                      "form": "event_driven",
+                      "shall": "return its header and its binary samples.",
+                      "system": "Univ Server"
+                    }
+                  },
+                  {
+                    "key": "01a19f1f-9fd6-77e0-931c-f99b99d555ba",
+                    "label": "RQ-67",
+                    "name": "If no volume grid has the requested id, then Univ Server shall answer that the volume grid was not found.",
+                    "statement": {
+                      "condition": "no volume grid has the requested id",
+                      "form": "unwanted",
+                      "shall": "answer that the volume grid was not found.",
+                      "system": "Univ Server"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 713,
+              "linked": 699,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
             }
           }
