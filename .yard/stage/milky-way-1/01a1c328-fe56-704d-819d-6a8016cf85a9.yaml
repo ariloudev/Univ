@@ -126,6 +126,15 @@ blocks:
         title: "Ranking sets inferred distances aside"
         detail: "remaining() in ranking/distance.rs and Decided::KindOfValue. Done when the ranking_parallax tests pass."
         state: active
+      - key: 01a1c33c-164f-742e-9c3f-1068ccd6488b
+        at: 2026-11-10T02:14:17Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Ranking sets inferred distances aside"
+        detail: "remaining() takes (threshold, aside); winner() reports Decided::KindOfValue where the set-aside changed the winner. Three new tests in ranking_parallax.rs, and the full univ-ingest and univ-model suites pass."
+        state: done
   - key: 01a1c32a-9ac8-73c6-af9b-d555f413d911
     id: t4-g14
     kind: task
@@ -139,6 +148,15 @@ blocks:
         title: "G < 14 queries in 768 chunks"
         detail: "gaia-dr3-bright and bailer-jones-2021, with the live count recorded. Done when the definitions check and fixtures normalize."
         state: open
+      - key: 01a1c33c-164f-742e-9c3f-106954cb4d1a
+        at: 2026-11-10T02:14:17Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "G < 14 queries in 768 chunks"
+        detail: "gaia-dr3-bright and bailer-jones-2021, with the live count recorded. Done when the definitions check and fixtures normalize."
+        state: active
   - key: 01a1c32a-9ac8-73c6-af9b-d556ce538cda
     id: t5-shards
     kind: task
