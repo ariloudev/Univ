@@ -10,7 +10,7 @@ drivers:
   - key: 01a1c319-7860-76e8-92ac-c5db9e108bc3
     kind: local
     label: "Fits the shards"
-    statement: "A release fits the eight object shards the deployment binds."
+    statement: "A release fits the object shards the deployment binds, at 4.5 GB of each release per shard."
   - key: 01a1c319-7860-76e8-92ac-c5dc9443868c
     kind: local
     label: "Shows the Galaxy"
@@ -36,7 +36,7 @@ assessments:
   - option: 01a1c319-7860-76e8-92ac-c5de07377e8b
     driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
     rating: supports
-    rationale: "about 15 GB more takes the shards from about 32 to 47 of their 80 GB"
+    rationale: "about 29 GB more, measured at 1.8 KB a star on one real chunk, takes the shards from 32 to about 61 GB, within 16 shards bound"
   - option: 01a1c319-7860-76e8-92ac-c5de07377e8b
     driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
     rating: supports
@@ -48,7 +48,7 @@ assessments:
   - option: 01a1c319-7860-76e8-92ac-c5dfec4c7da7
     driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
     rating: supports
-    rationale: "about 2.5 GB more"
+    rationale: "about 4.6 GB more, within the shards bound"
   - option: 01a1c319-7860-76e8-92ac-c5dfec4c7da7
     driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
     rating: neutral
@@ -60,7 +60,7 @@ assessments:
   - option: 01a1c319-7860-76e8-92ac-c5e0b8d7a046
     driver: 01a1c319-7860-76e8-92ac-c5db9e108bc3
     rating: conflicts
-    rationale: "about 33 GB more needs more shards bound"
+    rationale: "about 65 GB more, at 1.8 KB a star, needs about 22 shards bound"
   - option: 01a1c319-7860-76e8-92ac-c5e0b8d7a046
     driver: 01a1c319-7860-76e8-92ac-c5dc9443868c
     rating: supports
@@ -84,7 +84,7 @@ assessments:
 consequences:
   - key: 01a1c319-7860-76e8-92ac-c5e2d22d2e86
     kind: cost
-    statement: "The object shards grow by about 15 GB, and fetching the Gaia DR3 stars and their distances takes hours."
+    statement: "The object shards grow by about 29 GB, so the deployment binds 16 object shards, and fetching the Gaia DR3 stars and their distances, 1,536 archive jobs, takes about 14 hours."
   - key: 01a1c319-7860-76e8-92ac-c5e339d3c600
     kind: obligation
     statement: "Stellar distances still come from Bailer-Jones 2021, never from an inverted parallax, and the faint stars whose parallax cannot carry their distance are marked as such."
