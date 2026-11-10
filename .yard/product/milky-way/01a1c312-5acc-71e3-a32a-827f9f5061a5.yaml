@@ -19,3 +19,12 @@ versions:
     title: "Wave 3: dust map grids"
     goal: "The Edenhofer 2024 dust map is resampled into mean and standard deviation volume grids with a no-data marker, served by Univ Server, merged into product/milky-way"
     status: planned
+  - key: 01a1c43e-b73f-751c-9c55-be8715fe7951
+    at: 2026-11-10T06:56:46Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 3: the dust map"
+    goal: "The Edenhofer 2024 dust map is fetched, resampled into mean and standard-deviation grids of 10 pc cells, published with the release and served"
+    status: active

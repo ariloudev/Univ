@@ -37,3 +37,40 @@ versions:
     title: "Wave 2: Galaxy tracers domain and sources"
     goal: "A fourth scale domain, Galaxy tracers, holds Hunt & Reffert, Baumgardt & Vasiliev, Skowron, Li and Reid objects, tiled, served and listed, merged into product/milky-way"
     status: active
+  - key: 01a1c43e-b73f-751c-9c55-be8592e3f2d2
+    at: 2026-11-10T06:56:46Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 2: Galaxy tracers domain and sources"
+    goal: "A fourth scale domain, Galaxy tracers, holds Hunt & Reffert, Baumgardt & Vasiliev, Skowron, Li and Reid objects, tiled, served and listed, merged into product/milky-way"
+    status: done
+blocks:
+  - key: 01a1c43e-b73f-751c-9c55-be84f16a2d18
+    id: wave-2-merged
+    kind: note
+    versions:
+      - key: 01a1c43e-b73f-751c-9c55-be86683610d3
+        at: 2026-11-10T06:56:46Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 2 merged"
+        markdown: |-
+          `stage/milky-way-2` merged as `b6b6633`. The gate passed 13 gates and integration passed.
+
+          **Built:**
+          - The Galaxy tracers domain, in parsecs: listed and queried by the API, and named by kind in the explorer.
+          - Five tracer sources: 6,818 open clusters, 165 globular clusters, 3,424 Cepheids, 135,873 RR Lyrae stars and 199 masers. Cepheids and RR Lyrae stars join their Gaia stars, and globulars join OpenNGC's objects of the same clusters.
+          - Three science checks of the tracers.
+
+          **Changes from the plan, each the owner's choice:**
+          - The globular clusters come from Baumgardt's database, `permission_pending`, since the paper's distances are not on VizieR.
+
+          **Open for the owner:**
+          - The permission request to Holger Baumgardt.
+          - Whether open clusters join OpenNGC by name: that needs a new matching feature, and position fails for them.
+          - Li's 28,754 Magellanic Cloud RR Lyrae stars are kept as published.
+        tone: success
