@@ -95,6 +95,15 @@ blocks:
         title: "Bailer-Jones rows marked inferred below the ratio"
         detail: "Query columns, two YAML rules and a consistency test. Done when normalize_bailer_jones_kind.rs passes on six fixture rows."
         state: active
+      - key: 01a1c333-4cdc-7458-9009-25cffac782a5
+        at: 2026-11-10T02:04:41Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bailer-Jones rows marked inferred below the ratio"
+        detail: "parallax_over_error selected as a quality column, with two kind_of_value rules (below 5, blank). normalize_bailer_jones_kind.rs passes 4 tests on recorded rows (ϖ/σ = −1.009, 4.971, 5.141) and the hand-set 5 and blank, and holds the rule's bound equal to the ranking rule's ratio."
+        state: done
   - key: 01a1c32a-9ac8-73c6-af9b-d554c31f3113
     id: t3-setaside
     kind: task
@@ -108,6 +117,15 @@ blocks:
         title: "Ranking sets inferred distances aside"
         detail: "remaining() in ranking/distance.rs and Decided::KindOfValue. Done when the ranking_parallax tests pass."
         state: open
+      - key: 01a1c333-4cdc-7458-9009-25d05264ea97
+        at: 2026-11-10T02:04:41Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Ranking sets inferred distances aside"
+        detail: "remaining() in ranking/distance.rs and Decided::KindOfValue. Done when the ranking_parallax tests pass."
+        state: active
   - key: 01a1c32a-9ac8-73c6-af9b-d555f413d911
     id: t4-g14
     kind: task

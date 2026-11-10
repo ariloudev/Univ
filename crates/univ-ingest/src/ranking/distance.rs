@@ -195,22 +195,36 @@ fn open(candidates: &[Candidate], excluded: &[usize]) -> Vec<usize> {
 /// The candidates the rule weighs, by place in `candidates`, leaving out those in `excluded`:
 /// every geometric and indicator candidate, and the leading redshift candidate unless
 /// `threshold` is given, a geometric or indicator candidate exists, and its fractional
-/// uncertainty exceeds it.
+/// uncertainty exceeds it. With `aside`, an inferred geometric or indicator candidate, such as
+/// a Bailer-Jones distance resting on its prior, is left out where a measured or estimated one
+/// exists.
 fn remaining(
     object: &Object,
     candidates: &[Candidate],
     excluded: &[usize],
-    threshold: Option<f64>,
+    (threshold, aside): (Option<f64>, bool),
     rules: &RankingRules,
 ) -> Vec<usize> {
     let open = open(candidates, excluded);
     let lead = redshift::leading(object, candidates, &open, rules);
     let indicator = open.iter().any(|&i| !is_redshift(candidates[i].rank));
+    let firm = aside
+        && open.iter().any(|&i| {
+            let c = &candidates[i];
+            !is_redshift(c.rank)
+                && matches!(
+                    c.kind_of_value,
+                    KindOfValue::Measured | KindOfValue::Estimated
+                )
+        });
     open.into_iter()
         .filter(|&i| {
             let c = &candidates[i];
+            if !is_redshift(c.rank) {
+                return !(firm && c.kind_of_value == KindOfValue::Inferred);
+            }
             let above = threshold.is_some_and(|t| c.uncertainty.total().is_some_and(|f| f > t));
-            !is_redshift(c.rank) || (Some(i) == lead && !(indicator && above))
+            Some(i) == lead && !(indicator && above)
         })
         .collect()
 }
@@ -288,27 +302,27 @@ fn winner(
     excluded: &[usize],
     rules: &RankingRules,
 ) -> Option<(usize, Decided)> {
-    let weighed = |threshold| remaining(object, candidates, excluded, threshold, rules);
-    let open = weighed(Some(rules.redshift_threshold));
+    let weighed = |rule| remaining(object, candidates, excluded, rule, rules);
+    let threshold = Some(rules.redshift_threshold);
+    let open = weighed((threshold, true));
     let (best, decided) = among(object, candidates, &open, rules)?;
     if self::open(candidates, excluded).len() == 1 {
         return Some((best, Decided::OnlyCandidate));
     }
-    let unthresholded = weighed(None);
-    if unthresholded.len() != open.len()
-        && among(object, candidates, &unthresholded, rules).is_some_and(|(b, _)| b != best)
-    {
+    // A step decided the winner where, without it, another candidate would have won.
+    let overturned = |without: Vec<usize>| {
+        without.len() != open.len()
+            && among(object, candidates, &without, rules).is_some_and(|(b, _)| b != best)
+    };
+    if overturned(weighed((None, true))) {
         return Some((best, Decided::RedshiftThreshold));
+    }
+    if overturned(weighed((threshold, false))) {
+        return Some((best, Decided::KindOfValue));
     }
     if is_redshift(candidates[best].rank) {
         let without: Vec<usize> = excluded.iter().copied().chain([best]).collect();
-        let next = remaining(
-            object,
-            candidates,
-            &without,
-            Some(rules.redshift_threshold),
-            rules,
-        );
+        let next = remaining(object, candidates, &without, (threshold, true), rules);
         if let Some((next, _)) = among(object, candidates, &next, rules)
             && is_redshift(candidates[next].rank)
         {

@@ -15,6 +15,7 @@ use univ_model::object::{
     Decided, FractionalUncertainty, MeasurementRef, Object, ObjectEntry, Resolution,
 };
 use univ_model::units::Unit;
+use univ_model::value::KindOfValue;
 
 fn ranked(entries: Vec<CatalogueEntry>) -> Object {
     let mut object = Object::new(
@@ -122,4 +123,60 @@ fn the_prior_led_parallax_ratio_is_the_rule_s_parameter_recorded_for_the_manifes
         let (field, _) = bad.check().unwrap_err();
         assert_eq!(field, "prior_led_parallax_ratio", "{refused}");
     }
+}
+
+/// The entry with a SIMULATED Bailer-Jones-like geometric distance of `pc` ± `sigma` pc that
+/// leans on its prior, inferred.
+fn prior_led(pc: f64, sigma: f64) -> CatalogueEntry {
+    let mut e = with_distance(
+        entry("bailer-jones-2021", "bj", 84.0, -1.0),
+        pc * 1e-6,
+        Some(sigma * 1e-6),
+        (DistanceKind::Geometric, Method::BayesianGeometric),
+    );
+    if let Some(d) = e.distances.last_mut() {
+        d.kind_of_value = KindOfValue::Inferred;
+    }
+    e
+}
+
+#[test]
+fn an_estimated_indicator_distance_wins_over_an_inferred_one_that_is_more_precise() {
+    // A Cepheid-like period-luminosity distance of 3,500 pc at 8%, estimated, beside a
+    // prior-led Bailer-Jones distance of 3,000 pc at 5%: by uncertainty the inferred one would
+    // win; the rule sets it aside, and the kind of value decides.
+    let mut cepheid = with_distance(
+        entry("skowron-2025-cepheids", "c", 84.0, -1.0),
+        3_500e-6,
+        Some(280e-6),
+        (DistanceKind::PrimaryIndicator, Method::Cepheids),
+    );
+    cepheid.distances.last_mut().unwrap().kind_of_value = KindOfValue::Estimated;
+    let object = ranked(vec![prior_led(3_000.0, 150.0), cepheid]);
+    let preferred = object.preferred_distance.unwrap();
+    assert!(
+        matches!(&preferred.measurement, MeasurementRef::Distance { entry, .. } if &*entry.identifier == "c"),
+        "{preferred:?}"
+    );
+    assert_eq!(preferred.decided, Decided::KindOfValue);
+}
+
+#[test]
+fn an_inferred_distance_alone_still_wins_and_places_its_star() {
+    let mut object = ranked(vec![prior_led(3_000.0, 900.0)]);
+    let preferred = object.preferred_distance.clone().unwrap();
+    assert_eq!(preferred.decided, Decided::OnlyCandidate);
+    let placed = place(&mut object, &Release::planck_2018(), &ranking_rules()).unwrap();
+    assert!(near(placed.distance().value, 3_000.0e-6, 1e-12));
+}
+
+#[test]
+fn two_inferred_distances_still_compete_by_uncertainty() {
+    let object = ranked(vec![prior_led(3_000.0, 900.0), prior_led(2_800.0, 300.0)]);
+    let preferred = object.preferred_distance.unwrap();
+    assert!(
+        near(preferred.distance_mpc, 2_800e-6, 1e-12),
+        "{preferred:?}"
+    );
+    assert_eq!(preferred.decided, Decided::Uncertainty);
 }

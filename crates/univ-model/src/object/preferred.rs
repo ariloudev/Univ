@@ -120,7 +120,9 @@ pub enum Decided {
     /// redshift distances alike in every earlier step, its source comes first.
     SourceOrder,
     /// Between redshift distances: it was measured, and the redshift ordered next is estimated,
-    /// inferred or reconstructed, such as a 2M++ clone or a photometric redshift.
+    /// inferred or reconstructed, such as a 2M++ clone or a photometric redshift. Among the other
+    /// distances: it was measured or estimated, and an inferred one, such as a Bailer-Jones
+    /// distance resting on its prior, would have won and was set aside.
     KindOfValue,
     /// Between redshift distances alike in being measured or not: its published velocity
     /// uncertainty is the smaller, or the redshift ordered next has none.
