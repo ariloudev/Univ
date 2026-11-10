@@ -3,6 +3,8 @@
 //!
 //! - `ledger.yaml`: the id ledger, every id issued and what became of each id replaced.
 //! - `entry-ids.yaml`: the last release's map from each catalogue entry to its object's id.
+//! - `numbering.yaml`: what the last release numbered and placed, kept by the next
+//!   (`crate::release::Kept`); a build writes it, a cross-match never does.
 //! - `pending/`: the same two files as a cross-match left them for the release it prepared. A
 //!   cross-match builds no release, so it never touches the state itself, and a cross-match run
 //!   again starts from the same state and gives the same ids. The build takes the state the
@@ -18,10 +20,11 @@
 //! state is release n − 1's, after it release n's. A state directory with no `current` holds the
 //! two files itself, as one written before this layout did.
 //!
-//! Before the first release neither file exists: the ledger is new and no entry has an id. After
-//! it, the two go together: a ledger that lists releases needs the entry ids of the last, and
-//! those must hold every id the ledger counts as live, issued and never replaced, or the next
-//! release would give those objects new ids.
+//! Before the first release none of the files exists: the ledger is new, no entry has an id and
+//! nothing is numbered. After it, they go together: a ledger that lists releases needs the entry
+//! ids of the last, which must hold every id the ledger counts as live, issued and never
+//! replaced, or the next release would give those objects new ids; and it needs what the last
+//! release numbered and placed, or the next would number and place everything again.
 
 use std::collections::HashSet;
 use std::io;
@@ -32,7 +35,9 @@ use univ_model::ids::{Designation, ObjectId, SourceId};
 use univ_model::ledger::Ledger;
 
 use crate::ids::EntryIds;
-use crate::yaml::{FileError, read_checked, write};
+use crate::release::ROWS;
+use crate::release::{Kept, NUMBERING};
+use crate::yaml::{FileError, read_checked, version_is, write};
 
 /// The state directory a run uses when none is given.
 pub const DEFAULT_STATE: &str = ".cache/univ-ingest/state";
@@ -55,6 +60,8 @@ pub struct State {
     pub ledger: Ledger,
     /// Each catalogue entry of the last release with its object's id; empty before the first.
     pub previous: EntryIds,
+    /// What the last release numbered and placed; nothing before the first.
+    pub kept: Kept,
 }
 
 /// The entry-to-id map as its file holds it: one row per entry, sorted.
@@ -109,24 +116,7 @@ impl State {
     /// Fails when a file cannot be read or does not stand, or when the entry ids are kept
     /// without the ledger that issued them.
     pub fn read(dir: &Path) -> Result<Self, FileError> {
-        let current = dir.join(CURRENT);
-        if current.exists() {
-            let named = std::fs::read_to_string(&current)
-                .map_err(|e| FileError::new(&current, "(file)", e.to_string()))?;
-            let named = named.trim();
-            let valid = named
-                .strip_prefix(&format!("{STATES}/"))
-                .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
-            if !valid {
-                return Err(FileError::new(
-                    &current,
-                    "(file)",
-                    format!("names {named:?}, not a directory {STATES}/{{n}}"),
-                ));
-            }
-            return Self::read_files(&dir.join(named));
-        }
-        Self::read_files(dir)
+        Self::read_files(&current_dir(dir)?)
     }
 
     /// The state whose two files are in `dir` itself.
@@ -161,6 +151,25 @@ impl State {
         } else {
             EntryIds::new()
         };
+        let kept = match Kept::read(dir)? {
+            Some(kept) => kept,
+            None => match ledger.releases().last() {
+                Some(last) => {
+                    return Err(FileError::new(
+                        &dir.join(NUMBERING),
+                        "(file)",
+                        format!(
+                            "is missing, but the ledger lists {} release(s), the last {:?}: \
+                             without what that release numbered and placed, every term, source \
+                             and chain would be numbered and every object placed again",
+                            ledger.releases().len(),
+                            last.name
+                        ),
+                    ));
+                }
+                None => Kept::default(),
+            },
+        };
         let missing = uncovered(&ledger, &previous);
         if let Some(first) = missing.first() {
             let shown: Vec<String> = missing.iter().take(10).map(ToString::to_string).collect();
@@ -176,7 +185,11 @@ impl State {
                 ),
             ));
         }
-        Ok(Self { ledger, previous })
+        Ok(Self {
+            ledger,
+            previous,
+            kept,
+        })
     }
 
     /// Writes the state to `dir`, creating it, each file through a rename so that none is
@@ -186,7 +199,13 @@ impl State {
     ///
     /// Fails when the directory or a file cannot be written.
     pub fn write(&self, dir: &Path) -> io::Result<()> {
+        self.write_with(dir, &self.kept)
+    }
+
+    /// [`Self::write`], with `kept` in place of its own.
+    fn write_with(&self, dir: &Path, kept: &Kept) -> io::Result<()> {
         std::fs::create_dir_all(dir)?;
+        kept.write(dir)?;
         write_ledger(&dir.join(LEDGER), &self.ledger)?;
         let file = EntryIdsOut {
             version: ENTRY_IDS_VERSION,
@@ -198,20 +217,24 @@ impl State {
 
 impl State {
     /// Makes this the state of the state directory `dir` in one step: writes it whole into
-    /// `states/{n}/`, n the releases its ledger records, then renames `current.part`, naming
-    /// that directory, over `current`.
+    /// `states/{n}/`, n the releases its ledger records, with `kept`, what the release
+    /// numbered and placed, in place of its own, and `rows`, the release's row index, moved
+    /// into it; then renames `current.part`, naming that directory, over `current`. The row
+    /// index of the state it replaces, which no build compares with again, is removed.
     ///
     /// # Errors
     ///
     /// Fails, leaving the state of `dir` as it was, when a directory or file cannot be written.
-    pub fn install(&self, dir: &Path) -> io::Result<()> {
+    pub fn install(&self, dir: &Path, kept: &Kept, rows: &Path) -> io::Result<()> {
         let name = format!("{STATES}/{}", self.ledger.releases().len());
         let target = dir.join(&name);
         let part = dir.join(format!("{name}.part"));
         if part.exists() {
             std::fs::remove_dir_all(&part)?;
         }
-        self.write(&part)?;
+        let replaced = rows_dir(dir).ok().flatten();
+        self.write_with(&part, kept)?;
+        std::fs::rename(rows, part.join(ROWS))?;
         // A directory of this number that `current` does not name was left by a build that
         // stopped before it switched `current`.
         if target.exists() {
@@ -225,6 +248,8 @@ impl State {
         );
         if switched.is_err() {
             let _ = std::fs::remove_dir_all(&target);
+        } else if let Some(replaced) = replaced.filter(|r| !r.starts_with(&target)) {
+            let _ = std::fs::remove_dir_all(replaced);
         }
         switched
     }
@@ -247,6 +272,51 @@ impl State {
         }
         std::fs::rename(part, pending)
     }
+}
+
+/// The directory, within the state directory `dir`, of its current state: the one `current`
+/// names, or `dir` itself for a state written before `current` was.
+///
+/// # Errors
+///
+/// Fails when `current` cannot be read or names no directory `states/{n}`.
+pub fn current_dir(dir: &Path) -> Result<PathBuf, FileError> {
+    let current = dir.join(CURRENT);
+    if !current.exists() {
+        return Ok(dir.to_path_buf());
+    }
+    let named = std::fs::read_to_string(&current)
+        .map_err(|e| FileError::new(&current, "(file)", e.to_string()))?;
+    let named = named.trim();
+    let valid = named
+        .strip_prefix(&format!("{STATES}/"))
+        .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
+    if !valid {
+        return Err(FileError::new(
+            &current,
+            "(file)",
+            format!("names {named:?}, not a directory {STATES}/{{n}}"),
+        ));
+    }
+    Ok(dir.join(named))
+}
+
+/// The row index of the state of the state directory `dir`, which the next build compares its
+/// rows with: none before the first release, or for a state written before row indexes were.
+///
+/// # Errors
+///
+/// Fails when `current` cannot be read.
+pub fn rows_dir(dir: &Path) -> Result<Option<PathBuf>, FileError> {
+    let rows = current_dir(dir)?.join(ROWS);
+    Ok(rows.is_dir().then_some(rows))
+}
+
+/// Where a build writes the row index of the release it makes, within the state directory
+/// `dir`, until the state is installed with it.
+#[must_use]
+pub fn next_rows_dir(dir: &Path) -> PathBuf {
+    dir.join(format!("{ROWS}.part"))
 }
 
 /// The directory of the state a cross-match prepared, within `dir`.
@@ -292,16 +362,10 @@ pub fn write_ledger(file: &Path, ledger: &Ledger) -> io::Result<()> {
 }
 
 fn read_entry_ids(file: &Path) -> Result<EntryIds, FileError> {
-    let read: EntryIdsFile = read_checked(file, |f: &EntryIdsFile| {
-        if f.version == ENTRY_IDS_VERSION {
-            Ok(())
-        } else {
-            Err((
-                "version".to_owned(),
-                format!("is {}, not {ENTRY_IDS_VERSION}", f.version),
-            ))
-        }
-    })?;
+    let read: EntryIdsFile = read_checked(
+        file,
+        version_is(|f: &EntryIdsFile| f.version, ENTRY_IDS_VERSION),
+    )?;
     let mut ids = EntryIds::new();
     for (i, row) in read.entries.into_iter().enumerate() {
         let field = format!("entries[{i}]");

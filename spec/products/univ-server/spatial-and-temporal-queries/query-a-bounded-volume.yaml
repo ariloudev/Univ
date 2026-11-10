@@ -54,6 +54,8 @@ requirements:
         name: "Each page carries a cursor to the next page while results remain."
       - key: 01a19f1f-9fd7-7209-b7cb-5d164b16f644
         name: "Results come in a stable order, so paging a query whose layers have not changed returns the same pages."
+      - key: 01a1a931-2c8a-73a8-91f2-59122e92f2fd
+        name: "A page holds its results in the same order whichever object shards they come from."
       - key: 01a19f1f-9fd7-7209-b7cb-5d174e903e62
         name: "A query that matches more than 10,000 results returns the first 10,000 and states that the result was truncated."
       - key: 01a19f2c-ae0d-773f-9bf7-22c8f33720f3
@@ -104,6 +106,6 @@ qualityAttributes:
         upper: "500"
       unit: "ms"
       aggregation: p95
-      scenario: "Spheres of 50 Mpc radius centred at random points 100 Mpc from the Solar System, over the first full release"
+      scenario: "Spheres of 50 Mpc radius centred at random points 100 Mpc from the Solar System, over a release whose objects span several object shards"
       environment: "wrangler dev with local D1 on the owner's laptop"
     verificationFate: sampled

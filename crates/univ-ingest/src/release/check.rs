@@ -13,7 +13,8 @@ use std::path::Path;
 
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::release::D1_CAP_BYTES;
-use univ_model::release::manifest::{D1Estimate, RELEASE_BUDGET_BYTES, TableEstimate};
+use univ_model::release::manifest::{D1Estimate, TableEstimate};
+use univ_model::release::shards::Database;
 use univ_model::tile::decode;
 
 use crate::crossmatch::ReleaseObject;
@@ -215,14 +216,14 @@ pub fn table_sizes(estimate: &D1Estimate) -> Vec<String> {
 /// CON-3: the estimate of the release's rows against the release budget, half the cap less a
 /// margin, so release n + 1 can be published before release n is pruned.
 #[must_use]
-pub fn d1_size(estimate: &D1Estimate) -> Option<Failed> {
+pub fn d1_size(database: Database, estimate: &D1Estimate, budget: u64) -> Option<Failed> {
     let estimated = estimate.estimated_bytes;
-    (estimated > RELEASE_BUDGET_BYTES).then(|| Failed {
+    (estimated > budget).then(|| Failed {
         check: D1_SIZE,
         cause: format!(
-            "its rows are estimated at {estimated} bytes, beyond the {} budget of a release \
-             ({RELEASE_BUDGET_BYTES} bytes, so two fit the {} D1 cap); by table: {}",
-            decimal_bytes(RELEASE_BUDGET_BYTES),
+            "its rows in {database} are estimated at {estimated} bytes, beyond the {} budget of a \
+             release in one database ({budget} bytes, so two fit the {} D1 cap); by table: {}",
+            decimal_bytes(budget),
             decimal_bytes(D1_CAP_BYTES),
             table_sizes(estimate).join(", ")
         ),

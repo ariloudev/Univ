@@ -39,6 +39,7 @@ fn fixture(definition: &SourceDefinition) -> Option<PathBuf> {
         Access::VizierTsv { .. } => "tsv",
         Access::SkyserverSql { .. } | Access::Tap { .. } => "csv",
         Access::Files { .. } => "head",
+        Access::Prepared(_) => "csv.gz",
         Access::Repository { .. } => return None,
     };
     let dir = root().join("tests/fixtures").join(&definition.provider);
@@ -69,7 +70,10 @@ fn every_source_has_a_recording_its_reader_parses() {
             path.display()
         );
         assert_eq!(sidecar.source, definition.id.as_str());
-        if !matches!(definition.access, Access::Files { .. }) {
+        if !matches!(
+            definition.access,
+            Access::Files { .. } | Access::Prepared(_)
+        ) {
             check_answer(&definition, &body).unwrap_or_else(|e| panic!("{}: {e}", definition.id));
         }
     }

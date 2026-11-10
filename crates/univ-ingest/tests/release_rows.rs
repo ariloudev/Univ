@@ -15,7 +15,9 @@ use univ_model::release::{ColumnKind, Row, SCHEMA, SqlValue, Statements};
 /// executed in order.
 fn loaded<R: Row>(db: &Connection, rows: &[R]) {
     let mut sink = InMemory::default();
-    let mut writer = D1Writer::new(&mut sink).unwrap();
+    let mut writer = D1Writer::new(&mut sink, 1).unwrap();
+    // A row of a shard table goes to the one shard.
+    writer.set_shard(0);
     writer.add_all(rows).unwrap();
     writer.finish().unwrap();
     for (_, sql) in sink.files {

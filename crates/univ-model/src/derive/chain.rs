@@ -50,6 +50,13 @@ pub enum Transformation {
         heliocentric_redshift: f64,
         dipole: DipoleModel,
     },
+    /// The comoving distance of a CMB-frame redshift in the release cosmology, moved from a
+    /// redshift its source published relative to the Solar System barycentre.
+    ComovingFromBarycentricRedshift {
+        cmb_redshift: f64,
+        barycentric_redshift: f64,
+        dipole: DipoleModel,
+    },
     /// The comoving distance in the release cosmology of a redshift its source published in the
     /// CMB frame, used as published, with no dipole step.
     ComovingFromPublishedCmbRedshift { cmb_redshift: f64 },
@@ -124,6 +131,7 @@ impl From<Transformation> for Step {
             }
             Transformation::ComovingRescaled { .. }
             | Transformation::ComovingFromRedshift { .. }
+            | Transformation::ComovingFromBarycentricRedshift { .. }
             | Transformation::ComovingFromPublishedCmbRedshift { .. } => {
                 hogg!(", eq. 15, flat ΛCDM").into()
             }

@@ -1,0 +1,53 @@
+key: 01a1a938-deb8-7399-857b-e75552146940
+id: wave-w4
+versions:
+  - key: 01a1a938-deb8-7399-857b-e75b2d4e7617
+    at: 2026-11-05T01:00:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4 shards in the server"
+    goal: "Univ Server reads a sharded release through the id index and per-shard routing, with page order independent of shards, and its integration tests pass; merged into product/release-10"
+    status: planned
+  - key: 01a1aac9-f0ae-75f0-8f1b-3da4fff488f7
+    at: 2026-11-05T08:18:43Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4 shards in the server"
+    goal: "Univ Server reads a sharded release through the id index and per-shard routing, with page order independent of shards, and its integration tests pass; merged into product/release-10"
+    status: active
+  - key: 01a1ab0b-7fa9-7533-8626-c49e42dedace
+    at: 2026-11-05T09:30:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W4 shards in the server"
+    goal: "Univ Server reads a sharded release through the id index and per-shard routing, with page order independent of shards, and its integration tests pass; merged into product/release-10"
+    status: done
+blocks:
+  - key: 01a1ab0b-7fa9-7533-8626-c49cafaa2b34
+    id: w4-merged
+    kind: note
+    versions:
+      - key: 01a1ab0b-7fa9-7533-8626-c49d93b4967f
+        at: 2026-11-05T09:30:19Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W4 merged"
+        markdown: |-
+          Merged as `edf31aa`.
+
+          - **Gate:** 13 gates and `cargo xtask integration` pass (the e2e tests on the sharded fixture state, and the explorer's 9 Playwright tests). Trace accepted: 466 of 468 criteria linked.
+          - **Reads:**
+            - **By id:** through the catalogue's index, then one batch on the object's shard.
+            - **By designation:** across every shard of the release at once.
+            - **Volume pages:** only from the shards the box's own Morton ranges meet, merged by id, so pages don't depend on which shards hold the objects.
+          - **Reviews:** `/code-review` caught a box-to-shard filter that read nearly every shard for any box across 0 (spheres about the Sun among them), and a Worker that hid a short D1 batch answer. Both are fixed and tested.
+          - **For W5:** releases 6 to 9 read as empty under this server until they are pruned and release 10 is published.
+        tone: success

@@ -742,16 +742,21 @@ checks:
     severity: fail
     select:
       kind: query
+      # The interval is tested within a CASE: SQLite may test it before the conditions beside
+      # it, on a row whose redshift lies outside 0 to 10, such as a blueshift placed by no
+      # redshift, which comoving_mpc refuses; such a row placed by its redshift is a finding.
       sql: >-
         SELECT o.id, m.cmb, o.distance_mpc, o.distance_minus, o.distance_plus FROM objects o
         JOIN measurements m ON m.release = o.release AND m.object_id = o.id
         AND m.entry = o.preferred_entry AND m.quantity = o.preferred_quantity AND m.n = o.preferred_n
         WHERE o.release = :release AND o.placed = 1 AND o.preferred_quantity = term('redshift')
-        AND (m.cmb IS NULL OR o.distance_minus IS NULL OR o.distance_plus IS NULL
-          OR o.distance_minus < 0.999 * (comoving_mpc(m.cmb)
-            - comoving_mpc(max(0.0, m.cmb - (1.0 + m.cmb) * 300.0 / 299792.458)))
-          OR o.distance_plus < 0.999 * (comoving_mpc(min(10.0, m.cmb + (1.0 + m.cmb) * 300.0 / 299792.458))
-            - comoving_mpc(m.cmb)))
+        AND CASE WHEN m.cmb IS NULL OR m.cmb NOT BETWEEN 0 AND 10 OR o.distance_minus IS NULL OR o.distance_plus IS NULL
+          THEN 1
+          ELSE o.distance_minus < 0.999 * (comoving_mpc(m.cmb)
+              - comoving_mpc(max(0.0, m.cmb - (1.0 + m.cmb) * 300.0 / 299792.458)))
+            OR o.distance_plus < 0.999 * (comoving_mpc(min(10.0, m.cmb + (1.0 + m.cmb) * 300.0 / 299792.458))
+              - comoving_mpc(m.cmb))
+          END
     expect: { equals: 0 }
     cite:
       - paper: "univ-server specification, choose-the-preferred-measurement; rules/ranking.yaml"
@@ -805,7 +810,7 @@ checks:
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
   - id: d1-budget
-    title: The manifest's D1 estimate within the 4.5 GB release budget
+    title: The manifest's D1 estimate of each database within the 4.5 GB release budget
     severity: fail
     select: { kind: d1_estimate }
     expect: { at_most: 4500000000 }
@@ -813,8 +818,9 @@ checks:
       - paper: "univ-model release manifest, CON-3"
         locator: "crates/univ-model/src/release/manifest.rs, RELEASE_BUDGET_BYTES"
         quote: >-
-          "The most D1 storage a build lets one release take: under half the cap, so release n + 1
-          is published beside release n" (4,500,000,000 bytes; the CON-3 cap is 10 GB)
+          "The most D1 storage a build lets one release take in one database: under half the cap,
+          so release n + 1 is published beside release n" (4,500,000,000 bytes; the CON-3 cap is
+          10 GB)
         fetched: "this repository, crates/univ-model/src/release/manifest.rs"
 
   - id: fingerprints

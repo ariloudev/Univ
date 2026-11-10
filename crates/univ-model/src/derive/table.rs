@@ -2,6 +2,8 @@
 //! Hermite interpolation with the exact slope `c / H(z)` at each node, and inverted by the same
 //! interpolation with the roles swapped and one Newton step.
 
+use std::sync::Arc;
+
 use crate::cosmology::{Cosmology, CosmologyError, MAX_REDSHIFT};
 
 /// The lowest redshift node after z = 0. Below it the first segment, from 0, interpolates.
@@ -15,7 +17,9 @@ const SEGMENT_INTERVALS: u32 = 16;
 /// `D_C(z)` of one cosmology at [`NODES`] + 1 redshifts, with its slope at each.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ComovingTable {
-    cosmology: Cosmology,
+    /// Shared with every distance and position derived under it: a clone of its name for each
+    /// of millions of objects would be a heap string each.
+    cosmology: Arc<Cosmology>,
     redshift: Vec<f64>,
     distance: Vec<f64>,
     slope: Vec<f64>,
@@ -54,7 +58,7 @@ impl ComovingTable {
             distance.push(last + segment);
         }
         Self {
-            cosmology: cosmology.clone(),
+            cosmology: Arc::new(cosmology.clone()),
             redshift,
             distance,
             slope,
@@ -64,6 +68,12 @@ impl ComovingTable {
     /// The cosmology tabulated.
     #[must_use]
     pub fn cosmology(&self) -> &Cosmology {
+        &self.cosmology
+    }
+
+    /// The cosmology tabulated, shared.
+    #[must_use]
+    pub fn shared_cosmology(&self) -> &Arc<Cosmology> {
         &self.cosmology
     }
 

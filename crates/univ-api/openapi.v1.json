@@ -536,6 +536,13 @@
       "Designation": {
         "description": "A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a\n`source_id`.",
         "properties": {
+          "designation": {
+            "description": "The identifier in its catalogue's form, such as `HIP 32754` for Hipparcos's `32754`,\nwhere its source's definition gives a form; given in an object's designations.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "identifier": {
             "type": "string"
           },
@@ -546,6 +553,23 @@
         "required": [
           "source",
           "identifier"
+        ],
+        "type": "object"
+      },
+      "DesignationForm": {
+        "additionalProperties": false,
+        "description": "The form a source's catalogue writes a designation in, holding `{identifier}` once, and the\ncatalogue documentation it is read from, as a source definition gives them.",
+        "properties": {
+          "cite": {
+            "type": "string"
+          },
+          "form": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "form",
+          "cite"
         ],
         "type": "object"
       },
@@ -863,6 +887,13 @@
       "EntryRecord": {
         "description": "A catalogue entry of the object: the designation its source gives it, how it was resolved\ninto the object, and its sky position as published.",
         "properties": {
+          "designation": {
+            "description": "Its identifier in its catalogue's form, where its source's definition gives a form.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "entry": {
             "description": "Its number among the object's entries, from 0, as measurements name it.",
             "format": "int32",
@@ -1080,6 +1111,30 @@
             "type": "string"
           }
         ]
+      },
+      "FlagMeanings": {
+        "additionalProperties": false,
+        "description": "What each value of one flag column means, and the catalogue documentation that says so, as a\nsource definition gives them.",
+        "properties": {
+          "cite": {
+            "type": "string"
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Each value as the source publishes it, with its meaning.",
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "values",
+          "cite"
+        ],
+        "type": "object"
       },
       "FractionalUncertainty": {
         "description": "The fractional distance uncertainty, the error over the distance, that a measurement was ranked by.",
@@ -2353,7 +2408,8 @@
           "position",
           "position_and_redshift",
           "position_and_distance",
-          "within_extent"
+          "within_extent",
+          "fibres_of_one_galaxy"
         ],
         "type": "string"
       },
@@ -2555,6 +2611,17 @@
           "source": {
             "description": "The source that published it: its entry's.",
             "type": "string"
+          },
+          "uncertainty_basis": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UncertaintyBasis",
+                "description": "Where the uncertainty comes from when the source states one for its whole catalogue,\nnot one for each value: it is then estimated; absent when the source published it."
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -2758,6 +2825,22 @@
           "photometric_redshift"
         ],
         "type": "string"
+      },
+      "NameRecord": {
+        "description": "A common or proper name of the object, with the source that gives it.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "source"
+        ],
+        "type": "object"
       },
       "NativeLength": {
         "description": "A length as published, with the cosmology it was published for.",
@@ -3006,7 +3089,7 @@
         "description": "One object of a release, with everything every source published for it.",
         "properties": {
           "designations": {
-            "description": "Every designation it carries, each a source and the identifier that source gives: its\nentries' own and those their sources give beside them, such as a Hipparcos number.",
+            "description": "Every designation it carries, each a source and the identifier that source gives: its\nentries' own and those their sources give beside them, such as a Hipparcos number;\nordered by the rank the release gives their sources, the highest first, then by source.",
             "items": {
               "$ref": "#/components/schemas/Designation"
             },
@@ -3040,6 +3123,13 @@
             "description": "Every measurement of its entries, by entry, quantity and n.",
             "items": {
               "$ref": "#/components/schemas/MeasurementRecord"
+            },
+            "type": "array"
+          },
+          "names": {
+            "description": "Every common or proper name its sources give it, such as Sirius or the Andromeda Galaxy,\neach with its source; ordered as its designations are.",
+            "items": {
+              "$ref": "#/components/schemas/NameRecord"
             },
             "type": "array"
           },
@@ -3249,6 +3339,39 @@
         ],
         "type": "object"
       },
+      "PermissionRequest": {
+        "additionalProperties": false,
+        "description": "A request for permission to redistribute a source, sent and awaiting its answer, as the API\ngives it.",
+        "properties": {
+          "asked_of": {
+            "description": "Whom it was asked of.",
+            "type": "string"
+          },
+          "asked_on": {
+            "description": "The date it was asked, YYYY-MM-DD.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asked_of",
+          "asked_on"
+        ],
+        "type": "object"
+      },
+      "PermissionToAsk": {
+        "additionalProperties": false,
+        "description": "A request for permission to redistribute a source that is not yet sent: whom it is for.",
+        "properties": {
+          "asked_of": {
+            "description": "Whom it is to be asked of.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asked_of"
+        ],
+        "type": "object"
+      },
       "PointField": {
         "description": "A field of every point. The points' fields are stored as columns, in the order listed: the\ncolumn of a field starts at `header_bytes + column_offset × n`, `n` the tile's point count,\nand point `k` (from 0) holds its value at `bytes × k` within the column.",
         "properties": {
@@ -3292,7 +3415,8 @@
         "enum": [
           "gaia",
           "hipparcos",
-          "survey"
+          "survey",
+          "beam"
         ],
         "type": "string"
       },
@@ -3821,6 +3945,7 @@
         "description": "The frame a redshift is published in.",
         "enum": [
           "heliocentric",
+          "barycentric",
           "local_group",
           "cmb"
         ],
@@ -4030,7 +4155,7 @@
         "description": "How an entry came to belong to its object, tagged by `by`: a match keeps its own `method`\nbeside the tag, so the tag cannot be `method` too.",
         "oneOf": [
           {
-            "description": "The entry the object was resolved around: the first of its entries in the order read.",
+            "description": "The entry the object was resolved around: the first of its entries in the order read,\nor, for a nearby galaxy that took pieces, the galaxy's own entry.",
             "properties": {
               "by": {
                 "enum": [
@@ -4448,11 +4573,32 @@
             },
             "type": "array"
           },
+          "designation": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DesignationForm",
+                "description": "The form its catalogue writes a designation in, with where that is read from; absent\nwhere its definition gives none, or from a release built before forms were recorded."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "entries": {
             "description": "How many of its catalogue entries the release holds.",
             "format": "int64",
             "minimum": 0,
             "type": "integer"
+          },
+          "flags": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FlagMeanings"
+            },
+            "description": "What each value of each of its flags means, by the flag's column, where its definition\ngives meanings.",
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
           },
           "id": {
             "type": "string"
@@ -4915,17 +5061,53 @@
             "description": "The credit the terms require.",
             "type": "string"
           },
+          "non_commercial": {
+            "description": "The clause of the terms that allows only non-commercial use, quoted; absent when the\nterms allow commercial use.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "permission": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PermissionRequest",
+                "description": "Whom permission to redistribute the source was asked of and when, while its\nredistribution is `permission_pending` and the request is sent."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "permission_to_ask": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PermissionToAsk",
+                "description": "Whom permission to redistribute the source is to be asked of, while its redistribution\nis `permission_pending` and the request is not yet sent."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "quote": {
             "description": "The terms, quoted verbatim.",
             "type": "string"
           },
           "redistribution": {
-            "description": "Whether the terms allow the source to be published, and on what condition.",
+            "description": "Whether the terms allow the source to be published, and on what condition:\n`permitted`, `permitted_with_credit` or `permission_pending`.",
             "type": "string"
           },
           "review": {
             "description": "How that reading of the terms was reviewed.",
             "type": "string"
+          },
+          "share_alike": {
+            "description": "The clause of the terms requiring data adapted from the source to be shared under the\nsame licence, quoted; absent when the terms require no such thing.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "url": {
             "type": "string"
@@ -5419,6 +5601,35 @@
             "type": "object"
           },
           {
+            "description": "The comoving distance of a CMB-frame redshift in the release cosmology, moved from a\nredshift its source published relative to the Solar System barycentre.",
+            "properties": {
+              "barycentric_redshift": {
+                "format": "double",
+                "type": "number"
+              },
+              "cmb_redshift": {
+                "format": "double",
+                "type": "number"
+              },
+              "dipole": {
+                "$ref": "#/components/schemas/DipoleModel"
+              },
+              "step": {
+                "enum": [
+                  "comoving_from_barycentric_redshift"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "cmb_redshift",
+              "barycentric_redshift",
+              "dipole",
+              "step"
+            ],
+            "type": "object"
+          },
+          {
             "description": "The comoving distance in the release cosmology of a redshift its source published in the\nCMB frame, used as published, with no dipole step.",
             "properties": {
               "cmb_redshift": {
@@ -5789,6 +6000,24 @@
             "type": "object"
           }
         ]
+      },
+      "UncertaintyBasis": {
+        "description": "An uncertainty that is not the source's for this value, and where it comes from.",
+        "properties": {
+          "basis": {
+            "description": "Where the source states it, quoted or cited.",
+            "type": "string"
+          },
+          "kind_of_value": {
+            "$ref": "#/components/schemas/KindOfValue",
+            "description": "Estimated, for one stated for the whole catalogue."
+          }
+        },
+        "required": [
+          "kind_of_value",
+          "basis"
+        ],
+        "type": "object"
       },
       "Unit": {
         "description": "A unit that a source publishes a value in, or that a value is normalized to.",

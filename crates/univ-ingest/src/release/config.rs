@@ -5,6 +5,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use univ_model::cosmology::Cosmology;
+use univ_model::release::RELEASE_BUDGET_BYTES;
 
 use crate::yaml::{FileError, read_checked};
 
@@ -22,6 +23,10 @@ pub struct ReleaseConfig {
     /// A note on the cosmology the release manifest records beside it, with its citations.
     #[serde(default)]
     pub cosmology_note: Option<String>,
+    /// The most D1 bytes a release's rows may take in one object shard: the CON-3 budget of a
+    /// release unless given; smaller only to try the shards on a small release.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shard_budget_bytes: Option<u64>,
 }
 
 impl Default for ReleaseConfig {
@@ -33,11 +38,19 @@ impl Default for ReleaseConfig {
                               Collaboration 2020, A&A 641, A6, Table 2), the default."
                 .to_owned(),
             cosmology_note: None,
+            shard_budget_bytes: None,
         }
     }
 }
 
 impl ReleaseConfig {
+    /// The budget of one object shard: [`ReleaseConfig::shard_budget_bytes`], or the CON-3
+    /// budget of a release.
+    #[must_use]
+    pub fn shard_budget(&self) -> u64 {
+        self.shard_budget_bytes.unwrap_or(RELEASE_BUDGET_BYTES)
+    }
+
     /// The configuration in `file`, or the default when there is none.
     ///
     /// # Errors
@@ -59,6 +72,13 @@ impl ReleaseConfig {
     pub fn check(&self) -> Result<(), (String, String)> {
         if self.cosmology_basis.trim().is_empty() {
             return Err(("cosmology_basis".to_owned(), "is empty".to_owned()));
+        }
+        if self
+            .shard_budget_bytes
+            .is_some_and(|b| b == 0 || b > RELEASE_BUDGET_BYTES)
+        {
+            let what = format!("is not between 1 and {RELEASE_BUDGET_BYTES} bytes");
+            return Err(("shard_budget_bytes".to_owned(), what));
         }
         if self
             .cosmology_note

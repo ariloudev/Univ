@@ -11,14 +11,13 @@ use univ_model::release::keys;
 use crate::display::Outcome;
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::publish::{
-    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, prune_with,
-    publish_with,
+    FileDone, Progress, Pruned, Published, Store, StoreOptions, Wrangler, ingest_dir, migrate_with,
+    prune_with, publish_with,
 };
 use crate::release::release_dir;
 
-/// Where Wrangler keeps local D1 and R2 by default: what `wrangler dev` reads from the
-/// repository root.
-pub const DEFAULT_PERSIST: &str = ".wrangler/state";
+/// The local D1 and R2 that releases are published to: the real local state.
+pub const DEFAULT_PERSIST: &str = univ_model::release::REAL_LOCAL_STATE;
 /// The Wrangler configuration naming the local D1 and R2 bindings.
 pub const DEFAULT_CONFIG: &str = "wrangler.toml";
 
@@ -42,6 +41,7 @@ pub struct StoreRun {
 pub enum StoreCommand {
     Publish,
     Prune,
+    Migrate,
 }
 
 impl StoreCommand {
@@ -51,6 +51,7 @@ impl StoreCommand {
         match self {
             Self::Publish => Stage::Publish,
             Self::Prune => Stage::Prune,
+            Self::Migrate => Stage::Migrate,
         }
     }
 }
@@ -63,7 +64,8 @@ pub struct Shown<'a> {
     stop: &'a AtomicBool,
     /// The files done by this run of each kind, in the order first seen.
     files: Vec<(&'static str, u64)>,
-    /// The rows of the release each table holds once checked by this run, in the order checked.
+    /// The rows of the release each table holds once checked by this run, in every database,
+    /// in the order first checked.
     tables: Vec<(&'static str, u64)>,
 }
 
@@ -128,7 +130,12 @@ impl Progress for Shown<'_> {
             Some((_, n)) => *n += 1,
             None => self.files.push((kind, 1)),
         }
-        self.tables.extend(file.rows);
+        if let Some((table, rows)) = file.rows {
+            match self.tables.iter_mut().find(|(t, _)| *t == table) {
+                Some((_, n)) => *n += rows,
+                None => self.tables.push((table, rows)),
+            }
+        }
         self.sink.emit(Event::Uploaded {
             stage: self.stage,
             step: file.line,
@@ -175,8 +182,24 @@ pub fn store_command(
     let done = match command {
         StoreCommand::Publish => publish_command(&mut store, run.number, &options, &mut shown),
         StoreCommand::Prune => prune_command(&mut store, run.number, &options, &mut shown),
+        StoreCommand::Migrate => migrate_command(&mut store, &journals, &mut shown),
     };
     done.unwrap_or_else(stopped)
+}
+
+/// Brings the store under shared rows, ending its stage with whether there was anything to do.
+///
+/// # Errors
+///
+/// Fails, saying why, when D1 or R2 refuses a step.
+fn migrate_command(
+    store: &mut dyn Store,
+    journals: &std::path::Path,
+    shown: &mut Shown<'_>,
+) -> Result<Outcome, String> {
+    let migrated = migrate_with(store, journals, shown)?;
+    shown.ended(Vec::new());
+    Ok(Outcome::Migrated(migrated))
 }
 
 /// Publishes the release, ending its stage with what it uploaded: the files of each kind, the
@@ -205,6 +228,12 @@ pub fn publish_command(
             "files uploaded by an earlier run",
         ));
     }
+    if done.held > 0 {
+        counts.push(Count::new(
+            done.held as u64,
+            "files its parent holds already",
+        ));
+    }
     counts.extend(
         shown
             .tables
@@ -218,8 +247,14 @@ pub fn publish_command(
 fn published_line(done: &Published) -> String {
     format!(
         "Published release {} at {}: latest points to release {} (it pointed to {}); {} files \
-         uploaded and checked by this run, {} by an earlier one",
-        done.number, done.published_at, done.number, done.previous, done.uploaded, done.journaled
+         uploaded and checked by this run, {} by an earlier one, {} held already by its parent",
+        done.number,
+        done.published_at,
+        done.number,
+        done.previous,
+        done.uploaded,
+        done.journaled,
+        done.held
     )
 }
 

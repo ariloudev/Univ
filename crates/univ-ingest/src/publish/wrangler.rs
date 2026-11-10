@@ -7,11 +7,13 @@ use std::process::{Command, Output};
 
 use serde_json::Value;
 
+use univ_model::release::shards::Database;
+
 use super::r2batch::R2Batch;
 use super::{QueryRow, ReadBack, Store};
 
-/// The D1 database `wrangler.toml` names.
-pub const DATABASE: &str = "univ";
+use univ_model::release::shards::bound_shards;
+
 /// The R2 bucket `wrangler.toml` names.
 pub const BUCKET: &str = "univ-releases";
 /// The most lines of Wrangler's standard error a failure gives: its last.
@@ -218,15 +220,17 @@ fn content_type(key: &str) -> &'static str {
 }
 
 impl Store for Wrangler {
-    fn execute_file(&mut self, file: &Path) -> Result<(), String> {
+    fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String> {
         let file = absolute(file)?;
         let file = file.to_string_lossy();
-        self.run_ok(&["d1", "execute", DATABASE, "--file", &file])
+        let name = database.name();
+        self.run_ok(&["d1", "execute", &name, "--file", &file])
             .map(drop)
     }
 
-    fn query(&mut self, sql: &str) -> Result<Vec<QueryRow>, String> {
-        let output = self.run_ok(&["d1", "execute", DATABASE, "--command", sql, "--json"])?;
+    fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String> {
+        let name = database.name();
+        let output = self.run_ok(&["d1", "execute", &name, "--command", sql, "--json"])?;
         let value: Value = serde_json::from_slice(&output.stdout)
             .map_err(|e| format!("wrangler d1 execute gave no JSON: {e}"))?;
         let results = value
@@ -238,6 +242,12 @@ impl Store for Wrangler {
             .iter()
             .filter_map(|r| r.as_object().cloned())
             .collect())
+    }
+
+    fn bound_shards(&mut self) -> Result<u32, String> {
+        let toml = std::fs::read_to_string(&self.config)
+            .map_err(|e| format!("{}: {e}", self.config.display()))?;
+        Ok(bound_shards(&toml))
     }
 
     fn put(&mut self, key: &str, file: &Path) -> Result<(), String> {
@@ -273,13 +283,20 @@ impl Store for Wrangler {
 
 #[cfg(test)]
 mod tests {
+    use univ_model::release::shards::CATALOGUE_NAME;
+
     use super::*;
 
     #[test]
     fn the_names_are_those_of_the_repositorys_wrangler_toml() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let toml = std::fs::read_to_string(root.join("wrangler.toml")).unwrap();
-        assert!(toml.contains(&format!("database_name = \"{DATABASE}\"")));
+        assert!(toml.contains(&format!("database_name = \"{CATALOGUE_NAME}\"")));
+        assert_eq!(bound_shards(&toml), 8);
+        // Univ Server binds the same (univ-server's tests/config.rs checks their ids).
+        let server =
+            std::fs::read_to_string(root.join("crates/univ-server/wrangler.toml")).unwrap();
+        assert_eq!(bound_shards(&server), 8);
         assert!(toml.contains(&format!("bucket_name = \"{BUCKET}\"")));
         assert!(!toml.contains("main ="), "no Worker entry");
         assert_eq!(
@@ -298,7 +315,7 @@ mod tests {
         let recorded =
             include_bytes!("../../tests/fixtures/wrangler/d1-execute-syntax-error.stderr");
         assert!(recorded.contains(&0x1b), "the recording holds escapes");
-        let args = ["d1", "execute", DATABASE, "--command", "SELEC 1"];
+        let args = ["d1", "execute", CATALOGUE_NAME, "--command", "SELEC 1"];
         let message = said(&args, "exit status: 1", b"", recorded);
         assert!(!message.contains('\u{1b}'), "{message:?}");
         assert!(

@@ -13,9 +13,9 @@ fn a_heliocentric_redshift_is_kept_as_measured() {
     let sdss = normalized_fixture("sdss-dr17-galaxies");
     // Row 2: 375050326987794432, z 0.08733442 ± 2.054854E-05.
     let r = &entry(&sdss, "375050326987794432").redshifts[0];
-    assert_eq!(r.cmb.heliocentric.value, 0.087_334_42);
+    assert_eq!(r.cmb.measured.value, 0.087_334_42);
     assert_eq!(
-        r.cmb.heliocentric.uncertainty,
+        r.cmb.measured.uncertainty,
         Uncertainty::Symmetric {
             sigma: 2.054_854e-5
         }
@@ -42,12 +42,12 @@ fn the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from() {
     let twomrs = normalized_fixture("twomrs");
     // Row 3: 09553318+6903549, cz -34 ± 4 km/s.
     let r = &entry(&twomrs, "09553318+6903549").redshifts[0];
-    assert_eq!(r.velocity.unwrap().value, -34.0);
-    assert_eq!(r.cmb.heliocentric.value, -34.0 / 299_792.458);
-    assert_ne!(r.cmb.value.value, r.cmb.heliocentric.value);
+    assert_eq!(r.velocity.as_deref().unwrap().value, -34.0);
+    assert_eq!(r.cmb.measured.value, -34.0 / 299_792.458);
+    assert_ne!(r.cmb.value.value, r.cmb.measured.value);
     let yaml = serde_norway::to_string(r).unwrap();
     assert!(
-        yaml.contains("heliocentric:") && yaml.contains("dipole: planck2018"),
+        yaml.contains("measured:") && yaml.contains("dipole: planck2018"),
         "{yaml}"
     );
 }
@@ -70,8 +70,8 @@ fn a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entri
     };
     assert_eq!(*columns, &["Z_LAMBDA", "Z_LAMBDA_ERR"]);
     assert_eq!(
-        (when.column.as_str(), &when.is[..]),
-        ("BEST_Z_TYPE", &["lit_z".to_owned()][..])
+        (when.column.as_str(), when.is.as_deref()),
+        ("BEST_Z_TYPE", Some(&["lit_z".to_owned()][..]))
     );
 
     // The same action on the recorded 2M++ rows, dropping Ksmag where Cln is x: row 1 has a
@@ -84,10 +84,7 @@ fn a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entri
         evidence: "a test".into(),
         action: Some(FixAction::DropWhen {
             columns: vec!["Ksmag".into()],
-            when: Condition {
-                column: "Cln".into(),
-                is: vec!["x".into()],
-            },
+            when: Condition::is("Cln", &["x"]),
         }),
     });
     let text = std::fs::read_to_string(fixture_of(&definition)).unwrap();

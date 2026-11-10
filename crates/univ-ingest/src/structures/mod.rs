@@ -101,7 +101,12 @@ pub enum StructureKind {
     Arc,
     Ring,
     Shell,
+    /// Where a reconstructed peculiar-velocity flow diverges from: an underdense region that
+    /// pushes matter away.
     Repeller,
+    /// Where a reconstructed peculiar-velocity flow converges: an overdense region that matter
+    /// streams toward, such as the Great Attractor.
+    Attractor,
     /// A claimed concentration of tracers, such as gamma-ray bursts, at one redshift.
     Overdensity,
 }

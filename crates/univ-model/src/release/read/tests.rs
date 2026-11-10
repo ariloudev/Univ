@@ -97,7 +97,15 @@ fn a_vocabulary_names_its_terms_sources_and_chains() {
 #[test]
 fn an_object_not_placed_reads_with_its_sky_position_and_reason() {
     let v = vocabulary();
-    let read = object(&v, &object_row(), &[entry_row()], &[measurement_row()], &[]).unwrap();
+    let read = object(
+        &v,
+        &object_row(),
+        &[entry_row()],
+        &[measurement_row()],
+        &[],
+        &[],
+    )
+    .unwrap();
     assert_eq!(
         (read.release, read.id, read.kind),
         (7, 42, ObjectKind::Body)
@@ -141,7 +149,7 @@ fn an_unknown_term_names_its_table_column_and_id() {
     let v = vocabulary();
     let mut o = object_row();
     o.insert("kind".into(), json!(99));
-    let e = object(&v, &o, &[entry_row()], &[], &[]).unwrap_err();
+    let e = object(&v, &o, &[entry_row()], &[], &[], &[]).unwrap_err();
     assert!(e.0.contains("objects.kind"), "{e}");
     assert!(e.0.contains("term 99"), "{e}");
 }
@@ -151,7 +159,7 @@ fn a_missing_column_names_its_table_and_column() {
     let v = vocabulary();
     let mut e = entry_row();
     e.remove("identifier");
-    let err = object(&v, &object_row(), &[e], &[], &[]).unwrap_err();
+    let err = object(&v, &object_row(), &[e], &[], &[], &[]).unwrap_err();
     assert!(err.to_string().contains("entries.identifier"), "{err}");
     assert!(err.to_string().contains("no such column"), "{err}");
 }
@@ -161,11 +169,11 @@ fn an_integer_column_refuses_a_fraction_and_an_unknown_source() {
     let v = vocabulary();
     let mut m = measurement_row();
     m.insert("n".into(), json!(0.5));
-    let err = object(&v, &object_row(), &[entry_row()], &[m], &[]).unwrap_err();
+    let err = object(&v, &object_row(), &[entry_row()], &[m], &[], &[]).unwrap_err();
     assert!(err.0.contains("measurements.n"), "{err}");
     let mut e = entry_row();
     e.insert("source".into(), json!(5));
-    let err = object(&v, &object_row(), &[e], &[], &[]).unwrap_err();
+    let err = object(&v, &object_row(), &[e], &[], &[], &[]).unwrap_err();
     assert!(err.0.contains("entries.source: 5"), "{err}");
 }
 
@@ -187,7 +195,7 @@ fn a_link_reads_in_the_old_shape_with_its_tag_twice_and_in_the_new() {
     for text in [old, new] {
         let mut o = object_row();
         o.insert("links".into(), Value::String(text));
-        read.push(object(&v, &o, &[entry_row()], &[], &[]).unwrap().links);
+        read.push(object(&v, &o, &[entry_row()], &[], &[], &[]).unwrap().links);
     }
     assert_eq!(read[0], read[1]);
     let Resolution::Match(m) = &read[0][0].reason else {
@@ -197,36 +205,41 @@ fn a_link_reads_in_the_old_shape_with_its_tag_twice_and_in_the_new() {
     assert_eq!(read[0][0].confidence.get(), 0.4);
 }
 
-fn designation_row(source: &str, identifier: &str) -> Row {
+fn designation_row(source: i64, identifier: &str) -> Row {
     row(json!({"source": source, "identifier": identifier}))
 }
 
 #[test]
 fn the_designations_are_the_objects_rows_or_its_entries_own_before_that_table() {
     let v = vocabulary();
-    let rows = [
-        designation_row("twomrs", "J0042"),
-        designation_row("sixdfgs-dr3", "g1"),
-    ];
-    let read = object(&v, &object_row(), &[entry_row()], &[], &rows).unwrap();
+    let rows = [designation_row(1, "J0042"), designation_row(0, "g1")];
+    let read = object(&v, &object_row(), &[entry_row()], &[], &rows, &[]).unwrap();
     let named: Vec<(&str, &str)> = read
         .designations
         .iter()
-        .map(|d| (d.source.as_str(), d.identifier.as_str()))
+        .map(|d| (d.source.as_str(), &*d.identifier))
         .collect();
     assert_eq!(named, [("sixdfgs-dr3", "g1"), ("twomrs", "J0042")]);
-    let before = object(&v, &object_row(), &[entry_row()], &[], &[]).unwrap();
+    let before = object(&v, &object_row(), &[entry_row()], &[], &[], &[]).unwrap();
     assert_eq!(before.designations.len(), 1);
-    assert_eq!(before.designations[0].identifier, "J0042");
-    let bad = [designation_row("Not An Id", "x")];
-    let err = object(&v, &object_row(), &[entry_row()], &[], &bad).unwrap_err();
+    assert_eq!(&*before.designations[0].identifier, "J0042");
+    let bad = [designation_row(9, "x")];
+    let err = object(&v, &object_row(), &[entry_row()], &[], &bad, &[]).unwrap_err();
     assert!(err.0.contains("designations.source"), "{err}");
 }
 
 #[test]
 fn an_entry_numbered_twice_names_its_table_and_column() {
     let v = vocabulary();
-    let err = object(&v, &object_row(), &[entry_row(), entry_row()], &[], &[]).unwrap_err();
+    let err = object(
+        &v,
+        &object_row(),
+        &[entry_row(), entry_row()],
+        &[],
+        &[],
+        &[],
+    )
+    .unwrap_err();
     assert!(
         err.0.contains("release 7 entries.entry: 0 appears twice"),
         "{err}"

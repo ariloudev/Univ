@@ -3,11 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import type { Controller } from "../scene/controller.ts";
+import { POINT_CSS } from "../scene/kinds.ts";
 import { fakeController } from "../test/world.ts";
 import { manifestOf } from "../test/fixtures.ts";
-import { Panels, type Tally } from "./Panels.tsx";
+import { KeyBar, type Tally, ViewDrawer, Whereabouts } from "./Panels.tsx";
 import { Scene } from "./Scene.tsx";
 import { createStore } from "./store.ts";
+
+const PLANCK_2018 = { name: "Planck 2018", hubble_constant: 67.66, omega_matter: 0.3111 };
 
 function controller(): Controller {
   const made = fakeController();
@@ -28,18 +31,30 @@ function tally(failed = 0, unread = 0): Tally {
 }
 
 function show(catalogue: Tally, made = controller()) {
-  render(<Panels controller={made} catalogue={() => catalogue} frame={createStore(0)} release={7} cosmology="Planck 2018" />);
+  const frame = createStore(0);
+  render(
+    <>
+      <Whereabouts controller={made} frame={frame} grid={[false, () => undefined]} rings={[false, () => undefined]} outlines={[true, () => undefined]} />
+      <ViewDrawer controller={made} frame={frame} cosmology="Planck 2018" />
+      <KeyBar catalogue={() => catalogue} frame={frame} release={7} />
+    </>,
+  );
   return made;
 }
 
-describe("the panels", () => {
-  it("count the points of each kind of value beside its colour", () => {
+describe("the bars and the view's drawer", () => {
+  it("count the points of each kind of value under their one colour", () => {
     show(tally());
     const key = screen.getByTestId("key").textContent ?? "";
     expect(key).toContain("measured: 1,200 points");
     expect(key).toContain("estimated: 30 points");
     expect(key).toContain("inferred: 4 points");
     expect(key).toContain("reconstructed: 0 points");
+    const swatch = screen.getByRole("heading", { name: /Other points/ }).querySelector("span") as HTMLElement;
+    const probe = document.createElement("span");
+    probe.style.background = POINT_CSS;
+    expect(swatch.style.background).toBe(probe.style.background);
+    expect(swatch.style.background).not.toBe("");
   });
 
   it("show the stars' colours by temperature and count the stars in colour and in grey", () => {
@@ -54,7 +69,7 @@ describe("the panels", () => {
 
   it("credit each source of the drawn points with its title, citation and credit, naming the release", () => {
     show(tally());
-    expect(screen.getByText(/the sources of release 7's points/)).toBeTruthy();
+    expect(screen.getByText(/The sources of release 7's points/)).toBeTruthy();
     const credits = screen.getByTestId("credits").textContent ?? "";
     expect(SOURCE).toBeDefined();
     expect(credits).toContain(SOURCE?.title);
@@ -77,13 +92,17 @@ describe("the panels", () => {
     expect(frame).toContain("cosmology Planck 2018");
   });
 
-  it("show the distance from the eye to the focus, and return the focus to Earth", async () => {
+  it("show the distance from the eye to the focus", () => {
     const made = controller();
     made.flyTo([30, 0, 0], 2);
     show(tally(), made);
     expect(screen.getByTestId("distance").textContent).toContain("2 Mpc (6.52 million ly)");
-    await userEvent.click(screen.getByRole("button", { name: "Return to Earth" }));
-    expect(made.view.focus).toEqual([0, 0, 0]);
+  });
+
+  it("give each kind of value its mark, in the bar and in the key", () => {
+    show(tally());
+    expect(screen.getByTestId("key").textContent).toContain("●measured: 1,200 points");
+    expect(screen.getByTestId("key").textContent).toContain("◌reconstructed: 0 points");
   });
 
   it("change the axes the view shows", async () => {
@@ -95,7 +114,7 @@ describe("the panels", () => {
 
 describe("the view", () => {
   it("marks Earth as the Solar System barycentre, and says when it cannot draw", async () => {
-    render(<Scene release={7} cosmology="Planck 2018" />);
+    render(<Scene release={7} cosmology={PLANCK_2018} levelOfDetail place={{ topBar: null, drawer: undefined, onDrawer: () => undefined }} />);
     expect(screen.getByTitle("The Solar System barycentre, within about 1 AU of Earth").textContent).toContain("Earth");
     expect((await screen.findByRole("alert")).textContent).toContain("cannot draw with WebGL2");
   });

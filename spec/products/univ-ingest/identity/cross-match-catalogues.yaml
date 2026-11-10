@@ -59,6 +59,22 @@ requirements:
         name: "More than one entry of one source may join one galaxy as its pieces, and the preferred measurement is still chosen among all of them."
       - key: 01a1a232-7345-778b-a4c5-046e89676561
         name: "Each piece records the rule as its method, its separation from the galaxy's centre and its velocity difference."
+  - key: 01a1adfa-315f-708f-8cd8-bf4d9f766f81
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "join as pieces of one galaxy the fibres of one fibre survey that lie together in the nearby volume at one velocity, where no source of the release publishes the galaxy's extent."
+    criteria:
+      - key: 01a1adfa-315f-708f-8cd8-bf4e61ca16c8
+        name: "Fibres of one survey join below the matching rules' velocity of the nearby volume, each within their angle and velocity tolerance of every fibre already joined."
+      - key: 01a1adfa-315f-708f-8cd8-bf4fa228b618
+        name: "The fibre surveys whose fibres may join are those the matching rules list."
+      - key: 01a1adfa-315f-708f-8cd8-bf5086a0f213
+        name: "Two groups that each hold an entry of a source naming its own galaxy are never joined as one galaxy."
+      - key: 01a1ae91-90f5-716e-b3d3-07b944951329
+        name: "Two groups that each hold an entry of one source other than a fibre survey, such as two ALFALFA detections, are never joined as one galaxy."
+      - key: 01a1adfa-315f-708f-8cd8-bf51d418d386
+        name: "Each joined fibre records the rule as its method, its separation and its velocity difference."
   - key: 01a1a147-6018-75e1-9409-3f7ba5142e0f
     statement:
       form: ubiquitous
@@ -78,6 +94,22 @@ requirements:
       shall: "attach to each object the designations and names its catalogue entries carry."
     criteria:
       - key: 01a19f23-636f-72bd-b194-1513f385222f
-        name: "Each designation keeps the source that gave it."
+        name: "Each designation keeps the source that gave it, and the identifier as that source publishes it, with the prefix the designation rules give one that the source gives beside an entry, such as `HIP 10768` beside a Gaia source id."
+      - key: 01a1b7de-8cb0-73dd-ae67-32308547512f
+        name: "The release keeps, once for each source, its designation form, the meanings of its flags and the rank the designation rules give it."
       - key: 01a19f23-636f-72bd-b194-15144dcb948e
         name: "A common name, such as M31 or the Large Magellanic Cloud, is attached with the source that published it."
+      - key: 01a1b7dc-04ef-7334-abc7-37e775e83b00
+        name: "A proper name, such as Sirius or the Andromeda Galaxy, is attached as the name of its catalogue entry, apart from the object's designations."
+      - key: 01a1b838-25fc-71d6-a728-9b6bb7ad3b8e
+        name: "A source field that holds more than one name, as OpenNGC's common names do, attaches each of them."
+      - key: 01a1b7dc-04ef-7334-abc7-37e83780d376
+        name: "An entry of a star-name source joins the object of the star its HIP number names."
+      - key: 01a1b849-7cc8-73bf-8d95-19d091322d79
+        name: "An entry of a star-name source without a HIP number joins the star whose position matches its own."
+      - key: 01a1b7dc-04ef-7334-abc7-37e9e889ce84
+        name: "An entry of a galaxy-name source joins the object its PGC number or 2MASX designation names, or else the object its position matches."
+      - key: 01a1b7dc-04ef-7334-abc7-37eac8b77d98
+        name: "An entry of a name source that joins no object becomes an object of its own, with its sky position and no distance."
+      - key: 01a1b7dc-04ef-7334-abc7-37eb1f141005
+        name: "A name source's entries that its catalogue marks as duplicates or as nonexistent objects are left out, each with its reason."

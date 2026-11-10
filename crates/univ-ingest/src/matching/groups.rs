@@ -71,11 +71,8 @@ impl Groups {
         if !self.sources_disjoint(ra, rb) {
             return Err(Refused::SharedSource);
         }
-        for k in 0..self.links[ra].len() {
-            let far = self.links[ra][k];
-            if self.find(far) == rb {
-                return Err(Refused::Linked);
-            }
+        if self.linked(ra, rb) {
+            return Err(Refused::Linked);
         }
         self.absorb(ra, rb);
         Ok(())
@@ -97,6 +94,15 @@ impl Groups {
         self.merged[gone] = Vec::new();
         let links = std::mem::take(&mut self.links[gone]);
         self.links[keep].extend(links);
+    }
+
+    /// Whether a candidate link joins the groups of `a` and `b`.
+    pub fn linked(&mut self, a: usize, b: usize) -> bool {
+        let (ra, rb) = (self.find(a), self.find(b));
+        (0..self.links[ra].len()).any(|k| {
+            let far = self.links[ra][k];
+            self.find(far) == rb
+        })
     }
 
     /// Records a candidate link between the groups of `a` and `b`, which no join may then cross.

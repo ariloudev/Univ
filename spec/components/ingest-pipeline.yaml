@@ -22,7 +22,7 @@ components:
     body: "Assembles, checks, publishes and prunes releases."
     constraints:
       - key: 01a19f1e-d177-716d-b124-3cf23344602c
-        name: "The Release publisher shall keep the D1 tables of every unpruned release together within D1's 10 GB database cap, budgeting each release at 4.5 GB so the next release can be published before the previous one is pruned."
+        name: "The Release publisher shall keep every D1 database of the releases, the catalogue database and each object shard, within D1's 10 GB database cap, counting each row once whichever releases hold it, and budgeting the rows of the release latest points to at 4.5 GB in each so that a release changing every row can be published before the previous one is pruned."
         constraintBinding:
           category: storage.d1
           requiredValue: "10 GB"

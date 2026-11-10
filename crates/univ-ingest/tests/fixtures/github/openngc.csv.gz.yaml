@@ -1,0 +1,9 @@
+source: openngc
+url: https://raw.githubusercontent.com/mattiaverga/OpenNGC/v20260501/database_files/
+retrieved: 2026-11-07T22:40:00Z
+sha256: eed2c048c816f787f8f0dc9309c10f8bfeab2ddeecd7b293d7249d435c9d4c0d
+note: >-
+  Seven rows of the prepared file openngc.csv.gz that scripts/prepare-openngc.py made from
+  OpenNGC release v20260501 on 2026-11-07, with its header: NGC 224 (M31, with PGC and 2MASX),
+  NGC 1976 (M42, two common names), NGC 4472, NGC 5866, IC 2, the duplicate M 102 and the
+  nonexistent IC 67.

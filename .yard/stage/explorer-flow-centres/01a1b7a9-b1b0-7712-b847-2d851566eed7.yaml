@@ -1,0 +1,2969 @@
+key: 01a1b7a9-b1b0-7712-b847-2d851566eed7
+id: build
+versions:
+  - key: 01a1b7a9-b1b0-7712-b847-2d8896dc27b2
+    at: 2026-11-07T20:18:34Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Explorer draws the flow glyph"
+    goal: "The explorer draws each attractor and repeller with the sphere and arrows at a fixed size on screen, tested, gated and merged into product/additive-releases"
+    status: planned
+  - key: 01a1b7aa-8637-7437-a620-0f1ffec9c826
+    at: 2026-11-07T20:19:28Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Explorer draws the flow glyph"
+    goal: "The explorer draws each attractor and repeller with the sphere and arrows at a fixed size on screen, tested, gated and merged into product/additive-releases"
+    status: active
+  - key: 01a1b7ba-3106-7221-aece-fadb1958a6c7
+    at: 2026-11-07T20:36:35Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Explorer draws the flow glyph"
+    goal: "The explorer draws each attractor and repeller with the sphere and arrows at a fixed size on screen, tested, gated and merged into product/additive-releases"
+    status: done
+blocks:
+  - key: 01a1b7b0-45bc-74ad-a095-f6f168c358ce
+    id: label-below
+    kind: note
+    versions:
+      - key: 01a1b7b0-45bc-74ad-a095-f6f2a8bce943
+        at: 2026-11-07T20:25:45Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Seen in the explorer, and one spec amendment"
+        markdown: |-
+          Seen on release 11 in the explorer: the Dipole Repeller and the Great Attractor each draw as a sphere with arrows, out from the repeller and in to the attractor.
+
+          - At 12 device pixels the symbol was hidden under its name, so the sphere is now 24 device pixels (12 CSS px on a 2× screen), with the arrows reaching twice that.
+          - A chosen symbol's lines are capped at 2.5 px, because the chosen 5 px lines filled the sphere.
+          - The name of an attractor or repeller is now drawn just below the reach of the arrows. The criterion "Each structure's name is drawn at its centre" was amended to say so (minor, pre-approved).
+  - key: 01a1b7ba-3105-7651-8273-00001c9d3271
+    id: trace
+    kind: loft
+    versions:
+      - key: 01a1b7ba-3106-7221-aece-fad9a347c6ff
+        at: 2026-11-07T20:36:35Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: trace
+        note: "The three new criteria and the amended naming criterion are linked to their tests and accepted."
+        recorded:
+          commit: "d71f2ba7f784039695669d5e8091e9213c00bfbc"
+          branch: "stage/explorer-flow-centres"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-07T20:36:34Z
+        report: |
+          {
+            "base": "develop",
+            "commit": "d5c230ffe4e63c682381e8c4a9cbe82494508cb1",
+            "counts": {
+              "features": 4
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-151f95aff549",
+                    "label": "AC-82",
+                    "name": "The release has the next release number and records its build time, release cosmology, univ-model version and Univ Ingest version.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 32,
+                            "lastLine": 81
+                          }
+                        ],
+                        "name": "a_release_records_its_number_build_time_cosmology_versions_and_rules"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 225,
+                            "lastLine": 243
+                          }
+                        ],
+                        "name": "the_release_number_increments_and_the_pending_state_becomes_the_state"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15208136562d",
+                    "label": "AC-83",
+                    "name": "The release records its matching rules and its ranking rule.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 32,
+                            "lastLine": 81
+                          }
+                        ],
+                        "name": "a_release_records_its_number_build_time_cosmology_versions_and_rules"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1521b702e5bb",
+                    "label": "AC-84",
+                    "name": "The release manifest lists every file of the release with its SHA-256, those it shares with the release before it included.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 83,
+                            "lastLine": 114
+                          }
+                        ],
+                        "name": "the_manifest_lists_every_file_of_the_release_with_its_sha256"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1522436dac01",
+                    "label": "AC-85",
+                    "name": "The release holds the cell index that bounded volume queries read.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 223
+                          }
+                        ],
+                        "name": "the_cell_index_holds_every_placed_object_in_the_cell_of_its_position"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_cells.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 216,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_sky_region_over_every_longitude_spans_all_360_degrees"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273901bad9b4",
+                    "label": "AC-326",
+                    "name": "The release records each source's primary reference by its bibcode or DOI.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 169,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "a_definition_names_its_primary_reference_by_bibcode_and_doi"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 222,
+                            "lastLine": 244
+                          }
+                        ],
+                        "name": "every_repository_definition_names_a_well_formed_primary_reference"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "the_fixture_release_records_each_sources_reference_and_coverage"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-4ae3-74cc-a986-969a727616ef",
+                    "label": "AC-327",
+                    "name": "The release records each source's coverage as a sky region with, where its catalogue entries hold redshifts or distances, the range they span.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_coverage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "a_sources_sky_is_the_sorted_order_5_cells_of_its_entries"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_coverage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 105,
+                            "lastLine": 124
+                          }
+                        ],
+                        "name": "the_radial_range_of_2mrs_is_that_of_its_redshifts_as_published"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_coverage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 126,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "the_radial_ranges_of_hipparcos_and_cosmicflows_4_are_their_parallaxes_and_distances"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 37,
+                            "lastLine": 94
+                          }
+                        ],
+                        "name": "the_fixture_release_records_each_sources_reference_and_coverage"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273ac3c97e3c",
+                    "label": "AC-328",
+                    "name": "The release holds each placed structure's geometry as a univ-model geometry in a named frame, with its bounds in ICRS, beside the geometry its structure file gives.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 52,
+                            "lastLine": 114
+                          }
+                        ],
+                        "name": "a_sky_box_becomes_the_healpix_cells_whose_centres_lie_in_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 347,
+                            "lastLine": 415
+                          }
+                        ],
+                        "name": "an_admitted_outline_is_placed_as_its_grid_region_in_mpc_of_the_release_cosmology"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 160
+                          }
+                        ],
+                        "name": "the_fixture_release_records_each_structures_shape_outline_and_rescaled_lengths"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273b90e08a90",
+                    "label": "AC-329",
+                    "name": "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 306,
+                            "lastLine": 340
+                          }
+                        ],
+                        "name": "an_outline_test_is_recorded_with_its_verdict_numbers_and_checks"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a304-2788-77fb-8f0d-273c7a6188dc",
+                    "label": "AC-330",
+                    "name": "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology.",
+                    "requirement": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 271,
+                            "lastLine": 304
+                          }
+                        ],
+                        "name": "a_radius_published_for_h0_50_is_rescaled_by_50_over_67_66"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_details.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 121,
+                            "lastLine": 150
+                          }
+                        ],
+                        "name": "every_structure_names_the_cited_values_its_shape_and_rescaled_lengths_come_from"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590689bd8862",
+                    "label": "AC-469",
+                    "name": "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_shards.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 90
+                          }
+                        ],
+                        "name": "each_object_is_in_exactly_one_shard_with_its_entries_measurements_designations_and_cell"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-59076b96877f",
+                    "label": "AC-470",
+                    "name": "All the objects of one cell of the cell index are in one object shard.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_shards.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 128
+                          }
+                        ],
+                        "name": "all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_id"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-5908e94d50c7",
+                    "label": "AC-471",
+                    "name": "An object that is not placed is assigned to an object shard by its object id.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_shards.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 92,
+                            "lastLine": 128
+                          }
+                        ],
+                        "name": "all_the_objects_of_one_cell_are_in_one_shard_and_one_not_placed_goes_by_its_id"
+                      },
+                      {
+                        "file": "crates/univ-ingest/src/release/packing.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 260,
+                            "lastLine": 277
+                          }
+                        ],
+                        "name": "objects_not_placed_go_by_their_ids_bucket_after_the_cells"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-59092cd5e331",
+                    "label": "AC-472",
+                    "name": "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_shards.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 156
+                          }
+                        ],
+                        "name": "the_catalogue_holds_the_sources_terms_structures_and_the_shard_of_every_object"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590a9d7b0864",
+                    "label": "AC-473",
+                    "name": "The release manifest names each object shard with the cells it holds and its estimated size.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_shards.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 200
+                          }
+                        ],
+                        "name": "the_manifest_names_each_shard_with_its_cells_and_estimated_size"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590cebe0fc8d",
+                    "label": "AC-474",
+                    "name": "No release number is used up by the refused build.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-590b8ae658df",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_shards.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 202,
+                            "lastLine": 225
+                          }
+                        ],
+                        "name": "a_cell_beyond_a_shards_budget_refuses_the_build_naming_it_and_uses_no_number"
+                      },
+                      {
+                        "file": "crates/univ-ingest/src/release/packing.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 279,
+                            "lastLine": 307
+                          }
+                        ],
+                        "name": "a_cell_or_bucket_past_the_budget_is_refused_by_name"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15248994b03f",
+                    "label": "AC-86",
+                    "name": "Every object id that a tile holds exists among the release's objects.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 98
+                          }
+                        ],
+                        "name": "a_tile_holding_an_object_the_release_lacks_fails_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1525435d731d",
+                    "label": "AC-87",
+                    "name": "Every number of every structure cites its source.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 114
+                          }
+                        ],
+                        "name": "a_structure_number_citing_no_paper_fails_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152619fffa94",
+                    "label": "AC-88",
+                    "name": "The counts of catalogue entries in the release match the counts in each source's provenance.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 116,
+                            "lastLine": 127
+                          }
+                        ],
+                        "name": "entry_counts_that_differ_from_the_provenance_fail_the_build"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 195,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "two_rows_with_one_primary_key_fail_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-152783fea6de",
+                    "label": "AC-89",
+                    "name": "No source in the release has a redistribution status of forbidden.",
+                    "requirement": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 129,
+                            "lastLine": 142
+                          }
+                        ],
+                        "name": "a_source_that_forbids_redistribution_fails_the_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1529a7954231",
+                    "label": "AC-90",
+                    "name": "No release number is used up by a build that failed.",
+                    "requirement": "01a19f23-636f-72bd-b194-1528b83f1040",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/release_cli.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 149,
+                            "lastLine": 192
+                          }
+                        ],
+                        "name": "a_build_in_which_a_source_failed_names_it_and_uses_no_number"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 144,
+                            "lastLine": 159
+                          }
+                        ],
+                        "name": "a_release_directory_already_there_is_never_overwritten"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 276
+                          }
+                        ],
+                        "name": "a_failure_while_recording_the_state_uses_no_number_and_leaves_no_release_publish_accepts"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/release_cli.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 194,
+                            "lastLine": 219
+                          }
+                        ],
+                        "name": "a_second_build_on_one_state_directory_is_refused_by_its_lock"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f34044901a8",
+                    "label": null,
+                    "name": "A row the new release holds unchanged from the release latest points to is not written again.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/stable_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 110,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 175
+                          }
+                        ],
+                        "name": "a_later_release_leaves_every_read_of_an_earlier_one_as_it_was"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f35e0c90550",
+                    "label": null,
+                    "name": "A row the release latest points to holds and the new release does not is retired from the new release on.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/src/release/d1/index.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 365,
+                            "lastLine": 406
+                          }
+                        ],
+                        "name": "an_index_finds_kept_changed_and_gone_rows_by_their_key"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 175
+                          }
+                        ],
+                        "name": "a_later_release_leaves_every_read_of_an_earlier_one_as_it_was"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f36f972f991",
+                    "label": null,
+                    "name": "A changed row is retired from the new release on and written again, valid from it.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/src/release/d1/index.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 365,
+                            "lastLine": 406
+                          }
+                        ],
+                        "name": "an_index_finds_kept_changed_and_gone_rows_by_their_key"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 175
+                          }
+                        ],
+                        "name": "a_later_release_leaves_every_read_of_an_earlier_one_as_it_was"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f372d8be4cc",
+                    "label": null,
+                    "name": "Rows are compared by their key and a hash of their content, kept for the release latest points to beside the id state.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/src/release/d1/index.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 408,
+                            "lastLine": 425
+                          }
+                        ],
+                        "name": "a_key_and_content_leave_out_the_release_and_hash_by_a_fixed_algorithm"
+                      },
+                      {
+                        "file": "crates/univ-ingest/src/release/d1/index.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 365,
+                            "lastLine": 406
+                          }
+                        ],
+                        "name": "an_index_finds_kept_changed_and_gone_rows_by_their_key"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f385b1742dd",
+                    "label": null,
+                    "name": "A release whose only change from the release before it is in its structures writes no object, catalogue entry, measurement or tile.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/stable_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 110,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f39d65afd25",
+                    "label": null,
+                    "name": "The release manifest gives, for each table of each database, the rows the release adds and retires and the fingerprint of every row valid in it.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/stable_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 110,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f3bcb2e200b",
+                    "label": null,
+                    "name": "A file whose SHA-256 a release not yet pruned already holds is not written again.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 177,
+                            "lastLine": 217
+                          }
+                        ],
+                        "name": "a_file_two_releases_hold_is_kept_once_under_its_sha256"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f3ca904736d",
+                    "label": null,
+                    "name": "The release maps each of its paths to the SHA-256 of the file it holds there.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 177,
+                            "lastLine": 217
+                          }
+                        ],
+                        "name": "a_file_two_releases_hold_is_kept_once_under_its_sha256"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-151d9fb569d2",
+                "label": "F-9",
+                "name": "Build a release",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-151ed99bd6f9",
+                    "label": "RQ-33",
+                    "name": "When the owner builds a release, Univ Ingest shall assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to.",
+                    "statement": {
+                      "condition": "the owner builds a release",
+                      "form": "event_driven",
+                      "shall": "assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-59053781d70f",
+                    "label": "RQ-156",
+                    "name": "Univ Ingest shall divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590b8ae658df",
+                    "label": "RQ-157",
+                    "name": "If the objects of one cell would exceed an object shard's budget, then Univ Ingest shall refuse the build and name the cell, its object count and its estimated size.",
+                    "statement": {
+                      "condition": "the objects of one cell would exceed an object shard's budget",
+                      "form": "unwanted",
+                      "shall": "refuse the build and name the cell, its object count and its estimated size.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15238aca1cc9",
+                    "label": "RQ-34",
+                    "name": "Univ Ingest shall check a release before marking it complete.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "check a release before marking it complete.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1528b83f1040",
+                    "label": "RQ-35",
+                    "name": "If a source fails or a check fails, then Univ Ingest shall mark nothing complete and name the source or the check that failed.",
+                    "statement": {
+                      "condition": "a source fails or a check fails",
+                      "form": "unwanted",
+                      "shall": "mark nothing complete and name the source or the check that failed.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f33b5e55051",
+                    "label": null,
+                    "name": "When the owner builds a release, Univ Ingest shall write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not.",
+                    "statement": {
+                      "condition": "the owner builds a release",
+                      "form": "event_driven",
+                      "shall": "write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f3a7c9bc406",
+                    "label": null,
+                    "name": "Univ Ingest shall store each file of a release once by its SHA-256, shared by every release that holds it.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "store each file of a release once by its SHA-256, shared by every release that holds it.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f3d6d51b6a3",
+                    "label": null,
+                    "name": "A row or file that a release left unpruned holds is not deleted.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 219,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "pruning_a_release_between_two_kept_deletes_only_the_rows_it_alone_held"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 362,
+                            "lastLine": 396
+                          }
+                        ],
+                        "name": "a_file_a_release_part_way_through_publishing_holds_is_not_pruned"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153927026b4b",
+                    "label": "AC-99",
+                    "name": "The record of object ids merged, split or retired is kept, so every id still resolves.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153a6cd80c2c",
+                    "label": "AC-100",
+                    "name": "The pruned release stays in the list of releases with its pruning time.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 262,
+                            "lastLine": 321
+                          }
+                        ],
+                        "name": "with_neither_manifest_journal_nor_map_pruning_refuses_and_with_the_map_alone_it_prunes"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590d7b43ba10",
+                    "label": "AC-475",
+                    "name": "The rows valid only in pruned releases are deleted from the catalogue database and from every object shard.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a25a-c0ef-776c-a6c7-886eb1e11d8f",
+                    "label": "AC-324",
+                    "name": "The release's local build in the build output is deleted last, once its R2 files and D1 rows are deleted.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 323,
+                            "lastLine": 360
+                          }
+                        ],
+                        "name": "a_release_never_listed_whose_files_were_uploaded_has_them_deleted"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/r2_batch.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 156,
+                            "lastLine": 217
+                          }
+                        ],
+                        "name": "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a25a-c0ef-776c-a6c7-886f2de1845d",
+                    "label": "AC-325",
+                    "name": "A release whose local build is already gone is pruned all the same.",
+                    "requirement": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 96,
+                            "lastLine": 209
+                          }
+                        ],
+                        "name": "pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/r2_batch.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 156,
+                            "lastLine": 217
+                          }
+                        ],
+                        "name": "a_prune_deletes_the_release_keys_in_one_script_run_then_its_local_build"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153c0959ad96",
+                    "label": "AC-101",
+                    "name": "The message says that latest points to the release.",
+                    "requirement": "01a19f23-636f-72bd-b194-153bcc1d7e13",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/prune.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 211,
+                            "lastLine": 260
+                          }
+                        ],
+                        "name": "the_release_latest_points_to_is_not_pruned"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-15372421c144",
+                "label": "F-11",
+                "name": "Prune old releases",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1538be54b520",
+                    "label": "RQ-39",
+                    "name": "When the owner prunes a release, Univ Ingest shall delete the rows and files that no release left unpruned holds, and record when it was pruned.",
+                    "statement": {
+                      "condition": "the owner prunes a release",
+                      "form": "event_driven",
+                      "shall": "delete the rows and files that no release left unpruned holds, and record when it was pruned.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153bcc1d7e13",
+                    "label": "RQ-40",
+                    "name": "If the release is the one latest points to, then Univ Ingest shall refuse to prune it.",
+                    "statement": {
+                      "condition": "the release is the one latest points to",
+                      "form": "unwanted",
+                      "shall": "refuse to prune it.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f3e7a645727",
+                    "label": null,
+                    "name": "No row or file the release shares with the release before it is uploaded again.",
+                    "requirement": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 177,
+                            "lastLine": 217
+                          }
+                        ],
+                        "name": "a_file_two_releases_hold_is_kept_once_under_its_sha256"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/stable_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 110,
+                            "lastLine": 197
+                          }
+                        ],
+                        "name": "a_release_that_only_adds_a_structure_writes_its_objects_as_the_release_before_did"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f3f2c140ce6",
+                    "label": null,
+                    "name": "Once uploaded, the rows valid in the release in each database match the counts and fingerprints of the release manifest.",
+                    "requirement": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 299,
+                            "lastLine": 347
+                          }
+                        ],
+                        "name": "a_table_whose_rows_a_release_all_keeps_is_checked_though_it_writes_no_file_of_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/shared_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 99,
+                            "lastLine": 175
+                          }
+                        ],
+                        "name": "a_later_release_leaves_every_read_of_an_earlier_one_as_it_was"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590ede3fd3b1",
+                    "label": "AC-476",
+                    "name": "Each object shard receives only the rows the release manifest assigns to it.",
+                    "requirement": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153fb0e0dd43",
+                    "label": "AC-102",
+                    "name": "Each uploaded file is checked against its SHA-256 in the release manifest.",
+                    "requirement": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 136,
+                            "lastLine": 185
+                          }
+                        ],
+                        "name": "a_file_that_reads_back_with_another_sha256_stops_the_publish"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/r2_batch.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 68,
+                            "lastLine": 130
+                          }
+                        ],
+                        "name": "the_batch_script_reads_and_writes_the_storage_wrangler_uses"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 59,
+                            "lastLine": 98
+                          }
+                        ],
+                        "name": "a_row_altered_on_its_way_to_d1_stops_the_publish_naming_its_table_and_measure"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 57
+                          }
+                        ],
+                        "name": "a_text_holding_begin_transaction_reaches_d1_as_it_is"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish_fingerprint.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 53,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "a_preferred_entry_or_chain_of_0_nulled_on_the_way_stops_the_publish"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish_fingerprint.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 80
+                          }
+                        ],
+                        "name": "a_scale_domain_nulled_on_the_way_stops_the_publish"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish_fingerprint.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 82,
+                            "lastLine": 106
+                          }
+                        ],
+                        "name": "a_lookup_row_renamed_to_a_text_of_the_same_length_stops_the_publish"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1540b752f379",
+                    "label": "AC-103",
+                    "name": "Until latest moves, reads that name no release answer from the previous release.",
+                    "requirement": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 187,
+                            "lastLine": 245
+                          }
+                        ],
+                        "name": "until_latest_moves_reads_that_name_no_release_answer_from_the_previous_release"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-154133241de5",
+                    "label": "AC-104",
+                    "name": "Latest moves in a single write, so no read sees a release partly published.",
+                    "requirement": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-154384255e3e",
+                    "label": "AC-105",
+                    "name": "Files already uploaded and verified are not uploaded again.",
+                    "requirement": "01a19f23-636f-72bd-b194-1542bf149fa0",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 247,
+                            "lastLine": 344
+                          }
+                        ],
+                        "name": "an_interrupted_publish_leaves_latest_and_continues_from_its_journal"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/r2_batch.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 263,
+                            "lastLine": 312
+                          }
+                        ],
+                        "name": "an_interrupted_batched_publish_continues_from_its_journal"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1545c890a557",
+                    "label": "AC-106",
+                    "name": "The message names the release number and its publication time.",
+                    "requirement": "01a19f23-636f-72bd-b194-15447f9441ad",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 346,
+                            "lastLine": 385
+                          }
+                        ],
+                        "name": "a_release_already_published_is_refused_naming_its_number_and_publication_time"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/publish_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 170
+                          }
+                        ],
+                        "name": "a_rerun_records_a_missing_publication_time_once_every_unit_is_journaled"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-5910680f6e67",
+                    "label": "AC-477",
+                    "name": "The message names the number of object shards the release needs and the number Univ Server binds.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-590fd0e5d484",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 172,
+                            "lastLine": 217
+                          }
+                        ],
+                        "name": "a_release_needing_more_shards_than_are_bound_is_refused_before_any_upload"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f4109bd7c10",
+                    "label": null,
+                    "name": "The message names the release it was built on and the release latest points to.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f4080f434a5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/publish_checks.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 261,
+                            "lastLine": 297
+                          }
+                        ],
+                        "name": "a_release_built_on_a_parent_latest_does_not_point_to_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f4375add914",
+                    "label": null,
+                    "name": "Every row of such a release is valid from that release until a later release retires it.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 328
+                          }
+                        ],
+                        "name": "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 439,
+                            "lastLine": 491
+                          }
+                        ],
+                        "name": "a_bound_shard_given_the_tables_of_schema_5_is_brought_under_shared_rows_whenever_found"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f44a48bd262",
+                    "label": null,
+                    "name": "Every file of such a release is held once by its SHA-256 and read through the release's map of its paths.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 328
+                          }
+                        ],
+                        "name": "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 387,
+                            "lastLine": 437
+                          }
+                        ],
+                        "name": "a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_again"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f45728f89f0",
+                    "label": null,
+                    "name": "No such release is built or uploaded again.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 328
+                          }
+                        ],
+                        "name": "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 330,
+                            "lastLine": 385
+                          }
+                        ],
+                        "name": "a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f4682a162c9",
+                    "label": null,
+                    "name": "Reads pinned to such a release return the same data after the change as before it.",
+                    "requirement": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 220,
+                            "lastLine": 328
+                          }
+                        ],
+                        "name": "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/migrate_store.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 330,
+                            "lastLine": 385
+                          }
+                        ],
+                        "name": "a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636f-72bd-b194-153d515c188e",
+                "label": "F-12",
+                "name": "Publish a release locally",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636f-72bd-b194-153ee5a17619",
+                    "label": "RQ-41",
+                    "name": "When the owner publishes a complete release, Univ Ingest shall upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it.",
+                    "statement": {
+                      "condition": "the owner publishes a complete release",
+                      "form": "event_driven",
+                      "shall": "upload the files and rows it adds and the retirements it records to local R2 and to the catalogue database and object shards of local D1, and only then point latest at it.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-1542bf149fa0",
+                    "label": "RQ-42",
+                    "name": "If an upload fails part way, then Univ Ingest shall leave latest where it was and continue the upload on the next run.",
+                    "statement": {
+                      "condition": "an upload fails part way",
+                      "form": "unwanted",
+                      "shall": "leave latest where it was and continue the upload on the next run.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636f-72bd-b194-15447f9441ad",
+                    "label": "RQ-43",
+                    "name": "If the release's number is already published, then Univ Ingest shall refuse to publish it and leave the published release unchanged.",
+                    "statement": {
+                      "condition": "the release's number is already published",
+                      "form": "unwanted",
+                      "shall": "refuse to publish it and leave the published release unchanged.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-590fd0e5d484",
+                    "label": "RQ-158",
+                    "name": "If the release needs more object shards than Univ Server binds, then Univ Ingest shall refuse to publish it before uploading anything.",
+                    "statement": {
+                      "condition": "the release needs more object shards than Univ Server binds",
+                      "form": "unwanted",
+                      "shall": "refuse to publish it before uploading anything.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f4080f434a5",
+                    "label": null,
+                    "name": "If the release was built on a release other than the one latest points to, then Univ Ingest shall refuse to publish it before uploading anything.",
+                    "statement": {
+                      "condition": "the release was built on a release other than the one latest points to",
+                      "form": "unwanted",
+                      "shall": "refuse to publish it before uploading anything.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1b19f-a71f-7111-b5df-7f42a7d3e03b",
+                    "label": null,
+                    "name": "When the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared, Univ Ingest shall bring those releases under the shared schema in place before uploading anything.",
+                    "statement": {
+                      "condition": "the owner publishes onto local D1 and R2 that hold releases of the D1 schema before rows were shared",
+                      "form": "event_driven",
+                      "shall": "bring those releases under the shared schema in place before uploading anything.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff1ded85aea",
+                    "label": "AC-401",
+                    "name": "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 29,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "draws a sphere as rings at its radius, in the frame and unit its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 48
+                          }
+                        ],
+                        "name": "draws an ellipsoid as rings along its axes, and an oriented box as its twelve edges"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b16b-4634-7511-aec8-71c45009817c",
+                    "label": "AC-502",
+                    "name": "Each kind of structure is drawn in a colour of its own, its outline and markers alike, and the panel of what is drawn shows that colour beside the kind.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 73
+                          }
+                        ],
+                        "name": "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/ShowPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 40
+                          }
+                        ],
+                        "name": "shows each kind of structure's colour beside its box"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff2f42a8c13",
+                    "label": "AC-402",
+                    "name": "Paths are drawn as lines, and member lists as their members' positions.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 57
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "draws its segments as lines and its markers as points, about its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-3906e3189ded",
+                    "label": "AC-403",
+                    "name": "A point is drawn as a marker at its place.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 57
+                          }
+                        ],
+                        "name": "draws a path as lines, members as markers at their positions, and a point as a marker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7a9-f2af-7290-9cdf-77a3c5b309a5",
+                    "label": null,
+                    "name": "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 158,
+                            "lastLine": 175
+                          }
+                        ],
+                        "name": "is a sphere of radius one, its unit a fixed size on the view, with arrows in to an attractor and out from a repeller along its frame's axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 177,
+                            "lastLine": 180
+                          }
+                        ],
+                        "name": "is drawn for no other kind, nor for a structure with no centre"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/camera.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 52,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "spans the same pixels across the view at any depth, in the middle of the view or off it"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 45
+                          }
+                        ],
+                        "name": "draws an attractor's or a repeller's symbol about its centre, beside its marker"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7a9-f2af-7290-9cdf-77a431863fe1",
+                    "label": null,
+                    "name": "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 75,
+                            "lastLine": 88
+                          }
+                        ],
+                        "name": "draws attractors and repellers in colours of one family, the centres of a flow in and out"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 73
+                          }
+                        ],
+                        "name": "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a4bd-9644-750a-a678-390771cfa729",
+                    "label": "AC-404",
+                    "name": "A grid is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 84,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 109,
+                            "lastLine": 114
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-8079d9d916bf",
+                    "label": "AC-441",
+                    "name": "A structure given by its extents about its position is drawn as its marker with one line through it along each axis of their frame, as long as the extent along that axis and centred on the marker, and no box.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 59,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "draws a point's published extents as a line along each, centred on its marker, and no box"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6d7-1b42-741d-95f7-ed4ee2759b78",
+                    "label": "AC-405",
+                    "name": "A sky region is drawn as the boundary of its cells on the spheres of its near and far distances, joined by radial edges at the region's extremes.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 93,
+                            "lastLine": 105
+                          }
+                        ],
+                        "name": "draws a sky region as the boundary of its cells at its near and far distances, joined by radial edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 118,
+                            "lastLine": 127
+                          }
+                        ],
+                        "name": "turns a sky region's cells from the frame its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 107,
+                            "lastLine": 116
+                          }
+                        ],
+                        "name": "draws by its box a sky region with no boundary to draw, and gives a band about the sky no radial edges"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 59,
+                            "lastLine": 65
+                          }
+                        ],
+                        "name": "of one cell is its four edges, each from corner to corner"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 72
+                          }
+                        ],
+                        "name": "of two neighbours is six edges, the one they share inside the region"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff3a71f35c5",
+                    "label": "AC-406",
+                    "name": "A structure with no placed shape is drawn as its bounding box, marked as approximate.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 84,
+                            "lastLine": 91
+                          }
+                        ],
+                        "name": "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 129,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "takes the bounds and centre in the centre's unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff4358efffd",
+                    "label": "AC-407",
+                    "name": "A structure with neither a shape nor a bounding box is listed but not drawn.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 136,
+                            "lastLine": 140
+                          }
+                        ],
+                        "name": "lists but does not draw a structure with neither a shape nor a bounding box"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 109,
+                            "lastLine": 114
+                          }
+                        ],
+                        "name": "say when a structure is drawn by its bounding box, or not placed at all"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff67c685244",
+                    "label": "AC-408",
+                    "name": "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 121,
+                            "lastLine": 154
+                          }
+                        ],
+                        "name": "chooses a structure by the name it shows in the view, and still zooms over it"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 44
+                          }
+                        ],
+                        "name": "draws each structure's name at its centre"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "draws an attractor's or a repeller's name below the reach of its symbol's arrows, where the mouse chooses it"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 47,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "names an attractor or a repeller below its symbol, and any other structure on its centre"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a75d-dddb-74ed-8d5c-c9c9a3084e80",
+                    "label": "AC-442",
+                    "name": "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 19,
+                            "lastLine": 25
+                          }
+                        ],
+                        "name": "is followed by \"(at least)\" where its papers give its shape as a lower limit on its extent"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff70e744c39",
+                    "label": "AC-409",
+                    "name": "Names that would overlap are not drawn over one another.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/labels.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 8,
+                            "lastLine": 11
+                          }
+                        ],
+                        "name": "are not drawn over one another: the nearer is kept"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/overlay.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 65,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "hides a structure's name that would overlap a nearer one"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff996141e6c",
+                    "label": "AC-410",
+                    "name": "Every structure of the release is listed by name and kind.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/e2e/explorer.spec.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 115,
+                            "lastLine": 119
+                          }
+                        ],
+                        "name": "lists the release's structures and reads one"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 31,
+                            "lastLine": 37
+                          }
+                        ],
+                        "name": "are listed by name and kind, each to choose"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 100
+                          }
+                        ],
+                        "name": "is read page after page, each in the release chosen"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6b2-b217-764e-93d0-da8be265b690",
+                    "label": "AC-411",
+                    "name": "The chosen structure's outline, markers and name are drawn in a colour of their own, its markers larger, until another structure is chosen or its panel is closed.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/useStructures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 116
+                          }
+                        ],
+                        "name": "is the one the renderer draws as chosen, until another is chosen or none"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 59
+                          }
+                        ],
+                        "name": "is its own colour, fainter where approximate, or the chosen colour with larger markers where chosen"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/SceneOverlay.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 22,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "writes the chosen structure's name in the chosen colour, and the others in the structures' own"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b16b-4634-7511-aec8-71c5715ace5e",
+                    "label": "AC-503",
+                    "name": "The chosen structure's outline is drawn in lines thicker than any other structure's, until another structure is chosen or its panel is closed.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 90,
+                            "lastLine": 93
+                          }
+                        ],
+                        "name": "draws the chosen structure's outline thicker than any other's"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/ribbon.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 6,
+                            "lastLine": 21
+                          }
+                        ],
+                        "name": "draws each segment as two triangles covering both its sides, from end to end"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ffa426590e2",
+                    "label": "AC-412",
+                    "name": "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 46
+                          }
+                        ],
+                        "name": "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 104,
+                            "lastLine": 107
+                          }
+                        ],
+                        "name": "name a primitive shape by its form"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a776-3b75-725b-96e4-807a1f1e8ef1",
+                    "label": "AC-443",
+                    "name": "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 80,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "say a structure drawn by its extents has unknown bounds, and only then"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7a9-f2af-7290-9cdf-77a50a274427",
+                    "label": null,
+                    "name": "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs.",
+                    "requirement": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 91,
+                            "lastLine": 102
+                          }
+                        ],
+                        "name": "say an attractor's or a repeller's sphere is a symbol and which way its arrows point, and only for them"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e17df5ce8a",
+                    "label": "AC-504",
+                    "name": "The panel of a structure drawn as a volume offers a checkbox \"Only what lies inside\", cleared unless the page's address turns it on.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/inside.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 15,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "is kept in the address beside what else it holds, and leaves it once off"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e2ed4a3967",
+                    "label": "AC-505",
+                    "name": "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "is none for a structure drawn as a point, a path, a ray or a range alone, or with neither a shape nor bounds"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "offer the cull to a structure's volume only where it has one, cleared until it is turned on"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e33e6ecd76",
+                    "label": "AC-506",
+                    "name": "Inside a sphere, an ellipsoid or an oriented box is inside the solid, in the frame and unit its shape names.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 28,
+                            "lastLine": 40
+                          }
+                        ],
+                        "name": "is the solid of a sphere, in the frame and unit its shape names"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 42,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "is the solid of an ellipsoid along its own axes"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 73
+                          }
+                        ],
+                        "name": "is the solid of an oriented box, to its corners"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e496894c39",
+                    "label": "AC-507",
+                    "name": "Inside a sky region is in one of its cells and between its near and far distances.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 75,
+                            "lastLine": 85
+                          }
+                        ],
+                        "name": "is a sky region's cells between its near and far distances"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 39
+                          }
+                        ],
+                        "name": "is the cell whose centre it is, for every cell of order 6 and a few of order 12"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 41,
+                            "lastLine": 51
+                          }
+                        ],
+                        "name": "is the cell a point just inside each corner lies in, at the poles and seams too"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/healpix.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 53,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "does not need a unit vector"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e5419cfeb6",
+                    "label": "AC-508",
+                    "name": "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/structures.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 82
+                          }
+                        ],
+                        "name": "draws a point's extents along their ICRS vectors, whatever frame its point is given in"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 87,
+                            "lastLine": 93
+                          }
+                        ],
+                        "name": "is the box bounding a member list's members, approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 95,
+                            "lastLine": 110
+                          }
+                        ],
+                        "name": "is the box a point's published extents span about it, approximate"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 117
+                          }
+                        ],
+                        "name": "is the bounding box of a structure with no shape, approximate"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e6a6d53737",
+                    "label": "AC-509",
+                    "name": "The panel says the cull is approximate for a structure culled by a box that is not its published shape.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e71f42aabb",
+                    "label": "AC-510",
+                    "name": "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 128,
+                            "lastLine": 134
+                          }
+                        ],
+                        "name": "marks each of a tile's points inside or not, by its offset from the tile's centre"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 444,
+                            "lastLine": 458
+                          }
+                        ],
+                        "name": "draws, and so lets the pointer name, only the points inside"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b166-0bb4-703d-a861-7c307a08ae0b",
+                    "label": "AC-511",
+                    "name": "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/scene/kinds.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 40
+                          }
+                        ],
+                        "name": "are drawn fully opaque inside a structure the view is culled to, twice as bright as the brightest without it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e859257b94",
+                    "label": "AC-512",
+                    "name": "The panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/StructuresPanel.test.tsx",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "say, with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e934fc10cf",
+                    "label": "AC-513",
+                    "name": "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 400,
+                            "lastLine": 414
+                          }
+                        ],
+                        "name": "draws none of a tile with no point inside, and counts none"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 444,
+                            "lastLine": 458
+                          }
+                        ],
+                        "name": "draws, and so lets the pointer name, only the points inside"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 427,
+                            "lastLine": 442
+                          }
+                        ],
+                        "name": "counts in the key only the points inside, and every point once no longer culled"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7ea46d6c6e6",
+                    "label": "AC-514",
+                    "name": "Choosing another structure keeps the cull on, for that structure.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/inside.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 34
+                          }
+                        ],
+                        "name": "stays on when another structure is chosen, for that structure"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7eb103d71ac",
+                    "label": "AC-515",
+                    "name": "Closing the structure's panel turns the cull off.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/inside.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 36,
+                            "lastLine": 44
+                          }
+                        ],
+                        "name": "is turned off when the structure's panel is closed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7ed28949521",
+                    "label": "AC-516",
+                    "name": "No tile whose cube lies wholly outside the box bounding the volume is fetched or kept.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7ece437e733",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 379,
+                            "lastLine": 398
+                          }
+                        ],
+                        "name": "fetches no tile, a root neither, whose cube misses the box, nor any while culled to nothing"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 372,
+                            "lastLine": 377
+                          }
+                        ],
+                        "name": "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
+                      },
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 416,
+                            "lastLine": 425
+                          }
+                        ],
+                        "name": "drops the tiles held whose cubes miss it, and fetches them again once no longer culled"
+                      },
+                      {
+                        "file": "clients/explorer/src/scene/volume.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 136,
+                            "lastLine": 141
+                          }
+                        ],
+                        "name": "is met by a tile's cube that reaches its bounding box, and by no other"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7eed8679d94",
+                    "label": "AC-517",
+                    "name": "The tiles that meet the box are planned within the point budget, and thinned by level of detail, as every tile is without the cull.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7ece437e733",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/catalogue/catalogue.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 372,
+                            "lastLine": 377
+                          }
+                        ],
+                        "name": "fetches only the tiles whose cubes meet the box bounding the volume, with level of detail on or off"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7f0dcf15117",
+                    "label": "AC-518",
+                    "name": "Reloading the page, or opening its address elsewhere, draws the same structure chosen with the cull on.",
+                    "requirement": "01a1b13c-1e10-748d-8008-e7ef2701bb3c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "clients/explorer/src/ui/inside.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 52
+                          }
+                        ],
+                        "name": "chooses the structure and culls to it where the address names it, as after a reload"
+                      },
+                      {
+                        "file": "clients/explorer/src/ui/inside.test.ts",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 9,
+                            "lastLine": 13
+                          }
+                        ],
+                        "name": "is named in the address by the structure it culls to"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                "label": "F-39",
+                "name": "See the structures",
+                "requirements": [
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                    "label": "RQ-141",
+                    "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "draw each structure of the release by its placed shape.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff56cfa0dc5",
+                    "label": "RQ-142",
+                    "name": "Univ Explorer shall name each drawn structure in the view.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "name each drawn structure in the view.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                    "label": "RQ-143",
+                    "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                    "statement": {
+                      "condition": "the person chooses a structure, in the view or from the list of structures",
+                      "form": "event_driven",
+                      "shall": "show its record and fly to it.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7e063283348",
+                    "label": "RQ-161",
+                    "name": "When the person checks \"Only what lies inside\" in the panel of the chosen structure, Univ Explorer shall draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                    "statement": {
+                      "condition": "the person checks \"Only what lies inside\" in the panel of the chosen structure",
+                      "form": "event_driven",
+                      "shall": "draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7ece437e733",
+                    "label": "RQ-162",
+                    "name": "While the cull to a structure is on, Univ Explorer shall fetch and keep only the tiles whose cubes meet the box bounding the structure's volume.",
+                    "statement": {
+                      "condition": "the cull to a structure is on",
+                      "form": "state_driven",
+                      "shall": "fetch and keep only the tiles whose cubes meet the box bounding the structure's volume.",
+                      "system": "Univ Explorer"
+                    }
+                  },
+                  {
+                    "key": "01a1b13c-1e10-748d-8008-e7ef2701bb3c",
+                    "label": "RQ-163",
+                    "name": "Univ Explorer shall keep the cull to the chosen structure in the page's address.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep the cull to the chosen structure in the page's address.",
+                      "system": "Univ Explorer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 538,
+              "linked": 538,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1b7ba-3105-7651-8273-00011c59d598
+    id: built
+    kind: note
+    versions:
+      - key: 01a1b7ba-3106-7221-aece-fadaa7b50e01
+        at: 2026-11-07T20:36:35Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the stage produced"
+        markdown: |-
+          - **Data unchanged.** Attractors and repellers stay as two kinds. `FLOWS` in `scene/kinds.ts` maps the attractor to *in* and the repeller to *out*.
+          - **Symbol.** `flowSymbol` in `scene/outline.ts` draws three rings of unit radius, plus an arrow either way along each axis of the shape's frame, out to 2 radii.
+          - **Fixed size.** The symbol travels in `Lines.symbol` with its own pixel size and widest line. The renderer scales it by the centre's *depth* through a `u_scale` uniform, so it stays 24 device pixels in radius anywhere on the view.
+          - **Colours.** Attractor is magenta `[1, .25, .95]`, repeller violet `[.8, .35, 1]`. They are 22° apart in hue, and each is more than 15° from every other kind's colour (the first attractor colour shared a hue with shells).
+          - **Names** go below the arrows' reach, in CSS pixels at the current pixel ratio.
+          - **Panel** says the sphere is a symbol, not an extent, and which way the arrows point.
+
+          Reviews: `/simplify` (4 angles) and `/code-review`. The fixes were scaling by depth rather than distance, the pixel ratio read each frame, the shell hue clash, one arrow-reach constant, and the placing computed once. Skipped: making the symbol's size CSS pixels, since markers and lines are device pixels throughout.
+
+          Gate passed (13 gates), and integration passed (9 explorer e2e tests).
+        tone: success

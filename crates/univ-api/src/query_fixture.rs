@@ -12,6 +12,7 @@ use crate::http::{Method, Request, Response};
 use crate::layers_fixture::db;
 pub use crate::testkit::pointers;
 use crate::testkit::{Sqlite, body};
+use crate::testkit_shards::by_parity;
 
 /// The terms the fixture's objects are coded in.
 pub const BODY: i64 = 100;
@@ -48,22 +49,58 @@ pub fn galaxy(id: u64, at: [f64; 3]) -> Placed {
 
 /// The release with `objects` placed, the structures' cells, two structures that the release
 /// holds no placed shape of (one with a bounding box alone, one with a member list) and an
-/// entry from hipparcos-2007 for each star and for galaxy 1002.
+/// entry from hipparcos-2007 for each star and for galaxy 1002. Each object is in shard
+/// `id % 2` (`testkit_shards`).
 pub fn volume_db(objects: &[Placed]) -> Sqlite {
+    volume_db_placed(objects, by_parity)
+}
+
+/// [`volume_db`] with each of `objects` in the object shard `place` gives its id.
+pub fn volume_db_placed(objects: &[Placed], place: fn(u64) -> u32) -> Sqlite {
     let db = db();
+    db.place_by(place);
     db.exec(&format!(
-        "INSERT INTO terms VALUES (2, {BODY}, 'body'), (2, {GROUP}, 'galaxy_group'), \
-         (2, {COSMIC_WEB}, 'cosmic_web'), (2, {STARS}, 'stars');
+        "INSERT INTO terms VALUES (2, {BODY}, 'body', NULL), (2, {GROUP}, 'galaxy_group', NULL), \
+         (2, {COSMIC_WEB}, 'cosmic_web', NULL), (2, {STARS}, 'stars', NULL);
          INSERT INTO structures VALUES (2, 'box-only', 'Box Only', 'wall', 'observed', 'cosmic_web',
            205.0, 205.0, 205.0, 'primitive', '{{}}', NULL,
-           '{{\"min\":[200.0,200.0,200.0],\"max\":[210.0,210.0,210.0]}}');
+           '{{\"min\":[200.0,200.0,200.0],\"max\":[210.0,210.0,210.0]}}', NULL);
          INSERT INTO structures VALUES (2, 'members-only', 'Members Only', 'ring', 'observed',
            'cosmic_web', NULL, NULL, NULL, 'members', '{{}}',
            '{{\"shape\":{{\"frame\":\"icrs\",\"unit\":\"megaparsec\",\"geometry\":{{\"kind\":\"members\",
              \"members\":[{{\"member\":\"tracer\",\"kind\":\"quasar\",\"at\":[300.0,0.0,0.0]}},
                           {{\"member\":\"tracer\",\"kind\":\"quasar\",\"at\":[320.0,0.0,0.0]}}]}}}}}}',
-           '{{\"min\":[300.0,0.0,0.0],\"max\":[320.0,0.0,0.0]}}');"
+           '{{\"min\":[300.0,0.0,0.0],\"max\":[320.0,0.0,0.0]}}', NULL);"
     ));
+    let mut sql = objects_sql(objects);
+    let rows: Vec<(String, String)> = db
+        .connection()
+        .prepare("SELECT id, bounds FROM structures WHERE release = 2 AND bounds IS NOT NULL")
+        .unwrap()
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
+    for (id, bounds) in rows {
+        let bounds: Aabb = serde_json::from_str(&bounds).unwrap();
+        let (level, range) = structure_cells(&bounds).unwrap();
+        for cell in range.cells() {
+            writeln!(
+                sql,
+                "INSERT INTO structure_cells VALUES (2, {level}, {}, {}, {}, '{id}', NULL);",
+                cell.ix, cell.iy, cell.iz
+            )
+            .unwrap();
+        }
+    }
+    db.exec(&sql);
+    db.put("files/c05a1c", manifest(168.0, 2));
+    db.put("files/57a125", manifest(48.0, 1));
+    db
+}
+
+/// The rows of `objects`, their cells and entries.
+fn objects_sql(objects: &[Placed]) -> String {
     let mut sql = String::new();
     for object in objects {
         let space = if object.domain == STARS {
@@ -77,7 +114,7 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
             sql,
             "INSERT INTO objects (release, id, kind, placed, scale_domain, x, y, z) \
              VALUES (2, {}, {}, 1, {}, {x:?}, {y:?}, {z:?});
-             INSERT INTO object_cells VALUES (2, {}, {}, {}, {}, {});",
+             INSERT INTO object_cells VALUES (2, {}, {}, {}, {}, {}, NULL);",
             object.id,
             object.kind,
             object.domain,
@@ -98,33 +135,7 @@ pub fn volume_db(objects: &[Placed]) -> Sqlite {
             .unwrap();
         }
     }
-    let rows: Vec<(String, String)> = db
-        .connection()
-        .prepare("SELECT id, bounds FROM structures WHERE release = 2 AND bounds IS NOT NULL")
-        .unwrap()
-        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-        .unwrap()
-        .map(Result::unwrap)
-        .collect();
-    for (id, bounds) in rows {
-        let bounds: Aabb = serde_json::from_str(&bounds).unwrap();
-        let (level, range) = structure_cells(&bounds).unwrap();
-        for cell in range.cells() {
-            writeln!(
-                sql,
-                "INSERT INTO structure_cells VALUES (2, {level}, {}, {}, {}, '{id}');",
-                cell.ix, cell.iy, cell.iz
-            )
-            .unwrap();
-        }
-    }
-    db.exec(&sql);
-    db.put(
-        "releases/2/tiles/cosmic_web/manifest.json",
-        manifest(168.0, 2),
-    );
-    db.put("releases/2/tiles/stars/manifest.json", manifest(48.0, 1));
-    db
+    sql
 }
 
 /// A full octree `depth` levels deep below a root from `-radius` to `radius` on each axis: each

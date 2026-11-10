@@ -29,9 +29,9 @@ fn object(entries: Vec<CatalogueEntry>) -> Object {
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     )
 }
 
@@ -82,7 +82,7 @@ fn a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000() {
         panic!()
     };
     assert!(peculiar_velocity.unwrap() > 10.0 * measurement.unwrap());
-    let (lost, tf) = p.runner_up.unwrap();
+    let (lost, tf) = *p.runner_up.unwrap();
     assert!(matches!(lost, MeasurementRef::Distance { .. }));
     assert!((total(tf) - 0.185).abs() < 0.001, "TF {}", total(tf));
 
@@ -90,7 +90,7 @@ fn a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000() {
     let p = near.preferred_distance.unwrap();
     assert!(matches!(p.measurement, MeasurementRef::Distance { .. }));
     assert!((total(p.uncertainty) - 0.185).abs() < 0.001);
-    let (_, z) = p.runner_up.unwrap();
+    let (_, z) = *p.runner_up.unwrap();
     assert!((total(z) - 0.30).abs() < 0.02, "redshift {}", total(z));
 }
 
@@ -227,6 +227,23 @@ fn gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_say
     assert_eq!(p.class, PositionClass::Hipparcos);
     let p = ranked(vec![survey()], &rules).preferred_position.unwrap();
     assert_eq!((p.class, p.uncertainty_mas), (PositionClass::Survey, None));
+}
+
+#[test]
+fn a_21_cm_beam_position_ranks_after_a_survey_position() {
+    // ALFALFA's HI centroid comes first in order, and still yields to the optical position.
+    let rules = ranking_rules();
+    let beam = || entry("alfalfa-a100", "a", 45.0, 30.0);
+    let survey = || entry("twomrs", "s", 45.0, 30.01);
+    let p = ranked(vec![beam(), survey()], &rules)
+        .preferred_position
+        .unwrap();
+    assert_eq!(
+        (p.class, p.entry),
+        (PositionClass::Survey, designation("twomrs", "s"))
+    );
+    let p = ranked(vec![beam()], &rules).preferred_position.unwrap();
+    assert_eq!(p.class, PositionClass::Beam);
 }
 
 #[test]

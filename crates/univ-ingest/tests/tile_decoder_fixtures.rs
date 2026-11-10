@@ -111,6 +111,7 @@ fn simulated() -> Domain {
     let points: Vec<DomainPoint> = (1..=60u16)
         .map(|n| DomainPoint {
             id: ObjectId::new(u64::from(n) * 1_000_003).unwrap(),
+            place: u32::from(n),
             position: [0, 1, 2].map(|_| (2.0 * lcg.next() - 1.0) * 300.0),
             source: n % 2,
             sky_source: n % 2,

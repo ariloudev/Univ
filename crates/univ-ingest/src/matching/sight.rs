@@ -39,7 +39,7 @@ impl MatchingRules {
     #[must_use]
     pub fn velocity(&self, entry: &CatalogueEntry) -> Option<f64> {
         if let Some(r) = entry.preferred_redshift() {
-            return Some(r.cmb.heliocentric.value * SPEED_OF_LIGHT);
+            return Some(r.cmb.measured.value * SPEED_OF_LIGHT);
         }
         entry.velocity.as_ref().map(|v| v.normalized.value)
     }

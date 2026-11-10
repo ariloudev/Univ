@@ -4,18 +4,17 @@
 //! galaxy surveys, yet they are one body by the name both publish; each galaxy is one object.
 //! The pair rules for nearby galaxies and the Cosmicflows-4 velocities that are no velocity are
 //! tested on SIMULATED entries and real rows.
-#![expect(clippy::unwrap_used, reason = "a failed unwrap is the test failing")]
 
 mod common;
 mod simulated;
 
 use common::{entry, normalized_file};
-use simulated::{designation, matching_rules, offset, ranking_rules, with_cz};
+use simulated::{designation, holding, matching_rules, offset, ranking_rules, with_cz};
 use univ_ingest::matching::match_entries;
 use univ_ingest::ranking::rank_all;
 use univ_model::derive::Release;
 use univ_model::entry::CatalogueEntry;
-use univ_model::object::{MeasurementRef, Object};
+use univ_model::object::MeasurementRef;
 
 fn recorded() -> Vec<CatalogueEntry> {
     let mut entries = Vec::new();
@@ -32,13 +31,6 @@ fn recorded() -> Vec<CatalogueEntry> {
         entries.extend(normalized_file(id, file).entries);
     }
     entries
-}
-
-fn holding<'a>(objects: &'a [Object], source: &str, id: &str) -> &'a Object {
-    objects
-        .iter()
-        .find(|o| o.entry(&designation(source, id)).is_some())
-        .unwrap()
 }
 
 #[test]

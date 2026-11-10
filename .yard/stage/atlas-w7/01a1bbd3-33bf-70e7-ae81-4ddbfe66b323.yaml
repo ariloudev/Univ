@@ -1,0 +1,733 @@
+key: 01a1bbd3-33bf-70e7-ae81-4ddbfe66b323
+id: build
+versions:
+  - key: 01a1bbd3-33bf-70e7-ae81-4ddecf8f0c65
+    at: 2026-11-08T15:42:23Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the distance rings"
+    goal: "The view draws the rings, spokes and labels in space, in place of the lone equator ring, verified by unit, component and end-to-end tests"
+    status: planned
+  - key: 01a1bbd4-b7cd-710d-86e4-251150f14a7d
+    at: 2026-11-08T15:44:02Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the distance rings"
+    goal: "The view draws the rings, spokes and labels in space, in place of the lone equator ring, verified by unit, component and end-to-end tests"
+    status: active
+  - key: 01a1bbdc-52a8-7018-b3e0-d43b408a31c5
+    at: 2026-11-08T15:52:20Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Build the distance rings"
+    goal: "The view draws the rings, spokes and labels in space, in place of the lone equator ring, verified by unit, component and end-to-end tests"
+    status: done
+blocks:
+  - key: 01a1bbd3-9899-7112-9cdf-193ef571ba96
+    id: rings-plan
+    kind: plan
+    versions:
+      - key: 01a1bbd3-9899-7112-9cdf-19417ee3ad76
+        at: 2026-11-08T15:42:48Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: the distance rings"
+        markdown: |-
+          1. **Rings as data** (new `scene/rings.ts`, pure functions):
+             - `ringSet(view, toFrame, height)` gives the step (the scale bar's length, from `scaleBar(unitsPerPixel(...))`) and the first and last multiples within 3 × the eye's distance of the focus's distance in the plane.
+             - `ringLines(toFrame, set)` gives the rings (192 segments each) and the 12 spokes as one set of ICRS lines.
+             - `ringLabels(toFrame, set)` gives each ring's point on the 0° spoke with its text.
+             - *Meets:* ring spacing and range, spokes, rings in space.
+             - *Tests:* `rings.test.ts` checks the step against `scaleBar`, the range against the focus and distance, that every vertex lies in the equator (z = 0 in the axes' frame) at the ring's radius, 12 spokes, a change with the axes, and that the set is unchanged by a turn and changed by a move.
+          2. **Drawing** (`scene/controller.ts`). `Controller.setRings(on)`. While on, each tick replaces the lines named `equator` with `distance-rings`, rebuilt only when the set changes. Turned off, the equator ring comes back.
+             - *Meets:* in place of the single ring; follows moves, axes and scale.
+             - *Tests:* controller tests with a fake drawer.
+          3. **Labels** (`ui/overlay.ts`, `ui/SceneOverlay.tsx`). A labels layer with `pointer-events: none`. `placeOverlay` places each ring's label at its projected 0° point, leaves out any that overlap one already placed, and hides the single ring's label while the rings are on.
+             - *Meets:* labels, overlap, no pointer events, the single label hidden.
+             - *Tests:* overlay tests with a fake world.
+          4. **The switch** (`ui/ringsSwitch.ts` on `addressSwitch`; `SwitchBox` “Rings” beside “Grid” in `Whereabouts`). Atlas holds the state and tells the controller. The View drawer's ring sentence names the rings while they are on.
+             - *Meets:* the switch, off by default, the address, the top bar.
+             - *Tests:* hook tests; Atlas component tests; an e2e test that switches it on, sees labels, checks the top bar is still ≤ 40 px at 1,280 px, reloads and finds it on; the pick test runs with the rings on.
+          5. **Wave end:** `/simplify` and `/code-review`, fixes, the full gate and integration once each, trace links, screenshots on release 12, Yard Log closed, merged `--no-ff` into product/atlas.
+    responses:
+      - key: 01a1bbd4-81fe-7031-82aa-dfae0e2ad3ba
+        at: 2026-11-08T15:43:48Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1bbd4-b7cd-710d-86e4-250cd44c7746
+    id: t-data
+    kind: task
+    versions:
+      - key: 01a1bbd4-b7cd-710d-86e4-25129f937f02
+        at: 2026-11-08T15:44:02Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Rings as data"
+        detail: "scene/rings.ts ringSet, ringLines, ringLabels; done when rings.test.ts passes."
+        state: active
+      - key: 01a1bbdc-52a8-7018-b3e0-d436af41b6a3
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Rings as data"
+        detail: "scene/rings.ts ringSet, ringLines, ringLabels; rings.test.ts passes, including arcs near a distant focus."
+        state: done
+  - key: 01a1bbd4-b7cd-710d-86e4-250d8aaaa685
+    id: t-draw
+    kind: task
+    versions:
+      - key: 01a1bbd4-b7cd-710d-86e4-2513f93b38c7
+        at: 2026-11-08T15:44:02Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The controller draws the rings in place of the equator ring"
+        detail: "Controller.setRings; done when the controller tests pass."
+        state: open
+      - key: 01a1bbdc-52a8-7018-b3e0-d437c9bd2283
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The controller draws the rings in place of the equator ring"
+        detail: "Controller.setRings; the controller test checks the swap, the rebuilds only on a change, and the axes."
+        state: done
+  - key: 01a1bbd4-b7cd-710d-86e4-250e921deb31
+    id: t-labels
+    kind: task
+    versions:
+      - key: 01a1bbd4-b7cd-710d-86e4-2514b54669a5
+        at: 2026-11-08T15:44:02Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ring labels in the overlay"
+        detail: "placeOverlay places and thins the labels; done when the overlay tests pass."
+        state: open
+      - key: 01a1bbdc-52a8-7018-b3e0-d43879e57ff5
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Ring labels in the overlay"
+        detail: "placeRingLabels thins them with clearLabels; the overlay test checks the swap with the ring's label and that no two overlap."
+        state: done
+  - key: 01a1bbd4-b7cd-710d-86e4-250fff4b9556
+    id: t-switch
+    kind: task
+    versions:
+      - key: 01a1bbd4-b7cd-710d-86e4-25159f850a08
+        at: 2026-11-08T15:44:02Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The rings' switch, kept in the address"
+        detail: "ringsSwitch.ts, Rings beside Grid, Atlas wiring, drawer text; done when the hook, Atlas and e2e tests pass."
+        state: open
+      - key: 01a1bbdc-52a8-7018-b3e0-d4392433b0c1
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The rings' switch, kept in the address"
+        detail: "ringsSwitch.ts with useDrawnRings, Rings beside Grid, the drawer's sentence; the hook and Atlas tests pass, and the e2e test runs at integration."
+        state: done
+  - key: 01a1bbd6-7f67-7567-bdf3-140a1bf123a6
+    id: plan-25-plan-silly-shimmying-lake-01a1bbd3-33bf-70e7-ae81-4ddbfe66b323
+    kind: plan
+    versions:
+      - key: 01a1bbd6-7f67-7567-bdf3-140b3b159647
+        at: 2026-11-08T15:45:59Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: distance rings (W7, `stage/atlas-w7`)"
+        markdown: |
+          # Build plan: distance rings (W7, `stage/atlas-w7`)
+
+          ## Context
+          The owner asked for "option 2": rings of equal distance from the Solar System barycentre, with spokes, in the chosen axes' equator. The rings let you read how far things are as you fly. They complement the sky graticule merged in W6, which shows only directions.
+
+          **Spec:** approved in Yard and committed at 96f55cc. It adds one state-driven requirement under frame-the-view-as-an-atlas, with nine criteria (keys `01a1bbd3-54fe-…cdc4` to `…cdcc`), and rewords the top-bar criterion to name the new switch.
+
+          **What exists already:**
+          - The explorer draws one ring, the equator at the power of ten nearest the eye's distance:
+            - `scene/frames.ts`: `equatorRing`, `ringRadius`, `ringAnchor`;
+            - `scene/controller.ts:157`: `tick` draws it with `drawer.setLines("equator", …)`;
+            - `ui/overlay.ts:115`: the label at its 0° point.
+          - The distance rings take that ring's place while they are on.
+
+          **Two changes from the plan sent earlier in Yard,** found while reading the code:
+          1. **Arcs, not whole rings, around a distant focus.** Rings are centred on the barycentre. When the focus is far from it and the view is zoomed in (for example a few kpc wide at 100 Mpc), each ring would be drawn as 192 chords sitting about 13 kpc off the true circle, and with float32 offsets from the origin. So:
+             - When the focus lies more than 3 × the eye's distance from the barycentre in the plane, only the sector of each ring that passes near the focus is drawn.
+             - That sector is cut into fine segments and drawn relative to a centre in the middle of it.
+          2. **Labels when the 0° spoke is out of view.** In that same case the 0° spoke is usually outside the sector, so no ring would be labelled.
+             - Labels go where each ring crosses the line from the barycentre through the middle of the sector drawn.
+             - This rewords one criterion: *"…where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round, the line through their middle…"*. It is a minor spec change, committed on its own before the code, with its `spec-change` block in Yard.
+
+          ## Steps
+
+          ### 1. Rings as data (new `clients/explorer/src/scene/rings.ts`, pure functions)
+          `ringSet(view, toFrame, height): RingSet | undefined`:
+          - **Step:** the scale bar's length, `scaleBar(unitsPerPixel(view, height)).parsecs / 1e6` Mpc. This reuses `scene/scale.ts` and `scene/camera.ts`.
+          - **ρ:** the focus's distance from the barycentre in the plane, `hypot` of `apply(toFrame, focus)`'s x and y.
+          - **Range:** rings k from `max(1, ceil((ρ − 3d)/step))` to `floor((ρ + 3d)/step)`, where d is `view.distance`.
+          - **Sector:**
+            - none (full rings) where ρ ≤ 3d;
+            - otherwise a half-width of `asin(3d/ρ)`, rounded up to a power of two in degrees, centred on the focus's longitude snapped to half that width.
+            - The snapping means small moves keep the same set, so the lines are not rebuilt every frame.
+          - Returns `{ step, first, last, sector?, axes }` and a `key` string to compare sets.
+
+          `ringLines(toFrame, set): Lines`:
+          - Rings of 192 segments (full) or 96 (arc). Spokes at multiples of 30° within the sector, from the first ring to the last.
+          - All lines lie in z = 0 of the axes, are turned to the ICRS with `unapply`, and are offset from a centre in the middle of what is drawn.
+          - Uses the `Lines` type from `scene/drawing.ts`, in the grid's dim ink at low opacity.
+
+          `ringLabels(toFrame, set)`:
+          - One label per ring, `shortDistance(k × step)` from `scene/format.ts`, at its crossing with the 0° spoke, or with the sector's middle line for arcs.
+
+          `scene/frames.ts` keeps `equatorRing`. Its `onEquator` helper is shared by exporting it.
+
+          ### 2. The controller (`clients/explorer/src/scene/controller.ts`)
+          - `setRings(on)` marks the view dirty.
+          - **In `tick`, with the rings on:**
+            - recompute `ringSet`;
+            - when its key changes, call `drawer.setLines("distance-rings", ringLines(...))`;
+            - clear `"equator"` once.
+          - **With the rings off:** clear `"distance-rings"` once and keep the existing equator logic. `this.ring = 0` forces the equator ring back.
+          - `setAxes` resets the ring key.
+          - A getter `rings: RingSet | undefined` serves the overlay and the drawer text.
+
+          ### 3. Labels (`ui/overlay.ts`, `ui/SceneOverlay.tsx`)
+          - `Overlay` gains `ringLabels: RefObject<HTMLDivElement>`, a `pointer-events-none` container in `Marks`.
+          - `placeOverlay`, while `controller.rings` is set:
+            - hides the single ring element;
+            - projects each label point with `project` (`scene/camera.ts`);
+            - keeps those clear of each other with `clearLabels` (`scene/labels.ts`, as the structure names do);
+            - reuses or creates spans in the container, then hides the rest.
+          - With the rings off, the container is hidden and the single ring label is placed as now.
+
+          ### 4. The switch (`ui/ringsSwitch.ts` on `ui/addressSwitch.ts`)
+          - `{ parameter: "rings", byDefault: false }`, like `ui/gridSwitch.ts`.
+          - `Whereabouts` (`ui/Panels.tsx`) shows `SwitchBox` "Rings" (`ui/SwitchBox.tsx`) after "Grid", typed with the shared `Switch`.
+          - `Atlas` (`ui/Atlas.tsx`) holds `useRings()` beside `useGrid()`, passes it to `TopBarParts`, and runs `useEffect(() => world?.controller.setRings(on), [world, on])`.
+          - `ViewDrawer`'s ring sentence becomes "Rings: every 50 Mpc from the barycentre in the galactic equator" while the rings are on.
+
+          ### 5. Wave end
+          1. `/simplify` and `/code-review` in parallel, then the fixes.
+          2. `cargo xtask check` and `cargo xtask integration`, each once and green.
+          3. Trace links for the nine criteria and the reworded top-bar one, accepted with `loft reconcile --accept`.
+          4. Screenshots on release 12 (`cargo xtask explore`).
+          5. The Yard Log closed and committed, merged `--no-ff` into product/atlas, and the product Yard updated.
+
+          Nothing is pushed, published or deployed.
+
+          ## Tests (each criterion → test)
+          - **`scene/rings.test.ts`:**
+            - the step equals `scaleBar`'s length;
+            - the range covers exactly the multiples within 3d of ρ;
+            - every vertex lies in z = 0 of the axes at its ring's radius;
+            - 12 spokes on full rings, only the sector's spokes on arcs;
+            - a turn leaves the key, a move or zoom past a scale step changes it, and the axes change it;
+            - arcs appear for a distant focus, with labels on the middle line.
+          - **`scene/controller.test.ts`** (fake drawer, as now): on replaces `"equator"` with `"distance-rings"`; off restores the equator ring; lines are rebuilt only when the key changes.
+          - **`ui/overlay.test.ts`** (fake world): labels at their points; an overlapping label left out; the single ring label hidden while on; the container `pointer-events-none`.
+          - **`ui/ringsSwitch.test.ts`:** off by default; `rings=on` kept beside other parameters and left out once off; starts on after a reload.
+          - **`ui/Atlas.test.tsx`:** the Rings switch sits beside Grid in the top bar; switching it on calls `setRings(true)`.
+          - **`e2e/explorer.spec.ts`:**
+            - a new test switches the rings on at 1,280 px, sees ring labels, checks the top bar is still ≤ 40 px, reloads and finds them on;
+            - the pick test runs with the rings on as well as the grid.
+
+          ## Verification
+          1. `pnpm check` in `clients/explorer` between steps.
+          2. The full gate and integration once at the end.
+          3. On release 12 locally:
+             - the rings around Earth in galactic axes, labelled along 0°;
+             - after flying to Virgo, arcs near the focus labelled on their middle line;
+             - after zooming, the step changes with the scale bar;
+             - with the rings off, the single equator ring is back.
+        planMode: true
+    responses:
+      - key: 01a1bbd6-e3f7-7596-af07-47298e418bb1
+        at: 2026-11-08T15:46:24Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1bbd7-136c-7638-bc39-cf5e34e59f24
+    id: plan-mode
+    kind: note
+    versions:
+      - key: 01a1bbd7-136c-7638-bc39-cf60a21feb1b
+        at: 2026-11-08T15:46:37Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The plan was presented again through plan mode"
+        markdown: |-
+          The owner asked why the plan hadn't gone through plan mode. It was sent as a Yard plan block alongside the spec approval, which isn't the agreed process. It was presented again through plan mode and approved there, with two changes found in the code:
+
+          - **Arcs:** around a focus far from the barycentre, only the nearby arcs of the rings are drawn, finely segmented, and placed relative to their middle.
+          - **Labels:** in that case they go on the line through the arcs' middle.
+
+          The second change is a minor spec rewording, committed on its own (c8384c8). The build plans of later waves go through plan mode.
+        tone: info
+  - key: 01a1bbd7-136c-7638-bc39-cf5f16b434bf
+    id: label-spec-change
+    kind: loft
+    versions:
+      - key: 01a1bbd7-136c-7638-bc39-cf619a91e232
+        at: 2026-11-08T15:46:37Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "The ring-label criterion now also says where labels go when the rings drawn are arcs."
+        base: "product/atlas"
+        recorded:
+          commit: "c8384c8edfc29fe4bf0f82f1a91a14f86bdf1481"
+          branch: "stage/atlas-w7"
+          loft: 2.3.0
+          at: 2026-11-08T15:46:36Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 12,
+              "graph.edges": 0,
+              "graph.nodes": 15,
+              "status.base.added": 10,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "words": {
+                    "after": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, with a grid of them across it, and rings of distance in the axes' equator, when asked for, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it.",
+                    "before": "Frame the view as an atlas\n\nLaying the explorer out as printed celestial atlases lay out a chart: the view inside a\nneat line whose edges are marked with coordinates, with a grid of them across it when asked for, its controls on a rail and in thin bars about\nit, so that the view keeps as much of the window as it can. A direction is the same from every point of space, so the marks\non the edges hold wherever the eye is, far from Earth as well as at it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                  "words": {
+                    "after": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                  "words": {
+                    "after": "A switch beside the grid's switch in the top bar turns the distance rings on and off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                  "words": {
+                    "after": "The distance rings are off when the view opens on an address that does not turn them on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                  "words": {
+                    "after": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane.",
+                  "words": {
+                    "after": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                  "words": {
+                    "after": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out.",
+                  "words": {
+                    "after": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                  "words": {
+                    "after": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                  "words": {
+                    "after": "While the distance rings are on, the equator's single ring and its label are not drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                  "words": {
+                    "after": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "words": {
+                    "after": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "before": "The top bar holds the release, the eye's distance from the focus with the axes and the grid's switch, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b108ccec8a0c",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall give the view as much of the window as its controls leave, keeping its panels on a rail and in bars about it.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b108ccec8a0c"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 56,
+                    "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc400ce6b6b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 63,
+                    "name": "A switch beside the grid's switch in the top bar turns the distance rings on and off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc5c6e120c2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 65,
+                    "name": "The distance rings are off when the view opens on an address that does not turn them on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc69981e4ad",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 67,
+                    "name": "The page's address keeps the distance rings turned on, so that a reload or a shared link keeps them on.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc75c539aaa",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "The rings lie at each multiple of the scale bar's length whose ring passes within three times the eye's distance of the focus, measured in the plane.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc8d373d024",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 71,
+                    "name": "Spokes run from the innermost ring drawn to the outermost along every multiple of 30 degrees of longitude.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdc9e9f39082",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 73,
+                    "name": "Each ring is labelled with its distance where it crosses the spoke of zero longitude, or, where the rings drawn are arcs short of going round the barycentre, the line from it through their middle, and a label that would overlap one already placed is left out.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdca6d344fc9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 75,
+                    "name": "The rings and spokes lie in space: they move on the view as the eye moves, as the points do, and change with the axes and with the scale bar's length.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdcb2966a530",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 77,
+                    "name": "While the distance rings are on, the equator's single ring and its label are not drawn.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bbd3-54fe-7370-9d9f-cdccfc8db018",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 79,
+                    "name": "The rings, spokes and labels take no pointer events: the points under them are named and chosen as where the rings are off.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 6,
+                    "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Frame the view as an atlas",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1b7f5-f51b-71f9-80de-cd24519fb4d6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 87,
+                    "name": "The top bar holds the release, the eye's distance from the focus with the axes and the switches of the grid and the distance rings, the search and the level-of-detail switch, in one line no taller than 40 CSS pixels.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "commit": "dd48b1fc03c51f9f494754a768d9a4f3506ee6b8",
+                "removed": [],
+                "revision": "product/atlas"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/atlas-w7",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1bbdc-52a8-7018-b3e0-d435feb32690
+    id: build-done
+    kind: note
+    versions:
+      - key: 01a1bbdc-52a8-7018-b3e0-d43a13930800
+        at: 2026-11-08T15:52:20Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        markdown: |-
+          Built and committed. The explorer's `pnpm check` passes. Seen on release 12:
+
+          - **Around Earth:** rings every 50 Mpc, labelled along 0°.
+          - **Zoomed in:** rings every 20 Mpc, and the step follows the scale bar.
+          - **Seen at a shallow angle:** the rings beyond the focus crowd into a band near the horizon, as any plane of rings does. A reach of 1.5 instead of 3 thins it without removing it. It stays at the approved 3.
+          - **At NGC 4472:** no rings are in view. Virgo lies about 15 Mpc above the galactic plane, and the rings stay in the plane.
+        tone: success

@@ -17,6 +17,9 @@ components:
       - key: 01a19f22-2ad9-716e-876f-181dd6136c68
         name: "BOSS DR17 Great Wall region"
         body: "BOSS galaxies around the BOSS Great Wall (Lietzen et al. 2016, A&A 588, L4), at RA 152° to 170°, Dec 42° to 58° and z 0.43 to 0.51, with a margin. Public, with the SDSS acknowledgement."
+      - key: 01a1a931-2c8a-73a8-91f2-58d0bd77ebdc
+        name: "SDSS DR17 distant galaxies and quasars"
+        body: "The rest of SDSS DR17's spectroscopy (Abdurro'uf et al. 2022, ApJS 259, 35) with zWarning = 0: the galaxies at 0.35 ≤ z < 1.2, about 1.53 million, mostly BOSS and eBOSS, and the quasars at any redshift, about 753,000. Public, with the SDSS acknowledgement."
   - key: 01a19f1e-d177-716d-b124-3ce94dbc10f4
     name: "VizieR"
     body: "The CDS catalogue service and its mirrors, such as the one at SAAO."
@@ -62,6 +65,20 @@ components:
       - key: 01a1a6e4-22e1-765d-b404-01f1b0391589
         name: "Hipparcos spectral types"
         body: "The spectral types of the original Hipparcos catalogue (ESA 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200; VizieR I/239/hip_main), attached by HIP number to the stars of the new reduction."
+      - key: 01a1a931-2c8a-73a8-91f2-58d1c13261fc
+        name: "2dFGRS"
+        body: |
+          The 2dF Galaxy Redshift Survey's final release (Colless et al. 2001, MNRAS 328, 1039; VizieR
+          VII/250): 221,414 galaxies of redshift quality 3 or better over about 1,500 square degrees,
+          with heliocentric redshifts and one rms uncertainty of 85 km/s for the whole catalogue. Used
+          under the VizieR terms, for scientific and non-commercial use with its citation.
+      - key: 01a1a931-2c8a-73a8-91f2-58d2281c1099
+        name: "ALFALFA α.100"
+        body: |
+          The complete ALFALFA HI source catalogue (Haynes et al. 2018, ApJ 861, 49; VizieR
+          J/ApJ/861/49): the 25,434 code 1 detections over about 7,000 square degrees, with heliocentric
+          21 cm velocities. The catalogue's own distances, a Hubble-law distance above 6,000 km/s and a
+          flow model below, are not taken. An AAS table, for non-commercial use through VizieR.
   - key: 01a19f1e-d177-716d-b124-3cea65a86848
     name: "ESA Gaia Archive"
     body: "The TAP service of Gaia DR3 and the tables published beside it."
@@ -99,6 +116,45 @@ components:
       - key: 01a19f22-2ad9-716e-876f-182e57951b3d
         name: "2M++ reconstruction"
         body: "The density and velocity fields reconstructed from 2M++ by Carrick et al. 2015 (MNRAS 450, 317)."
+  - key: 01a1a931-2c8a-73a8-91f2-58d3b98ead8a
+    name: "DESI public data release"
+    body: "The public data release site of the Dark Energy Spectroscopic Instrument, with its copies at NOIRLab's Astro Data Lab."
+    components:
+      - key: 01a1a931-2c8a-73a8-91f2-58d4eab51e82
+        name: "DESI DR1 redshifts"
+        body: |
+          The redshift catalogue of DESI's first data release (DESI Collaboration 2026, AJ 171, 285):
+          one primary redshift per target with ZWARN = 0, the 13.1 million galaxies and 1.6 million
+          quasars of the Main Survey (the DR1 abstract) and those of its Survey Validation, with
+          barycentric redshifts and their errors. CC BY 4.0, with the DESI acknowledgement.
+  - key: 01a1a931-2c8a-73a8-91f2-58d51ef988ca
+    name: "SuperCOSMOS Science Archive"
+    body: "The archive of the Wide Field Astronomy Unit in Edinburgh that holds the 2MASS and WISE photometric redshift catalogues."
+    components:
+      - key: 01a1a931-2c8a-73a8-91f2-58d66f8d9197
+        name: "2MPZ"
+        body: |
+          The 2MASS Photometric Redshift catalogue (Bilicki et al. 2014, ApJS 210, 9): 928,352
+          galaxies over nearly the whole sky, with photometric redshifts of scatter 0.015 for the whole
+          catalogue and spectroscopic ones where they exist. Permission to redistribute is pending.
+      - key: 01a1a931-2c8a-73a8-91f2-58d7b4335c3a
+        name: "WISE × SuperCOSMOS photometric redshifts"
+        body: |
+          The WISE × SuperCOSMOS photometric redshift catalogue (Bilicki et al. 2016, ApJS 225, 5):
+          about 18.5 million galaxies over three quarters of the sky away from the Galactic plane, with
+          a scatter of 0.033 (1 + z) for the whole catalogue. Permission to redistribute is pending.
+  - key: 01a1a931-2c8a-73a8-91f2-58d805dbe294
+    name: "GAMA data release site"
+    body: "The data release site of the Galaxy And Mass Assembly survey."
+    components:
+      - key: 01a1a931-2c8a-73a8-91f2-58d918ceb9bc
+        name: "GAMA DR4 redshifts"
+        body: |
+          The best redshift of each GAMA target in its fourth data release (Driver et al. 2022, MNRAS
+          513, 439): the redshifts of quality 3 or better that GAMA measured itself, 248,682 before
+          stars are left out, over
+          about 286 square degrees in five fields, heliocentric. Permission to redistribute is
+          pending.
   - key: 01a19f22-2ad9-716e-876f-182f41fd2c08
     name: "Literature"
     body: "Papers read through NASA ADS, arXiv and the journals' sites."

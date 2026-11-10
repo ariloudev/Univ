@@ -1,0 +1,53 @@
+key: 01a1a931-2c8a-73a8-91f2-58e3584b3f25
+slug: admit-non-commercial-sources-marked-as-such
+title: "Admit sources for non-commercial use, marked as such"
+context: "2dFGRS is used under VizieR's terms, which make its data free of use in a scientific context, and ALFALFA's table comes from an AAS journal, which VizieR classes as CC BY-NC. They would be the first sources whose terms allow only non-commercial use."
+state:
+  kind: accepted
+  selectedOption: 01a1a931-2c8a-73a8-91f2-58e6859eb878
+  outcome: "A source whose terms allow only non-commercial use is admitted, marked non-commercial in its source definition, and served with that mark."
+drivers:
+  - key: 01a1a931-2c8a-73a8-91f2-58e43b1442e2
+    kind: local
+    label: "Coverage"
+    statement: "2dFGRS's southern and equatorial strips and ALFALFA's gas-rich galaxies are in the catalogue."
+  - key: 01a1a931-2c8a-73a8-91f2-58e518adb6d6
+    kind: local
+    label: "Later use"
+    statement: "Any later commercial use can tell which sources it may not carry."
+options:
+  - key: 01a1a931-2c8a-73a8-91f2-58e6859eb878
+    title: "Admit, marked non-commercial"
+    description: "Admit the sources and mark each non-commercial, quoting the clause."
+  - key: 01a1a931-2c8a-73a8-91f2-58e7be048dd5
+    title: "Commercial-safe only"
+    description: "Refuse every source whose terms forbid commercial use."
+assessments:
+  - option: 01a1a931-2c8a-73a8-91f2-58e6859eb878
+    driver: 01a1a931-2c8a-73a8-91f2-58e43b1442e2
+    rating: supports
+    rationale: "both surveys are taken"
+  - option: 01a1a931-2c8a-73a8-91f2-58e6859eb878
+    driver: 01a1a931-2c8a-73a8-91f2-58e518adb6d6
+    rating: supports
+    rationale: "the mark names exactly the sources to drop"
+  - option: 01a1a931-2c8a-73a8-91f2-58e7be048dd5
+    driver: 01a1a931-2c8a-73a8-91f2-58e43b1442e2
+    rating: conflicts
+    rationale: "both surveys stay out"
+  - option: 01a1a931-2c8a-73a8-91f2-58e7be048dd5
+    driver: 01a1a931-2c8a-73a8-91f2-58e518adb6d6
+    rating: supports
+    rationale: "every source may be used commercially"
+consequences:
+  - key: 01a1a931-2c8a-73a8-91f2-58e8c49cd0eb
+    kind: cost
+    statement: "A release that holds a non-commercial source may not be used commercially as a whole."
+  - key: 01a1a931-2c8a-73a8-91f2-58e9f830026c
+    kind: obligation
+    statement: "Each non-commercial source quotes the clause that limits its use."
+subjects:
+  - role: affected
+    node: 01a1a931-2c8a-73a8-91f2-591121be3932
+  - role: outcome
+    node: 01a1a931-2c8a-73a8-91f2-58fd8e368264

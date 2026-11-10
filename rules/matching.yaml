@@ -84,38 +84,47 @@ cross_identifications:
       to Hipparcos-2 best-neighbour table as original_ext_source_id (Marrese et al. 2019,
       A&A 621, A144). The new reduction keeps the HIP numbers of the original catalogue
       (ESA 1997, ESA SP-1200), whose spectral types are attached by them. Each researched star
-      file names its star by the same HIP number.
+      file names its star by the same HIP number, and the IAU Catalog of Star Names gives the HIP
+      number of each named star that has one (iau-star-names, its column hip).
     members:
       - { source: hipparcos-2007, field: identifier }
       - { source: hipparcos-1997, field: identifier }
       - { source: gaia-dr3-hipparcos2, field: name }
       - { source: researched-star-distances, field: identifier }
+      - { source: iau-star-names, field: { cross_identifier: hip } }
   - scheme: 2masx
     basis: >-
       2MRS (Huchra et al. 2012, ApJS 199, 26) and 2M++ (Lavaux & Hudson 2011, MNRAS 416, 2840)
       both name each galaxy by its 2MASS Extended Source Catalog designation (Jarrett et al.
-      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS).
+      2000, AJ 119, 2498), as the recorded answers show (00424433+4116074 in 2MRS); so does 2MPZ
+      (Bilicki et al. 2014, ApJS 210, 9) in twomassX, the "2MASS source designation". OpenNGC
+      lists each galaxy's "2MASX J..." designation among its Identifiers, "cross reference with
+      other catalogs" (NGC_guide.txt), which its prepared file keeps without "2MASX J".
     members:
       - { source: twomrs, field: identifier }
       - { source: twompp-catalogue, field: identifier }
+      - { source: twompz, field: identifier }
+      - { source: openngc, field: { cross_identifier: 2MASX } }
   - scheme: sdss-specobjid
     basis: >-
-      Both sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS 259,
-      35), whose specObjID names one spectrum.
+      All three sources are queries of the SDSS DR17 SpecObj table (Abdurro'uf et al. 2022, ApJS
+      259, 35), whose specObjID names one spectrum.
     members:
       - { source: sdss-dr17-galaxies, field: identifier }
       - { source: boss-dr17-great-wall, field: identifier }
+      - { source: sdss-dr17-distant, field: identifier }
   - scheme: pgc
     basis: >-
       The PGC number of HyperLEDA (Makarov et al. 2014, A&A 570, A13). The Cosmicflows-4 galaxies
       table names each galaxy by it (J/ApJ/944/94 ReadMe, table2: "PGC Principal Galaxies Catalog
       ID", Note 1: "The Principal Galaxies Catalog identification of the galaxy in HyperLEDA").
-      No other galaxy source defined so far carries it: UNGC, 2MRS, 2M++, 6dFGS and SDSS name
-      galaxies otherwise, and the 1PGC of the Cosmicflows-4 groups names a group's dominant
-      galaxy, not the group row (galaxy_groups below). A later galaxy source with PGC numbers
-      joins by them, and a group's dominant galaxy is found by its number.
+      OpenNGC lists each galaxy's "PGC ..." designation among its Identifiers (NGC_guide.txt).
+      UNGC, 2MRS, 2M++, 6dFGS and SDSS name galaxies otherwise, and the 1PGC of the Cosmicflows-4
+      groups names a group's dominant galaxy, not the group row (galaxy_groups below), which is
+      found by its number.
     members:
       - { source: cosmicflows-4-galaxies, field: identifier }
+      - { source: openngc, field: { cross_identifier: PGC } }
   - scheme: common-name
     compare: common_name
     basis: >-
@@ -125,7 +134,9 @@ cross_identifications:
       (Fornax, MESSIER032, NGC0055), as the recorded answers and the served tables show
       (vizier.idia.ac.za, 2026-11-03). Both list the same Local Group galaxies, whose centres
       differ between the two by arcminutes (Fornax 4.7 arcmin apart), so a name the two share is
-      one galaxy. Names compare by their key in the names table, with a catalogue number's
+      one galaxy. OpenNGC names each object by its NGC or IC name (NGC 55) and gives its Messier
+      number (M 32) where it has one (NGC_guide.txt), the same names, so it joins by either.
+      Names compare by their key in the names table, with a catalogue number's
       leading zeros dropped and MESSIER written M; a name only one of them uses (Sag dSph against
       Sagittarius dSph) is left to the pair rule below.
     aliases:
@@ -147,6 +158,8 @@ cross_identifications:
     members:
       - { source: mcconnachie-2012, field: identifier }
       - { source: updated-nearby-galaxies, field: identifier }
+      - { source: openngc, field: identifier }
+      - { source: openngc, field: { cross_identifier: M } }
 
 # Designations a source gives beside an entry's own identifier, kept with that source.
 designations:
@@ -158,6 +171,12 @@ designations:
     field: name
     prefix: ""
     basis: "NAME is the eRASS1 cluster name, 1eRASS J... (Bulbul et al. 2024, A&A 685, A106)."
+  - source: openngc
+    field: { cross_identifier: M }
+    prefix: ""
+    basis: >-
+      M is the object's number in Messier's catalogue (NGC_guide.txt), which the prepared file
+      writes "M 31" for OpenNGC's "031" (scripts/prepare-openngc.py).
 
 # Sources whose rows are galaxy groups, not galaxies: each row is its own object, of kind
 # galaxy_group, never matched by position to a galaxy, and related to the galaxy its source names
@@ -194,6 +213,33 @@ names:
       The Name column of McConnachie 2012 (AJ 144, 4) is each Local Group galaxy's common name,
       such as LMC, Andromeda or Canis Major. The UNGC Name column mixes common names with catalogue
       designations (UGC12894, ESO409-015) and is kept as designations only.
+  - source: researched-star-distances
+    field: name
+    basis: >-
+      Each researched star file names its star in its name field (stars/*.yaml), as the papers it
+      cites call it, such as Betelgeuse, a Lupi or 18 Aquilae.
+  - source: iau-star-names
+    field: name
+    separator: ","
+    basis: >-
+      Each entry of the IAU Catalog of Star Names carries its star's IAU names, such as Sirius, or
+      Izar and Pulcherrima for the two components of epsilon Bootis that share HIP 72105.
+  - source: openngc
+    field: name
+    separator: ","
+    basis: >-
+      OpenNGC's "Common names: Common names of the object if any" (NGC_guide.txt), several
+      separated by commas as published ("Great Orion Nebula,Orion Nebula").
+  - source: openngc
+    field: identifier
+    basis: >-
+      The object's name in OpenNGC, "composed by catalog + number" (NGC_guide.txt): an NGC or IC
+      name such as NGC 224, or in the addendum another catalogue's, such as ESO 56-115 or Mel 22.
+      It is a name the object is called by, as M31 is, and it is found by it, ignoring letter case
+      and white space.
+  - source: openngc
+    field: { cross_identifier: M }
+    basis: "A Messier number, such as M 31, is a common name of its object, as for NGC names."
 
 # A researched structure's member, named in its paper, resolves to the matched object carrying
 # that name only when the object's preferred sky position lies within this angle of the
@@ -344,12 +390,273 @@ pairs:
       an arcminute of McConnachie's; 300 km/s as for UNGC. The Cosmicflows-4 Vcmb is moved back
       to a heliocentric cz first.
 
+  # Release 10: DESI DR1, the rest of SDSS DR17, 2dFGRS and ALFALFA.
+  - sources: [desi-dr1, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &desi >-
+      DESI (mean_fiber_ra/dec of desi_dr1.zpix) and SDSS give fibre positions on the target; 5
+      arcsec is a pipeline choice, as for SDSS against 2MRS, for the offset between two fibres or a
+      fibre and an XSC centroid of an extended galaxy. 200 km/s as for 2MRS and 2M++: a few times
+      the errors either survey publishes. A quasar whose redshift the two pipelines put more than
+      200 km/s apart stays two objects, linked if within the angle; a duplicate, never a false
+      merge.
+  - sources: [desi-dr1, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *desi
+  - sources: [desi-dr1, boss-dr17-great-wall]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *desi
+  - sources: [desi-dr1, twomrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *desi
+  - sources: [desi-dr1, twompp-catalogue]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *desi
+  - sources: [desi-dr1, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *desi
+  - sources: [desi-dr1, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *desi
+  - sources: [twodfgrs, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &twodf >-
+      2dFGRS targets were "selected from the extended APM Galaxy Survey" (VII/250 ReadMe), whose
+      positions the catalogue gives; 5 arcsec is a pipeline choice, as for the fibre surveys. Its
+      redshifts carry an rms of 85 km/s (VII/250 ReadMe), within the 200 km/s of 2MRS and 2M++.
+  - sources: [twodfgrs, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *twodf
+  - sources: [twodfgrs, twomrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *twodf
+  - sources: [twodfgrs, twompp-catalogue]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *twodf
+  - sources: [twodfgrs, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *twodf
+  - sources: [alfalfa-a100, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: &alfalfa >-
+      ALFALFA positions are the HI centroids of 21 cm sources seen with Arecibo's beam of a few
+      arcminutes (J/ApJ/861/49 ReadMe: "HI centroid"), not optical centres. 60 arcsec is a pipeline
+      choice, as for McConnachie 2012 against 2MRS. In a crowded field more than one galaxy lies
+      within it and the HI source stays apart, linked to each, rather than merged with the wrong
+      one. A 21 cm velocity and an optical cz of one galaxy can differ by tens of km/s, and the line
+      is hundreds of km/s wide; 300 km/s is the pipeline's choice for velocities from another
+      spectrum, as for UNGC.
+  - sources: [alfalfa-a100, desi-dr1]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [alfalfa-a100, twomrs]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [alfalfa-a100, twompp-catalogue]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [alfalfa-a100, updated-nearby-galaxies]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [alfalfa-a100, cosmicflows-4-galaxies]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [alfalfa-a100, twodfgrs]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+
+  # Release 10, permission pending: 2MPZ's photometric redshifts.
+  - sources: [twompz, twomrs]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: &twompz_xsc >-
+      2MPZ, 2MRS and 2M++ all take positions from the 2MASS XSC, so 2 arcsec as for 2MRS and
+      2M++; most pairs join by their shared 2MASX name first. 2MPZ's photometric redshifts err by
+      0.015 for the whole catalogue (Bilicki et al. 2014): three times that is 0.045, 13,500 km/s
+      in cz, a pipeline choice that rejects only a galaxy far in front of or behind the other.
+  - sources: [twompz, twompp-catalogue]
+    angular_tolerance_arcsec: 2.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz_xsc
+  - sources: [twompz, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: &twompz >-
+      2MPZ positions are the 2MASS XSC's; 5 arcsec is a pipeline choice, as for the fibre surveys
+      against 2MRS. 2MPZ's photometric redshifts err by 0.015 (Bilicki et al. 2014): three times
+      that is 0.045, 13,500 km/s in cz, a pipeline choice that rejects only a spectroscopic galaxy
+      far in front of or behind the photometric one. Within 5 arcsec a merge rests on the
+      position.
+  - sources: [twompz, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+
+  # Release 10, permission pending: GAMA DR4 and WISE × SuperCOSMOS.
+  - sources: [gama-dr4, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: &gama >-
+      GAMA's RA and DEC are the spectrum's position (SpecObj v27); 5 arcsec is a pipeline choice,
+      as for the other fibre surveys. GAMA publishes no redshift error; 200 km/s as for 2MRS and
+      2M++.
+  - sources: [gama-dr4, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, twomrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, twompp-catalogue]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 200 }
+    basis: *gama
+  - sources: [gama-dr4, alfalfa-a100]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 300 }
+    basis: *alfalfa
+  - sources: [wise-supercosmos, desi-dr1]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: &wisescos >-
+      WISE × SuperCOSMOS positions are WISE's; 5 arcsec is a pipeline choice, as for the fibre
+      surveys. Its photometric redshifts scatter by 0.033 (1 + z) (Bilicki et al. 2016): three
+      times that at the catalogue's median z of about 0.2 is 0.119, 36,000 km/s in cz, a pipeline
+      choice that rejects only a spectroscopic galaxy far in front of or behind the photometric
+      one. Within 5 arcsec a merge rests on the position.
+  - sources: [wise-supercosmos, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, sdss-dr17-distant]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, twodfgrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, sixdfgs-dr3]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, twomrs]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, twompp-catalogue]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [wise-supercosmos, gama-dr4]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: *wisescos
+  - sources: [twompz, gama-dr4]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 13500 }
+    basis: *twompz
+  - sources: [twompz, wise-supercosmos]
+    angular_tolerance_arcsec: 5.0
+    line_of_sight: { compare: velocity, tolerance_km_s: 36000 }
+    basis: >-
+      2MPZ's positions are the 2MASS XSC's and WISE × SuperCOSMOS's are WISE's; 5 arcsec is a
+      pipeline choice. Both redshifts are photometric: 0.015 (Bilicki et al. 2014) and 0.033 (1 +
+      z) (Bilicki et al. 2016) add in quadrature to 0.038 at 2MPZ's median z of 0.07, and three
+      times that is 0.115, 34,500 km/s in cz; 36,000 km/s as for WISE × SuperCOSMOS's other pairs.
+      Within 5 arcsec a merge rests on the position.
+
 # The extent rule (step 3). Point-source tolerances cannot join the pieces of one extended nearby
 # galaxy: release 4 kept IC 5052 (UNGC a26 = 8.13 arcmin, edge-on, b/a = 0.14) as one object of
 # its UNGC and Cosmicflows-4 entries, one of its 2MRS and 2M++ entry 34 arcsec away, and four of
 # 6dFGS fibres 6 to 28 arcsec from its centre, all within 60 km/s of its 584 km/s; and NGC 1507
 # as two objects of two 2MASX designations 53 arcsec apart, 2MRS 04042714-0211210 against 2M++
 # 04042802-0210254.
+  - sources: [iau-star-names, hipparcos-2007]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: none }
+    basis: >-
+      Only IAU names with no HIP number carry a position (iau-star-names, cuts), one the WGSN
+      table does not attribute. 60 arcsec is a pipeline choice: the proper motion of a bright star
+      between Hipparcos's epoch J1991.25 and J2000 is a few arcseconds, and two stars bright
+      enough to be named rarely lie within an arcminute of each other. Mesarthim (gamma Arietis)
+      lies 1 arcsec from HIP 8832.
+  - sources: [openngc, twomrs]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: &openngc >-
+      OpenNGC's positions are "usually taken from NED" (README); a few are of a knot or a
+      superposed star, as its notes say. 10 arcsec is a pipeline choice for the offset between
+      two catalogues' positions of one bright, extended galaxy. OpenNGC takes no distance or
+      velocity, so the line of sight is not compared. Most galaxies join first by their PGC
+      number or 2MASX designation.
+  - sources: [openngc, twompp-catalogue]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, sixdfgs-dr3]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, sdss-dr17-galaxies]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, cosmicflows-4-galaxies]
+    angular_tolerance_arcsec: 10.0
+    line_of_sight: { compare: none }
+    basis: *openngc
+  - sources: [openngc, updated-nearby-galaxies]
+    angular_tolerance_arcsec: 30.0
+    line_of_sight: { compare: none }
+    basis: >-
+      As for UNGC and 2MRS: UNGC's centres of nearby dwarfs differ from other catalogues' by tens
+      of arcseconds (Karachentsev et al. 2013). OpenNGC takes no distance or velocity.
+
 extents:
   below_km_s: 1000
   tolerance_km_s: 300
@@ -381,11 +688,27 @@ extents:
         http://vizier.nao.ac.jp/ftp/cats/J/ApJS/199/26/ReadMe, 2026-11-03): "F5.3 [arcsec] Riso Log
         of K=20 mag/sq arcsec elliptical isophote semimajor axis", the 2MASS XSC isophotal radius
         (Jarrett et al. 2000, AJ 119, 2498). The radius is ten to the power Riso, in arcseconds.
-  pieces: [twomrs, twompp-catalogue, sixdfgs-dr3, sdss-dr17-galaxies, cosmicflows-4-galaxies]
+  pieces:
+    - twomrs
+    - twompp-catalogue
+    - sixdfgs-dr3
+    - sdss-dr17-galaxies
+    - cosmicflows-4-galaxies
+    # Release 10.
+    - desi-dr1
+    - sdss-dr17-distant
+    - twodfgrs
+    - gama-dr4
+    - alfalfa-a100
+    - twompz
+    - wise-supercosmos
   pieces_basis: >-
     The galaxy surveys and the Cosmicflows-4 galaxies, whose entries are a detection, a fibre
     target or an adopted centre of a galaxy, so that one large galaxy can stand in them as several
-    entries (IC 5052 and NGC 1507 above). UNGC and McConnachie 2012 list each galaxy once by name
+    entries (IC 5052 and NGC 1507 above). Release 10's surveys are such entries too: its first
+    build left 441 pairs of nearby galaxies 1 arcmin apart at one distance, almost all DESI DR1
+    fibres on DDO 125, NGC 4190, DDO 190 and other nearby galaxies (350 of them between two DESI
+    fibres of one galaxy), with ALFALFA detections and WISE × SuperCOSMOS sources among the rest. UNGC and McConnachie 2012 list each galaxy once by name
     and are never pieces; star sources and galaxy-group sources are never pieces.
   identities: [cosmicflows-4-galaxies, updated-nearby-galaxies, mcconnachie-2012]
   identities_basis: >-
@@ -393,3 +716,14 @@ extents:
     (J/ApJ/944/94 ReadMe, table2, Note 1), UNGC and McConnachie 2012 by name. A companion with an
     identity of its own, such as NGC 5195 (UNGC a26 = 6.92 arcmin, 455 km/s) 4.6 arcmin from M51
     (NGC5194, a26 = 15.85 arcmin, 446 km/s) and within its extent, stays apart.
+  fibres:
+    surveys: [desi-dr1, sdss-dr17-galaxies, sdss-dr17-distant, twodfgrs, gama-dr4, sixdfgs-dr3]
+    radius_arcsec: 60.0
+    basis: >-
+      Pipeline choice. A fibre survey targets the HII regions and knots of a nearby dwarf as
+      separate objects: release 10's second build left 129 such clusters of DESI DR1 fibres, 2 to
+      8 within 1 arcmin of each other at one cz to within a few km/s, on galaxies that no source
+      of the release gives an extent (8 at RA 337.111, Dec +30.295, 599 to 677 km/s). Below the
+      extent rule's 1,000 km/s, two galaxies 1 arcmin apart at one velocity are one galaxy
+      entered twice, as the science check local-group-duplicates holds; 1 arcmin is that check's
+      radius, and 300 km/s the extent rule's tolerance, which takes in a disc's rotation.

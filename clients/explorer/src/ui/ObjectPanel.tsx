@@ -1,23 +1,54 @@
-import { type ObjectRecord, distancesOf } from "../api/objects.ts";
+import type { Found, ObjectRecord } from "../api/objects.ts";
+import type { Mat3, Vec3 } from "../scene/vec.ts";
+import { ObjectRecordPanel } from "./record/ObjectRecordPanel.tsx";
 import type { ChosenObject } from "./useChosen.ts";
-import { colourIndices, estimatedClass, publishedTypes } from "./starText.ts";
-import { bandsText, headingOf, natureOf, preferredText, valueText, words } from "./text.ts";
+import type { Sources } from "./useSources.ts";
 
-/** The chosen object's record: its names, its preferred and other distances, its frame. */
-export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObject; onChoose: (id: number) => void; onClose: () => void }) {
+/** What the panel reads besides the record: its release and that release's sources, the
+ * rotation to galactic axes, the structures holding a place, and the ways to choose what it
+ * names. */
+export interface RecordContext {
+  release: number;
+  /** The release's sources where they are known already; the panel reads them otherwise. */
+  sources?: Sources | undefined;
+  /** The rotation from the ICRS to galactic axes, once the release's manifests give it. */
+  toGalactic: Mat3 | undefined;
+  /** The structures of the release whose volume holds `place`, ICRS megaparsecs. */
+  holding: (place: Vec3) => { id: string; name: string }[];
+  onChooseStructure: (id: string) => void;
+  /** Looks up the object that `source` names `identifier`. */
+  find: (source: string, identifier: string) => Promise<Found>;
+  /** Chooses object `id`, its record given where it is read already. */
+  onChooseObject: (id: number, record?: ObjectRecord) => void;
+}
+
+const none = () => undefined;
+
+export const NO_CONTEXT: RecordContext = {
+  release: 0,
+  toGalactic: undefined,
+  holding: () => [],
+  onChooseStructure: none,
+  find: (source, identifier) => Promise.resolve({ kind: "none", query: `${source}:${identifier}` }),
+  onChooseObject: none,
+};
+
+interface ObjectPanelProps {
+  chosen: ChosenObject;
+  onChoose: (id: number) => void;
+  onClose: () => void;
+  context?: RecordContext | undefined;
+}
+
+/** The chosen object's record on the base of every record panel; or, while it is read, or where
+ * it was replaced or not read, what became of it. */
+export function ObjectPanel({ chosen, onChoose, onClose, context = NO_CONTEXT }: ObjectPanelProps) {
   if (chosen.kind === "none") return null;
+  if (chosen.kind === "ready") return <ObjectRecordPanel record={chosen.record} as={chosen.as} context={context} onClose={onClose} />;
   return (
-    <section aria-label="The chosen object" className="space-y-2 rounded-lg border border-line bg-panel p-3 text-sm">
+    <section aria-label="The chosen object" className="space-y-3 p-3 text-sm">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="font-semibold">
-          {chosen.kind === "ready" ? (
-            <>
-              {headingOf(chosen.record, chosen.as)} <span className="font-normal text-dim">#{chosen.record.id}</span>
-            </>
-          ) : (
-            "Object"
-          )}
-        </h2>
+        <h2 className="font-serif text-lg leading-snug">Object</h2>
         <button type="button" onClick={onClose} className="text-dim hover:text-ink" aria-label="Close the object's panel">
           ×
         </button>
@@ -27,7 +58,7 @@ export function ObjectPanel({ chosen, onChoose, onClose }: { chosen: ChosenObjec
   );
 }
 
-function Body({ chosen, onChoose }: { chosen: Exclude<ChosenObject, { kind: "none" }>; onChoose: (id: number) => void }) {
+function Body({ chosen, onChoose }: { chosen: Exclude<ChosenObject, { kind: "none" | "ready" }>; onChoose: (id: number) => void }) {
   switch (chosen.kind) {
     case "choices":
       return (
@@ -52,135 +83,5 @@ function Body({ chosen, onChoose }: { chosen: Exclude<ChosenObject, { kind: "non
           Univ Server answered {chosen.status ?? "nothing"}: {chosen.title}
         </p>
       );
-    case "ready":
-      return <Record record={chosen.record} />;
   }
-}
-
-function Record({ record }: { record: ObjectRecord }) {
-  const { preferred, others } = distancesOf(record);
-  const names = record.entries.filter((e) => e.name !== null);
-  return (
-    <div className="space-y-2">
-      <p className="text-dim" data-testid="nature">
-        {natureOf(record)}
-      </p>
-      <div>
-        <h3 className="text-xs text-dim">Names and designations</h3>
-        <ul data-testid="names">
-          {names.map((e) => (
-            <li key={`n:${e.source}:${e.identifier}`}>
-              {e.name} <span className="text-dim">({e.source})</span>
-            </li>
-          ))}
-          {record.designations.map((d) => (
-            <li key={`d:${d.source}:${d.identifier}`}>
-              {d.identifier} <span className="text-dim">({d.source})</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <Preferred record={record} source={preferred?.source} kind={preferred?.kind_of_value} />
-      {others.length === 0 ? null : (
-        <div>
-          <h3 className="text-xs text-dim">Other distance measurements</h3>
-          <ul data-testid="other-distances">
-            {others.map((m) => (
-              <li key={`${m.entry}:${m.quantity}:${m.n}`}>
-                {valueText(m.native)} <span className="text-dim">({words(m.quantity)}, {m.kind_of_value}, {m.source})</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <Star record={record} />
-      <Papers record={record} />
-      <Frame record={record} />
-    </div>
-  );
-}
-
-/** A star's published spectral types, its colour indices, and the class its colour index
- * suggests where no source publishes a type. */
-function Star({ record }: { record: ObjectRecord }) {
-  const types = publishedTypes(record);
-  const colours = colourIndices(record);
-  const estimated = estimatedClass(types, colours);
-  if (types.length === 0 && colours.length === 0) return null;
-  return (
-    <div data-testid="star">
-      <h3 className="text-xs text-dim">Spectral type and colour</h3>
-      <ul>
-        {types.map((t) => (
-          <li key={`t:${t.source}:${t.text}`}>
-            {t.text} <span className="text-dim">({t.kind}, {t.source})</span>
-          </li>
-        ))}
-        {estimated === undefined ? null : (
-          <li>
-            Estimated class {estimated}
-          </li>
-        )}
-        {colours.map((m) => (
-          <li key={`c:${m.entry}:${m.n}`}>
-            {bandsText(m.band ?? "colour index")} {valueText(m.native)}{" "}
-            <span className="text-dim">
-              ({m.kind_of_value}, {m.source}
-              {m.derived_from === null || m.derived_from === undefined ? "" : `, derived from ${m.derived_from.join(" − ")}`})
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/** The papers each researched entry's values come from. */
-function Papers({ record }: { record: ObjectRecord }) {
-  const researched = record.entries.filter((e) => (e.references ?? []).length > 0);
-  if (researched.length === 0) return null;
-  return (
-    <div data-testid="papers">
-      <h3 className="text-xs text-dim">Papers of the researched values</h3>
-      <ul>
-        {researched.flatMap((e) =>
-          (e.references ?? []).map((r) => (
-            <li key={`${e.source}:${r.citation}`}>
-              {r.citation} <span className="text-dim">({[r.bibcode, r.doi, e.source].filter((x) => x !== null && x !== undefined).join(", ")})</span>
-            </li>
-          )),
-        )}
-      </ul>
-    </div>
-  );
-}
-
-function Preferred({ record, source, kind }: { record: ObjectRecord; source: string | undefined; kind: string | undefined }) {
-  const preferred = record.preferred;
-  if (preferred === null) return <p className="text-dim">No distance: the object has a sky position only.</p>;
-  return (
-    <div data-testid="preferred">
-      <h3 className="text-xs text-dim">Preferred distance</h3>
-      <p>{preferredText(preferred)}</p>
-      <p className="text-xs text-dim">
-        {kind ?? "unknown kind"} · {source ?? "unknown source"} · chosen by the rule “{words(preferred.rule)}”
-      </p>
-    </div>
-  );
-}
-
-function Frame({ record }: { record: ObjectRecord }) {
-  const position = record.position;
-  const sky = record.sky_position;
-  const text =
-    position !== null
-      ? `${position.frame}, about the Solar System barycentre, epoch ${position.epoch}`
-      : sky === null || sky === undefined
-        ? "no position"
-        : `${sky.frame} sky position, epoch ${sky.epoch ?? "not given"}`;
-  return (
-    <p className="text-xs text-dim" data-testid="position-frame">
-      Position: {text}
-    </p>
-  );
 }

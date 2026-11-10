@@ -17,6 +17,8 @@ use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
+use univ_model::release::shards::{Database, bound_shards};
+
 use crate::{Outcome, command};
 
 /// The Worker's crate, from the workspace root, which holds its `wrangler.toml`.
@@ -27,7 +29,7 @@ pub(crate) const WORKER_DIR: &str = "crates/univ-server";
 pub(crate) const TEST_OWNER_SECRET: &str = "integration-owner-secret";
 
 /// The local state Univ Ingest publishes real releases to.
-pub(crate) const REAL_STATE: &str = ".cache/univ-ingest/wrangler";
+pub(crate) const REAL_STATE: &str = univ_model::release::REAL_LOCAL_STATE;
 
 /// How long the Worker may take to build and answer: a cold release build of the wasm.
 const READY_WITHIN: Duration = Duration::from_secs(600);
@@ -122,10 +124,12 @@ pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
     (release_tables(root, &state) && migrate(root, &state)).then_some(state)
 }
 
-/// Creates each table of univ-model's release schema that the release database in `state`
-/// lacks, as a release built before the schema grew does: its rows stay as they are, and the
-/// Worker reads the new tables as holding nothing for it. The schema is only `CREATE … IF NOT
-/// EXISTS`; the schema version is Univ Ingest's to record when it publishes.
+/// Creates each table of univ-model's release schema that a database of the releases in
+/// `state` lacks, the catalogue database and each object shard the Worker binds, as one built
+/// before the schema grew does: its rows stay as they are, and the Worker reads the new tables
+/// as holding nothing for it. The schema is only `CREATE … IF NOT EXISTS`; the schema version
+/// is Univ Ingest's to record when it publishes. One database after another: Wrangler runs on
+/// one local state at once fail (`SQLITE_BUSY`), whichever databases they open.
 pub(crate) fn release_tables(root: &Path, state: &Path) -> bool {
     let file = root.join("target/serve/release-schema.sql");
     let written = file
@@ -136,11 +140,25 @@ pub(crate) fn release_tables(root: &Path, state: &Path) -> bool {
         eprintln!("could not write {}: {error}", file.display());
         return false;
     }
-    let mut execute = wrangler(root, "d1", state);
-    execute
-        .args(["execute", "univ", "--local", "--file"])
-        .arg(&file);
-    succeeded(execute.status(), "wrangler d1 execute (release schema)")
+    let config = root.join(WORKER_DIR).join("wrangler.toml");
+    let shards = match fs::read_to_string(&config) {
+        Ok(toml) => bound_shards(&toml),
+        Err(error) => {
+            eprintln!("could not read {}: {error}", config.display());
+            return false;
+        }
+    };
+    (0..shards)
+        .map(Database::Shard)
+        .chain([Database::Catalogue])
+        .all(|database| {
+            let mut execute = wrangler(root, "d1", state);
+            execute
+                .args(["execute", &database.name(), "--local", "--file"])
+                .arg(&file);
+            let step = format!("wrangler d1 execute (release schema, {database})");
+            succeeded(execute.status(), &step)
+        })
 }
 
 /// Applies the univ-layers migrations to the local state in `state`.
@@ -152,7 +170,7 @@ pub(crate) fn migrate(root: &Path, state: &Path) -> bool {
 
 /// `npx wrangler <subcommand> --persist-to <state>`, run from the Worker's crate directory,
 /// quiet and without telemetry, as Univ Ingest runs Wrangler.
-fn wrangler(root: &Path, subcommand: &str, state: &Path) -> Command {
+pub(crate) fn wrangler(root: &Path, subcommand: &str, state: &Path) -> Command {
     let mut wrangler = command(&root.join(WORKER_DIR), "npx");
     wrangler
         .args(["--no-install", "wrangler", subcommand])

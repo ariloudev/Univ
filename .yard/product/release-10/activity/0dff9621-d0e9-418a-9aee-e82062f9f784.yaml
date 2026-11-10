@@ -1,0 +1,56 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-06T14:15:25Z
+turns:
+  - started: 2026-11-05T01:00:39Z
+    ended: 2026-11-05T20:54:54Z
+  - started: 2026-11-05T20:58:30Z
+    ended: 2026-11-05T20:58:35Z
+  - started: 2026-11-05T21:02:12Z
+    ended: 2026-11-05T21:03:57Z
+  - started: 2026-11-05T21:06:52Z
+    ended: 2026-11-05T21:07:57Z
+  - started: 2026-11-05T21:13:55Z
+    ended: 2026-11-05T21:14:04Z
+  - started: 2026-11-05T21:17:18Z
+    ended: 2026-11-05T21:17:54Z
+  - started: 2026-11-05T21:18:51Z
+    ended: 2026-11-06T02:00:36Z
+  - started: 2026-11-06T02:03:59Z
+    ended: 2026-11-06T02:04:17Z
+  - started: 2026-11-06T02:11:45Z
+    ended: 2026-11-06T02:12:20Z
+  - started: 2026-11-06T02:13:13Z
+    ended: 2026-11-06T02:13:43Z
+  - started: 2026-11-06T02:16:41Z
+    ended: 2026-11-06T02:17:15Z
+  - started: 2026-11-06T02:17:32Z
+    ended: 2026-11-06T02:29:41Z
+  - started: 2026-11-06T02:32:48Z
+    ended: 2026-11-06T02:48:00Z
+  - started: 2026-11-06T10:43:06Z
+    ended: 2026-11-06T12:21:57Z
+  - started: 2026-11-06T14:15:25Z

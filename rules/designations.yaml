@@ -1,0 +1,37 @@
+# Designation rules: the order an object's designations are given in, by their sources. A release
+# records this file and keeps each source's place in it; Univ Server lists an object's designations
+# in this order, then by source id. Read by univ-ingest `designations::DesignationRules`.
+
+statement: >-
+  The designation astronomers name an object by comes first: for a star its IAU name, then its
+  Hipparcos number, then its Gaia source id; for a galaxy or nebula its NGC or IC name and Messier
+  number, then the catalogues of named and nearby galaxies, then its PGC number, then the 2MASS designation the redshift surveys of the whole sky share, then each other
+  survey's own in the order listed. That last order is a choice of display, not a ranking of the
+  surveys. A source not listed here follows every listed one, and sources of one place follow
+  one another by id.
+order:
+  - iau-star-names
+  - hipparcos-2007
+  - hipparcos-1997
+  - gaia-dr3-hipparcos2
+  - gaia-dr3-bright
+  - gcns
+  - bailer-jones-2021
+  - researched-star-distances
+  - openngc
+  - mcconnachie-2012
+  - updated-nearby-galaxies
+  - cosmicflows-4-galaxies
+  - cosmicflows-4
+  - twomrs
+  - twompp-catalogue
+  - twompz
+  - sixdfgs-dr3
+  - twodfgrs
+  - sdss-dr17-galaxies
+  - sdss-dr17-distant
+  - gama-dr4
+  - desi-dr1
+  - alfalfa-a100
+  - wise-supercosmos
+  - erass1-clusters

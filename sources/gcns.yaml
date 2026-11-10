@@ -75,6 +75,14 @@ mirrors:
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+designation:
+  form: "Gaia EDR3 {identifier}"
+  cite: >-
+    ReadMe of J/A+A/649/A6 (VizieR), Byte-by-byte Description of file table1c.dat, GaiaEDR3 ('Gaia
+    EDR3 source ID (source_id)'); the form is the Gaia EDR3 designation, Gaia EDR3 documentation,
+    Datamodel description, gaia_source, designation ('constructed from the prefix Gaia DRx followed
+    by a string of digits corresponding to source_id'; the archive's
+    gaiaedr3.gaia_source.designation reads 'Gaia EDR3 <source_id>', checked 2026-11-07)
 normalization:
   colours:
     # GCNS publishes the BP and RP magnitudes of Gaia EDR3, not their difference: BP-RP is

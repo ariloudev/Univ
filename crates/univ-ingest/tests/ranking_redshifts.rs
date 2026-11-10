@@ -36,9 +36,9 @@ fn preferred(entries: Vec<CatalogueEntry>) -> PreferredDistance {
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     rank(&mut o, &ranking_rules(), &Release::planck_2018());
     o.preferred_distance.unwrap()
@@ -164,7 +164,7 @@ fn a_redshift_without_a_velocity_error_ranks_after_one_with_one_and_is_given_non
         (source(&p), p.decided),
         ("twomrs", Decided::VelocityUncertainty)
     );
-    let (lost, u) = p.runner_up.unwrap();
+    let (lost, u) = *p.runner_up.unwrap();
     assert_eq!(lost.entry().source.as_str(), "twompp-catalogue");
     let FractionalUncertainty::Reported { measurement, .. } = u else {
         unreachable!("a redshift distance carries its peculiar-velocity term")

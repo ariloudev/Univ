@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "../api/client.ts";
-import { type Choices, type ObjectRecord, nameOf, objectOf, placeOf } from "../api/objects.ts";
+import { type Choices, type ObjectRecord, nameOf, recordOf, placeOf } from "../api/objects.ts";
 import { setInAddress } from "./address.ts";
 import type { World } from "./useWorld.ts";
 
@@ -55,7 +55,8 @@ function arrive(world: World, record: ObjectRecord, fly: boolean): void {
   if (fly && place !== undefined) world.controller.approach(place);
 }
 
-/** The chosen object of `release` in `world`, and the way to choose another. */
+/** The chosen object of `release` in `world`, its id while one is asked for, and the way to
+ * choose another. */
 export function useChosen(release: number, world: World | undefined) {
   const [request, setRequest] = useState<Request | undefined>(() => {
     const named = objectInAddress(location.search);
@@ -81,14 +82,22 @@ export function useChosen(release: number, world: World | undefined) {
       ready(request.record);
       return;
     }
-    const abort = new AbortController();
+    // The read is shared with the hover label and not cancelled: an answer to a request since
+    // replaced or closed is set aside.
+    let live = true;
     setChosen({ kind: "loading", id: request.id });
-    objectOf(request.id, { release, signal: abort.signal })
-      .then((found) => (found.kind === "object" ? ready(found.record) : setChosen({ kind: "choices", choices: found })))
+    recordOf(request.id, release)
+      .then((found) => {
+        if (!live) return;
+        if (found.kind === "object") ready(found.record);
+        else setChosen({ kind: "choices", choices: found });
+      })
       .catch((error: unknown) => {
-        if (!abort.signal.aborted) setChosen(failure(request.id, error));
+        if (live) setChosen(failure(request.id, error));
       });
-    return () => abort.abort();
+    return () => {
+      live = false;
+    };
   }, [request, release, world]);
   /** Chooses object `id`, or none; choosing the object already chosen reads nothing again. */
   const choose = useCallback((id: number | undefined, options: ChooseOptions = {}) => {
@@ -99,5 +108,5 @@ export function useChosen(release: number, world: World | undefined) {
       return same ? current : { id, ...options };
     });
   }, []);
-  return { chosen, choose };
+  return { chosen, chosenId: request?.id, choose };
 }

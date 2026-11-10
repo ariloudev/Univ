@@ -6,19 +6,28 @@
 //!
 //! The cells drive the join (`CROSS JOIN` keeps them the outer loop): ordered by id alone, the
 //! database would walk every object of the release and look each up in the cells.
+//!
+//! The objects are in object shards by cell: a page reads the shards whose cells the box can
+//! meet ([`crate::shards::ShardMap::meeting`]), each giving its first objects after the cursor by id, and keeps
+//! the first of them all by id. A page is therefore the same whichever shards its objects come
+//! from, and the cursor, the last id, is the same as for one database.
+
+use std::collections::BTreeMap;
 
 use serde::Deserialize;
 use serde_json::json;
 use univ_model::api::query::{HitPosition, ObjectHit, QueryResult};
 use univ_model::position::Frame;
-use univ_model::release::cells::{CellSpace, SPACES};
+use univ_model::release::cells::{CellRange, CellSpace, SPACES};
 use univ_model::units::{Unit, scale_domain_unit};
+use univ_model::valid_in;
 use univ_model::volume::Region;
 
 use super::Query;
 use super::cursor::After;
 use crate::backend::{Backend, rows_as};
 use crate::problem::Problem;
+use crate::shards::shard_map;
 
 #[derive(Deserialize)]
 struct Row {
@@ -30,6 +39,38 @@ struct Row {
     z: f64,
 }
 
+/// The select of one shard's objects of scale domain `domain` (its term) in `region` whose
+/// cells are in `cells`: the release's rows of `object_cells`, `objects` and, filtering by
+/// source, `entries`, each valid in release ?1 whichever release added it.
+fn select(domain: i64, cells: &CellRange, region: &Region) -> String {
+    format!(
+        concat!(
+            "SELECT * FROM (SELECT o.id AS id, o.kind AS kind, o.scale_domain AS domain, \
+             o.x AS x, o.y AS y, o.z AS z FROM object_cells c CROSS JOIN objects o \
+             ON o.id = c.object_id AND ",
+            valid_in!("o.", "?1"),
+            " WHERE c.domain = {} \
+             AND c.ix BETWEEN {} AND {} AND c.iy BETWEEN {} AND {} \
+             AND c.iz BETWEEN {} AND {} AND c.object_id > ?2 AND ",
+            valid_in!("c.", "?1"),
+            " AND {} \
+             AND (?4 IS NULL OR o.kind IN (SELECT value FROM json_each(?4))) \
+             AND (?5 IS NULL OR EXISTS (SELECT 1 FROM entries e WHERE e.object_id = o.id AND ",
+            valid_in!("e.", "?1"),
+            " AND e.source IN (SELECT value FROM json_each(?5)))) \
+             ORDER BY c.object_id LIMIT ?3)"
+        ),
+        domain,
+        cells.min.ix,
+        cells.max.ix,
+        cells.min.iy,
+        cells.max.iy,
+        cells.min.iz,
+        cells.max.iz,
+        predicate(region),
+    )
+}
+
 /// Up to `want` objects in the volume after object `after`, by id.
 pub(super) async fn page<B: Backend>(
     backend: &B,
@@ -38,7 +79,9 @@ pub(super) async fn page<B: Backend>(
     want: usize,
 ) -> Result<Vec<(After, QueryResult)>, Problem> {
     let vocabulary = &query.vocabulary;
-    let mut selects = Vec::new();
+    let map = shard_map(backend, query.release).await?;
+    // Each shard's selects, one for each domain whose cells there the box meets.
+    let mut selects: BTreeMap<u32, Vec<String>> = BTreeMap::new();
     let mut units = Vec::new();
     for space in SPACES.into_iter().filter(|s| *s != CellSpace::Structures) {
         let name = space.name();
@@ -53,32 +96,24 @@ pub(super) async fn page<B: Backend>(
             continue;
         };
         units.push((domain, scale_domain_unit(name)));
-        selects.push(format!(
-            "SELECT * FROM (SELECT o.id AS id, o.kind AS kind, o.scale_domain AS domain, \
-             o.x AS x, o.y AS y, o.z AS z FROM object_cells c CROSS JOIN objects o \
-             ON o.release = c.release AND o.id = c.object_id WHERE c.release = ?1 \
-             AND c.domain = {domain} AND c.ix BETWEEN {} AND {} AND c.iy BETWEEN {} AND {} \
-             AND c.iz BETWEEN {} AND {} AND c.object_id > ?2 AND {} \
-             AND (?4 IS NULL OR o.kind IN (SELECT value FROM json_each(?4))) \
-             AND (?5 IS NULL OR EXISTS (SELECT 1 FROM entries e WHERE e.release = o.release \
-             AND e.object_id = o.id AND e.source IN (SELECT value FROM json_each(?5)))) \
-             ORDER BY c.object_id LIMIT ?3)",
-            cells.min.ix,
-            cells.max.ix,
-            cells.min.iy,
-            cells.max.iy,
-            cells.min.iz,
-            cells.max.iz,
-            predicate(&region),
-        ));
+        let select = select(domain, &cells, &region);
+        for shard in map.meeting(domain, cells.min, cells.max) {
+            selects.entry(shard).or_default().push(select.clone());
+        }
     }
     if selects.is_empty() {
         return Ok(Vec::new());
     }
-    let sql = format!(
-        "SELECT * FROM ({}) ORDER BY id LIMIT ?3",
-        selects.join(" UNION ALL ")
-    );
+    let sql: Vec<(u32, String)> = selects
+        .into_iter()
+        .map(|(shard, each)| {
+            let union = each.join(" UNION ALL ");
+            (
+                shard,
+                format!("SELECT * FROM ({union}) ORDER BY id LIMIT ?3"),
+            )
+        })
+        .collect();
     let ids = |names: &Option<Vec<String>>, lookup: &dyn Fn(&str) -> Option<i64>| {
         names
             .as_ref()
@@ -86,19 +121,25 @@ pub(super) async fn page<B: Backend>(
     };
     let kinds = ids(&query.filters.kinds, &|k| vocabulary.term_id(k));
     let sources = ids(&query.filters.sources, &|s| vocabulary.source_n(s));
-    let rows = backend
-        .releases(
-            &sql,
-            &[
-                json!(query.release),
-                json!(after.unwrap_or(0)),
-                json!(want),
-                json!(kinds),
-                json!(sources),
-            ],
-        )
-        .await?;
-    Ok(rows_as::<Row>(rows)?
+    let params = [
+        json!(query.release),
+        json!(after.unwrap_or(0)),
+        json!(want),
+        json!(kinds),
+        json!(sources),
+    ];
+    let statements: Vec<(u32, &str, &[serde_json::Value])> = sql
+        .iter()
+        .map(|(shard, sql)| (*shard, sql.as_str(), &params[..]))
+        .collect();
+    let mut rows = Vec::new();
+    for page in backend.shards(&statements).await? {
+        rows.extend(rows_as::<Row>(page)?);
+    }
+    // An object is in one shard: the first `want` of every shard's first `want`, by id.
+    rows.sort_unstable_by_key(|row| row.id);
+    rows.truncate(want);
+    Ok(rows
         .into_iter()
         .map(|row| {
             let unit = units

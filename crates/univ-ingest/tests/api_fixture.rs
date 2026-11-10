@@ -18,6 +18,8 @@ use memory_store::{Clock, MemoryStore, publishing};
 use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
+use univ_model::release::shards::SHARD_TABLES;
+use univ_model::release::{RETIRED, valid_in};
 
 /// The variable that asks the test to rewrite the file.
 const UPDATE: &str = "UPDATE_FIXTURES";
@@ -29,8 +31,9 @@ const FILE: &str = "crates/univ-api/src/testkit_objects.sql";
 const RELEASE: u32 = 2;
 
 /// The tables the file holds, in its order.
-const TABLES: [&str; 8] = [
+const TABLES: [&str; 9] = [
     "sources",
+    "source_reading",
     "terms",
     "chains",
     "objects",
@@ -41,9 +44,9 @@ const TABLES: [&str; 8] = [
 ];
 
 const HEADER: &str = "\
--- Release 2 of Univ Ingest's fixture: its sources and every object with its entries,
--- measurements, designations and names, and the vocabulary they are coded in, as
--- cargo xtask integration publishes them. Checked against what ingest writes by
+-- Release 2 of Univ Ingest's fixture: its sources and how they are read, and every object
+-- with its entries, measurements, designations and names, and the vocabulary they are coded
+-- in, as cargo xtask integration publishes them. Checked against what ingest writes by
 -- univ-ingest's test api_fixture; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test
 -- api_fixture rewrites it.
 ";
@@ -67,23 +70,69 @@ fn literal(db: &Connection, value: ValueRef<'_>) -> String {
     }
 }
 
-/// Release [`RELEASE`]'s rows of `table` as `INSERT INTO` statements, one a line.
-fn dump(db: &Connection, table: &str, out: &mut String) {
-    let mut q = db
-        .prepare(&format!("SELECT * FROM {table} WHERE release = ?1"))
-        .unwrap();
-    let columns = q.column_count();
-    let mut rows = q.query([RELEASE]).unwrap();
-    while let Some(row) = rows.next().unwrap() {
-        let values: Vec<String> = (0..columns)
-            .map(|i| literal(db, row.get_ref(i).unwrap()))
-            .collect();
-        writeln!(out, "INSERT INTO {table} VALUES({});", values.join(",")).unwrap();
+/// A key value, ordered as `SQLite` orders a key's integers and texts.
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+enum KeyValue {
+    Integer(i64),
+    Text(String),
+}
+
+/// The rows of `table` valid in release [`RELEASE`] in each of `dbs` as `INSERT INTO`
+/// statements, one a line, in the order of the table's primary key whichever database holds
+/// them. Each is written as release [`RELEASE`]'s own, never retired, the rows it shares with
+/// release 1 included: the file is the release whole, as one database holds it.
+fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut String) {
+    let key = univ_model::release::TABLES
+        .iter()
+        .find(|t| t.name == table)
+        .unwrap()
+        .key;
+    let mut lines = Vec::new();
+    for db in dbs {
+        let mut q = db
+            .prepare(&format!(
+                "SELECT * FROM {table} WHERE {}",
+                valid_in("", "?1")
+            ))
+            .unwrap();
+        let columns: Vec<String> = q.column_names().map(str::to_owned).collect();
+        let mut rows = q.query([RELEASE]).unwrap();
+        while let Some(row) = rows.next().unwrap() {
+            let order: Vec<KeyValue> = key
+                .iter()
+                .map(|k| {
+                    let i = columns.iter().position(|c| c == k).unwrap();
+                    match row.get_ref(i).unwrap() {
+                        ValueRef::Integer(n) => KeyValue::Integer(n),
+                        ValueRef::Text(t) => KeyValue::Text(String::from_utf8_lossy(t).into()),
+                        other => unreachable!("a key of {table} holds {other:?}"),
+                    }
+                })
+                .collect();
+            let values: Vec<String> = (0..columns.len())
+                .map(|i| match columns[i].as_str() {
+                    "release" => RELEASE.to_string(),
+                    RETIRED => "NULL".to_owned(),
+                    _ => literal(db, row.get_ref(i).unwrap()),
+                })
+                .collect();
+            lines.push((
+                order,
+                format!("INSERT INTO {table} VALUES({});", values.join(",")),
+            ));
+        }
+    }
+    lines.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+    for (_, line) in lines {
+        writeln!(out, "{line}").unwrap();
     }
 }
 
-/// The file's text for the release published in `db`.
-fn text(db: &Connection) -> String {
+/// The file's text for the release published in `store`: each table's rows from the database
+/// that holds them, a shard table's from each object shard in turn, so that the file is one
+/// database of the release.
+fn text(store: &MemoryStore) -> String {
+    let db = &store.db;
     let rule: String = db
         .query_row(
             "SELECT ranking_rule_name FROM releases WHERE number = ?1",
@@ -99,7 +148,21 @@ fn text(db: &Connection) -> String {
     )
     .unwrap();
     for table in TABLES {
-        dump(db, table, &mut out);
+        if SHARD_TABLES.contains(&table) {
+            // A shard bound but never loaded holds no table.
+            let loaded = store.shards.values().filter(|db| {
+                db.query_row(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+                    [table],
+                    |r| r.get::<_, i64>(0),
+                )
+                .unwrap()
+                    > 0
+            });
+            dump(loaded, table, &mut out);
+        } else {
+            dump(std::iter::once(db), table, &mut out);
+        }
     }
     out
 }
@@ -114,7 +177,7 @@ fn univ_servers_fixture_of_objects_is_release_2_as_ingest_writes_it() {
         build_next(&f);
         publishing(&mut store, number, out, state, journals.path(), &clock).unwrap();
     }
-    let written = text(&store.db);
+    let written = text(&store);
     let path = workspace().join(FILE);
     if std::env::var_os(UPDATE).is_some() {
         std::fs::write(&path, &written).unwrap();

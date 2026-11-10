@@ -1,0 +1,49 @@
+key: 01a1a938-deb8-7399-857b-e7525b16ed9f
+id: wave-w1
+versions:
+  - key: 01a1a938-deb8-7399-857b-e758ae416cb7
+    at: 2026-11-05T01:00:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1 terms and frames"
+    goal: "Source definitions carry permission_pending (with whom and when asked) and a non-commercial mark, univ-model has a barycentric redshift frame and catalogue-wide estimated uncertainties, and Read a source serves the status and mark; merged into product/release-10"
+    status: planned
+  - key: 01a1a93a-3b97-70af-8367-59955a2e3326
+    at: 2026-11-05T01:02:08Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1 terms and frames"
+    goal: "Source definitions carry permission_pending (with whom and when asked) and a non-commercial mark, univ-model has a barycentric redshift frame and catalogue-wide estimated uncertainties, and Read a source serves the status and mark; merged into product/release-10"
+    status: active
+  - key: 01a1a983-3658-7669-bc0a-ec59798e076c
+    at: 2026-11-05T02:21:51Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W1 terms and frames"
+    goal: "Source definitions carry permission_pending (with whom and when asked) and a non-commercial mark, univ-model has a barycentric redshift frame and catalogue-wide estimated uncertainties, and Read a source serves the status and mark; merged into product/release-10"
+    status: done
+blocks:
+  - key: 01a1a983-3658-7669-bc0a-ec5820250997
+    id: w1-merged
+    kind: note
+    versions:
+      - key: 01a1a983-3658-7669-bc0a-ec5aa16e8f34
+        at: 2026-11-05T02:21:51Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W1 merged"
+        markdown: |-
+          Merged as `a998915`.
+
+          - **Gate:** 13 gates passed.
+          - **Reviews:** `/simplify` fixes applied. `/code-review` fixed two real defects before any data reached D1: the barycentric frame was not being written, and barycentric chains were not templated.
+          - **Release format:** D1 schema is now version 4, adding `source_terms`.
+        tone: success

@@ -10,14 +10,14 @@ requirements:
       form: event_driven
       when: "the owner builds a release"
       system: "Univ Ingest"
-      shall: "assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk."
+      shall: "assemble its objects, structures, volume grids, tiles, sources and manifests into a complete release on local disk, written as what it changes from the release latest points to."
     criteria:
       - key: 01a19f23-636f-72bd-b194-151f95aff549
         name: "The release has the next release number and records its build time, release cosmology, univ-model version and Univ Ingest version."
       - key: 01a19f23-636f-72bd-b194-15208136562d
         name: "The release records its matching rules and its ranking rule."
       - key: 01a19f23-636f-72bd-b194-1521b702e5bb
-        name: "The release manifest lists every file of the release with its SHA-256."
+        name: "The release manifest lists every file of the release with its SHA-256, those it shares with the release before it included."
       - key: 01a19f23-636f-72bd-b194-1522436dac01
         name: "The release holds the cell index that bounded volume queries read."
       - key: 01a1a304-2788-77fb-8f0d-273901bad9b4
@@ -30,6 +30,31 @@ requirements:
         name: "The release records, for each structure outlined from a volume grid, the result of the test that admitted or refused the outline."
       - key: 01a1a304-2788-77fb-8f0d-273c7a6188dc
         name: "The release holds each structure size published under another cosmology both as published and rescaled to the release cosmology."
+  - key: 01a1a931-2c8a-73a8-91f2-59053781d70f
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "divide a release's objects among object shards, each a D1 database, by the cell of the cell index that holds each object."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-590689bd8862
+        name: "Each object is in exactly one object shard, with its catalogue entries, measurements, designations and cell."
+      - key: 01a1a931-2c8a-73a8-91f2-59076b96877f
+        name: "All the objects of one cell of the cell index are in one object shard."
+      - key: 01a1a931-2c8a-73a8-91f2-5908e94d50c7
+        name: "An object that is not placed is assigned to an object shard by its object id."
+      - key: 01a1a931-2c8a-73a8-91f2-59092cd5e331
+        name: "The catalogue database holds the release's sources, terms, structures and grids, and the object shard of every object id."
+      - key: 01a1a931-2c8a-73a8-91f2-590a9d7b0864
+        name: "The release manifest names each object shard with the cells it holds and its estimated size."
+  - key: 01a1a931-2c8a-73a8-91f2-590b8ae658df
+    statement:
+      form: unwanted
+      if: "the objects of one cell would exceed an object shard's budget"
+      system: "Univ Ingest"
+      shall: "refuse the build and name the cell, its object count and its estimated size."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-590cebe0fc8d
+        name: "No release number is used up by the refused build."
   - key: 01a19f23-636f-72bd-b194-15238aca1cc9
     statement:
       form: ubiquitous
@@ -53,3 +78,32 @@ requirements:
     criteria:
       - key: 01a19f23-636f-72bd-b194-1529a7954231
         name: "No release number is used up by a build that failed."
+  - key: 01a1b19f-a71f-7111-b5df-7f33b5e55051
+    statement:
+      form: event_driven
+      when: "the owner builds a release"
+      system: "Univ Ingest"
+      shall: "write only the rows that differ from those valid in the release latest points to, and retire the rows that release holds and the new one does not."
+    criteria:
+      - key: 01a1b19f-a71f-7111-b5df-7f34044901a8
+        name: "A row the new release holds unchanged from the release latest points to is not written again."
+      - key: 01a1b19f-a71f-7111-b5df-7f35e0c90550
+        name: "A row the release latest points to holds and the new release does not is retired from the new release on."
+      - key: 01a1b19f-a71f-7111-b5df-7f36f972f991
+        name: "A changed row is retired from the new release on and written again, valid from it."
+      - key: 01a1b19f-a71f-7111-b5df-7f372d8be4cc
+        name: "Rows are compared by their key and a hash of their content, kept for the release latest points to beside the id state."
+      - key: 01a1b19f-a71f-7111-b5df-7f385b1742dd
+        name: "A release whose only change from the release before it is in its structures writes no object, catalogue entry, measurement or tile."
+      - key: 01a1b19f-a71f-7111-b5df-7f39d65afd25
+        name: "The release manifest gives, for each table of each database, the rows the release adds and retires and the fingerprint of every row valid in it."
+  - key: 01a1b19f-a71f-7111-b5df-7f3a7c9bc406
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "store each file of a release once by its SHA-256, shared by every release that holds it."
+    criteria:
+      - key: 01a1b19f-a71f-7111-b5df-7f3bcb2e200b
+        name: "A file whose SHA-256 a release not yet pruned already holds is not written again."
+      - key: 01a1b19f-a71f-7111-b5df-7f3ca904736d
+        name: "The release maps each of its paths to the SHA-256 of the file it holds there."

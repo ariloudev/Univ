@@ -3,6 +3,7 @@
 
 use std::collections::VecDeque;
 
+use thin_vec::ThinVec;
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::Designation;
 use univ_model::object::{
@@ -33,11 +34,19 @@ pub(super) fn plan(work: &mut Work<'_>) -> Plan {
     }
     let mut seen = vec![false; n];
     let mut objects = Vec::new();
-    for anchor in 0..n {
-        if seen[anchor] {
+    for first in 0..n {
+        if seen[first] {
             continue;
         }
-        // Breadth first from the anchor, the first entry of its group in order.
+        // Breadth first from the anchor: the host galaxy of a group that took pieces, so that
+        // each piece's resolution leads back to it through its own join; else the first entry
+        // of the group in order. Objects stay in the order of their first entry.
+        let anchor = if work.hosts.is_empty() || adjacent[first].is_empty() {
+            first
+        } else {
+            let root = work.groups.find(first);
+            work.hosts.get(&root).copied().unwrap_or(first)
+        };
         seen[anchor] = true;
         let mut members = vec![(anchor, None)];
         let mut queue = VecDeque::from([anchor]);
@@ -97,7 +106,7 @@ pub(super) fn build(
     };
     let mut objects = Vec::with_capacity(plan.objects.len());
     for (o, members) in plan.objects.into_iter().enumerate() {
-        let mut list = Vec::with_capacity(members.len());
+        let mut list = ThinVec::with_capacity(members.len());
         for (e, via) in members {
             object_of[e] = o;
             let resolved_by = match via {
@@ -111,13 +120,16 @@ pub(super) fn build(
                 }
             };
             if let Some(entry) = slots[e].take() {
-                list.push(ObjectEntry { entry, resolved_by });
+                list.push(ObjectEntry {
+                    entry,
+                    resolved_by: resolved_by.into(),
+                });
             }
         }
         if list.len() > 1 {
             report.multi_entry_objects += 1;
         }
-        let mut object = Object::new(list);
+        let mut object = Box::new(Object::new(list));
         if object.sources().any(|s| rules.galaxy_group(s).is_some()) {
             object.kind = ObjectKind::GalaxyGroup;
         }
@@ -158,9 +170,34 @@ pub(super) fn build(
             });
         }
     }
+    relate(
+        rules,
+        &mut objects,
+        &object_of,
+        &designations,
+        relations,
+        &mut report,
+    );
+    report.objects = objects.len() as u64;
+    Matched { objects, report }
+}
+
+/// Relates the objects of `relations`' group and galaxy entries, one relation for each pair of
+/// objects and kind.
+fn relate(
+    rules: &MatchingRules,
+    objects: &mut [Box<Object>],
+    object_of: &[usize],
+    designations: &[Designation],
+    relations: Vec<GroupRelation>,
+    report: &mut MatchReport,
+) {
+    // One relation for each pair of objects and kind: a galaxy that two sources carry the
+    // identifier of, such as Cosmicflows-4's and OpenNGC's PGC number, is related once.
+    let mut related = std::collections::HashSet::new();
     for r in relations {
         let (og, ox) = (object_of[r.group], object_of[r.galaxy]);
-        if og == ox {
+        if og == ox || !related.insert((og, ox, r.dominant)) {
             continue;
         }
         report.group_relations += 1;
@@ -183,8 +220,6 @@ pub(super) fn build(
             });
         }
     }
-    report.objects = objects.len() as u64;
-    Matched { objects, report }
 }
 
 /// The designations and common names the object's entries carry beside their own, each with
@@ -196,13 +231,14 @@ fn attach_names(rules: &MatchingRules, object: &mut Object) {
         for rule in rules.designations.iter().filter(|r| &r.source == source) {
             if let Some(text) = rule.field.read(entry)
                 && let Ok(d) = Designation::new(source.clone(), format!("{}{text}", rule.prefix))
-                && !object.designations.contains(&d)
+                && !object.entries.iter().any(|o| o.entry.designation == d)
+                && !object.given.contains(&d)
             {
-                object.designations.push(d);
+                object.given.push(d);
             }
         }
         for rule in rules.names.iter().filter(|r| &r.source == source) {
-            if let Some(text) = rule.field.read(entry) {
+            for text in rule.names(entry) {
                 let name = CommonName {
                     name: text.to_owned(),
                     source: source.clone(),

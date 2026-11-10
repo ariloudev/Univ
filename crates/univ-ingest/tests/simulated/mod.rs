@@ -8,7 +8,6 @@
     reason = "helpers shared by two test crates, each using a subset; a failed unwrap or panic is the test failing"
 )]
 
-use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use univ_ingest::matching::MatchingRules;
@@ -19,6 +18,7 @@ use univ_model::entry::{
     RedshiftKind,
 };
 use univ_model::ids::Designation;
+use univ_model::object::Object;
 use univ_model::position::{Epoch, Frame, unit_vector};
 use univ_model::redshift::{CmbCorrection, DipoleModel};
 use univ_model::units::Unit;
@@ -44,6 +44,14 @@ pub fn ranking_rules() -> RankingRules {
 
 pub fn designation(src: &str, id: &str) -> Designation {
     Designation::new(source(src), id).unwrap()
+}
+
+/// The object of `objects` that holds the entry `id` of the source `src`.
+pub fn holding<'a>(objects: &'a [Box<Object>], src: &str, id: &str) -> &'a Object {
+    objects
+        .iter()
+        .find(|o| o.entry(&designation(src, id)).is_some())
+        .unwrap_or_else(|| panic!("no object holds {src} {id}"))
 }
 
 /// The position `east` and `north` arcseconds from (`ra`, `dec`), on the tangent plane.
@@ -79,20 +87,21 @@ pub fn entry(src: &str, id: &str, ra: f64, dec: f64) -> CatalogueEntry {
 /// An entry of `src` named `id` without a position, such as a Bailer-Jones distance.
 pub fn bare(src: &str, id: &str) -> CatalogueEntry {
     CatalogueEntry {
+        cross_ids: univ_model::entry::Flags::default(),
         designation: designation(src, id),
         name: None,
         position: None,
-        distances: Vec::new(),
-        redshifts: Vec::new(),
+        distances: thin_vec::ThinVec::new(),
+        redshifts: thin_vec::ThinVec::new(),
         velocity: None,
         parallax: None,
         proper_motion: None,
         magnitude: None,
-        colours: Vec::new(),
+        colours: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
-        flags: BTreeMap::new(),
+        flags: univ_model::entry::Flags::default(),
         references: Box::default(),
     }
 }
@@ -192,18 +201,18 @@ pub fn with_distance(
 
 /// The entry with the name `name` beside its identifier.
 pub fn named(mut e: CatalogueEntry, name: &str) -> CatalogueEntry {
-    e.name = Some(name.to_owned());
+    e.name = Some(name.into());
     e
 }
 
 /// The entry with a parallax of `mas` ± `sigma` mas, as published, normalized to degrees.
 pub fn with_parallax(mut e: CatalogueEntry, mas: f64, sigma: f64) -> CatalogueEntry {
-    e.parallax = Some(value(
+    e.parallax = Some(Box::new(value(
         mas,
         Unit::Milliarcsecond,
         Unit::Degree,
         Uncertainty::Symmetric { sigma },
-    ));
+    )));
     e
 }
 

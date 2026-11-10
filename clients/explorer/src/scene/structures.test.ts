@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { StructureDetail } from "../api/structures.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { shapeOf, structureDetail } from "../test/structures.ts";
+import { frameOf } from "./frames.ts";
 import { drawingOf } from "./structures.ts";
-import { type Vec3, norm, normalize, sub, unapply } from "./vec.ts";
+import { type Vec3, dot, norm, normalize, sub, unapply } from "./vec.ts";
 
 const ROTATIONS = manifestOf("stars").rotations;
 
@@ -67,6 +68,19 @@ describe("a structure's shape", () => {
     expect(drawingOf(detail(point), ROTATIONS).outline.segments).toEqual([]);
   });
 
+  it("draws a point's extents along their ICRS vectors, whatever frame its point is given in", () => {
+    // The extents are ICRS vectors already: only the point is turned from its frame.
+    const supergalactic = frameOf("supergalactic", ROTATIONS)?.toFrame;
+    if (supergalactic === undefined) throw new Error("no supergalactic frame");
+    const point = shapeOf({ frame: "supergalactic", unit: "kiloparsec", geometry: { kind: "point", at: [10_000, 0, 0] } });
+    const axes: [[number, number, number], [number, number, number], [number, number, number]] = [[4000, 0, 0], [0, 6000, 0], [0, 0, 8000]];
+    const drawing = drawingOf({ ...detail(point), derivation: { from: [], extents: { frame: "supergalactic", axes } } }, ROTATIONS);
+    const at = unapply(supergalactic, [10, 0, 0]);
+    const ends = drawing.outline.segments.map((p) => sub(p, at));
+    const expected: Vec3[] = [[-2, 0, 0], [2, 0, 0], [0, -3, 0], [0, 3, 0], [0, 0, -4], [0, 0, 4]];
+    ends.forEach((end, i) => expect(norm(sub(end, expected[i] ?? [0, 0, 0]))).toBeLessThan(1e-9));
+  });
+
   it("draws a grid, or a structure with no placed shape, as its bounding box, marked approximate", () => {
     for (const shape of [shapeOf({ frame: "icrs", unit: "megaparsec", geometry: { kind: "volume_grid" } }), null]) {
       const drawing = drawingOf(detail(shape), ROTATIONS);
@@ -123,5 +137,45 @@ describe("a structure's shape", () => {
     const drawing = drawingOf(detail(null, null), ROTATIONS);
     expect(drawing.centre).toBeUndefined();
     expect(drawing.outline).toEqual({ segments: [], markers: [] });
+  });
+});
+
+describe("an attractor's and a repeller's symbol", () => {
+  const at = (kind: string): StructureDetail => ({
+    ...detail(shapeOf({ frame: "supergalactic", unit: "megaparsec", geometry: { kind: "point", at: [10, 0, 0] } })),
+    kind,
+  });
+  /** The arrows' tips: the points where four barbs and a shaft meet, five segments' ends. */
+  const tips = (segments: Vec3[]) => {
+    const ends = new Map<string, { p: Vec3; n: number }>();
+    for (const p of segments) {
+      const key = p.map((x) => x.toFixed(6)).join();
+      ends.set(key, { p, n: (ends.get(key)?.n ?? 0) + 1 });
+    }
+    return [...ends.values()].filter((e) => e.n === 5).map((e) => e.p);
+  };
+
+  it("is a sphere of radius one, its unit a fixed size on the view, with arrows in to an attractor and out from a repeller along its frame's axes", () => {
+    const attractor = drawingOf(at("attractor"), ROTATIONS);
+    const repeller = drawingOf(at("repeller"), ROTATIONS);
+    // Still drawn as a marker at its place; the symbol is about that centre.
+    expect(attractor.outline.markers.length).toBe(1);
+    const inward = tips(attractor.symbol ?? []);
+    const outward = tips(repeller.symbol ?? []);
+    expect(inward.length).toBe(6);
+    expect(outward.length).toBe(6);
+    // The tips lie just outside the sphere for an attractor and at the far end for a repeller.
+    for (const tip of inward) expect(norm(tip)).toBeCloseTo(1.15);
+    for (const tip of outward) expect(norm(tip)).toBeCloseTo(2);
+    // Along the supergalactic axes, in the ICRS.
+    const sgx = unapply(ROTATIONS.to_supergalactic, [1, 0, 0]);
+    expect(Math.max(...outward.map((t) => dot(normalize(t), sgx)))).toBeCloseTo(1);
+    // Every other point of the symbol is on its sphere or an arrow inside twice its radius.
+    for (const p of [...(attractor.symbol ?? []), ...(repeller.symbol ?? [])]) expect(norm(p)).toBeLessThanOrEqual(2 + 1e-9);
+  });
+
+  it("is drawn for no other kind, nor for a structure with no centre", () => {
+    expect(drawingOf(at("void"), ROTATIONS).symbol).toBeUndefined();
+    expect(drawingOf({ ...at("attractor"), centre: null, bounds: null }, ROTATIONS).symbol).toBeUndefined();
   });
 });

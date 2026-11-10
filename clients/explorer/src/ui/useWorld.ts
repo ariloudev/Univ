@@ -20,10 +20,16 @@ import { type NameLabel, type Overlay, nameAt, placeOverlay } from "./overlay.ts
 import type { Hidden } from "./hidden.ts";
 import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
+import { NOTHING, type Volume } from "../scene/volume.ts";
+import { insideInAddress } from "./inside.ts";
+import { clickChooser } from "./letGo.ts";
+
+/** What a click can choose: a structure's name, or a point. */
+export type Clicked = { name: NameLabel } | { point: ScenePoint };
 
 /** What is under the pointer, where the pointer is: a structure's name, which a click
  * chooses, or else a point. */
-export type Hover = ({ x: number; y: number } & ({ name: NameLabel } | { point: ScenePoint })) | undefined;
+export type Hover = ({ x: number; y: number } & Clicked) | undefined;
 
 /** What is under the pointer at `x`, `y`: a name before a point, as a click chooses. */
 function under(world: World, element: HTMLCanvasElement, x: number, y: number): Hover {
@@ -53,10 +59,13 @@ export interface World {
 }
 
 /** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to;
- * a structure whose name was clicked. */
+ * a structure whose name was clicked; and, asking whether what a click found is chosen already,
+ * a click that lets it go (read-an-object, see-the-structures). */
 export interface OnChoose {
   point: (point: ScenePoint) => void;
   structure: (id: string) => void;
+  isChosen: (found: Clicked) => boolean;
+  letGo: () => void;
 }
 
 function surroundings(element: HTMLElement): Surroundings {
@@ -96,6 +105,14 @@ export function hide(world: World, hidden: Pick<Hidden, "domain" | "source" | "k
   world.controller.invalidate();
 }
 
+/** Culls `world` to `volume`, or no longer where it is none (see-the-structures): only the
+ * points inside it drawn, picked, counted and fetched. The renderer reads each tile's mask from
+ * the catalogue as it draws. */
+export function cull(world: World, volume: Volume | undefined): void {
+  world.catalogue?.setCull(volume);
+  world.controller.invalidate();
+}
+
 /** What a release's catalogue starts from: its domains, and the rotations of its frames. */
 interface Started {
   domains: Domain[];
@@ -115,7 +132,7 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes });
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
@@ -130,6 +147,8 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
     onChange: () => controller.invalidate(),
   };
   world.catalogue = new Catalogue(release, domains, events, { signal });
+  // A cull the address asks for holds back every tile until the structure it names is read.
+  if (insideInAddress(location.search) !== undefined) world.catalogue.setCull(NOTHING);
   world.catalogue.update(controller.sight);
   return { domains, rotations };
 }
@@ -169,9 +188,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   };
   const clicked = firstOfDouble((x, y) => under(world, element, x, y), () => performance.now());
   // A click centres the view on the point; a double-click flies in close to it.
-  const chooser = (close: boolean) => (x: number, y: number) => {
-    const found = clicked(x, y);
-    if (found === undefined) return;
+  const choose = (found: Clicked, close: boolean) => {
     if ("name" in found) {
       onChoose.current.structure(found.name.id);
       return;
@@ -182,12 +199,18 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     clearHover();
     onChoose.current.point(found.point);
   };
+  // A click on what is chosen lets it go, unless a double-click follows (read-an-object).
+  const clicks = clickChooser<Clicked>({ isChosen: (found) => onChoose.current.isChosen(found), letGo: () => onChoose.current.letGo(), choose });
+  const at = (gesture: (found: Clicked) => void) => (x: number, y: number) => {
+    const found = clicked(x, y);
+    if (found !== undefined) gesture(found);
+  };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
     pan: (dx, dy) => controller.pan(dx, dy),
     zoom: (steps) => controller.zoom(steps),
-    click: chooser(false),
-    doubleClick: chooser(true),
+    click: at(clicks.click),
+    doubleClick: at(clicks.doubleClick),
     hover: (x, y) => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
       hovering = requestAnimationFrame(() => hover.set(under(world, element, x, y)));
@@ -204,6 +227,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   resize.observe(element);
   return () => {
     unbind();
+    clicks.cancel();
     resize.disconnect();
     if (hovering !== undefined) cancelAnimationFrame(hovering);
   };
@@ -211,7 +235,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
 
 /** What follows a frame drawn: the overlay placed, the frame counted, and the first points
  * marked if these are they; whether the first points are now marked. */
-export function drawn(world: World, overlay: Overlay, size: { width: number; height: number }, marked: boolean): boolean {
+export function drawn(world: World, overlay: Overlay, size: { width: number; height: number; ratio?: number }, marked: boolean): boolean {
   placeOverlay(world, overlay, size);
   world.frame.set(world.frame.get() + 1);
   if (marked || world.pickable.length === 0) return marked;
@@ -223,6 +247,7 @@ export function drawn(world: World, overlay: Overlay, size: { width: number; hei
 function animate(world: World, overlay: RefObject<Overlay>, size: Surroundings["size"]): () => void {
   let marked = false;
   let frame = requestAnimationFrame(function loop() {
+    if (world.renderer.fading()) world.controller.invalidate();
     if (world.controller.tick()) marked = drawn(world, overlay.current, size(), marked);
     frame = requestAnimationFrame(loop);
   });
@@ -236,7 +261,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
   const [world, setWorld] = useState<World>();
   const [rotations, setRotations] = useState<Rotations>();
   const [domains, setDomains] = useState<readonly Domain[]>([]);
-  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), chosen: useRef(null), names: useRef(null) };
+  const overlay: Overlay = { earth: useRef(null), ring: useRef(null), ringLabel: useRef(null), ringLabels: useRef(null), chosen: useRef(null), names: useRef(null) };
   const overlayRef = useRef(overlay);
   const chooseRef = useRef(onChoose);
   chooseRef.current = onChoose;
@@ -252,6 +277,7 @@ export function useWorld(release: number, canvas: RefObject<HTMLCanvasElement | 
     }
     const around = surroundings(element);
     const state = emptyWorld(new Controller(renderer, around), renderer);
+    renderer.setDetail(() => state.catalogue);
     setWorld(state);
     const abort = new AbortController();
     startCatalogue(release, state, abort.signal)

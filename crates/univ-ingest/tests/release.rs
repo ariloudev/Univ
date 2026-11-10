@@ -16,7 +16,8 @@ use release_fixture::{
 };
 use univ_ingest::crossmatch::{Basis, CrossMatched};
 use univ_ingest::release::{
-    Placing, StructureBounds, cell_rows, list, placements, release_dir, structure_rows,
+    Placing, StructureBounds, index_rows, list, object_cells, placements, release_dir,
+    structure_rows,
 };
 use univ_ingest::state::{State, pending};
 use univ_ingest::tiles::sha256;
@@ -93,14 +94,16 @@ fn the_manifest_lists_every_file_of_the_release_with_its_sha256() {
         assert_eq!(file.bytes, bytes.len() as u64, "{}", file.path);
         assert_eq!(file.sha256, sha256(&bytes), "{}", file.path);
         match file.target {
-            Target::R2 => assert_eq!(file.key, Some(format!("releases/1/{}", file.path))),
+            // Each file lies under its SHA-256 in R2, shared by every release that holds it.
+            Target::R2 => assert_eq!(file.key, Some(keys::file(&file.sha256))),
             Target::D1 => {
                 assert!(file.path.starts_with("d1/") && file.key.is_none());
             }
         }
     }
     for path in [
-        "d1/0000-schema.sql",
+        "d1/catalogue/0000-schema.sql",
+        "d1/shard-00/0000-schema.sql",
         "tiles/stars/manifest.json",
         "tiles/cosmic_web/r.bin",
         "rules/release.yaml",
@@ -136,27 +139,22 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
         max: [750.0, 200.0, 10.0],
     };
     bounds.push(("simulated-wall".to_owned(), Ok(wall)));
-    let cells = cell_rows(
-        1,
-        &crossed.objects,
-        &f.definitions,
-        &crossed.cosmology,
-        &bounds,
-    )
-    .unwrap();
+    let objects = object_cells(&crossed.objects, &f.definitions, &crossed.cosmology).unwrap();
+    let cells = index_rows(1, &bounds).unwrap();
     let placed: Vec<_> = crossed
         .objects
         .iter()
-        .filter(|o| o.position.is_some())
+        .enumerate()
+        .filter(|(_, o)| o.position.is_some())
         .collect();
     assert_ne!(placed.len(), 0);
-    assert_eq!(cells.objects.len(), placed.len());
-    for o in placed {
-        let row = cells
-            .objects
-            .iter()
-            .find(|r| r.object_id == o.id.get())
-            .unwrap();
+    let unplaced = crossed.objects.len() - placed.len();
+    let without: Vec<usize> = (0..crossed.objects.len())
+        .filter(|&i| objects.of(i).is_none())
+        .collect();
+    assert_eq!(without.len(), unplaced);
+    for (place, o) in placed {
+        let row = objects.cells[objects.of(place).unwrap()];
         let space = match row.domain {
             "stars" => CellSpace::Stars,
             "nearby_galaxies" => CellSpace::NearbyGalaxies,
@@ -171,12 +169,7 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
             }
         });
         let cell = space.cell(at).unwrap();
-        assert_eq!(
-            (row.ix, row.iy, row.iz),
-            (cell.ix, cell.iy, cell.iz),
-            "{}",
-            o.id
-        );
+        assert_eq!(row.cell, cell, "{}", o.id);
         // A query of a small box around the object reads its cell.
         let query = univ_model::geometry::Aabb {
             min: at.map(|c| c - 0.5),
@@ -225,7 +218,8 @@ fn the_cell_index_holds_every_placed_object_in_the_cell_of_its_position() {
     let m = &release.manifest;
     assert_eq!(m.counts.object_cells, m.counts.placed);
     let rows = d1_text(&release.dir, m, "object_cells");
-    assert_eq!(rows.matches("\n(1, ").count(), cells.objects.len());
+    let placed = crossed.objects.len() - unplaced;
+    assert_eq!(rows.matches("\n(1, ").count(), placed);
 }
 
 #[test]
@@ -253,7 +247,7 @@ fn a_release_is_built_under_the_rules_and_structures_its_cross_match_read() {
     let f = fixture();
     // The repository's rules, read by the cross-match from a copy.
     let rules = tempfile::tempdir().unwrap();
-    for name in ["matching", "ranking", "tiles", "release"] {
+    for name in univ_ingest::crossmatch::RULES {
         let file = format!("{name}.yaml");
         std::fs::copy(
             workspace().join("rules").join(&file),

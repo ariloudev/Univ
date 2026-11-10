@@ -14,19 +14,18 @@ mod release_fixture;
 use memory_store::{Clock, MemoryStore, Op, publishing};
 use release_fixture::{build_next, fixture};
 
-/// The error of publishing release 1 when `sql` runs on D1 right after the file of `table` is
-/// executed, and whether `latest` was left unset.
+/// The error of publishing release 1 when `sql` runs on the D1 database a file of `table` was
+/// just executed in, and whether `latest` was left unset. A publish that changed no row would
+/// succeed, and fail the test.
 fn corrupted(table: &'static str, sql: &'static str) -> String {
     let f = fixture();
     build_next(&f);
     let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
     let part = format!("-{table}-");
-    let mut changed = 0;
     let mut store = MemoryStore {
-        observer: Some(Box::new(move |op, db, _| {
+        observer: Some(Box::new(move |op, _, db, _| {
             if matches!(op, Op::Execute(name) if name.contains(&part)) {
-                changed += db.execute(sql, []).unwrap();
-                assert!(changed > 0, "{sql} changed no row");
+                db.execute(sql, []).unwrap();
             }
         })),
         ..MemoryStore::default()

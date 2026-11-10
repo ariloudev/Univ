@@ -1,0 +1,10 @@
+source: gama-dr4
+url: https://www.gama-survey.org/dr4/data/cat/SpecCat/v27/SpecObjv27.fits
+retrieved: 2026-11-05T02:46:00Z
+sha256: 703bc3e3c9465e6d192f206d08b6069d1a6e0a553e0d9458a85b4b59d1b87c64
+note: >-
+  Rows 29, 30, 31, 2, 1, 144 and 339 of the file (counting from 1; whole file SHA-256
+  e997cace56d01924f3eef163ae30d64888726ff7ea09ca7d6b56f588935e42f2), cut by hand: the primary HDU
+  and every header card of HDU 1 (EXTNAME SpecObj) kept except NAXIS2, set to 7; the seven rows
+  in that order, padded with zero bytes to a 2880-byte block. They are three GAMA rows with NQ 4,
+  an SDSS and a 2dFGRS row, a star (z = -0.00003, NQ 4) and a GAMA row with NQ 1.

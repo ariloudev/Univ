@@ -1,0 +1,230 @@
+key: 01a1a915-30ce-70d8-a063-62959eb50699
+id: weigh-the-surveys
+versions:
+  - key: 01a1a915-30ce-70d8-a063-6299496fb25f
+    at: 2026-11-05T00:21:40Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Weigh the candidate surveys"
+    goal: "Each candidate survey (DESI DR1, COSMOS-Web groups, 2dFGRS, GAMA, ALFALFA, the rest of BOSS/eBOSS, 2MPZ, WISE×SuperCOSMOS, Euclid) has its size, sky coverage, redshift reach, scale domain, primary citation and redistribution terms recorded, quoted from the provider"
+    status: active
+  - key: 01a1a92b-885c-71a5-a921-4c9c053ff405
+    at: 2026-11-05T00:46:04Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Weigh the candidate surveys"
+    goal: "Each candidate survey (DESI DR1, COSMOS-Web groups, 2dFGRS, GAMA, ALFALFA, the rest of BOSS/eBOSS, 2MPZ, WISE×SuperCOSMOS, Euclid) has its size, sky coverage, redshift reach, scale domain, primary citation and redistribution terms recorded, quoted from the provider"
+    status: done
+blocks:
+  - key: 01a1a916-3ee9-77ea-95ac-ec8866e7105c
+    id: d1-budget
+    kind: note
+    versions:
+      - key: 01a1a916-3ee9-77ea-95ac-ec8974bb8b66
+        at: 2026-11-05T00:22:49Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "How much D1 room release 10 has"
+        markdown: |-
+          Measured on local release 9 (`.cache/univ-ingest/build/releases/9/manifest.yaml`):
+
+          | Quantity | Release 9 |
+          |---|---|
+          | Objects | 2,099,181 |
+          | Entries | 3,083,468 |
+          | D1 estimate | 2.50 GB of the 10 GB cap |
+          | Per object | about 1.19 kB (object, entries, measurements, designations, cell) |
+
+          All releases share one D1 database (tables keyed by `release`), so release 10 is published while release 9 is still live and served. Release 10 therefore has about **7.5 GB**, which is about **6 million objects** at release 9's cost per object, unless release 9 is pruned first, which would break clients that pin it.
+
+          In objects at that cost, DESI DR1's ~18.7 M redshifts would need about 20 GB, roughly twice the whole cap. Smaller surveys (2dFGRS, GAMA, ALFALFA, the rest of BOSS/eBOSS, 2MPZ) may fit beside release 9. The research below gives each one's count.
+        tone: info
+      - key: 01a1a91b-b549-76a7-8006-ddeccc7b969c
+        at: 2026-11-05T00:28:47Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "How much D1 room release 10 has"
+        markdown: |-
+          Measured on the local D1 database (`.cache/univ-ingest/wrangler/v3/d1/…sqlite`, `dbstat`) and release 9's manifest:
+
+          | Quantity | Value |
+          |---|---|
+          | Live releases in local D1 | 6, 7, 8, 9 (1–4 pruned) |
+          | Database size | 6.93 GB (1,690,824 pages of 4 kB, 8 free) |
+          | Per release | about 1.73 GB for about 2.1 M objects |
+          | Per object on disk | about 0.83 kB (objects, entries, measurements, designations, cells) |
+          | Manifest's own estimate per release | 2.50 GB (overstates the disk size by about 45%) |
+
+          Each release keeps a **full copy** of its objects (rows keyed by `release`). Release 10 carries release 9's 2.1 M objects again, about 1.7 GB, and then the new surveys on top.
+
+          The owner says pruning is fine, since nobody pins release 9. The room for new objects is then:
+
+          | Before publishing 10 | Room for new objects | At ~0.83 kB each |
+          |---|---|---|
+          | Prune 6–8, keep 9 live while 10 goes in | ~6.5 GB | ~7.8 M |
+          | Prune 6–9 first | ~8.3 GB | ~10 M |
+
+          Releases 6–8 have to be pruned either way: four live releases already take 6.9 GB. A survey galaxy with one redshift likely costs less than release 9's average, which has 1.47 entries per object, but **DESI DR1's ~18.7 M redshifts do not fit even in an empty database**. Neither does WISE×SuperCOSMOS's ~18.5 M. Both need bulk objects in R2 shards. The remaining candidates fit in D1.
+        tone: info
+  - key: 01a1a924-58d9-776a-8ebd-d775c5c32f67
+    id: surveys-weighed-so-far
+    kind: note
+    versions:
+      - key: 01a1a924-58d9-776a-8ebd-d776bea9261a
+        at: 2026-11-05T00:38:13Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Six surveys weighed (DESI, Euclid and COSMOS-Web still being read)"
+        markdown: |-
+          Counts were measured on 2026-11-05: SkyServer SQL for SDSS; the downloaded files for 2dFGRS, GAMA and ALFALFA. Terms are quoted from the providers. The CDS servers refused connections, so the CDS licence page was read from a Wayback snapshot dated 2026-10-25.
+
+          | Survey | Objects after cuts | Coverage | Redshifts | Terms | Judgment |
+          |---|---|---|---|---|---|
+          | Rest of BOSS/eBOSS (DR17 SpecObj, `zWarning = 0`) | 1,537,923 galaxies at z ≥ 0.35 (cut at z < 1.2: 1,532,708) + 753,228 QSOs | BOSS/eBOSS footprint | spectroscopic, with `zErr` | "All SDSS data released in our public data releases is considered in the public domain." | permitted with credit |
+          | 2dFGRS (VII/250, Q ≥ 3, z ≥ 0.002) | 221,509 | ~1,500 deg² | spectroscopic, heliocentric; no per-object error, rms 85 km/s | none of its own; CDS: "free of usage in a scientific context" if cited | permitted with credit, non-commercial |
+          | GAMA DR4 (SpecObj v27, NQ ≥ 3, z ≥ 0.002) | 302,682 (248,682 GAMA's own of the NQ ≥ 3) | ~286 deg² in five fields | spectroscopic, heliocentric; no error column | only "please cite the DR4 paper … and acknowledge GAMA" | **unclear**: ask gama@gama-survey.org |
+          | ALFALFA α.100 (code 1) | 25,434 | ~7,000 deg², Dec 0° to +36° | HI 21 cm, heliocentric cz < 0.06; error = W50 error / 2 | AAS table; CDS classes it CC BY-NC | permitted with credit, non-commercial |
+          | 2MPZ | 928,352 (+5,823) | near all-sky | **photometric**, σz = 0.015 (~12%) | WFAU: cite and acknowledge; a "copyright summary" it names was not found; the plate scans are "All Rights Reserved" | **unclear**: ask WFAU / Bilicki |
+          | WISE×SuperCOSMOS | 20,416,142 (~18.5 M masked) | ~3π sr, \|b\| > 10° | **photometric**, σz/(1+z) = 0.033 (~15%) | as 2MPZ | **unclear**; too large for D1 |
+
+          What this means for the scope:
+
+          - **Fits in D1 now, with terms settled:** the rest of BOSS/eBOSS, 2dFGRS and ALFALFA, about 2.5 M objects before cross-matching.
+          - **Needs a reply from its provider before it can be published:** GAMA, 2MPZ, WISE×SuperCOSMOS.
+          - **Non-commercial terms** (2dFGRS through CDS, ALFALFA's CC BY-NC) would be a first for the project. Each source records its own terms, so a later commercial use would have to drop these two.
+          - **Kinds of value:** photometric redshifts give positions smeared by 12–15% along the line of sight, and ALFALFA's distances are estimates from a flow model at H0 = 70. Each has to keep its kind of value distinct.
+          - **Overlaps:** GAMA repeats SDSS, 2dFGRS and 6dFGS rows (~82 k of them), and 2dFGRS overlaps SDSS and 6dFGS. The cross-match merges these into existing objects instead of adding new ones.
+  - key: 01a1a925-c5a2-73d1-bb2a-816524b6109e
+    id: owner-takes-larger-errors
+    kind: note
+    versions:
+      - key: 01a1a925-c5a2-73d1-bb2a-8166560efc9c
+        at: 2026-11-05T00:39:47Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "The owner accepts larger errors for a more complete catalogue"
+        markdown: |-
+          The owner: *"We can tolerate higher errors for the sake of having a more complete catalog."*
+
+          The photometric surveys (2MPZ, WISE×SuperCOSMOS, and Euclid's photometric redshifts if they are public) are now **in scope on accuracy**. Release 10 already handles them:
+
+          - `RedshiftKind::Photometric` and `DistanceKind::PhotometricRedshift` exist in univ-model.
+          - The ranking rule ranks a measured redshift before "a photometric redshift" (`spec/products/univ-ingest/identity/choose-the-preferred-measurement.yaml`, `rules/ranking.yaml`). An object that also has a spectroscopic redshift keeps that one as its preferred distance, and the photometric one stays as an extra measurement.
+
+          What this does not settle:
+
+          - **Terms.** 2MPZ and WISE×SuperCOSMOS still need WFAU's word on redistribution before they can be published.
+          - **Size.** WISE×SuperCOSMOS (~18.5 M) needs the object shards, like DESI.
+          - **Uncertainties.** Neither catalogue publishes a per-object photo-z error. The value comes from each paper's global scatter (2MPZ σz = 0.015; WISE×SCOS σz/(1+z) = 0.033), recorded as an estimate with its citation, not left blank.
+        tone: success
+  - key: 01a1a928-a793-74e1-a110-467d8a7437a3
+    id: wfau-terms-read
+    kind: note
+    versions:
+      - key: 01a1a928-a793-74e1-a110-467e6f2633a3
+        at: 2026-11-05T00:42:56Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "WFAU's terms, read from the pages themselves"
+        markdown: |-
+          Read 2026-11-05 over plain http (the https certificates name only `surveys.roe.ac.uk`).
+
+          | Page | What it says |
+          |---|---|
+          | http://ssa.roe.ac.uk/credits.html (the archive that holds 2MPZ and WISE×SuperCOSMOS, dated 16/7/2015) | "All data retrieved from the SuperCOSMOS Science Archive are subject to the copyright given in this copyright summary." **The words carry no link** in the page's HTML, and `ssa.roe.ac.uk/copyright.html` and `www-wfau.roe.ac.uk/sss/copyright.html` return 404. "Copyright information specific to individual plates is provided in the headers of the FITS files." The acknowledgement: "This research has made use of data obtained from the SuperCOSMOS Science Archive, prepared and hosted by the Wide Field Astronomy Unit, Institute for Astronomy, University of Edinburgh, which is funded by the UK Science and Technology Facilities Council." |
+          | http://wsa.roe.ac.uk/policy.html (WFCAM Science Archive) | It governs **WFCAM data (UKIDSS, UHS, PI programmes)**, not the SuperCOSMOS catalogues. "all UKIDSS data is now world-public." Its UHS fair-use paragraph: "Once a new dataset has been created by querying the UHS database, that new dataset can be freely used. However, note that this is intended for small tables etc - please don't create massive subsets of the database that are passed on to others." |
+
+          The owner pasted a summary of WFAU's fair-use terms: credit the consortia and processing units, cite the technical papers, and don't claim ownership of derived query sets. It does not appear on either page as written. The nearest text is the UHS paragraph above.
+
+          **Judgment: still unclear for 2MPZ and WISE×SuperCOSMOS.** No page grants or refuses redistribution of the SSA catalogues. The copyright summary they defer to is unlinked, and WFAU's one fair-use statement, though written for UHS, discourages passing on "massive subsets". WISE×SuperCOSMOS's 20 M rows would be such a subset. Recommended: write to the archive contact on the page (mar@roe.ac.uk) and to the catalogue author (M. Bilicki), and publish once they reply. Until then the source definitions can be written with `redistribution.status: unclear`, which Univ Ingest refuses to publish.
+        tone: warning
+      - key: 01a1a929-0480-75dd-b76e-e307bac43cfe
+        at: 2026-11-05T00:43:20Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "WFAU's terms, read from the pages themselves"
+        markdown: |-
+          Read 2026-11-05 over plain http (the https certificates name only `surveys.roe.ac.uk`).
+
+          | Page | What it says |
+          |---|---|
+          | http://ssa.roe.ac.uk/credits.html (the archive that holds 2MPZ and WISE×SuperCOSMOS, dated 16/7/2015) | "All data retrieved from the SuperCOSMOS Science Archive are subject to the copyright given in this copyright summary." **The words carry no link** in the page's HTML, and `ssa.roe.ac.uk/copyright.html` and `www-wfau.roe.ac.uk/sss/copyright.html` return 404. "Copyright information specific to individual plates is provided in the headers of the FITS files." The acknowledgement: "This research has made use of data obtained from the SuperCOSMOS Science Archive, prepared and hosted by the Wide Field Astronomy Unit, Institute for Astronomy, University of Edinburgh, which is funded by the UK Science and Technology Facilities Council." |
+          | http://wsa.roe.ac.uk/policy.html (WFCAM Science Archive) | It governs **WFCAM data (UKIDSS, UHS, PI programmes)**, not the SuperCOSMOS catalogues. "all UKIDSS data is now world-public." Its UHS fair-use paragraph: "Once a new dataset has been created by querying the UHS database, that new dataset can be freely used. However, note that this is intended for small tables etc - please don't create massive subsets of the database that are passed on to others." |
+
+          The owner pasted a summary of WFAU's fair-use terms: credit the consortia and processing units, cite the technical papers, and don't claim ownership of derived query sets. It does not appear on either page as written. The nearest text is the UHS paragraph above.
+
+          **Judgment: still unclear for 2MPZ and WISE×SuperCOSMOS.** No page grants or refuses redistribution of the SSA catalogues. The copyright summary they defer to is unlinked, and WFAU's one fair-use statement, though written for UHS, discourages passing on "massive subsets". WISE×SuperCOSMOS's 20 M rows would be such a subset. Recommended: write to the archive contact on the page (mar@roe.ac.uk) and to the catalogue author (M. Bilicki), and publish once they reply.
+
+          **Correction:** Univ Ingest's redistribution statuses are only `permitted`, `permitted_with_credit` and `forbidden` (`crates/univ-ingest/src/source/mod.rs`). There is no status for a source that is waiting for permission. Holding one back would need a fourth status, refused like `forbidden`, in the spec, or the source definition written only once the reply arrives.
+        tone: warning
+  - key: 01a1a92b-885c-71a5-a921-4c91ff3e52ef
+    id: surveys-weighed-deep
+    kind: note
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4c9a36749425
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "DESI DR1, Euclid and COSMOS-Web groups"
+        markdown: |-
+          | Survey | Objects after cuts | Coverage | Redshifts | Terms | Judgment |
+          |---|---|---|---|---|---|
+          | DESI DR1 (`zall-pix-iron`, `ZCAT_PRIMARY`, `OBJTYPE='TGT'`, `ZWARN=0`) | 13,049,402 galaxies + 1,553,713 QSOs in the Main Survey; ~15.8 M with SV and special programmes | ~9,700 deg² bright, ~9,500 dark | spectroscopic, **barycentric** ("vacuum barycentric"), with `ZERR`; galaxies to z = 1.7 | CC BY 4.0: "free to share, copy, redistribute … for any purpose, including commercially, as long as they Cite … Indicate if any changes are made … Include the following acknowledgments text" | permitted with credit |
+          | Euclid Q1 photo-z (`phz_classification = 2`, `phz_flags = 0`) | 12,937,426 | **63.1 deg²** (three deep fields) | photometric, z 0–6; asymmetric 70% interval; Q1 grism redshifts only ~27% reliable, not taken | CC BY-NC 3.0 IGO; websites must "display the ESA Euclid logo" | permitted with credit, non-commercial |
+          | Euclid DR1 | not public; ESA lists "12 November 2026 — DR1-Foundation" (~1,900 deg²), marked tentative | | | | |
+          | COSMOS-Web groups (Toni et al. 2025) | 1,678 (665 at ~90% purity, `SN_NOCL` ≳ 10) | 0.45 deg² | **photometric** group z, 0.08–3.7, to 2 decimals; frame and epoch not stated | no licence stated; the A&A article is CC BY 4.0; CDS: free "in a scientific context" with citation | unclear: ask the corresponding author |
+
+          Sources: DESI Collaboration 2026, AJ 171, 285 (doi:10.3847/1538-3881/ae4c43); Aussel et al. 2026, A&A 711, A1 (doi:10.1051/0004-6361/202554610); Toni et al. 2025, A&A 697, A197 (doi:10.1051/0004-6361/202553759).
+
+          Notes for the spec:
+
+          - **DESI** is the size that needs shards. Release 10 with DESI, the rest of BOSS/eBOSS, 2dFGRS and ALFALFA would be about 21 M objects before cross-matching, about 15–18 GB.
+          - **DESI positions** are ICRS at a per-row `REF_EPOCH`, and its redshifts are barycentric. univ-model has no barycentric redshift frame yet. It differs from heliocentric by at most ~13 m/s, but it has to be named, not relabelled.
+          - **Euclid Q1** packs ~13 M points into 63 deg² to z = 6, and **COSMOS-Web** is 0.45 deg² to z = 3.7. Both are pencil beams that would need the deep-field scale domain the earlier deferral named. The `cosmic_web` octree would split very deep around them otherwise.
+  - key: 01a1a92b-885c-71a5-a921-4c922917527f
+    id: weighed-summary
+    kind: note
+    versions:
+      - key: 01a1a92b-885c-71a5-a921-4c9bc71313eb
+        at: 2026-11-05T00:46:04Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "What the weighing produced"
+        markdown: |-
+          Nine candidates weighed, each with its count, coverage, redshift kind, citation and terms quoted from the provider, plus the D1 room measured on release 9.
+
+          ```mermaid
+          flowchart LR
+            A[Clear terms, fits D1] --> A1[rest of BOSS/eBOSS 2.3 M]
+            A --> A2[2dFGRS 0.22 M, NC]
+            A --> A3[ALFALFA 25 k, NC]
+            B[Clear terms, needs shards] --> B1[DESI DR1 15.8 M]
+            C[Permission pending] --> C1[2MPZ 0.93 M]
+            C --> C2[WISE x SuperCOSMOS 18.5 M, shards]
+            C --> C3[GAMA DR4 0.30 M]
+            C --> C4[COSMOS-Web groups 1.7 k, deep field]
+            D[Waits for data or a domain] --> D1[Euclid: Q1 63 deg2 NC; DR1 not out]
+          ```
+
+          Left open for the owner: storage, which surveys, quasars, Euclid, non-commercial terms, and how `permission_pending` behaves.
+        tone: success

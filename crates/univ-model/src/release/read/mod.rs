@@ -12,11 +12,15 @@ mod entries;
 mod links;
 mod measurements;
 mod placed;
+mod reading;
+
+pub use reading::Reading;
 
 use std::collections::{BTreeMap, HashMap};
 
-use crate::api::objects::ObjectRecord;
+use crate::api::objects::{MeasuredQuantity, ObjectRecord};
 use crate::cosmology::Cosmology;
+use crate::release::rows::CatalogueUncertainty;
 use columns::Columns;
 
 /// One D1 row: column names to numbers, strings and nulls.
@@ -33,6 +37,11 @@ pub struct Vocabulary {
     sources: HashMap<i64, String>,
     term_ids: HashMap<String, i64>,
     source_ns: HashMap<String, i64>,
+    /// Each uncertainty a source states once for its whole catalogue, by the source's id: the
+    /// quantity it applies to and where the source states it.
+    catalogue_uncertainties: HashMap<String, Vec<(MeasuredQuantity, String)>>,
+    /// Each source's designation form and rank (schema version 7).
+    reading: Reading,
 }
 
 impl Vocabulary {
@@ -59,7 +68,49 @@ impl Vocabulary {
             terms,
             chains: chains.into_iter().collect(),
             sources,
+            catalogue_uncertainties: HashMap::new(),
+            reading: Reading::default(),
         }
+    }
+
+    /// The vocabulary with how its sources are read: each source's designation form and rank.
+    #[must_use]
+    pub fn with_reading(mut self, reading: Reading) -> Self {
+        self.reading = reading;
+        self
+    }
+
+    /// How the release's sources are read.
+    #[must_use]
+    pub fn reading(&self) -> &Reading {
+        &self.reading
+    }
+
+    /// The vocabulary with the uncertainties its sources state once for their whole
+    /// catalogues, each as the source's id, the quantity and where the source states it.
+    #[must_use]
+    pub fn with_catalogue_uncertainties(
+        mut self,
+        uncertainties: impl IntoIterator<Item = (String, CatalogueUncertainty)>,
+    ) -> Self {
+        for (source, u) in uncertainties {
+            self.catalogue_uncertainties
+                .entry(source)
+                .or_default()
+                .push((u.quantity, u.error.basis));
+        }
+        self
+    }
+
+    /// Where source `source` states the one uncertainty of its whole catalogue for `quantity`,
+    /// when it states one.
+    #[must_use]
+    pub fn catalogue_uncertainty(&self, source: &str, quantity: MeasuredQuantity) -> Option<&str> {
+        self.catalogue_uncertainties
+            .get(source)?
+            .iter()
+            .find(|(q, _)| *q == quantity)
+            .map(|(_, basis)| basis.as_str())
     }
 
     #[must_use]
@@ -123,8 +174,8 @@ impl std::fmt::Display for ReadError {
 impl std::error::Error for ReadError {}
 
 /// The object of row `object` with its `entries`, `measurements` and `designations` rows, each
-/// every row of the object in the release, in any order. A `designations` row holds `source`,
-/// its source's id, and `identifier`, as a join of `designations` with `sources` gives them.
+/// every row of the object in the release, in any order, as their tables hold them: a source by
+/// its number in the release, which the vocabulary names.
 ///
 /// The record's designations are those rows. A release built before the `designations` table
 /// holds none for any object: given no rows, the record gives the entries' own designations.
@@ -139,6 +190,7 @@ pub fn object(
     entries: &[Row],
     measurements: &[Row],
     designations: &[Row],
+    names: &[Row],
 ) -> Result<ObjectRecord, ReadError> {
     let c = Columns::new(v, "objects", object);
     let mut heads = BTreeMap::new();
@@ -178,15 +230,15 @@ pub fn object(
     let id = c.int("id")?;
     // The `designations` rows, which add those sources give beside their entries; the entries'
     // own for a release from before that table.
-    let mut designations = if designations.is_empty() {
-        heads.into_values().collect()
+    let own: std::collections::BTreeSet<_> = heads.into_values().collect();
+    let designations = if designations.is_empty() {
+        own.iter().cloned().collect()
     } else {
         entries::designations(v, designations)?
     };
-    designations.sort();
-    designations.dedup();
     Ok(ObjectRecord {
-        designations,
+        designations: v.reading().designations(designations, &own),
+        names: reading::names(v, names)?,
         release: v.release(),
         id: u64::try_from(id).map_err(|_| c.error("id", format!("{id} is negative")))?,
         kind: c.typed("kind")?,

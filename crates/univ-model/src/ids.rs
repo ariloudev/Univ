@@ -25,12 +25,28 @@ pub struct SourceId(Arc<str>);
 /// A source's own name for an entry: the source and its identifier, such as Gaia DR3 and a
 /// `source_id`.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(try_from = "RawDesignation")]
 pub struct Designation {
-    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub source: SourceId,
-    pub identifier: String,
+    // Shared by every copy: an entry's designation is copied into its object's preferred
+    // measurements and the id maps, for each of tens of millions of entries.
+    pub identifier: Arc<str>,
+}
+
+// The API's one schema of a designation is the object record's, whose form this one serializes
+// to without the optional formatted designation.
+#[cfg(feature = "openapi")]
+impl utoipa::PartialSchema for Designation {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        <crate::api::objects::DesignationRecord as utoipa::PartialSchema>::schema()
+    }
+}
+
+#[cfg(feature = "openapi")]
+impl utoipa::ToSchema for Designation {
+    fn name() -> std::borrow::Cow<'static, str> {
+        <crate::api::objects::DesignationRecord as utoipa::ToSchema>::name()
+    }
 }
 
 /// A designation as read, before its checks.
@@ -152,7 +168,7 @@ impl Designation {
     /// # Errors
     ///
     /// Fails on an empty or blank identifier.
-    pub fn new(source: SourceId, identifier: impl Into<String>) -> Result<Self, IdError> {
+    pub fn new(source: SourceId, identifier: impl Into<Arc<str>>) -> Result<Self, IdError> {
         let identifier = identifier.into();
         if identifier.trim().is_empty() {
             Err(IdError::EmptyIdentifier(source))

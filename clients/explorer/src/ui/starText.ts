@@ -39,7 +39,7 @@ function rank(m: Measurement): number | undefined {
 }
 
 /** The colour index a star is drawn by: of the best rank, the first its entries give. */
-function drawnColourIndex(indices: readonly Measurement[]): (StarColourIndex & { source: string }) | undefined {
+export function drawnColourIndex(indices: readonly Measurement[]): (StarColourIndex & { source: string }) | undefined {
   let best: { at: number; m: Measurement } | undefined;
   for (const m of indices) {
     const at = rank(m);

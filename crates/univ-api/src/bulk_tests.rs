@@ -10,21 +10,18 @@ use crate::testkit::{COSMIC_WEB_MANIFEST, GRIDS, RELEASES, SOURCES, STRUCTURES, 
 /// A grid header as ingest writes it, cut to the keys it names: field 0 published with an
 /// uncertainty, field 1 without.
 const GRID_HEADER: &str = r#"{"id":"cf4-basins","fields":[
-  {"samples":"releases/2/grids/cf4-basins/field-0.f32",
-   "uncertainty":{"form":"standard_deviation","samples":"releases/2/grids/cf4-basins/field-0-sigma.f32"}},
-  {"samples":"releases/2/grids/cf4-basins/field-1.f32","uncertainty":{"form":"none_reported"}}]}"#;
+  {"samples":"files/f00000",
+   "uncertainty":{"form":"standard_deviation","samples":"files/f0510a"}},
+  {"samples":"files/f10000","uncertainty":{"form":"none_reported"}}]}"#;
 
 fn db() -> Sqlite {
     let db = Sqlite::new();
     db.exec(RELEASES).exec(SOURCES).exec(STRUCTURES).exec(GRIDS);
-    db.put(
-        "releases/2/tiles/cosmic_web/manifest.json",
-        COSMIC_WEB_MANIFEST,
-    )
-    .put("releases/2/tiles/cosmic_web/r.bin", b"abc".to_vec())
-    .put("releases/2/tiles/cosmic_web/r07.bin", b"de".to_vec())
-    .put("releases/2/grids/cf4-basins/header.json", GRID_HEADER)
-    .put("releases/2/grids/cf4-basins/field-1.f32", vec![0_u8; 8]);
+    db.put("files/c05a1c", COSMIC_WEB_MANIFEST)
+        .put("files/aaaa", b"abc".to_vec())
+        .put("files/bbbb", b"de".to_vec())
+        .put("files/9d1dea", GRID_HEADER)
+        .put("files/f10000", vec![0_u8; 8]);
     db
 }
 
@@ -49,10 +46,7 @@ fn a_tile_manifest_is_served_from_the_bucket_as_published() {
     let db = db();
     let response = db.get("/v1/scale-domains/cosmic_web/manifest", "release=2");
     assert_eq!(response.status, 200);
-    assert_eq!(
-        response.body,
-        Body::Object("releases/2/tiles/cosmic_web/manifest.json".into())
-    );
+    assert_eq!(response.body, Body::Object("files/c05a1c".into()));
     assert_eq!(db.bytes_of(&response), COSMIC_WEB_MANIFEST.as_bytes());
     assert_eq!(
         response.header("cache-control"),
@@ -80,7 +74,7 @@ fn a_tile_is_streamed_from_the_bucket_marked_immutable_for_a_year() {
     assert_eq!(response.status, 200);
     assert_eq!(
         response.body,
-        Body::Object("releases/2/tiles/cosmic_web/r07.bin".into()),
+        Body::Object("files/bbbb".into()),
         "the Worker hands the object to the runtime, unread"
     );
     assert_eq!(db.bytes_of(&response), b"de");
@@ -119,7 +113,7 @@ fn a_head_of_a_tile_leaves_its_object_to_the_runtime_with_no_made_up_length() {
     assert_eq!(response.status, 200);
     assert_eq!(
         response.body,
-        Body::Object("releases/2/tiles/cosmic_web/r.bin".into()),
+        Body::Object("files/aaaa".into()),
         "the Worker answers a HEAD of an object with the object's size, unread"
     );
     assert_eq!(response.header("content-length"), None);
@@ -155,10 +149,7 @@ fn a_grid_header_and_its_samples_are_served_from_the_bucket_as_published() {
     assert_eq!(db.bytes_of(&header), GRID_HEADER.as_bytes());
     let samples = db.get("/v1/grids/cf4-basins/fields/1", "release=2");
     assert_eq!(samples.status, 200);
-    assert_eq!(
-        samples.body,
-        Body::Object("releases/2/grids/cf4-basins/field-1.f32".into())
-    );
+    assert_eq!(samples.body, Body::Object("files/f10000".into()));
     assert_eq!(
         samples.header("content-type"),
         Some("application/octet-stream")
@@ -185,10 +176,7 @@ fn an_unknown_grid_or_field_answers_404_naming_it() {
 #[test]
 fn the_tile_format_gives_the_byte_layout_of_each_encoding_the_release_uses() {
     let db = db();
-    db.put(
-        "releases/2/tiles/stars/manifest.json",
-        r#"{"encoding":{"version":1},"nodes":[]}"#,
-    );
+    db.put("files/57a125", r#"{"encoding":{"version":1},"nodes":[]}"#);
     let (response, format) = db.get_json("/v1/tile-format", "");
     assert_eq!(response.status, 200, "{format}");
     let encodings = format["encodings"].as_array().unwrap();
@@ -213,10 +201,7 @@ fn a_fields_uncertainty_is_served_where_it_was_published() {
     assert_eq!(fields[1]["uncertainty"], Value::Null);
     let response = db.get("/v1/grids/cf4-basins/fields/0/uncertainty", "release=2");
     assert_eq!(response.status, 200);
-    assert_eq!(
-        response.body,
-        Body::Object("releases/2/grids/cf4-basins/field-0-sigma.f32".into())
-    );
+    assert_eq!(response.body, Body::Object("files/f0510a".into()));
 }
 
 #[test]

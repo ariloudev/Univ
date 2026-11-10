@@ -1,0 +1,84 @@
+key: 01a1a938-deb8-7399-857b-e75470ed73de
+id: wave-w3
+versions:
+  - key: 01a1a938-deb8-7399-857b-e75a95d1ddb5
+    at: 2026-11-05T01:00:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3 shards in ingest"
+    goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
+    status: planned
+  - key: 01a1aa41-5d94-739e-80cd-f50798506f08
+    at: 2026-11-05T05:49:32Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3 shards in ingest"
+    goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
+    status: active
+  - key: 01a1aac9-f0ae-75f0-8f1b-3da333e96ea5
+    at: 2026-11-05T08:18:43Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W3 shards in ingest"
+    goal: "Univ Ingest builds a release as a catalogue database and object shards by cell, publishes and prunes across them, and refuses the oversized cell and the unbound shard; merged into product/release-10"
+    status: done
+blocks:
+  - key: 01a1aa41-5d94-739e-80cd-f50479af774f
+    id: q-permission-date-3
+    kind: question
+    versions:
+      - key: 01a1aa41-5d94-739e-80cd-f5081b7e0498
+        at: 2026-11-05T05:49:32Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        prompt: "When will you send the three permission requests (WFAU, M. Bilicki, GAMA), so that WISE × SuperCOSMOS and GAMA DR4 can record whom they asked and when?"
+        header: "Send date"
+        context: "Asked again: closing W2's Yard Log withdrew the earlier copy. Under the spec, a permission-pending source names whom it asked and on which date. The definitions, tests and matching pairs are ready in my scratchpad, out of `sources/`. W3 and W4 don't need them; they go in at W5's start at the latest."
+        options:
+          - label: "Sending today"
+            detail: "I record 2026-11-05 as the date asked and put both definitions in sources/ during W3. Choose this only if you send them today."
+            recommended: true
+          - label: "I'll give the date"
+            detail: "Answer with the date once they are sent. The definitions stay out until then, and go in at the start of W5 at the latest."
+          - label: "Leave them out"
+            detail: "Release 10 goes without WISE × SuperCOSMOS and GAMA. They come back in a later release."
+    responses:
+      - key: 01a1ad80-8ee8-727a-97a0-06572f89398e
+        at: 2026-11-05T20:57:25Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        words: "Forget this and stop reminding me of it. I will handle this on my own and tell you when it's done."
+  - key: 01a1aac9-f0ae-75f0-8f1b-3da136b31909
+    id: w3-merged
+    kind: note
+    versions:
+      - key: 01a1aac9-f0ae-75f0-8f1b-3da23439eeec
+        at: 2026-11-05T08:18:43Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "W3 merged"
+        markdown: |-
+          Merged as `db6d46e`.
+
+          - **Gate:** 13 gates passed. The Wrangler tests, which are ignored by default, pass against real local D1 and R2. Trace accepted: 465 of 468 criteria linked.
+          - **Release format:** schema 5. A release is a catalogue database (`DB`) plus up to 8 object shards (`OBJECTS_0` to `OBJECTS_7`). Shards are packed by level-0 cells in Morton order up to 4.5 GB each. The manifest is now version 2, and an older manifest is refused at publish.
+          - **Reviews:** `/code-review` found these before any real data was built:
+            - science checks that would fail on every sharded release;
+            - Morton codes beyond exact doubles;
+            - prune failing on today's schema-4 catalogue;
+            - repeated ids escaping the key check.
+          - **Open for W4:** Univ Server still reads objects only from `DB`. Until W4 is done, a newly published release serves no objects.
+        tone: success

@@ -43,7 +43,7 @@ requirements:
   - key: 01a1a8e8-6326-709f-aa5e-460e17bb4f06
     statement:
       form: event_driven
-      when: "the person clicks a drawn point"
+      when: "the person clicks a drawn point other than the chosen object's"
       system: "Univ Explorer"
       shall: "make the point the focus, keeping the distance from the eye to the focus."
     criteria:

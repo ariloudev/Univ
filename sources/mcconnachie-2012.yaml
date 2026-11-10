@@ -67,6 +67,32 @@ mirrors:
   - "http://vizier.china-vo.org/viz-bin/asu-tsv"
   - "http://vizier.nao.ac.jp/viz-bin/asu-tsv"
   - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+flags:
+  "u_(m-M)":
+    cite: >-
+      ReadMe of J/AJ/144/4 (VizieR), Byte-by-byte Description of file table2.dat, u_(m-M)
+      ('Uncertain or fixed distance'), Note (5)
+    values:
+      ":": "Uncertainty flag."
+      "b": "Significant distance/velocity gradients."
+      "k": "Range in distance estimates from 750 <~ D <~ 950."
+      "l": "Assumed to be at M31-M33 distance."
+      ":l": "Uncertainty flag; assumed to be at M31-M33 distance."
+  f_HRV:
+    cite: >-
+      ReadMe of J/AJ/144/4 (VizieR), table2.dat, f_HRV ('Flag on HRV', [cdfmpr]); the column points
+      to Note (10), which defines no letters, and its letters are those of Note (5) ('Peculiarities
+      on distance/velocity')
+    values:
+      "c": "Corresponding to RC stars at 6 < D < 7 kpc."
+      "d": "Carbon stars."
+      "f": "Red giant branch stars."
+      "m": "Alternative value in Gallart et al. (2001AJ....121.2572G)."
+      "p": "Optical velocity suggests that Tucana is not associated with nearby HI cloud."
+      "r": >-
+        Optical spectroscopy suggests that HRV ~ -70 km/s; however, HI analysis by Bellazzini et al.
+        (2011A&A...527A..58B) gives HRV ~ -25 km/s. No clear reason for the discrepancy currently
+        exists.
 normalization:
   distances:
     - value: (m-M)

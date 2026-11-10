@@ -4,7 +4,7 @@
 //! A template is the JSON array of the chain's steps, as univ-model serializes them, with:
 //!
 //! - the value of each per-object field ([`PER_OBJECT`]: `largest_difference`, `cmb_redshift`,
-//!   `heliocentric_redshift`, `redshift`, `factor`, `corrected_mas` and `parallax_mas`) replaced
+//!   `heliocentric_redshift`, `barycentric_redshift`, `redshift`, `factor`, `corrected_mas` and `parallax_mas`) replaced
 //!   by `"$1"` to `"$4"` in the order they come in the JSON (steps in order, a step's fields
 //!   sorted by name), filled from `chain_p1` to `chain_p4` of the
 //!   object; a chain with more than [`PARAMS`] of them keeps the rest in its template;
@@ -19,10 +19,11 @@ use serde_json::{Map, Number, Value};
 use super::rows::PARAMS;
 
 /// The fields of a step whose number differs from object to object.
-pub const PER_OBJECT: [&str; 7] = [
+pub const PER_OBJECT: [&str; 8] = [
     "largest_difference",
     "cmb_redshift",
     "heliocentric_redshift",
+    "barycentric_redshift",
     "redshift",
     "factor",
     "corrected_mas",
@@ -163,6 +164,22 @@ mod tests {
             expand(&t.steps, &[None], &native),
             None,
             "a missing parameter"
+        );
+    }
+
+    #[test]
+    fn objects_of_barycentric_redshifts_share_one_template() {
+        let chain = |cmb: f64, bary: f64| {
+            json!([{"step": "comoving_from_barycentric_redshift", "cmb_redshift": cmb,
+                    "barycentric_redshift": bary, "dipole": "planck2018"}])
+        };
+        let one = template(&chain(0.401, 0.4), &Value::Null);
+        let two = template(&chain(0.802, 0.8), &Value::Null);
+        assert_eq!(one.steps, two.steps);
+        assert_eq!(
+            one.params,
+            [0.4, 0.401],
+            "in the order of the fields' names"
         );
     }
 

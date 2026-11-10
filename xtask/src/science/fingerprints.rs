@@ -20,7 +20,7 @@ pub fn differences(
     manifest: &ReleaseManifest,
 ) -> Result<(usize, Vec<String>), String> {
     let mut out = Vec::new();
-    for want in &manifest.d1.tables {
+    for want in manifest.estimates().flat_map(|e| &e.tables) {
         if !TABLES.iter().any(|t| t.name == want.table) {
             out.push(format!(
                 "the manifest fingerprints {}, no table of the schema",
@@ -30,7 +30,8 @@ pub fn differences(
     }
     let mut compared = 0;
     for table in &TABLES {
-        let Some(want) = manifest.d1.tables.iter().find(|t| t.table == table.name) else {
+        // The catalogue's and every object shard's rows, all loaded into one database.
+        let Some(want) = manifest.table_estimate(table.name) else {
             out.push(format!(
                 "the manifest gives no fingerprint of {}",
                 table.name
@@ -38,7 +39,7 @@ pub fn differences(
             continue;
         };
         compared += 1;
-        compare(db, table, manifest.release, want, &mut out)?;
+        compare(db, table, manifest.release, &want, &mut out)?;
     }
     Ok((compared, out))
 }

@@ -240,7 +240,7 @@ fn file(dir: &Path, path: &str, bytes: &[u8], target: Target, files: &mut Vec<Ma
     files.push(ManifestFile {
         path: path.to_owned(),
         target,
-        key: (target == Target::R2).then(|| keys::key(1, path)),
+        key: (target == Target::R2).then(|| keys::file(&hex(&Sha256::digest(bytes)))),
         bytes: bytes.len() as u64,
         sha256: hex(&Sha256::digest(bytes)),
     });
@@ -282,6 +282,8 @@ pub fn build(dir: &Path) {
             rows: mine.len() as u64,
             estimated_bytes: 100,
             fingerprint: fp.finish(),
+            added: None,
+            retired: None,
             content_sha256: content,
         });
     }
@@ -300,7 +302,7 @@ pub fn build(dir: &Path) {
     let header = serde_json::json!({
         "axes": ["z", "y", "x"], "shape": [2, 2, 2], "origin": [-1.0, -1.0, -1.0], "cell": 2.0,
         "unit": "megaparsec_over_h", "frame": "supergalactic",
-        "fields": [{"samples": "releases/1/grids/g/field-0.f32",
+        "fields": [{"samples": keys::file(&hex(&Sha256::digest(&samples))),
                     "labels": [{"label": 1, "name": "West"}, {"label": 2, "name": "East"}]}]
     });
     file(
@@ -357,11 +359,13 @@ fn manifest(files: Vec<ManifestFile>, tables: Vec<TableEstimate>) -> ReleaseMani
             issued_last: None,
             replaced: 0,
         },
+        parent: None,
         d1: D1Estimate {
             cap_bytes: 10_000_000_000,
             estimated_bytes: 1000,
             tables,
         },
+        shards: Vec::new(),
         files,
     }
 }

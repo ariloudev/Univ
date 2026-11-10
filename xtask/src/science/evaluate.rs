@@ -49,7 +49,13 @@ pub fn evaluate(release: &Release<'_>, check: &Check) -> Result<Finding, String>
         } => close_pairs(release, scale_domains, kinds, *radius_arcmin, exceptions, e),
         Select::LargestTile {} => largest_tile(release, e),
         Select::D1Estimate {} => {
-            let bytes = release.manifest.d1.estimated_bytes;
+            // The largest of the release's databases, the catalogue or an object shard.
+            let bytes = release
+                .manifest
+                .estimates()
+                .map(|e| e.estimated_bytes)
+                .max()
+                .unwrap_or(0);
             #[expect(clippy::cast_precision_loss, reason = "bytes far below 2^52")]
             let value = bytes as f64;
             Ok(bounded(value, format!("{bytes} bytes"), e, Vec::new()))
@@ -121,7 +127,7 @@ fn rows(
     limit: usize,
 ) -> Result<(Vec<String>, usize, usize), String> {
     let mut q = statement(release, sql)?;
-    let columns: Vec<String> = q.column_names().iter().map(|c| (*c).to_owned()).collect();
+    let columns: Vec<String> = q.column_names().map(str::to_owned).collect();
     let mut rows = q.raw_query();
     let (mut lines, mut kept, mut left_out) = (Vec::new(), 0, 0);
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {

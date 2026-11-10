@@ -1,0 +1,116 @@
+key: 01a1a938-deb8-7399-857b-e75661704856
+id: wave-w5
+versions:
+  - key: 01a1a938-deb8-7399-857b-e75cdc878ec5
+    at: 2026-11-05T01:00:38Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
+    status: planned
+  - key: 01a1ab0b-7fa9-7533-8626-c49f9b40c3c4
+    at: 2026-11-05T09:30:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
+    status: active
+  - key: 01a1b182-fab0-7484-8f28-ec16a072fb62
+    at: 2026-11-06T15:38:33Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "W5 release 10"
+    goal: "Release 10 is fetched, built, checked and published locally, with QA-2, QA-3 and first-points measured on it; merged into product/release-10"
+    status: done
+blocks:
+  - key: 01a1b182-fab0-7484-8f28-ec15d94741a6
+    id: release-10-closed
+    kind: note
+    versions:
+      - key: 01a1b182-fab0-7484-8f28-ec178341986e
+        at: 2026-11-06T15:38:33Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Release 10 finished, and what followed it"
+        markdown: |-
+          W5 merged with its own Yard Log closed: release 10, 35,958,421 cosmic-web points, is published locally and is the explorer's latest.
+
+          After W5, these branches merged into `product/release-10`, each with its Yard Log closed:
+
+          | Branch | What it added |
+          |---|---|
+          | `stage/release-10-budget`, `-lod`, `-memory`, `-r1` | the point budget, level of detail and memory work on the explorer |
+          | `fix/rendering` | one colour for non-star points, the level-of-detail switch, seamless per-point level of detail with tile fades |
+          | `feature/cull-to-structure` | the cull to a structure's volume, brighter points inside it, structure kinds in their own colours, the chosen outline thicker, and the fix of extents turned twice |
+
+          Each ended with `/simplify` and `/code-review`, the full gate and integration. The owner asked to merge `product/release-10` into `develop` and publish the specification on 2026-11-06.
+        tone: success
+  - key: 01a1b183-85d1-7141-bd59-014ef07033dd
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1b183-85d1-7141-bd59-014fef50beb1
+        at: 2026-11-06T15:39:08Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: publish
+        note: "Published as sequence 6 (`9465f50`) on `develop` after `a0187be` merged release 10's work; `loft verify` passes."
+        recorded:
+          commit: "9465f500085423224be4010716f90f988f913758"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-06T15:39:08Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 63,
+              "constraint": 8,
+              "criterion": 518,
+              "decision": 32,
+              "feature": 41,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 163
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "9465f500085423224be4010716f90f988f913758",
+                "removed": [],
+                "revision": "9465f500085423224be4010716f90f988f913758"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

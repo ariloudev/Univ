@@ -1,0 +1,664 @@
+key: 01a1c273-ae7f-70bf-aba1-42dc6992304b
+id: design
+versions:
+  - key: 01a1c273-ae7f-70bf-aba1-42e32318533c
+    at: 2026-11-09T22:35:23Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Design: the Structures drawer"
+    goal: "Options for a redesigned Structures drawer, built from the release's real structures, put to the owner to choose"
+    status: active
+  - key: 01a1c27b-acfb-77bd-a9f3-b89b437101b4
+    at: 2026-11-09T22:44:07Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Design: the Structures drawer"
+    goal: "Options for a redesigned Structures drawer, built from the release's real structures, put to the owner to choose"
+    status: done
+blocks:
+  - key: 01a1c273-ae7f-70bf-aba1-42ddfdc09ec4
+    id: design-why
+    kind: note
+    versions:
+      - key: 01a1c273-ae7f-70bf-aba1-42e4a1e39e95
+        at: 2026-11-09T22:35:23Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Why"
+        markdown: "The owner asked for the Structures drawer to be redesigned using the frontend-design and dataviz skills. Today it lists 54 structures alphabetically, each as an italic name followed by its kind in parentheses. Long names wrap onto a second line, and the list says nothing of where each structure lies or how large it is, although the explorer reads every structure's placed shape."
+  - key: 01a1c277-3510-77ef-90ff-624b7b1392cb
+    id: design-options
+    kind: note
+    versions:
+      - key: 01a1c277-3510-77ef-90ff-624d3d0c7d47
+        at: 2026-11-09T22:39:14Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Three options, from release 12's real structures"
+        markdown: |-
+          The options are on the page [Structures drawer options](https://claude.ai/artifact/TT6xR8P36q2NZ4P3U2fnsK). Each is a working 300-pixel drawer that can be clicked and searched, and holds the 54 structures as the view places them.
+
+          | | A. Depth index | B. Families | C. Depth strip and list |
+          |---|---|---|---|
+          | Order | Nearest first, by decade of distance (or A to Z) | The Show drawer's five families, nearest first in each | A to Z |
+          | Chart | A dot per row on one shared log axis, 10 Mpc to 10 Gpc | None: distance as a figure | One overview strip, a lane per family |
+          | Kind | Swatch and words on every row | Swatch and words; kind chips per family | Swatch and words inline |
+          | How it is known | Dot fill: observed, statistical claim, reconstructed | Words, only where not observed | Dot fill |
+          | Find box | Yes | Yes | Yes, which also fades the strip's other dots |
+
+          **Common to all three:**
+          - **Distances:** to each structure's centre as placed, written in Mpc or Gpc. The 4 structures with no placed shape are listed as not placed.
+          - **Kind colours:** the view's 13 kind colours fail the dataviz validator as a categorical palette (protan ΔE 1.6 between attractor and repeller, and 6.8 between ring and quasar group), so the kind is always written out beside the swatch.
+        tone: info
+  - key: 01a1c277-3510-77ef-90ff-624ca3ff95b5
+    id: ask-design
+    kind: question
+    versions:
+      - key: 01a1c277-3510-77ef-90ff-624ee28662ef
+        at: 2026-11-09T22:39:14Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        prompt: "Which design should the Structures drawer take?"
+        header: "Drawer"
+        context: "Try them on [Structures drawer options](https://claude.ai/artifact/TT6xR8P36q2NZ4P3U2fnsK): click to choose and click again to let go, type to narrow the list, and switch the order in A. Whatever you choose goes through a spec change (the list criterion RQ for see-the-structures, plus new criteria for the order, the depth marks and the find box) before any code."
+        options:
+          - label: "A. Depth index"
+            detail: "Ordered outward from Earth on a shared log-distance axis, grouped by decade, with how each structure is known in the dot's fill. The most information per row; rows are two lines (about 1.7 times the current list's height)."
+            recommended: true
+          - label: "B. Families"
+            detail: "Grouped like the Show drawer, folding, with distance figures and no chart. The quietest and the closest to today, and a structure sits where its kind's switch is."
+          - label: "C. Depth strip and list"
+            detail: "An overview strip of every placed structure by distance and family above a one-line A to Z list. Gives the best whole picture, but the strip costs 150 pixels of list and its dots crowd between 60 and 300 Mpc."
+    responses:
+      - key: 01a1c277-896f-714f-a355-4def4945e866
+        at: 2026-11-09T22:39:36Z
+        revision: 19
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        chosen:
+          - "A. Depth index"
+  - key: 01a1c277-b514-7245-85db-9e295346edec
+    id: decide-design
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1c277-b514-7245-85db-9e2a8bde30e0
+        at: 2026-11-09T22:39:47Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The Structures drawer becomes a depth index"
+        consequence: "The drawer lists the structures outward from Earth, grouped by decade of distance, each row with its kind in words and colour, its distance, and a dot on one shared log axis whose fill says how the structure is known. It adds an A-to-Z switch and a find box. This needs a new see-the-structures Requirement, approved before any code."
+        question: 01a1c277-3510-77ef-90ff-624ca3ff95b5
+  - key: 01a1c278-6b47-723f-b788-d21e5120dbcc
+    id: spec-change-drawer
+    kind: loft
+    versions:
+      - key: 01a1c278-6b47-723f-b788-d2205df19991
+        at: 2026-11-09T22:40:34Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        view: spec-change
+        note: "One new Requirement in see-the-structures with 11 criteria, for option A as built on the options page. Left in place: one LQ-005 (info) on the \"no match\" criterion, which describes one message and so one outcome."
+        base: "5f49d3c"
+        recorded:
+          commit: "5f49d3ccf4047bdf67defa6233d15a9bf1004e13"
+          branch: "chore/ux-1"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-09T22:40:33Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 12,
+              "graph.edges": 0,
+              "graph.nodes": 15,
+              "status.base.added": 12,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7839dd2fba6",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares.",
+                  "words": {
+                    "after": "Univ Explorer shall list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7847bc12551",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The list orders the structures by the distance from Earth to their centre as the view places it, nearest first, with those that have no placed shape last.",
+                  "words": {
+                    "after": "The list orders the structures by the distance from Earth to their centre as the view places it, nearest first, with those that have no placed shape last."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7859f3c18c9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                  "words": {
+                    "after": "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7862a633a0c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each row gives the structure's name, its kind in words beside a swatch of the kind's colour, and its distance.",
+                  "words": {
+                    "after": "Each row gives the structure's name, its kind in words beside a swatch of the kind's colour, and its distance."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e787596ccbdd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                  "words": {
+                    "after": "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\"."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7880ad36d01",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                  "words": {
+                    "after": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e789414bdf63",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says.",
+                  "words": {
+                    "after": "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78af4b30484",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch at the head of the list orders it by name instead, without headings, and keeps each row's dot.",
+                  "words": {
+                    "after": "A switch at the head of the list orders it by name instead, without headings, and keeps each row's dot."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78bb3c7f814",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A box at the head of the list narrows it to the structures whose name or kind holds the text typed.",
+                  "words": {
+                    "after": "A box at the head of the list narrows it to the structures whose name or kind holds the text typed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-46e4-76f7-bee6-bda8fefa62ad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the list is narrowed, its count gives the structures shown out of the release's, such as \"12 of 54\".",
+                  "words": {
+                    "after": "While the list is narrowed, its count gives the structures shown out of the release's, such as \"12 of 54\"."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78c9329851d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where no structure's name or kind holds the text typed, the list shows one message that names the text and suggests part of a name or a kind.",
+                  "words": {
+                    "after": "Where no structure's name or kind holds the text typed, the list shows one message that names the text and suggests part of a name or a kind."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78dcc50c90f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The chosen structure's row is marked as chosen.",
+                  "words": {
+                    "after": "The chosen structure's row is marked as chosen."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7839dd2fba6",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7847bc12551",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The list orders the structures by the distance from Earth to their centre as the view places it, nearest first, with those that have no placed shape last.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7859f3c18c9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7862a633a0c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each row gives the structure's name, its kind in words beside a swatch of the kind's colour, and its distance.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e787596ccbdd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e7880ad36d01",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e789414bdf63",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78af4b30484",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A switch at the head of the list orders it by name instead, without headings, and keeps each row's dot.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78bb3c7f814",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A box at the head of the list narrows it to the structures whose name or kind holds the text typed.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-46e4-76f7-bee6-bda8fefa62ad",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "While the list is narrowed, its count gives the structures shown out of the release's, such as \"12 of 54\".",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78c9329851d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where no structure's name or kind holds the text typed, the list shows one message that names the text and suggests part of a name or a kind.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1c278-094a-7307-be66-e78dcc50c90f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The chosen structure's row is marked as chosen.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1c278-094a-7307-be66-e7839dd2fba6",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 116,
+                    "name": "Univ Explorer shall list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e7847bc12551",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 122,
+                    "name": "The list orders the structures by the distance from Earth to their centre as the view places it, nearest first, with those that have no placed shape last.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e7859f3c18c9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 124,
+                    "name": "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e7862a633a0c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 126,
+                    "name": "Each row gives the structure's name, its kind in words beside a swatch of the kind's colour, and its distance.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e787596ccbdd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 128,
+                    "name": "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e7880ad36d01",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 130,
+                    "name": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e789414bdf63",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 132,
+                    "name": "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e78af4b30484",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 134,
+                    "name": "A switch at the head of the list orders it by name instead, without headings, and keeps each row's dot.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e78bb3c7f814",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 136,
+                    "name": "A box at the head of the list narrows it to the structures whose name or kind holds the text typed.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-46e4-76f7-bee6-bda8fefa62ad",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 138,
+                    "name": "While the list is narrowed, its count gives the structures shown out of the release's, such as \"12 of 54\".",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e78c9329851d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 140,
+                    "name": "Where no structure's name or kind holds the text typed, the list shows one message that names the text and suggests part of a name or a kind.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e78dcc50c90f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 142,
+                    "name": "The chosen structure's row is marked as chosen.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "5f49d3ccf4047bdf67defa6233d15a9bf1004e13",
+                "removed": [],
+                "revision": "5f49d3c"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 7,
+                "publishedAt": "2026-11-09T22:08:34Z",
+                "stateRoot": "379291621adafac2498058ffc90a9ec37c008d510169b5b636819fd3f55719a9"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "chore/ux-1",
+                "modified": [
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1c278-6b47-723f-b788-d21f6f63acb5
+    id: approve-drawer
+    kind: approval
+    versions:
+      - key: 01a1c278-6b47-723f-b788-d2217010374f
+        at: 2026-11-09T22:40:34Z
+        revision: 21
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Approve the depth index spec change"
+        markdown: |-
+          **New in see-the-structures:** Univ Explorer lists the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row shares.
+
+          - **Order:** nearest first, by the distance to the centre as the view places it. Structures with no placed shape come last.
+          - **Headings:** within 100 Mpc, 100 Mpc to 1 Gpc, 1 to 10 Gpc, and not placed, each with its count.
+          - **Rows:** name, kind in words beside its colour swatch, and distance. Distances are whole Mpc below 1,000 Mpc and Gpc to three figures above, and the KBC void reads "around us".
+          - **Dot:** in the kind's colour on a log axis from 10 Mpc to 10 Gpc, with its ticks labelled at the head. It is filled for observed, open for a statistical claim and dotted for reconstructed, with a legend.
+          - **A to Z switch:** orders by name without headings, keeping the dots.
+          - **Find box:** narrows by name or kind, with an "N of 54" count and a message when nothing matches.
+          - **The chosen row is marked.**
+
+          **Unchanged:** the existing criterion "Every structure of the release is listed by name and kind", and choosing or letting go from the list.
+
+          **To look at:** whether the order switch and the find box should be kept across visits, like the drawer. They are not in this change.
+    responses:
+      - key: 01a1c278-7c14-768e-beba-c34397d89a9c
+        at: 2026-11-09T22:40:38Z
+        revision: 22
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1c279-0d64-7513-9b7d-96ddcdf81111
+    id: plan-25-plan-fuzzy-growing-beacon-01a1c273-ae7f-70bf-aba1-42dc6992304b
+    kind: plan
+    versions:
+      - key: 01a1c279-0d64-7513-9b7d-96defd44ebbe
+        at: 2026-11-09T22:41:15Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build plan: the Structures drawer as a depth index (`chore/ux-1`)"
+        markdown: |
+          # Build plan: the Structures drawer as a depth index (`chore/ux-1`)
+
+          ## Context
+
+          The owner asked for a redesign of the Structures drawer using the frontend-design and dataviz skills. Today it is a flat A-to-Z list of italic names with "(kind)" after each. Long names wrap, and nothing says where a structure lies.
+
+          The owner chose option A, the "depth index", on the [options page](https://claude.ai/artifact/TT6xR8P36q2NZ4P3U2fnsK), which was built from release 12's real structures. They approved its spec change (`c710285`): one new Requirement in see-the-structures with 11 criteria (the "DI" criteria below). Nothing is merged until the owner asks.
+
+          ## Data: a pure model, `clients/explorer/src/ui/structures/depth.ts`
+
+          - **`depthRows(shown, structures)`:** builds one `DepthRow` per shown structure: `{ id, name, kind, colour, status, distance }`.
+            - **`distance`:** `norm(drawing.centre)` from `structures.drawings`, or undefined where the structure is not placed.
+            - **`status`:** `structures.details.get(id)?.status`, as `"observed" | "statistical_claim" | "reconstructed"`, with observed where it is missing.
+            - **`colour`:** `structureCss(kind)` (`scene/kinds.ts`).
+            - **`name`:** from the summary; the drawing's `name` carries "(at least)" where the shape is a lower limit, as in the view.
+          - **`distanceText(d)`:** whole Mpc below 1,000, Gpc to three figures from 1 Gpc, "around us" below 0.5 Mpc, and "not placed" for none. It reuses `figures` and `whole` from `scene/format.ts`.
+          - **`depthX(d, width)`:** a log map from 10 Mpc to 10 Gpc, clamped at both ends.
+          - **`BANDS`, `banded(rows)`:** within 100 Mpc, 100 Mpc–1 Gpc, 1–10 Gpc, and not placed, each nearest first, with empty bands left out.
+          - **`byName(rows)`**, and **`matching(rows, text)`:** name or kind words hold the text, ignoring case.
+
+          ## The view: `clients/explorer/src/ui/structures/DepthIndex.tsx`
+
+          It replaces `StructureList` in `StructuresPanel.tsx`; that file goes, and its test moves.
+
+          - **Head:**
+            - "Structures" with the count, which reads "12 of 54" while the list is narrowed.
+            - A search input, "Find a structure".
+            - A two-button switch, "Nearest first" and "A to Z", each with `aria-pressed`.
+            - The status legend.
+            - The axis ticks (10 Mpc, 100 Mpc, 1 Gpc, 10 Gpc), aligned over the rows' tracks.
+          - **Rows:**
+            - Each row is a button: the italic serif name, the distance figure on the right, then the kind in words with its swatch, and an SVG track with the status dot.
+            - The track is 12 px high, with the tick gridlines in `--color-line`.
+            - The dot is filled for observed, open for a statistical claim, and dashed for reconstructed, each in the kind's colour with the panel's ring.
+            - Each row carries the status in words as screen-reader text, and keeps `data-testid="structures"` on the list.
+          - **The chosen row:** the `--color-raised` background, the name at weight 500, and `aria-pressed`.
+          - **No match:** one message that names the text typed and suggests part of a name or a kind.
+          - **Style:** the explorer's Tailwind tokens throughout. Text is in ink or dim, never in a kind colour; only the swatch and dot carry the kind.
+          - **`Atlas.tsx`'s structures drawer:** renders `<DepthIndex rows={depthRows(structures.shown, structures)} chosen={selection.structure?.id} onChoose={selection.structureFromList} />`, memoised on `structures`.
+
+          ## Tests
+
+          - **`depth.test.ts`:**
+            - rows from summaries, drawings and details, including an unplaced structure and a missing status;
+            - `distanceText` at 0, 11, 999.6, 1,038 and 6,627 Mpc;
+            - `depthX` at 10 Mpc, 1 Gpc and 10 Gpc, and clamped below and above;
+            - bands and their order;
+            - `matching` by name and by kind, ignoring case.
+          - **`DepthIndex.test.tsx`:**
+            - headings with counts;
+            - rows nearest first;
+            - the A-to-Z switch drops the headings but keeps the dots;
+            - the find box narrows the list and shows "N of M";
+            - the no-match message;
+            - the chosen row is pressed;
+            - a click calls `onChoose`;
+            - the legend.
+          - **Moved tests:** `StructuresPanel.test.tsx`'s list test moves to `DepthIndex.test.tsx` (name, kind, choose), and `names.test.tsx` uses `DepthIndex` for the italic name.
+          - **`e2e/explorer.spec.ts`:** a new test, "lists the structures outward from Earth, under headings, and narrows them from the find box". The Bootes Void test's `getByRole("button", { name: /^Bootes Void/ })` keeps working, because the row's accessible name starts with the name.
+          - **`loft.trace.yaml`:** links for the 11 DI criteria, accepted after review.
+
+          ## Yard tasks (registered before the first code)
+
+          1. **d-model:** the `depth.ts` model with tests.
+          2. **d-view:** `DepthIndex.tsx` in the drawer with tests, the old list removed.
+          3. **d-e2e:** the e2e test, plus a screenshot of the drawer by hand (sent as a file).
+          4. **d-trace:** trace links accepted.
+
+          Then the review stage stands as approved: /simplify and /code-review, the full gate and integration, then closing the Yard Log.
+
+          ## Verification
+
+          - `pnpm check` (typecheck, Vitest, fallow, build) after each task.
+          - `cargo xtask integration` once the e2e test is in.
+          - A look at the real drawer with `cargo xtask explore`, screenshotted, against the options page.
+        planMode: true
+    responses:
+      - key: 01a1c27b-8569-70c3-9149-a8e85f231b2b
+        at: 2026-11-09T22:43:57Z
+        revision: 24
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: page
+        verdict: approved
+  - key: 01a1c27b-acfb-77bd-a9f3-b8945112b149
+    id: design-done
+    kind: note
+    versions:
+      - key: 01a1c27b-acfb-77bd-a9f3-b89c674bbc91
+        at: 2026-11-09T22:44:07Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "What the design produced"
+        markdown: "The owner chose **A. Depth index**, and approved its spec change: one new see-the-structures Requirement with 11 criteria, committed at c710285. The build plan was approved through plan mode."
+        tone: success

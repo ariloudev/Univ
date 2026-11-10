@@ -54,6 +54,15 @@ export function eyeAxes(view: View, toFrame: Mat3): Mat3 {
 /** The focal length in pixels of a viewport `height` pixels tall. */
 export const focalPixels = (height: number): number => height / 2 / Math.tan(FOV / 2);
 
+/** The megaparsecs `pixels` pixels span across the view at `depth` megaparsecs ahead of the eye
+ * along its line of sight, on a viewport `height` pixels tall: what a symbol drawn at a fixed size
+ * on the view is scaled by. */
+export const pixelsAt = (pixels: number, depth: number, height: number): number => (pixels * depth) / focalPixels(height);
+
+/** The ray from the eye through the pixel (`x`, `y`) of a viewport `width` × `height` pixels of
+ * focal length `f` pixels, in the eye's axes, one unit ahead: the way back from `project`. */
+export const pixelRay = (f: number, x: number, y: number, width: number, height: number): Vec3 => [(x - width / 2) / f, -(y - height / 2) / f, -1];
+
 /** Where `point` (ICRS megaparsecs) falls on a viewport `width` × `height` pixels; none behind. */
 export function project(
   view: View,
@@ -65,11 +74,18 @@ export function project(
   const local = apply(eyeAxes(view, toFrame), sub(point, eyeOf(view, toFrame)));
   const depth = -local[2];
   if (depth <= 0) return undefined;
-  const f = focalPixels(height);
-  return { x: width / 2 + (local[0] * f) / depth, y: height / 2 - (local[1] * f) / depth, depth };
+  const [x, y] = pixelOf(focalPixels(height), local, width, height);
+  return { x, y, depth };
+}
+
+/** The pixel of a viewport `width` × `height` pixels of focal length `f` pixels where `local`,
+ * in the eye's axes and ahead of it, falls: the way on from `pixelRay`. */
+export function pixelOf(f: number, local: Vec3, width: number, height: number): [number, number] {
+  const depth = -local[2];
+  return [width / 2 + (local[0] * f) / depth, height / 2 - (local[1] * f) / depth];
 }
 
 /** The megaparsecs one pixel spans at the focus's depth, on a viewport `height` pixels tall. */
 export function unitsPerPixel(view: View, height: number): number {
-  return (2 * view.distance * Math.tan(FOV / 2)) / height;
+  return pixelsAt(1, view.distance, height);
 }

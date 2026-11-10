@@ -111,10 +111,19 @@ position:
     An object takes the sky position of the entry with the smallest published position error,
     the root mean square of sigma(alpha cos delta) and sigma(delta). Entries with a published
     error rank before those without; a tie, or entries without errors, go by class, Gaia then
-    Hipparcos then any survey, then by the order of the entries.
+    Hipparcos then any survey then a 21 cm beam, then by the order of the entries. An object
+    that took pieces of a nearby galaxy takes the position of the galaxy whose extent took them,
+    never a piece's.
   gaia: [gaia-dr3-bright, gcns]
   hipparcos: [hipparcos-2007]
+  beam: [alfalfa-a100]
   basis: >-
     Gaia DR3 positions are good to 0.01 to 0.5 mas at J2016.0 (Lindegren et al. 2021, A&A 649,
     A2), Hipparcos-2 ones to about a milliarcsecond at J1991.25 (van Leeuwen 2007, A&A 474, 653),
-    and survey positions publish no error or one of tenths of an arcsecond.
+    and survey positions publish no error or one of tenths of an arcsecond. ALFALFA's positions
+    are the HI centroids of 21 cm sources seen with Arecibo's beam of a few arcminutes
+    (J/ApJ/861/49 ReadMe: "HI centroid"), not optical centres: in release 10's first builds the
+    alphabetical order of the entries gave 16,174 objects ALFALFA's centroid over an optical
+    position, among them IC 1613, 1.7 arcmin from McConnachie 2012's centre. A piece of a nearby
+    galaxy, such as a fibre on an HII region, lies off its centre by the matching rules' extent
+    rule.

@@ -1,0 +1,78 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-06T19:31:11Z
+turns:
+  - started: 2026-11-06T19:08:04Z
+    ended: 2026-11-06T19:08:20Z
+  - started: 2026-11-06T19:11:27Z
+    ended: 2026-11-06T19:12:07Z
+  - started: 2026-11-06T19:13:09Z
+    ended: 2026-11-06T19:13:12Z
+  - started: 2026-11-06T19:13:16Z
+    ended: 2026-11-06T19:13:20Z
+  - started: 2026-11-06T19:13:20Z
+    ended: 2026-11-06T19:13:27Z
+  - started: 2026-11-06T19:14:02Z
+    ended: 2026-11-06T19:26:30Z
+  - started: 2026-11-06T19:28:05Z
+    ended: 2026-11-06T19:28:17Z
+  - started: 2026-11-06T19:31:11Z
+subagents:
+  - agent: a5209180c2ecddfd9
+    type: general-purpose
+    started: 2026-11-06T19:12:04Z
+    ended: 2026-11-06T19:13:16Z
+    stage: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+  - agent: a52b5600909e5f62b
+    type: general-purpose
+    started: 2026-11-06T19:12:04Z
+    ended: 2026-11-06T19:13:09Z
+    stage: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+  - agent: abaa1fb95940b2997
+    type: general-purpose
+    started: 2026-11-06T19:12:04Z
+    ended: 2026-11-06T19:13:20Z
+    stage: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+  - agent: a2470cdd26b249fee
+    type: general-purpose
+    started: 2026-11-06T19:12:04Z
+    ended: 2026-11-06T19:14:02Z
+    stage: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-06T19:25:47Z
+    ended: 2026-11-06T19:25:47Z
+    failed: false
+    stage: 01a1b242-ccfc-74d4-a619-7ee13f4c9727
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-06T19:25:57Z
+    ended: 2026-11-06T19:25:59Z
+    failed: false
+    stage: 01a1b242-ccfc-74d4-a619-7ee13f4c9727

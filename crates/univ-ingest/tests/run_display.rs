@@ -166,6 +166,19 @@ fn a_long_stage_prints_a_progress_line_each_minute_it_prints_nothing_else() {
     );
 }
 
+/// The objects of release 1 the publish's steps say were loaded, summed over the shards.
+fn objects_loaded(uploaded: &[(&str, u64)]) -> u64 {
+    uploaded
+        .iter()
+        .filter_map(|(step, _)| {
+            let rest = step.split("imported; objects: ").nth(1)?;
+            let (n, shard) = rest.split_once(" rows of release 1 in shard ")?;
+            shard.parse::<u32>().ok()?;
+            n.parse::<u64>().ok()
+        })
+        .sum()
+}
+
 #[test]
 fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did() {
     let f = fixture();
@@ -200,12 +213,8 @@ fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they
         })
         .collect();
     assert_eq!(uploaded.len(), total, "a step for each file");
-    assert!(
-        uploaded
-            .iter()
-            .any(|(step, _)| step.ends_with("imported; objects: 25 rows of release 1")),
-        "{uploaded:?}"
-    );
+    // The objects are loaded shard by shard, 25 in all.
+    assert_eq!(objects_loaded(&uploaded), 25, "{uploaded:?}");
     let counts = counts_at_end(&events, Stage::Publish);
     for what in ["D1 files", "rules files", "tile files", "manifest files"] {
         assert!(
@@ -238,7 +247,7 @@ fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they
         "{text}"
     );
 
-    build_next(&f);
+    let second = build_next(&f);
     let (out, state) = (f.out.path(), f.state.path());
     publishing(&mut store, 2, out, state, journals.path(), &clock).unwrap();
     let events = RecordingSink::default();
@@ -258,11 +267,12 @@ fn a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they
     ] {
         assert!(text.contains(line), "{line} in\n{text}");
     }
-    let r2 = built
-        .manifest
-        .files
-        .iter()
-        .filter(|f| f.key.is_some())
+    // Release 1's files that release 2 does not share, and its manifest.
+    let keys_of = |m: &univ_model::release::ReleaseManifest| -> std::collections::BTreeSet<String> {
+        m.files.iter().filter_map(|f| f.key.clone()).collect()
+    };
+    let r2 = keys_of(&built.manifest)
+        .difference(&keys_of(&second.manifest))
         .count()
         + 1;
     let deleted = format!("Z Stage prune done: {r2} R2 files deleted, ");

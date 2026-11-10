@@ -1,0 +1,286 @@
+key: 01a1bc90-1384-725f-a2dc-b4787ce41dab
+id: spec
+versions:
+  - key: 01a1bc90-1384-725f-a2dc-b47d335740bd
+    at: 2026-11-08T19:08:41Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the rings' fade"
+    goal: "The distance rings' requirement says rings crowded on the view fade, committed"
+    status: active
+  - key: 01a1bc91-79c0-736a-b797-5b335f7b963a
+    at: 2026-11-08T19:10:12Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+    title: "Specify the rings' fade"
+    goal: "The distance rings' requirement says rings crowded on the view fade, committed"
+    status: done
+blocks:
+  - key: 01a1bc90-1384-725f-a2dc-b47bb35b3dd4
+    id: why
+    kind: note
+    versions:
+      - key: 01a1bc90-1384-725f-a2dc-b480012bb761
+        at: 2026-11-08T19:08:41Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Why"
+        markdown: |-
+          The owner saw the far distance rings shimmer, crawl and look dashed near the horizon (they suspected missing anisotropic filtering and Z-fighting).
+
+          - **No Z-fighting:** the renderer has no depth buffer. The shimmer is temporal aliasing.
+          - **No textures to filter:** lines are flat-coloured ribbons 1.5 device pixels wide with hard edges, so thin, angled ones break into dashes and crawl as the view moves.
+          - **Crowding:** at a shallow angle, rings 200 kpc apart out to 14 Mpc fall under a pixel apart and add up into a moiré band.
+
+          The owner agreed in the session to smooth line edges, fade crowded rings, and write large ring distances in the next unit. The fade is a new criterion; the rest needs none.
+  - key: 01a1bc90-1384-725f-a2dc-b47c455cfe6c
+    id: spec-change
+    kind: loft
+    versions:
+      - key: 01a1bc90-1384-725f-a2dc-b48195ccbc16
+        at: 2026-11-08T19:08:41Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        view: spec-change
+        note: "One new criterion under the distance rings' requirement. The owner approved its content in the session (\"yes\" to the proposal), and it is a minor change, so it is committed without a separate Yard approval round."
+        base: "product/atlas"
+        recorded:
+          commit: "e804f8b62591508eb5bda23bb5f091e11aea6b7d"
+          branch: "stage/atlas-w8"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-08T19:08:41Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 1,
+              "graph.edges": 0,
+              "graph.nodes": 5,
+              "status.base.added": 1,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1bc8f-ef0a-7540-a283-8bf654031f2c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A ring fades where the next ring lies fewer than 6 CSS pixels from it on the view and is not drawn where it lies fewer than 2, and a ring's label is left out where the ring has faded, so that rings far toward the horizon do not crowd into a band.",
+                  "words": {
+                    "after": "A ring fades where the next ring lies fewer than 6 CSS pixels from it on the view and is not drawn where it lies fewer than 2, and a ring's label is left out where the ring has faded, so that rings far toward the horizon do not crowd into a band."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1b7d7-c032-73ad-803e-b101c9b9b10c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Frame the view as an atlas",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": null,
+                  "key": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "While the person has turned the distance rings on, Univ Explorer shall draw rings of equal distance from the Solar System barycentre, with spokes along round longitudes, in the plane of the equator of the axes the view is drawn in, in place of that equator's single ring.",
+                  "parent": "01a1b7d7-c032-73ad-803e-b101c9b9b10c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1bc8f-ef0a-7540-a283-8bf654031f2c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A ring fades where the next ring lies fewer than 6 CSS pixels from it on the view and is not drawn where it lies fewer than 2, and a ring's label is left out where the ring has faded, so that rings far toward the horizon do not crowd into a band.",
+                  "parent": "01a1bbd3-54fe-7370-9d9f-cdc36f27a1f2"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a1bc8f-ef0a-7540-a283-8bf654031f2c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 73,
+                    "name": "A ring fades where the next ring lies fewer than 6 CSS pixels from it on the view and is not drawn where it lies fewer than 2, and a ring's label is left out where the ring has faded, so that rings far toward the horizon do not crowd into a band.",
+                    "path": "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "e804f8b62591508eb5bda23bb5f091e11aea6b7d",
+                "removed": [],
+                "revision": "product/atlas"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 6,
+                "publishedAt": "2026-11-06T15:38:55Z",
+                "stateRoot": "506d64cfcc596f3bbafb13df0ff6d296153a40970ace9599a41317f8345859fd"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/atlas-w8",
+                "modified": [
+                  "spec/products/univ-explorer/the-view/frame-the-view-as-an-atlas.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1bc91-5489-756a-8629-54a5416680ce
+    id: plan-25-plan-silly-shimmying-lake-01a1bc90-1384-725f-a2dc-b4787ce41dab
+    kind: plan
+    versions:
+      - key: 01a1bc91-5489-756a-8629-54a660189fd2
+        at: 2026-11-08T19:10:03Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "0dff9621-d0e9-418a-9aee-e82062f9f784"
+        title: "Build plan: smooth lines and faded rings (W8, `stage/atlas-w8`)"
+        markdown: |
+          # Build plan: smooth lines and faded rings (W8, `stage/atlas-w8`)
+
+          ## Context
+          On release 12, the owner saw the far distance rings shimmer, crawl and look dashed near the horizon. They asked whether the explorer needs anisotropic filtering, and whether it has Z-fighting.
+
+          It has neither problem:
+          - **No Z-fighting:** the renderer has no depth buffer.
+          - **No textures to filter:** every line is a flat-coloured ribbon (`scene/ribbon.ts`, `LINE_VERTEX` and `LINE_FRAGMENT` in `scene/shaders.ts`).
+
+          The real causes:
+          1. **Hard edges.** The ribbons are 1.5 device pixels wide (`LINE_WIDTH` in `scene/kinds.ts`), and the context has `antialias: false`. Each pixel is either fully lit or not, so thin angled lines break into dashes and crawl as the view moves.
+          2. **Crowding.** At a shallow angle, rings 200 kpc apart out to 14 Mpc land under a pixel apart. They add up under the additive blending into a moiré band.
+
+          The owner agreed to three changes:
+          - smooth line edges;
+          - fading of crowded rings;
+          - large ring distances written in the next unit ("14.2 Mpc", not "14,200 kpc").
+
+          **Spec:** the new criterion `01a1bc8f-ef0a-7540-a283-8bf654031f2c` is committed (7720a30). It reads: "A ring fades where the next ring lies fewer than 6 CSS pixels from it on the view and is not drawn where it lies fewer than 2, and a ring's label is left out where the ring has faded…". The smoothing and the label units need no spec change. The existing criterion "labelled with its distance" still holds.
+
+          ## Steps
+
+          ### 1. Smooth line edges, for every line (`scene/shaders.ts`, `scene/renderer.ts`)
+          - **`LINE_VERTEX`:**
+            - Widen each ribbon by one device pixel on each side (`half = 0.5 * u_width + 1.0`).
+            - Pass `v_across = a_corner.y * half`, the distance from the centreline in device pixels.
+          - **`LINE_FRAGMENT`:**
+            - Coverage is `clamp(0.5 * u_width + 0.5 - abs(v_across), 0.0, 1.0) * min(u_width, 1.0)`.
+            - Alpha is `u_colour.a * coverage`.
+          - **Why the interpolation is right:** `v_across` is the same at both ends of a side. Perspective-correct interpolation therefore leaves it linear across the ribbon, and `noperspective` (missing from GLSL ES 3.00) isn't needed.
+          - **Scope:** this covers structure outlines, flows, symbols, the equator ring, the rings and spokes. Widths in `kinds.ts` stay as they are.
+
+          ### 2. Rings fade where crowded
+          **`scene/rings.ts`:**
+          - Export `FADE = { gone: 2, full: 6 }` (CSS pixels between neighbouring rings).
+          - Export `ringFade(spacing) = smoothstep(gone, full, spacing)`.
+          - Export `ringSpacing(at, point, step)`:
+            - it is the CSS-pixel distance between `at(point·(1 − h))` and `at(point·(1 + h))`, with `h = step / (2|point|)`;
+            - it returns `Infinity` where either end is out of sight (`at` gives undefined).
+          - `ringLines` returns the rings and the spokes as two `Lines`. Only the rings fade.
+          - **`scene/drawing.ts`:** `Lines` gains an optional `fade?: number`, the step in Mpc between the rings it holds.
+
+          **`scene/controller.ts`:**
+          - `drawRings` sets `"distance-rings"` with `fade: step`, and the new `"distance-spokes"`.
+          - `setRings(false)`, `setAxes` and the no-set case clear both.
+
+          **`scene/shaders.ts`, `LINE_VERTEX`:**
+          - New uniforms:
+            - `u_fadeStep` (0 means no fade);
+            - `u_origin`, the ICRS centre of the offsets;
+            - `u_fadeFrom` and `u_fadeTo`, the fade thresholds converted to device pixels.
+          - At each corner's end:
+            - take the radial direction `r = normalize(offset·scale + u_origin)` in the ICRS (the barycentre is the origin);
+            - project `end ± 0.5·u_fadeStep·r` through `u_axes`, `u_centre` and `u_projection`;
+            - the spacing is the distance between the two points on the view, in device pixels. It is unbounded where either point is behind the eye.
+            - `v_fade = smoothstep(u_fadeFrom, u_fadeTo, spacing)`.
+          - The fragment multiplies the alpha by `v_fade`.
+
+          **`scene/renderer.ts`:**
+          - Keep `fade` on each outline.
+          - In `drawOutlines`, set `u_fadeStep`, `u_origin`, and the thresholds × `devicePixelRatio` for an outline that has a fade, or 0 otherwise.
+
+          **`ui/overlay.ts` (labels):**
+          - `RingLabel` gains `step`.
+          - `placeRingLabels` leaves out a label where `ringFade(ringSpacing(at, label.at, label.step)) < 1`, since that ring has started to fade.
+
+          ### 3. Ring distances in the next unit (`scene/rings.ts`, `distanceOf`)
+          - Each label is written in the largest of pc, kpc and Mpc in which it is at least 1, with the step's places in that unit. Examples:
+            - step 200 kpc: "800 kpc", "1.0 Mpc", "14.2 Mpc";
+            - step 5 Mpc: "1,005 Mpc", unchanged.
+          - Rings side by side still never read alike, since each label carries the step's last figure in its own unit.
+
+          ### 4. Wave end
+          1. `/simplify` and `/code-review` in parallel, then the fixes.
+          2. `cargo xtask check` once, then `cargo xtask integration` once.
+          3. Trace links for the new criterion, accepted.
+          4. Screenshots on release 12 of the same grazing view, before and after.
+          5. Yard Log closed and committed, merged `--no-ff` into `product/atlas`, product Yard updated.
+
+          Nothing is pushed, published or deployed.
+
+          ## Tests
+          - **`scene/rings.test.ts`:**
+            - `ringFade`: 0 at or below 2 px, 1 at or above 6 px, and rising in between.
+            - `ringSpacing` with a real `project`: rings seen from straight above are as far apart as `step` in pixels; at a grazing angle the far ones are closer than the near ones; a point behind the eye gives `Infinity`.
+            - Spokes come apart from the rings, and only the rings carry `fade`.
+            - Distances: "1.0 Mpc" after "800 kpc" at a 200 kpc step; neighbours still differ.
+          - **`scene/controller.test.ts`:**
+            - rings on draws both `"distance-rings"` (with `fade` equal to the step) and `"distance-spokes"`;
+            - off, an axes change, or no set clears both.
+          - **`ui/overlay.test.ts`:** at a grazing view, the far rings' labels are left out while the near ones are shown.
+          - **`e2e/explorer.spec.ts`:** the rings test also flies to a grazing view and checks that only the near labels show and that no console errors appear. A shader that fails to compile shows up there, and in every drawing test.
+
+          ## Verification
+          1. `pnpm check` in `clients/explorer`.
+          2. On release 12 locally (`cargo xtask explore`, port 5317), the owner's view: rings on, about 4 Mpc out at a shallow angle. The far rings should dissolve toward the horizon with no band, lines should be continuous rather than dashed, and labels should stop where the rings fade.
+          3. Structure outlines should look smooth, with the chosen outline still thicker.
+        planMode: true
+    responses:
+      - key: 01a1bc91-654a-7067-abdb-d5c2e366af35
+        at: 2026-11-08T19:10:07Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved

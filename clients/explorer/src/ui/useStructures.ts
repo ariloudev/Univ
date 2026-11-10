@@ -5,10 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { Rotations } from "../api/schemas.ts";
 import { type StructureDetail, type StructureSummary, structureOf, structuresOf } from "../api/structures.ts";
 import { viewingDistance } from "../scene/controls.ts";
-import type { Lines } from "../scene/drawing.ts";
-import { APPROXIMATE_COLOUR, STRUCTURE_COLOUR } from "../scene/kinds.ts";
+import type { Lines, Rgba } from "../scene/drawing.ts";
+import { FLOW_LINE_WIDTH, FLOW_PIXELS, structureColour } from "../scene/kinds.ts";
+import { FLOW_REACH } from "../scene/outline.ts";
 import { type StructureDrawing, drawingOf } from "../scene/structures.ts";
-import { type Vec3, norm, sub } from "../scene/vec.ts";
+import { ORIGIN, type Vec3, norm, sub } from "../scene/vec.ts";
 import type { NameLabel } from "./overlay.ts";
 import type { World } from "./useWorld.ts";
 
@@ -37,14 +38,16 @@ const PARALLEL = 6;
 const offsetsFrom = (centre: Vec3, points: readonly Vec3[]) => new Float32Array(points.flatMap((p) => sub(p, centre)));
 
 /** What the renderer draws of `drawing`: its lines and its markers, about a centre. */
-export function rendered(drawing: StructureDrawing): { lines: Lines | undefined; markers: { centre: Vec3; offsets: Float32Array } | undefined } {
+export function rendered(drawing: StructureDrawing): { lines: Lines | undefined; markers: { centre: Vec3; offsets: Float32Array; colour: Rgba } | undefined } {
   const { segments, markers } = drawing.outline;
   const centre = drawing.centre ?? segments[0] ?? markers[0];
   if (centre === undefined) return { lines: undefined, markers: undefined };
-  const colour = drawing.approximate ? APPROXIMATE_COLOUR : STRUCTURE_COLOUR;
+  const colour = structureColour(drawing.kind, drawing.approximate);
+  // The symbol is about the structure's own centre, which it has wherever it has one.
+  const symbol = drawing.symbol === undefined ? undefined : { offsets: offsetsFrom(ORIGIN, drawing.symbol), pixels: FLOW_PIXELS, maxWidth: FLOW_LINE_WIDTH };
   return {
-    lines: segments.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour },
-    markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers) },
+    lines: segments.length === 0 && symbol === undefined ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour, symbol },
+    markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers), colour: structureColour(drawing.kind, false) },
   };
 }
 
@@ -53,6 +56,14 @@ export function structureView(structures: Structures, id: string): { centre: Vec
   const drawing = structures.drawings.get(id);
   if (drawing?.centre === undefined) return undefined;
   return { centre: drawing.centre, distance: viewingDistance(norm(drawing.centre), drawing.size) };
+}
+
+/** Flies `world`'s view to the structure `id` of `structures`: whether it is read and placed, and
+ * so flown to. */
+export function flyToStructure(world: World, structures: Structures, id: string): boolean {
+  const view = structureView(structures, id);
+  if (view !== undefined) world.controller.flyTo(view.centre, view.distance);
+  return view !== undefined;
 }
 
 /** `run` on each of `items`, at most `limit` at once, each settled whatever the others do. */
@@ -98,20 +109,33 @@ function drawAll(world: World, structures: Structures): void {
   }
 }
 
+/** How far a flow symbol's arrows reach from its centre, device pixels: its name goes below. */
+export const SYMBOL_REACH = FLOW_REACH * FLOW_PIXELS;
+
 /** The names of the structures drawn of `shown`, to place over the view. */
-const namesOf = (structures: Structures, shown: ReadonlySet<string>): NameLabel[] =>
+export const namesOf = (structures: Structures, shown: ReadonlySet<string>): NameLabel[] =>
   [...structures.drawings.values()].flatMap((d) =>
-    d.centre === undefined || !shown.has(d.id) ? [] : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name }],
+    d.centre === undefined || !shown.has(d.id)
+      ? []
+      : [{ id: d.id, centre: d.centre, text: d.approximate ? `${d.name} (approximate)` : d.name, below: d.symbol === undefined ? undefined : SYMBOL_REACH }],
   );
 
+/** The renderer's names of the outlines not drawn (see-the-structures, choose-what-is-drawn): of
+ * each structure drawn but not `named`, its kind turned off, and, while the `outlines` are off,
+ * of every other but the `chosen` one, whose name stays in the view all the same. */
+export const hiddenOutlines = (drawn: Iterable<string>, named: ReadonlySet<string>, chosen: string | undefined, outlines: boolean): Set<string> =>
+  new Set([...drawn].filter((id) => !named.has(id) || (!outlines && id !== chosen)).map(drawnAs));
+
 /** The structures of `release`, drawn into `world` once the rotations of its frames are read,
- * the one `chosen` in the chosen colour, none of a kind in `hiddenKinds`. */
+ * the one `chosen` in the chosen colour, none of a kind in `hiddenKinds`, and, while `outlines`
+ * is false, no outline but the chosen one's, though every name. */
 export function useStructures(
   release: number,
   world: World | undefined,
   rotations: Rotations | undefined,
   chosen: string | undefined,
   hiddenKinds: ReadonlySet<string>,
+  outlines = true,
 ): ShownStructures {
   const [structures, setStructures] = useState<Structures>(NONE);
   // The names are worked out as the page renders, so that their elements are there for the
@@ -122,11 +146,10 @@ export function useStructures(
   }, [structures, hiddenKinds]);
   useEffect(() => {
     if (world === undefined) return;
-    const named = new Set(shown.shown.map((s) => s.id));
-    world.renderer.hideNames(new Set([...shown.drawings.keys()].filter((id) => !named.has(id)).map(drawnAs)));
+    world.renderer.hideNames(hiddenOutlines(shown.drawings.keys(), new Set(shown.shown.map((s) => s.id)), chosen, outlines));
     world.names = shown.names;
     world.controller.invalidate();
-  }, [world, shown]);
+  }, [world, shown, chosen, outlines]);
   // After the render that holds them: a frame drawn before React has added the names' elements
   // would place none, and a still view draws no other.
   useEffect(() => {

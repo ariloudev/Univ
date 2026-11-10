@@ -389,7 +389,7 @@ fn a_member_whose_position_cannot_be_checked_is_resolved_by_name_alone_and_count
     let at = at.unwrap().unwrap();
     let mut object = Object::new(vec![ObjectEntry {
         entry: galaxy,
-        resolved_by: Resolution::Anchor,
+        resolved_by: Resolution::Anchor.into(),
     }]);
     object.placement = Placement::Placed;
     let resolved = [Resolved {

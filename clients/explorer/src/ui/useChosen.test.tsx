@@ -53,6 +53,29 @@ describe("the chosen object", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it("is the one chosen last, however late the record of one chosen before it arrives", async () => {
+    // The first record answers only once the second has been read.
+    let answerFirst: (() => void) | undefined;
+    const fetch = vi.fn((url: unknown) => {
+      if (String(url).startsWith("/v1/objects/1?")) return new Promise<Response>((resolve) => (answerFirst = () => resolve(Response.json({ ...ANDROMEDA, id: 1 }))));
+      return Promise.resolve(Response.json({ ...ANDROMEDA, id: 2, position: { ...ANDROMEDA.position, x: 9 } }));
+    });
+    vi.stubGlobal("fetch", fetch);
+    const scene = world();
+    const hook = renderHook(() => useChosen(7, scene));
+    act(() => hook.result.current.choose(1, { fly: true }));
+    act(() => hook.result.current.choose(2));
+    await waitFor(() => expect(hook.result.current.chosen.kind).toBe("ready"));
+    await act(async () => {
+      answerFirst?.();
+      await Promise.resolve();
+    });
+    const chosen = hook.result.current.chosen;
+    expect(chosen.kind === "ready" ? chosen.record.id : undefined).toBe(2);
+    expect(scene.chosen?.[0]).toBe(9);
+    expect(scene.controller.view.focus).toEqual([0, 0, 0]);
+  });
+
   it("is let go of, leaving the address naming none", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(Response.json(ANDROMEDA))));
     const scene = world();

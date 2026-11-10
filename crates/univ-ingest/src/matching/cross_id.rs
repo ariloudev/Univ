@@ -39,25 +39,25 @@ pub(super) fn apply(work: &mut Work<'_>) {
         let mut by_id: HashMap<String, Vec<usize>> = HashMap::new();
         let mut order: Vec<String> = Vec::new();
         for (i, entry) in work.entries.iter().enumerate() {
-            let Some(member) = scheme
+            // Every field its source joins the scheme by, such as an NGC name and a Messier
+            // number; an entry is listed once under each identifier.
+            let fields = scheme
                 .members
                 .iter()
-                .find(|m| m.source == entry.designation.source)
-            else {
-                continue;
-            };
-            let Some(text) = member.field.read(entry) else {
-                continue;
-            };
-            let id = match scheme.compare {
-                IdentifierForm::Identifier => identifier_key(text).to_owned(),
-                IdentifierForm::CommonName => common_name(text, &scheme.aliases),
-            };
-            let list = by_id.entry(id.clone()).or_default();
-            if list.is_empty() {
-                order.push(id);
+                .filter(|m| m.source == entry.designation.source);
+            for text in fields.filter_map(|m| m.field.read(entry)) {
+                let id = match scheme.compare {
+                    IdentifierForm::Identifier => identifier_key(text).to_owned(),
+                    IdentifierForm::CommonName => common_name(text, &scheme.aliases),
+                };
+                let list = by_id.entry(id.clone()).or_default();
+                if list.is_empty() {
+                    order.push(id);
+                }
+                if list.last() != Some(&i) {
+                    list.push(i);
+                }
             }
-            list.push(i);
         }
         for id in order {
             apply_one(work, s, &id, &by_id[&id]);

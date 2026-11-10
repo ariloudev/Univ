@@ -43,8 +43,8 @@ fn edited(id: &str, edits: &[(usize, &str, &str)]) -> (SourceDefinition, Vec<u8>
 /// Every value of an entry with the name of the field it fills.
 fn values(e: &CatalogueEntry) -> Vec<(&'static str, &Value)> {
     let mut all = Vec::new();
-    all.extend(e.velocity.iter().map(|v| ("velocity", v)));
-    all.extend(e.parallax.iter().map(|v| ("parallax", v)));
+    all.extend(e.velocity.as_deref().map(|v| ("velocity", v)));
+    all.extend(e.parallax.as_deref().map(|v| ("parallax", v)));
     if let Some(pm) = &e.proper_motion {
         all.extend([("proper motion", &pm.ra), ("proper motion", &pm.dec)]);
     }
@@ -109,7 +109,7 @@ fn each_native_value_keeps_its_published_unit_beside_the_normalized_value() {
         }
     }
     let hip = normalized_fixture("hipparcos-2007");
-    let plx = entry(&hip, "1").parallax.unwrap();
+    let plx = entry(&hip, "1").parallax.as_deref().unwrap();
     assert_eq!(
         (plx.native.value, plx.native.unit),
         (4.55, Unit::Milliarcsecond)
@@ -151,7 +151,11 @@ fn each_value_is_classified_by_its_kind_of_value() {
     );
     let gaia = normalized_fixture("gaia-dr3-bright");
     assert_eq!(
-        entry(&gaia, "139396191545402112").parallax.unwrap().kind,
+        entry(&gaia, "139396191545402112")
+            .parallax
+            .as_deref()
+            .unwrap()
+            .kind,
         KindOfValue::Measured
     );
     // 2M++ row 1 with Cln set to 1: a cloned redshift is assigned, not measured.
@@ -159,7 +163,10 @@ fn each_value_is_classified_by_its_kind_of_value() {
     let n = normalize_body(&d, &body);
     let cloned = entry(&n, "01413509-8920041");
     assert_eq!(cloned.redshifts[0].kind_of_value, KindOfValue::Estimated);
-    assert_eq!(cloned.velocity.unwrap().kind, KindOfValue::Estimated);
+    assert_eq!(
+        cloned.velocity.as_deref().unwrap().kind,
+        KindOfValue::Estimated
+    );
     assert_eq!(
         entry(&n, "23085574-8859141").redshifts[0].kind_of_value,
         KindOfValue::Measured
@@ -208,7 +215,7 @@ fn a_value_published_without_an_error_is_marked_none_reported() {
     let n = normalize_body(&definition, &body);
     let m31 = entry(&n, "00424433+4116074");
     assert_eq!(
-        m31.velocity.unwrap().native.uncertainty,
+        m31.velocity.as_deref().unwrap().native.uncertainty,
         Uncertainty::NoneReported
     );
     assert_eq!(
@@ -220,7 +227,7 @@ fn a_value_published_without_an_error_is_marked_none_reported() {
     let n = normalize_body(&definition, &body);
     let g = entry(&n, "01413509-8920041");
     assert_eq!(
-        g.velocity.unwrap().native.uncertainty,
+        g.velocity.as_deref().unwrap().native.uncertainty,
         Uncertainty::NoneReported
     );
 }

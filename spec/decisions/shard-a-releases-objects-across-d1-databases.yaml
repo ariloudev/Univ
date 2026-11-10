@@ -1,0 +1,69 @@
+key: 01a1a931-2c8a-73a8-91f2-58f331400c25
+slug: shard-a-releases-objects-across-d1-databases
+title: "Shard a release's objects across several D1 databases"
+context: "DESI DR1 brings about 15.8 million redshifts and WISE × SuperCOSMOS about 18.5 million galaxies. Measured on release 9, an object takes about 0.83 kB of D1 on disk, so release 10 needs about 15 to 18 GB, more than one 10 GB D1 database even with every older release pruned. Cloudflare describes D1 as designed for horizontal scale out across many 10 GB databases, and every read of a release in univ-api already passes through one backend."
+state:
+  kind: accepted
+  selectedOption: 01a1a931-2c8a-73a8-91f2-58f6ffe609ba
+  outcome: "A release keeps its sources, structures and an index of object ids in a catalogue database, and its objects in object shards divided by cell, each within the 10 GB cap."
+drivers:
+  - key: 01a1a931-2c8a-73a8-91f2-58f4f093c68c
+    kind: local
+    label: "Scale"
+    statement: "A release holds DESI DR1 and the photometric surveys beside every earlier source."
+  - key: 01a1a931-2c8a-73a8-91f2-58f55627fe4a
+    kind: local
+    label: "Small change"
+    statement: "Lookups and volume queries keep their SQL and their answers."
+options:
+  - key: 01a1a931-2c8a-73a8-91f2-58f6ffe609ba
+    title: "Several D1 databases"
+    description: "A catalogue database and object shards by cell, all D1, with the Worker routing each read to the shard that holds it."
+  - key: 01a1a931-2c8a-73a8-91f2-58f7f6ee7cfe
+    title: "R2 shards"
+    description: "Bulk survey objects as files per octree node in R2, read through an index of their own."
+  - key: 01a1a931-2c8a-73a8-91f2-58f8213fc3f4
+    title: "One D1 database"
+    description: "Keep every object in one D1 database and leave out the sources that do not fit."
+assessments:
+  - option: 01a1a931-2c8a-73a8-91f2-58f6ffe609ba
+    driver: 01a1a931-2c8a-73a8-91f2-58f4f093c68c
+    rating: supports
+    rationale: "each added shard adds 10 GB"
+  - option: 01a1a931-2c8a-73a8-91f2-58f6ffe609ba
+    driver: 01a1a931-2c8a-73a8-91f2-58f55627fe4a
+    rating: supports
+    rationale: "the same statements run on each shard"
+  - option: 01a1a931-2c8a-73a8-91f2-58f7f6ee7cfe
+    driver: 01a1a931-2c8a-73a8-91f2-58f4f093c68c
+    rating: supports
+    rationale: "R2 holds any size"
+  - option: 01a1a931-2c8a-73a8-91f2-58f7f6ee7cfe
+    driver: 01a1a931-2c8a-73a8-91f2-58f55627fe4a
+    rating: conflicts
+    rationale: "lookups and volume queries move from SQL to file reads"
+  - option: 01a1a931-2c8a-73a8-91f2-58f8213fc3f4
+    driver: 01a1a931-2c8a-73a8-91f2-58f4f093c68c
+    rating: conflicts
+    rationale: "DESI DR1 alone exceeds the cap"
+  - option: 01a1a931-2c8a-73a8-91f2-58f8213fc3f4
+    driver: 01a1a931-2c8a-73a8-91f2-58f55627fe4a
+    rating: supports
+    rationale: "nothing changes"
+consequences:
+  - key: 01a1a931-2c8a-73a8-91f2-58f9da88918f
+    kind: cost
+    statement: "Univ Server routes each read to its object shard, and a volume query or a lookup by designation may read several shards."
+  - key: 01a1a931-2c8a-73a8-91f2-58fa4568c2b8
+    kind: obligation
+    statement: "Lookup and volume query latency are measured again on a release whose objects span several shards."
+  - key: 01a1a931-2c8a-73a8-91f2-58fb1b657247
+    kind: risk
+    statement: "The number of shards a deployment binds limits how large a release can be published."
+subjects:
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3ce3944cd7e5
+  - role: affected
+    node: 01a19f1e-d177-716d-b124-3cf23344602c
+  - role: outcome
+    node: 01a1a931-2c8a-73a8-91f2-59053781d70f

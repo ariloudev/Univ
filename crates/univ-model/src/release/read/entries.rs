@@ -27,27 +27,29 @@ fn designation(c: &Columns<'_>, source: &str, identifier: &str) -> Result<Design
         .map_err(|e| c.error("identifier", format!("{identifier:?}: {e}")))
 }
 
+/// The id of the source a row of `c` names by number (`source`).
+pub(super) fn source_of<'v>(v: &'v Vocabulary, c: &Columns<'_>) -> Result<&'v str, ReadError> {
+    let n = c.int("source")?;
+    v.source(n)
+        .ok_or_else(|| c.error("source", format!("{n} is not among the release's sources")))
+}
+
+/// The designation a row of `c` gives: its source by number (`source`) and its `identifier`.
+fn coded(v: &Vocabulary, c: &Columns<'_>) -> Result<Designation, ReadError> {
+    designation(c, source_of(v, c)?, c.text("identifier")?)
+}
+
 /// The entry's number, source id and identifier, which other entries' resolutions name.
 pub(super) fn head(v: &Vocabulary, row: &Row) -> Result<(u32, Designation), ReadError> {
     let c = Columns::new(v, TABLE, row);
-    let n = c.int("source")?;
-    let source = v
-        .source(n)
-        .ok_or_else(|| c.error("source", format!("{n} is not among the release's sources")))?;
-    Ok((
-        c.small("entry")?,
-        designation(&c, source, c.text("identifier")?)?,
-    ))
+    Ok((c.small("entry")?, coded(v, &c)?))
 }
 
-/// The designations of an object's `designations` rows, each its source's id (`source`) and
-/// `identifier`.
+/// The designations of an object's `designations` rows, each its source by number (`source`)
+/// and `identifier`, as the table holds them.
 pub(super) fn designations(v: &Vocabulary, rows: &[Row]) -> Result<Vec<Designation>, ReadError> {
     rows.iter()
-        .map(|row| {
-            let c = Columns::new(v, "designations", row);
-            designation(&c, c.text("source")?, c.text("identifier")?)
-        })
+        .map(|row| coded(v, &Columns::new(v, "designations", row)))
         .collect()
 }
 
@@ -78,7 +80,10 @@ fn entry(
     Ok(EntryRecord {
         entry: number,
         source: own.source.as_str().to_owned(),
-        identifier: own.identifier.clone(),
+        identifier: String::from(&*own.identifier),
+        designation: v
+            .reading()
+            .designation(own.source.as_str(), &own.identifier),
         name: c.text_opt("name")?.map(str::to_owned),
         resolved_by: resolution(&c, own, &extra, heads)?,
         position: position(&c, &extra)?,
@@ -125,7 +130,7 @@ fn resolution(
             scheme: c.term("scheme")?.to_owned(),
             identifier: c
                 .text_opt("shared")?
-                .map_or_else(|| own.identifier.clone(), str::to_owned),
+                .map_or_else(|| String::from(&*own.identifier), str::to_owned),
             via: via(c, extra, heads)?,
             confidence: confidence(c)?,
         },

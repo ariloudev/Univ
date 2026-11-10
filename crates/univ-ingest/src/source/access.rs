@@ -1,5 +1,6 @@
-//! How a source is reached: a provider's services under each mirror, files fetched whole, or
-//! files kept in this repository, and the checks of each.
+//! How a source is reached: a provider's services under each mirror, files fetched whole, a file
+//! prepared by a script of this repository, or files kept in this repository, and the checks of
+//! each.
 
 use std::collections::HashSet;
 use std::path::Path;
@@ -47,6 +48,8 @@ pub enum Access {
     },
     /// Files under each mirror, each fetched whole and resumable.
     Files { files: Vec<RemoteFile> },
+    /// A file prepared by a script of this repository, never fetched.
+    Prepared(PreparedFile),
     /// Files kept in this repository under `path`, such as the researched structures, which are
     /// read from their papers rather than fetched.
     Repository {
@@ -55,6 +58,19 @@ pub enum Access {
         #[serde(default, skip_serializing_if = "Holds::is_structures")]
         holds: Holds,
     },
+}
+
+/// A gzipped CSV `file` in the source's download directory, made by `script` (a path in this
+/// repository) from a provider whose interface Univ Ingest cannot page, such as a form that
+/// cancels long answers. It is read once its SHA-256 and its `rows`, the lines after its header
+/// that are neither blank nor `#` comments, match these.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PreparedFile {
+    pub file: String,
+    pub script: String,
+    pub sha256: String,
+    pub rows: u64,
 }
 
 /// What the files of a source kept in the repository are.
@@ -66,6 +82,8 @@ pub enum Holds {
     Structures,
     /// Researched star distances, one star file each.
     StarDistances,
+    /// A snapshot of a list of star names, one file.
+    StarNames,
 }
 
 impl Access {
@@ -150,11 +168,9 @@ impl Access {
                 Some(("access.files", "holds a file with an empty path"))
             }
             Self::Files { files }
-                if files.iter().any(|f| {
-                    f.sha256
-                        .as_ref()
-                        .is_some_and(|d| d.len() != 64 || !d.bytes().all(|b| b.is_ascii_hexdigit()))
-                }) =>
+                if files
+                    .iter()
+                    .any(|f| f.sha256.as_ref().is_some_and(|d| !is_sha256(d))) =>
             {
                 Some((
                     "access.files",
@@ -168,12 +184,32 @@ impl Access {
             Self::Repository { path, .. } if path.trim().is_empty() => {
                 Some(("access.path", "is empty"))
             }
+            Self::Prepared(PreparedFile { file, .. })
+                if !file.ends_with(".csv.gz")
+                    || Path::new(file).file_name() != Some(file.as_ref()) =>
+            {
+                Some((
+                    "access.file",
+                    "is not the name of a gzipped CSV file, the one form a prepared file takes",
+                ))
+            }
+            Self::Prepared(PreparedFile { script, .. }) if script.trim().is_empty() => {
+                Some(("access.script", "is empty"))
+            }
+            Self::Prepared(PreparedFile { sha256, .. }) if !is_sha256(sha256) => {
+                Some(("access.sha256", "is not 64 hexadecimal digits"))
+            }
             _ => None,
         };
         problem.map_or(Ok(()), |(field, what)| {
             Err((field.to_owned(), what.to_owned()))
         })
     }
+}
+
+/// Whether `digest` is a SHA-256 as hexadecimal digits.
+fn is_sha256(digest: &str) -> bool {
+    digest.len() == 64 && digest.bytes().all(|b| b.is_ascii_hexdigit())
 }
 
 /// Whether no two files share the file name they are kept under.

@@ -141,8 +141,9 @@ pub struct PreferredDistance {
     pub distance_mpc: f64,
     pub uncertainty: FractionalUncertainty,
     pub decided: Decided,
-    /// The best of the measurements it beat, with its uncertainty, where there was one.
-    pub runner_up: Option<(MeasurementRef, FractionalUncertainty)>,
+    /// The best of the measurements it beat, with its uncertainty, where there was one. Boxed:
+    /// most objects have one measurement, and an object is held for each of tens of millions.
+    pub runner_up: Option<Box<(MeasurementRef, FractionalUncertainty)>>,
 }
 
 /// The classes of sky position, best first, where the published uncertainties cannot decide.
@@ -153,6 +154,8 @@ pub enum PositionClass {
     Gaia,
     Hipparcos,
     Survey,
+    /// The centroid of a 21 cm source seen with a radio telescope's beam of arcminutes.
+    Beam,
 }
 
 /// The entry whose sky position the object takes, and why.

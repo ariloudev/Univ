@@ -72,6 +72,47 @@ fn the_terms_of_use_and_credit_are_given_as_the_definition_states_them() {
 }
 
 #[test]
+fn the_terms_give_the_redistribution_status_and_any_non_commercial_clause() {
+    let db = db();
+    let permitted = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    // Terms that allow commercial use and grant redistribution carry neither mark.
+    assert_eq!(
+        permitted["terms"]["redistribution"],
+        "permitted_with_credit"
+    );
+    assert!(permitted["terms"].get("non_commercial").is_none());
+    assert!(permitted["terms"].get("permission").is_none());
+    db.exec(
+        "UPDATE sources SET redistribution = 'permission_pending' WHERE release = 2 AND n = 0; \
+         INSERT INTO source_terms VALUES (2, 0, 'Tabular data are under CC-BY-NC licence', \
+         '{\"asked_of\":\"WFAU, mar@roe.ac.uk\",\"asked_on\":\"2026-11-05\"}', NULL, NULL);",
+    );
+    let pending = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    let terms = &pending["terms"];
+    assert_eq!(terms["redistribution"], "permission_pending");
+    assert_eq!(
+        terms["non_commercial"],
+        "Tabular data are under CC-BY-NC licence"
+    );
+    assert_eq!(
+        terms["permission"],
+        json!({"asked_of": "WFAU, mar@roe.ac.uk", "asked_on": "2026-11-05"})
+    );
+    assert!(terms.get("permission_to_ask").is_none());
+    // A request not yet sent names whom it is for, and no date.
+    db.exec(
+        "UPDATE source_terms SET permission = '{\"asked_of\":\"WFAU, mar@roe.ac.uk\"}' \
+         WHERE release = 2 AND source = 0;",
+    );
+    let unsent = body(&get(&db, "/v1/sources/hipparcos-2007"));
+    assert!(unsent["terms"].get("permission").is_none());
+    assert_eq!(
+        unsent["terms"]["permission_to_ask"],
+        json!({"asked_of": "WFAU, mar@roe.ac.uk"})
+    );
+}
+
+#[test]
 fn the_query_and_the_cuts_are_the_ones_the_fetch_ran_verbatim() {
     let source = read("/v1/sources/hipparcos-2007");
     assert_eq!(
@@ -180,7 +221,8 @@ fn two_reads_pinned_to_one_release_return_identical_data_whatever_was_published_
     let db = db();
     let before = db.get("/v1/sources/hipparcos-2007", "release=2");
     db.exec(
-        "UPDATE releases SET published_at = '2026-11-03T08:00:00Z' WHERE number = 3;
+        "UPDATE sources SET retired = 3 WHERE id = 'hipparcos-2007';
+         UPDATE releases SET published_at = '2026-11-03T08:00:00Z' WHERE number = 3;
          UPDATE latest SET release = 3 WHERE one = 1;",
     );
     let after = db.get("/v1/sources/hipparcos-2007", "release=2");
@@ -190,6 +232,60 @@ fn two_reads_pinned_to_one_release_return_identical_data_whatever_was_published_
     let unpinned = db.get("/v1/sources/hipparcos-2007", "");
     assert_eq!(
         unpinned.status, 404,
-        "latest moved to release 3, which has no such source"
+        "latest moved to release 3, which retired the source"
+    );
+}
+
+#[test]
+fn a_source_gives_its_designation_form_and_what_its_flags_mean_with_where_each_is_read() {
+    let hip = read("/v1/sources/hipparcos-2007");
+    assert_eq!(hip["designation"]["form"], "HIP {identifier}");
+    assert!(
+        hip["designation"]["cite"]
+            .as_str()
+            .unwrap()
+            .contains("I/311")
+    );
+    let sn = &hip["flags"]["Sn"];
+    assert!(sn["cite"].as_str().unwrap().contains("I/311"), "{sn}");
+    assert!(
+        sn["values"].as_object().is_some_and(|v| !v.is_empty()),
+        "{sn}"
+    );
+    // Its terms ask nothing to be shared alike.
+    assert!(hip["terms"].get("share_alike").is_none());
+    // A source whose definition gives no form and no flag meanings gives neither.
+    let local = read("/v1/sources/researched-structures");
+    assert!(local.get("designation").is_none() && local.get("flags").is_none());
+}
+
+#[test]
+fn a_share_alike_source_quotes_the_clause_and_one_without_says_nothing_of_it() {
+    // OpenNGC, under CC BY-SA 4.0, as release 12 holds it.
+    let db = db();
+    db.exec(
+        r#"
+INSERT INTO sources VALUES (2, 2, 'openngc', 'OpenNGC', 'github', 'nearby_galaxies',
+  'Verga M., OpenNGC, release v20260501.', 'https://github.com/mattiaverga/OpenNGC',
+  'OpenNGC is released under CC-BY-SA-4.0 license.', 'OpenNGC by Mattia Verga, under CC BY-SA 4.0.',
+  'permitted_with_credit', 'provisional', 13371, '{"method":"prepared"}', '[]', '[]', NULL);
+INSERT INTO source_reading VALUES (2, 2, NULL, NULL, 3,
+  'ShareAlike.In addition to the conditions in Section 3(a), if You Share Adapted Material You produce, the following conditions also apply.',
+  NULL, NULL);
+"#,
+    );
+    let response = get(&db, "/v1/sources/openngc");
+    assert_eq!(response.status, 200);
+    let openngc = body(&response);
+    assert!(
+        openngc["terms"]["share_alike"]
+            .as_str()
+            .is_some_and(|c| c.starts_with("ShareAlike.")),
+        "{openngc}"
+    );
+    assert!(
+        read("/v1/sources/hipparcos-2007")["terms"]
+            .get("share_alike")
+            .is_none()
     );
 }

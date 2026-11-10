@@ -1,5 +1,6 @@
-//! What a handler reads from: the release and univ-layers databases, as SQL on SQLite, which D1 is in the
-//! Worker and an in-memory database is in the native tests. The same statements run on both.
+//! What a handler reads from: the releases' catalogue database, their object shards and the
+//! univ-layers database, as SQL on SQLite, which D1 is in the Worker and in-memory databases are
+//! in the native tests. The same statements run on both.
 
 use std::future::Future;
 
@@ -19,19 +20,28 @@ pub struct BackendError(pub String);
 
 /// The storage a request is answered from.
 pub trait Backend {
-    /// Runs one statement that reads the release database, with `?1`, `?2` … bound to
-    /// `params`, and gives every row.
+    /// Runs one statement that reads the releases' catalogue database, with `?1`, `?2` … bound
+    /// to `params`, and gives every row. It holds every table but those of an object shard
+    /// (`univ_model::release::shards::SHARD_TABLES`), and the shard of every object id.
     fn releases(
         &self,
         sql: &str,
         params: &[Value],
     ) -> impl Future<Output = Result<Vec<Row>, BackendError>>;
 
-    /// Runs several statements that read the release database in one round trip, as D1's
+    /// Runs several statements that read the catalogue database in one round trip, as D1's
     /// batch does, and gives each one's rows in order.
     fn releases_batch(
         &self,
         statements: &[(&str, &[Value])],
+    ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>>;
+
+    /// Runs statements that read object shards, each `(shard, sql, params)` on the shard it
+    /// names, and gives each one's rows in order: the statements of one shard in one round trip,
+    /// the shards at once where the platform can.
+    fn shards(
+        &self,
+        statements: &[(u32, &str, &[Value])],
     ) -> impl Future<Output = Result<Vec<Vec<Row>>, BackendError>>;
 
     /// The object of `key` in the releases bucket, read whole: for small files such as a

@@ -76,6 +76,19 @@ fixes:
       VII/259 ReadMe Note (3): "6dFGS redshifts deemed unsuitable for extragalactic use (either
       because of measurement uncertainty or spectral classification) have had their uncertainties
       set to 0km/s." (read from http://vizier.nao.ac.jp/ftp/cats/VII/259/ReadMe, 2026-11-03)
+flags:
+  q_cz:
+    cite: >-
+      ReadMe of VII/259 (VizieR), Byte-by-byte Description of file 6dfgs.dat, q_cz ('Best redshift
+      quality value available'), Note (5)
+    values:
+      "0": "No redshift quality value available."
+      "1": "6dFGS or 2dFGRS, unusable measurement."
+      "2": "6dFGS or 2dFGRS, possible, but doubtful redshift estimate."
+      "3": "6dFGS or 2dFGRS, 'probable' redshift (notionally 90% confidence)."
+      "4": "6dFGS or 2dFGRS, reliable redshift (notionally 99% confidence)."
+      "6": "6dFGS confirmed Galactic source."
+      "9": "SDSS and ZCAT sources (not a measure of quality)."
 normalization:
   redshifts:
     - column: cz

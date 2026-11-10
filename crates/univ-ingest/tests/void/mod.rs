@@ -9,7 +9,6 @@
               test failing"
 )]
 
-use std::collections::BTreeMap;
 use std::fs;
 
 use univ_ingest::outlines::{OutlineResult, Placed};
@@ -95,7 +94,7 @@ pub fn entry(source: &str, n: usize, p: Vec3, redshift: bool) -> CatalogueEntry 
             velocity: None,
             cmb: CmbRedshift {
                 value: z(r),
-                heliocentric: z(r),
+                measured: z(r),
                 dipole: DipoleModel::Planck2018,
                 published: univ_model::redshift::RedshiftFrame::Heliocentric,
             },
@@ -104,20 +103,21 @@ pub fn entry(source: &str, n: usize, p: Vec3, redshift: bool) -> CatalogueEntry 
         vec![]
     };
     CatalogueEntry {
+        cross_ids: univ_model::entry::Flags::default(),
         designation: Designation::new(SourceId::new(source).unwrap(), n.to_string()).unwrap(),
         name: None,
         position: Some(Position::new(native, PositionUncertainty::NoneReported).unwrap()),
-        distances: vec![],
-        redshifts,
+        distances: thin_vec::thin_vec![],
+        redshifts: redshifts.into(),
         velocity: None,
         parallax: None,
         proper_motion: None,
         magnitude: None,
-        colours: Vec::new(),
+        colours: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
-        flags: BTreeMap::new(),
+        flags: univ_model::entry::Flags::default(),
         references: Box::default(),
     }
 }

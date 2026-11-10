@@ -12,10 +12,12 @@
 //! runtime and its local D1, so it measures the Worker and its queries, not Cloudflare's
 //! network.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::{Duration, Instant};
 
-use crate::integration::{Exchange, REAL_STATE, send};
+use univ_model::release::shards::Database;
+
+use crate::integration::{Exchange, REAL_STATE, send, wrangler};
 use crate::owner::{real_owner, with_real_server};
 
 /// How many lookups are timed.
@@ -43,7 +45,7 @@ struct Timed {
 /// Times the object lookups; true when every lookup answered 200 within QA-2's bound.
 pub fn lookup(root: &Path) -> bool {
     let state = root.join(REAL_STATE);
-    let ids = match sample_ids(&state) {
+    let ids = match sample_ids(root, &state) {
         Ok(ids) => ids,
         Err(error) => {
             eprintln!(
@@ -203,47 +205,58 @@ fn ms(duration: Duration) -> f64 {
 }
 
 /// [`SAMPLES`] + [`WARM_UP`] object ids of the latest release, at random, read from the
-/// release database of the local state before the Worker opens it.
-fn sample_ids(state: &Path) -> Result<Vec<u64>, String> {
-    let file = release_database(state)?;
-    let db =
-        rusqlite::Connection::open_with_flags(&file, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
-            .map_err(|e| e.to_string())?;
-    let count = i64::try_from(SAMPLES + WARM_UP).map_err(|e| e.to_string())?;
-    let mut query = db
-        .prepare(
-            "SELECT id FROM objects WHERE release = (SELECT release FROM latest WHERE one = 1) \
-             ORDER BY random() LIMIT ?1",
-        )
-        .map_err(|e| e.to_string())?;
-    let ids = query
-        .query_map([count], |row| row.get::<_, i64>(0))
-        .map_err(|e| e.to_string())?
-        .map(|id| {
-            id.map_err(|e| e.to_string())
-                .and_then(|id| u64::try_from(id).map_err(|e| e.to_string()))
-        })
-        .collect::<Result<Vec<u64>, String>>()?;
-    if ids.len() < SAMPLES + WARM_UP {
+/// catalogue database of the local state, which names every object's shard, through Wrangler
+/// before the Worker opens it.
+fn sample_ids(root: &Path, state: &Path) -> Result<Vec<u64>, String> {
+    let count = SAMPLES + WARM_UP;
+    let latest = "(SELECT release FROM latest WHERE one = 1)";
+    let sql = format!(
+        "SELECT id FROM object_shards WHERE {} ORDER BY random() LIMIT {count}",
+        univ_model::release::valid_in("", latest)
+    );
+    let output = wrangler(root, "d1", state)
+        .args([
+            "execute",
+            &Database::Catalogue.name(),
+            "--local",
+            "--json",
+            "--command",
+        ])
+        .arg(&sql)
+        .output()
+        .map_err(|e| format!("wrangler d1 execute: {e}"))?;
+    if !output.status.success() {
         return Err(format!(
-            "the latest release holds only {} objects",
+            "wrangler d1 execute: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    let answer: Vec<Answer> = serde_json::from_slice(&output.stdout)
+        .map_err(|e| format!("wrangler d1 execute answered other than JSON: {e}"))?;
+    let ids: Vec<u64> = answer
+        .into_iter()
+        .flat_map(|a| a.results)
+        .map(|r| r.id)
+        .collect();
+    if ids.len() < count {
+        return Err(format!(
+            "the latest release names only {} objects in its index of object shards; one built \
+             before object shards names none, and must be built again",
             ids.len()
         ));
     }
     Ok(ids)
 }
 
-/// The largest D1 database file of the local state: the release database, which dwarfs the
-/// layers database.
-fn release_database(state: &Path) -> Result<PathBuf, String> {
-    let dir = state.join("v3/d1/miniflare-D1DatabaseObject");
-    let entries = std::fs::read_dir(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
-    entries
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "sqlite"))
-        .max_by_key(|path| path.metadata().map_or(0, |m| m.len()))
-        .ok_or_else(|| format!("{} holds no D1 database", dir.display()))
+/// One statement's answer of `wrangler d1 execute --json`.
+#[derive(serde::Deserialize)]
+struct Answer {
+    results: Vec<Sampled>,
+}
+
+#[derive(serde::Deserialize)]
+struct Sampled {
+    id: u64,
 }
 
 #[cfg(test)]

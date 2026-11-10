@@ -17,7 +17,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use univ_model::distance::{Distance, DistanceKind, Measure, Method};
-use univ_model::entry::{CatalogueEntry, PaperReference};
+use univ_model::entry::{CatalogueEntry, Flags, PaperReference};
 use univ_model::ids::Designation;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Uncertainty, Value};
@@ -273,16 +273,17 @@ impl StarFile {
             .map(|p| ("method".to_owned(), p.method.clone()))
             .collect();
         let entry = CatalogueEntry {
+            cross_ids: Flags::default(),
             designation,
-            name: Some(self.name.clone()),
+            name: Some(self.name.as_str().into()),
             position: None,
             distances: distances.into_iter().collect(),
-            redshifts: vec![],
+            redshifts: thin_vec::thin_vec![],
             velocity: None,
-            parallax,
+            parallax: parallax.map(Box::new),
             proper_motion: None,
             magnitude: None,
-            colours: vec![],
+            colours: thin_vec::thin_vec![],
             spectral_type: None,
             group_id: None,
             supergalactic_velocity: None,

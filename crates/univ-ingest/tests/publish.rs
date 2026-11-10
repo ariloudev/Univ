@@ -13,11 +13,12 @@ mod memory_store;
 mod release_fixture;
 
 use memory_store::{Clock, MemoryStore, Op, int, publishing};
-use release_fixture::{build_next, fixture};
+use release_fixture::{build_next, fixture, read_manifest};
 use univ_ingest::publish::journal::Journal;
 use univ_ingest::publish::{Latest, PublishError};
 use univ_ingest::tiles::sha256;
 use univ_model::release::manifest::Target;
+use univ_model::release::shards::SHARD_TABLES;
 use univ_model::release::{ReleaseManifest, keys};
 
 /// What `latest` points to, by D1.
@@ -67,7 +68,7 @@ fn every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last() {
             .unwrap();
         assert_eq!(store.ops[put + 1], Op::Get(key.into()), "{key} read back");
     }
-    assert!(store.r2.contains_key(&keys::key(1, keys::MANIFEST)));
+    assert!(store.r2.contains_key(&keys::manifest(1)));
     // Each D1 table holds the rows the manifest counts.
     for t in m.d1.tables.iter().filter(|t| t.rows > 0) {
         let column = if t.table == "releases" {
@@ -83,12 +84,31 @@ fn every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last() {
     }
     let journal = Journal::read(journals.path(), 1).unwrap().unwrap();
     assert_eq!(journal.done.len(), m.files.len() + 1);
-    assert!(
-        journal
-            .done
-            .iter()
-            .any(|d| d.checked == "objects: 25 rows of release 1")
-    );
+    // Each object shard receives only the rows the manifest assigns to it.
+    assert!(m.shards.len() >= 2, "the fixture spans object shards");
+    let mut objects = 0;
+    for shard in &m.shards {
+        let db = &store.shards[&shard.index];
+        // Only the shard tables hold rows there.
+        for t in shard.d1.tables.iter().filter(|t| t.rows > 0) {
+            assert!(SHARD_TABLES.contains(&t.table.as_str()), "{}", t.table);
+            let rows: u64 = db
+                .query_row(
+                    &format!("SELECT COUNT(*) FROM {} WHERE release = 1", t.table),
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            assert_eq!(rows, t.rows, "{} of shard {}", t.table, shard.index);
+        }
+        let said = format!(
+            "objects: {} rows of release 1 in shard {}",
+            shard.objects, shard.index
+        );
+        assert!(journal.done.iter().any(|d| d.checked == said), "{said}");
+        objects += shard.objects;
+    }
+    assert_eq!(objects, 25);
 
     // AC-104: one single-statement write moves latest, after every upload.
     let moves: Vec<usize> = (0..store.ops.len())
@@ -139,6 +159,12 @@ fn a_file_that_reads_back_with_another_sha256_stops_the_publish() {
     // A local file changed after its build is refused as it is checked, before it is uploaded.
     let (mut store, journals) = (MemoryStore::default(), tempfile::tempdir().unwrap());
     let dir = univ_ingest::release::release_dir(f.out.path(), 1);
+    let rules_key = release_fixture::read_manifest(&dir)
+        .files
+        .iter()
+        .find(|m| m.path == keys::rules("matching"))
+        .and_then(|m| m.key.clone())
+        .unwrap();
     std::fs::write(dir.join(keys::rules("matching")), "changed").unwrap();
     let refused = publishing(
         &mut store,
@@ -154,11 +180,7 @@ fn a_file_that_reads_back_with_another_sha256_stops_the_publish() {
             if problem == "rules/matching.yaml no longer matches its SHA-256"),
         "{refused}"
     );
-    assert!(
-        !store
-            .r2
-            .contains_key(&keys::key(1, &keys::rules("matching")))
-    );
+    assert!(!store.r2.contains_key(&rules_key));
     assert_eq!(latest(&store), None);
 }
 
@@ -177,7 +199,8 @@ fn until_latest_moves_reads_that_name_no_release_answer_from_the_previous_releas
         &clock,
     )
     .unwrap();
-    let objects_of_1 = store.int("SELECT COUNT(*) FROM objects WHERE release = 1");
+    // A read finds an object by id through the catalogue's index of the object shards.
+    let objects_of_1 = store.int("SELECT COUNT(*) FROM object_shards WHERE release = 1");
     let keys_of_1: Vec<(String, Vec<u8>)> = store.r2.clone().into_iter().collect();
     build_next(&f);
     store.reset();
@@ -186,12 +209,12 @@ fn until_latest_moves_reads_that_name_no_release_answer_from_the_previous_releas
     // follows latest to release 1 and finds release 1's rows and files as they were.
     let seen = std::rc::Rc::new(std::cell::Cell::new((0, false)));
     let watch = seen.clone();
-    store.observer = Some(Box::new(move |op, db, r2| {
+    store.observer = Some(Box::new(move |op, db, _, r2| {
         let moved = matches!(op, Op::Query(sql) if writes_latest(sql)) || watch.get().1;
         let latest = int(db, "SELECT release FROM latest");
         let read = int(
             db,
-            "SELECT COUNT(*) FROM objects WHERE release = (SELECT release FROM latest)",
+            "SELECT COUNT(*) FROM object_shards WHERE release = (SELECT release FROM latest)",
         );
         if moved {
             assert_eq!(latest, 2);
@@ -216,7 +239,7 @@ fn until_latest_moves_reads_that_name_no_release_answer_from_the_previous_releas
     assert!(seen.get().0 > 20 && seen.get().1);
     assert_eq!(latest(&store), Some(2));
     assert_eq!(
-        store.int("SELECT COUNT(*) FROM objects WHERE release = 1"),
+        store.int_everywhere("SELECT COUNT(*) FROM objects WHERE release = 1"),
         objects_of_1
     );
 }
@@ -258,9 +281,17 @@ fn an_interrupted_publish_leaves_latest_and_continues_from_its_journal() {
     else {
         panic!("{error}")
     };
+    // Every file but those release 1 holds already, and the manifest.
+    let first = read_manifest(&univ_ingest::release::release_dir(f.out.path(), 1));
+    let held = built
+        .manifest
+        .files
+        .iter()
+        .filter(|f| f.key.is_some() && first.files.iter().any(|g| g.sha256 == f.sha256))
+        .count();
     assert_eq!(
         (*at, *total),
-        (Latest(Some(1)), built.manifest.files.len() + 1)
+        (Latest(Some(1)), built.manifest.files.len() + 1 - held)
     );
     assert!(*done > 0 && *done < *total, "{error}");
     let message = error.to_string();

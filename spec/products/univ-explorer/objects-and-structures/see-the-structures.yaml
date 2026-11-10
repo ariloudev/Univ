@@ -14,10 +14,16 @@ requirements:
     criteria:
       - key: 01a1a497-e843-728a-bce8-3ff1ded85aea
         name: "Spheres, ellipsoids and oriented boxes are drawn as outlines, in the frame and unit their shape names."
+      - key: 01a1b16b-4634-7511-aec8-71c45009817c
+        name: "Each kind of structure is drawn in a colour of its own, its outline and markers alike, and the panel of what is drawn shows that colour beside the kind."
       - key: 01a1a497-e843-728a-bce8-3ff2f42a8c13
         name: "Paths are drawn as lines, and member lists as their members' positions."
       - key: 01a1a4bd-9644-750a-a678-3906e3189ded
         name: "A point is drawn as a marker at its place."
+      - key: 01a1b7a9-f2af-7290-9cdf-77a3c5b309a5
+        name: "An attractor or a repeller is drawn as its marker inside a sphere of a fixed size on the view, a symbol rather than its extent, with an arrow along each axis of its shape's frame, pointing in toward the marker for an attractor and out from it for a repeller, the way its reconstructed flow runs."
+      - key: 01a1b7a9-f2af-7290-9cdf-77a431863fe1
+        name: "Attractors and repellers are drawn in colours of one family, apart from each other's and from every other kind's."
       - key: 01a1a4bd-9644-750a-a678-390771cfa729
         name: "A grid is drawn as its bounding box, marked as approximate."
       - key: 01a1a776-3b75-725b-96e4-8079d9d916bf
@@ -35,11 +41,30 @@ requirements:
       shall: "name each drawn structure in the view."
     criteria:
       - key: 01a1a497-e843-728a-bce8-3ff67c685244
-        name: "Each structure's name is drawn at its centre."
+        name: "Each structure's name is drawn at its centre, but an attractor's or a repeller's, which is drawn just below the reach of its symbol's arrows."
       - key: 01a1a75d-dddb-74ed-8d5c-c9c9a3084e80
         name: "A structure whose shape is a lower limit on its extent is named with \"(at least)\" after its name, in the view and in its panel."
       - key: 01a1a497-e843-728a-bce8-3ff70e744c39
         name: "Names that would overlap are not drawn over one another."
+  - key: 01a1bd21-49d6-7489-b3d6-aa081e95ee07
+    statement:
+      form: state_driven
+      while: "the person has turned the structures' outlines off"
+      system: "Univ Explorer"
+      shall: "draw no structure's outline or markers but the chosen structure's, and keep every drawn structure's name in the view."
+    criteria:
+      - key: 01a1bd21-49d6-7489-b3d6-aa09864c3462
+        name: "A switch beside the distance rings' switch in the top bar turns the structures' outlines on and off."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0ada007939
+        name: "The outlines are on when the view opens on an address that does not turn them off."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0b73233bed
+        name: "The page's address keeps the outlines turned off, so that a reload or a shared link keeps them off."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0cc77cd12b
+        name: "While the outlines are off, no structure's outline, markers or flow symbol is drawn but the chosen structure's."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0d05b88cc6
+        name: "While the outlines are off, each structure of a kind turned on is named in the view as where the outlines are on."
+      - key: 01a1bd21-49d6-7489-b3d6-aa0eae4110b0
+        name: "While the outlines are off, a structure is still chosen by a click on its name in the view, as where they are on."
   - key: 01a1a497-e843-728a-bce8-3ff8d753cd12
     statement:
       form: event_driven
@@ -51,7 +76,126 @@ requirements:
         name: "Every structure of the release is listed by name and kind."
       - key: 01a1a6b2-b217-764e-93d0-da8be265b690
         name: "The chosen structure's outline, markers and name are drawn in a colour of their own, its markers larger, until another structure is chosen or its panel is closed."
+      - key: 01a1b16b-4634-7511-aec8-71c5715ace5e
+        name: "The chosen structure's outline is drawn in lines thicker than any other structure's, until another structure is chosen or its panel is closed."
       - key: 01a1a497-e843-728a-bce8-3ffa426590e2
         name: "The panel gives the structure's kind, scale domain and how it was matched to a shape, with the paper each published number is cited from."
+      - key: 01a1bcba-dd8e-750a-886c-c22b9a7cd9e8
+        name: "The panel opens with a sentence saying what kind of structure it is, how far away it lies, and how large it is where its record gives a length."
+      - key: 01a1bcba-dd8e-750a-886c-c22cfc5bc92f
+        name: "The panel draws a structure's depth as a band on one axis of comoving distance, from its near bound to its far, with each velocity its record gives within them marked, a velocity placed at the comoving distance of z = cz/c under the release cosmology."
+      - key: 01a1bcba-dd8e-750a-886c-c22db388ecdc
+        name: "The panel draws a structure's published lengths as bars on one axis for each unit, a lower limit fading out at its end, each length in the release cosmology where its paper assumed another, with the published value beneath."
+      - key: 01a1bcba-dd8e-750a-886c-c22effd4e2a0
+        name: "The panel of a structure placed by its members draws each member as a tick on one axis of comoving distance."
+      - key: 01a1bcba-dd8e-750a-886c-c22f7aaaa8d4
+        name: "The panel of a disputed structure says so above its values, naming each paper that disputes it."
+      - key: 01a1bcba-dd8e-750a-886c-c230ee335b2d
+        name: "The panel names the structure's papers once, by first author and year, beside a value only where the structure cites more than one paper, and holds the record's notes, quotes and every value under one link that opens them."
       - key: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
         name: "The panel of a structure drawn by its extents says that its bounds are unknown and that its lines are its published extents about its position, which need not be its middle."
+      - key: 01a1b7a9-f2af-7290-9cdf-77a50a274427
+        name: "The panel of an attractor or a repeller says that its sphere is a symbol of a fixed size on the view, not its extent, and that its arrows show the way its reconstructed flow runs."
+  - key: 01a1c25f-d5cd-76b6-b0cb-7d992a5c3980
+    statement:
+      form: event_driven
+      when: "the person chooses the structure already chosen, in the view or from the list of structures, or closes its record"
+      system: "Univ Explorer"
+      shall: "let the structure go, closing its record and making Earth the focus again."
+    criteria:
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d9ae7ac1094
+        name: "A click on the chosen structure's name in the view closes its record."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d9b40b85965
+        name: "A click on the chosen structure in the list of structures closes its record."
+      - key: 01a1c2a8-c234-72f0-adea-08edc266ef00
+        name: "Closing the structure's record with its close button lets the structure go as a click on its name does."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
+        name: "Once the structure is let go, its outline, markers and name are drawn as any other structure's of its kind."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c
+        name: "Once the structure is let go, Earth is the focus again, at the distance from the eye to the focus the view had."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
+        name: "A double-click on the chosen structure's name flies to it and leaves it chosen."
+  - key: 01a1c278-094a-7307-be66-e7839dd2fba6
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares."
+    criteria:
+      - key: 01a1c278-094a-7307-be66-e7847bc12551
+        name: "The list orders the structures by the distance from Earth to their centre as the view places it, nearest first, with those that have no placed shape last."
+      - key: 01a1c278-094a-7307-be66-e7859f3c18c9
+        name: "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count."
+      - key: 01a1c278-094a-7307-be66-e7862a633a0c
+        name: "Each row gives the structure's name, its kind in words beside a swatch of the kind's colour, and its distance."
+      - key: 01a1c278-094a-7307-be66-e787596ccbdd
+        name: "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\"."
+      - key: 01a1c278-094a-7307-be66-e7880ad36d01
+        name: "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list."
+      - key: 01a1c278-094a-7307-be66-e789414bdf63
+        name: "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says."
+      - key: 01a1c278-094a-7307-be66-e78af4b30484
+        name: "A switch at the head of the list orders it by name instead, without headings, and keeps each row's dot."
+      - key: 01a1c278-094a-7307-be66-e78bb3c7f814
+        name: "A box at the head of the list narrows it to the structures whose name or kind holds the text typed."
+      - key: 01a1c278-46e4-76f7-bee6-bda8fefa62ad
+        name: "While the list is narrowed, its count gives the structures shown out of the release's, such as \"12 of 54\"."
+      - key: 01a1c278-094a-7307-be66-e78c9329851d
+        name: "Where no structure's name or kind holds the text typed, the list shows one message that names the text and suggests part of a name or a kind."
+      - key: 01a1c278-094a-7307-be66-e78dcc50c90f
+        name: "The chosen structure's row is marked as chosen."
+      - key: 01a1c2a8-c234-72f0-adea-08ee84d5f646
+        name: "The order chosen and the text in the find box are kept in the browser's local storage each time they change."
+      - key: 01a1c2a8-c234-72f0-adea-08efaed02a8a
+        name: "When the explorer opens, the list takes the order and the text that local storage keeps."
+      - key: 01a1c2a8-c234-72f0-adea-08f063f64c50
+        name: "Where local storage keeps no order or text, or the browser refuses local storage, the list opens nearest first with an empty find box."
+  - key: 01a1b13c-1e10-748d-8008-e7e063283348
+    statement:
+      form: event_driven
+      when: "the person checks \"Only what lies inside\" in the top bar while a structure is chosen"
+      system: "Univ Explorer"
+      shall: "draw only the points that lie inside the structure's volume, until the box is cleared or the panel is closed."
+    criteria:
+      - key: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
+        name: "While a structure drawn as a volume is chosen, the top bar offers a checkbox \"Only what lies inside\" beside the level-of-detail switch, cleared unless the page's address turns it on."
+      - key: 01a1b13c-1e10-748d-8008-e7e2ed4a3967
+        name: "A structure drawn with no volume, as a point, a path, a ray or a range alone, offers no such checkbox."
+      - key: 01a1b13c-1e10-748d-8008-e7e33e6ecd76
+        name: "Inside a sphere, an ellipsoid or an oriented box is inside the solid, in the frame and unit its shape names."
+      - key: 01a1b13c-1e10-748d-8008-e7e496894c39
+        name: "Inside a sky region is in one of its cells and between its near and far distances."
+      - key: 01a1b13c-1e10-748d-8008-e7e5419cfeb6
+        name: "Inside a member list is inside the box bounding its members, inside a structure drawn by its extents is inside the box they span about its position, and inside a structure drawn by its bounding box is inside that box."
+      - key: 01a1b13c-1e10-748d-8008-e7e6a6d53737
+        name: "While the cull is on, the panel says the cull is approximate for a structure culled by a box that is not its published shape."
+      - key: 01a1b13c-1e10-748d-8008-e7e71f42aabb
+        name: "Every point is tested alike, whatever its scale domain or kind, at its preferred distance and with no margin."
+      - key: 01a1b166-0bb4-703d-a861-7c307a08ae0b
+        name: "While the cull is on, the points inside are drawn fully opaque whatever the eye's distance from the focus, twice as bright as the brightest they are drawn without it, since those outside no longer crowd them."
+      - key: 01a1b13c-1e10-748d-8008-e7e859257b94
+        name: "While the cull is on, the panel says that points are placed at their preferred distance, so members scattered past the volume's faces are not drawn."
+      - key: 01a1b13c-1e10-748d-8008-e7e934fc10cf
+        name: "A point outside the volume is not named by the pointer nor chosen by a click, and the key does not count it."
+      - key: 01a1b13c-1e10-748d-8008-e7ea46d6c6e6
+        name: "Choosing another structure keeps the cull on, for that structure."
+      - key: 01a1b13c-1e10-748d-8008-e7eb103d71ac
+        name: "Closing the structure's panel turns the cull off."
+  - key: 01a1b13c-1e10-748d-8008-e7ece437e733
+    statement:
+      form: state_driven
+      while: "the cull to a structure is on"
+      system: "Univ Explorer"
+      shall: "fetch and keep only the tiles whose cubes meet the box bounding the structure's volume."
+    criteria:
+      - key: 01a1b13c-1e10-748d-8008-e7ed28949521
+        name: "No tile whose cube lies wholly outside the box bounding the volume is fetched or kept."
+      - key: 01a1b13c-1e10-748d-8008-e7eed8679d94
+        name: "The tiles that meet the box are planned within the point budget, and thinned by level of detail, as every tile is without the cull."
+  - key: 01a1b13c-1e10-748d-8008-e7ef2701bb3c
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "keep the cull to the chosen structure in the page's address."
+    criteria:
+      - key: 01a1b13c-1e10-748d-8008-e7f0dcf15117
+        name: "Reloading the page, or opening its address elsewhere, draws the same structure chosen with the cull on."

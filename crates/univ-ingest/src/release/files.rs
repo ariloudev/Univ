@@ -22,30 +22,29 @@ pub fn release_dir(out: &Path, number: u32) -> PathBuf {
 }
 
 /// A release directory written as its files come, each listed with its size and SHA-256 as the
-/// manifest lists it: a D1 file by its path under `d1/`, any other by its R2 key too. Each file
+/// manifest lists it: a D1 file by its path under `d1/`, any other by its R2 key too, the key of
+/// what it holds (`keys::file`). Each file
 /// is a safe point of the build's `watch`: once the owner asks the build to stop, the next file
 /// is refused.
 pub struct DirSink<'w> {
     dir: PathBuf,
-    number: u32,
     pub(super) watch: Watch<'w>,
     pub files: Vec<ManifestFile>,
 }
 
 impl<'w> DirSink<'w> {
-    /// A new, empty directory `dir` for release `number`, replacing what a stopped build left.
+    /// A new, empty directory `dir` for a release, replacing what a stopped build left.
     ///
     /// # Errors
     ///
     /// Fails when it cannot be made.
-    pub fn new(dir: &Path, number: u32, watch: Watch<'w>) -> Result<Self, String> {
+    pub fn new(dir: &Path, watch: Watch<'w>) -> Result<Self, String> {
         if dir.exists() {
             std::fs::remove_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
         }
         std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
         Ok(Self {
             dir: dir.to_owned(),
-            number,
             watch,
             files: Vec::new(),
         })
@@ -61,17 +60,18 @@ impl PartSink for DirSink<'_> {
         }
         std::fs::write(&full, bytes)
             .map_err(|e| format!("{} cannot be written: {e}", full.display()))?;
+        let sha = sha256(bytes);
         let target = if path.starts_with(&format!("{}/", keys::D1_DIR)) {
             Target::D1
         } else {
             Target::R2
         };
         self.files.push(ManifestFile {
-            key: (target == Target::R2).then(|| keys::key(self.number, &path)),
+            key: (target == Target::R2).then(|| keys::file(&sha)),
             path,
             target,
             bytes: bytes.len() as u64,
-            sha256: sha256(bytes),
+            sha256: sha,
         });
         Ok(())
     }

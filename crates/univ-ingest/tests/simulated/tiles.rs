@@ -76,6 +76,7 @@ pub fn gaia() -> [SourceId; 1] {
 pub fn point(id: u64, position: Vec3) -> DomainPoint {
     DomainPoint {
         id: ObjectId::new(id).unwrap(),
+        place: u32::try_from(id).unwrap(),
         position,
         source: 0,
         sky_source: 0,
@@ -119,14 +120,14 @@ pub fn object(
             .into_iter()
             .map(|entry| ObjectEntry {
                 entry,
-                resolved_by: Resolution::Anchor,
+                resolved_by: Resolution::Anchor.into(),
             })
-            .collect(),
+            .collect::<Vec<_>>(),
     );
     let Some(m) = preferred else {
         return ReleaseObject {
             id: ObjectId::new(id).unwrap(),
-            object,
+            object: Box::new(object),
             position: None,
         };
     };
@@ -158,7 +159,7 @@ pub fn object(
     object.placement = Placement::Placed;
     ReleaseObject {
         id: ObjectId::new(id).unwrap(),
-        object,
+        object: Box::new(object),
         position: Some(position),
     }
 }

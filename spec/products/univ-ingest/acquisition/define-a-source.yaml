@@ -25,6 +25,10 @@ requirements:
         name: "A source definition gives the primary citation, the terms of use, the required credit and the scale domain."
       - key: 01a19f22-2ad9-716e-876f-183725365029
         name: "A source definition lists the mirrors to try, in order."
+      - key: 01a1b7d8-3f35-70aa-853f-45a22adb93e1
+        name: "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from."
+      - key: 01a1b7d8-3f35-70aa-853f-45a3db453005
+        name: "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from."
   - key: 01a19f22-2ad9-716e-876f-1838f05eb5b7
     statement:
       form: unwanted
@@ -34,6 +38,12 @@ requirements:
     criteria:
       - key: 01a19f22-2ad9-716e-876f-183984aea659
         name: "The message names the source definition, the field and what is wrong with it."
+      - key: 01a1b7d8-3f35-70aa-853f-45a4a7c6a5fc
+        name: "A designation form that does not hold `{identifier}` exactly once is refused."
+      - key: 01a1b7d8-3f35-70aa-853f-45a5418a1492
+        name: "A flag meaning given for a column the definition does not take as a flag is refused."
+      - key: 01a1b838-25fc-71d6-a728-9b6a30cffe28
+        name: "A source definition may take a column as the entry's identifier in another catalogue, such as the PGC number OpenNGC gives an NGC galaxy, which a published cross-identification joins the entry by."
   - key: 01a19f22-2ad9-716e-876f-183a6daa9364
     statement:
       form: ubiquitous
@@ -41,9 +51,15 @@ requirements:
       shall: "record in each source definition whether its terms permit redistributing its data, with the terms it rests on."
     criteria:
       - key: 01a19f22-2ad9-716e-876f-183b90085a10
-        name: "The redistribution status is permitted, permitted with credit, or forbidden."
+        name: "The redistribution status is permitted, permitted with credit, permission pending, or forbidden."
       - key: 01a19f22-2ad9-716e-876f-183ca629c7f8
         name: "The source definition quotes the terms of use it judged and states the reasoning for its status."
+      - key: 01a1a931-2c8a-73a8-91f2-58fcaa8b8bee
+        name: "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent."
+      - key: 01a1a931-2c8a-73a8-91f2-58fd8e368264
+        name: "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted."
+      - key: 01a1b7dc-04ef-7334-abc7-37e61d47a4c1
+        name: "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted."
   - key: 01a19f22-2ad9-716e-876f-183d2d91487a
     statement:
       form: unwanted
@@ -67,3 +83,17 @@ requirements:
         name: "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances."
       - key: 01a19f22-2ad9-716e-876f-18439d96b214
         name: "The structure and field sources are the CF4++ density grid, CF4 basins of attraction, 2M++ reconstruction, eRASS1 clusters and Researched structures."
+  - key: 01a1a931-2c8a-73a8-91f2-58fec7b6f3d1
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "provide a source definition for each source that release 10 adds."
+    criteria:
+      - key: 01a1a931-2c8a-73a8-91f2-58ff5749b30b
+        name: "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts."
+      - key: 01a1a931-2c8a-73a8-91f2-5900bff82962
+        name: "The 21 cm source is ALFALFA α.100."
+      - key: 01a1a931-2c8a-73a8-91f2-59016fa68370
+        name: "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts."
+      - key: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
+        name: "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies."

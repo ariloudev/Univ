@@ -1,22 +1,24 @@
 //! One row of a table read into a catalogue entry, or left out with its reason.
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
+use std::sync::Arc;
 
-use univ_model::cosmology::{AssumedCosmology, Cosmology, SPEED_OF_LIGHT};
+use thin_vec::ThinVec;
+use univ_model::cosmology::AssumedCosmology;
 use univ_model::distance::{Distance, DistanceError, DistanceKind, Method};
 use univ_model::entry::{
-    CatalogueEntry, EntryError, Magnitude, NativePosition, Position, PositionErrors,
-    PositionUncertainty, ProperMotion, Redshift, RedshiftKind, SupergalacticVelocity,
+    CatalogueEntry, EntryError, Flags, Magnitude, NativePosition, Position, PositionErrors,
+    PositionUncertainty, ProperMotion, SupergalacticVelocity, flag_name,
 };
 use univ_model::ids::{Designation, SourceId};
 use univ_model::position::{Epoch, PositionError};
-use univ_model::redshift::{CmbCorrection, RedshiftFrame};
+use univ_model::redshift::CmbCorrection;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
 mod colour;
 mod fixes;
+mod redshift;
 
 pub(super) use super::plan::Changed;
 use super::plan::{ByCode, Col, Errors, FixEffect, Measured, Plan, RuleAction};
@@ -68,6 +70,15 @@ pub(super) fn read(
         // A row left out was changed only by a fix that left it out.
         Err(reason) => Err((reason, row.changed & cx.plan.leaving)),
     }
+}
+
+/// `list` with no room beyond its length, as it is held for each of millions of entries: it is
+/// sized to its plan, and a blank cell leaves it shorter.
+fn fitted<T>(mut list: ThinVec<T>) -> ThinVec<T> {
+    if list.len() < list.capacity() {
+        list.shrink_to_fit();
+    }
+    list
 }
 
 impl Row<'_, '_> {
@@ -144,33 +155,13 @@ impl Row<'_, '_> {
         let direction = position.as_ref().map(|p| p.icrs.unit_vector());
         // Sized to the plan: a vector grown from empty takes room for four, and an entry is held
         // millions of times over.
-        let mut redshifts = Vec::with_capacity(plan.redshifts.len());
+        let mut redshifts = ThinVec::with_capacity(plan.redshifts.len());
         for r in &plan.redshifts {
-            let Some(mut measured) = self.quantity(&r.measured)? else {
-                continue;
-            };
-            let mut read_as = None;
-            if let Some((from, cosmology, kind_of_value)) = &r.comoving {
-                let comoving;
-                (measured, comoving) = comoving_redshift(measured, *from, cosmology)?;
-                read_as = comoving.then_some(*kind_of_value);
+            if let Some(redshift) = self.redshift(r, direction)? {
+                redshifts.push(redshift);
             }
-            let kind = self.by_code(&r.kind)?;
-            let default = read_as.unwrap_or(match kind {
-                RedshiftKind::Spectroscopic => KindOfValue::Measured,
-                RedshiftKind::Photometric => KindOfValue::Estimated,
-            });
-            let kind_of_value = self.kind(r.measured.value.index, default);
-            let direction = direction.ok_or(LeftOutReason::MissingPosition)?;
-            let redshift =
-                match r.frame {
-                    RedshiftFrame::Cmb => Redshift::published_cmb,
-                    _ => Redshift::heliocentric,
-                }(measured, kind, kind_of_value, direction, self.cx.correction)
-                .map_err(entry_reason)?;
-            redshifts.push(redshift);
         }
-        let mut distances = Vec::with_capacity(plan.distances.len());
+        let mut distances = ThinVec::with_capacity(plan.distances.len());
         for (i, d) in plan.distances.iter().enumerate() {
             let Some(native) = self.quantity(&d.measured)? else {
                 continue;
@@ -198,30 +189,45 @@ impl Row<'_, '_> {
         }
         distances.extend(self.added_distances()?);
         let entry = CatalogueEntry {
+            cross_ids: Flags::named(
+                plan.cross_ids
+                    .iter()
+                    .filter_map(|(index, name)| self.text(*index).map(|t| (Arc::clone(name), t))),
+            ),
             designation: Designation::new(self.cx.source.clone(), identifier)
                 .map_err(|_| LeftOutReason::MissingIdentifier)?,
-            name: plan.name.and_then(|c| self.text(c)),
+            name: plan
+                .name
+                .and_then(|c| self.text(c))
+                .map(String::into_boxed_str),
             position,
-            distances,
-            redshifts,
-            velocity: self.value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?,
-            parallax: self.value(plan.parallax.as_ref(), Unit::Degree)?,
+            distances: fitted(distances),
+            redshifts: fitted(redshifts),
+            velocity: self
+                .value(plan.velocity.as_ref(), Unit::KilometrePerSecond)?
+                .map(Box::new),
+            parallax: self
+                .value(plan.parallax.as_ref(), Unit::Degree)?
+                .map(Box::new),
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
             colours: self.colours()?,
             spectral_type: self.spectral_type().map(Box::new),
-            group_id: plan.group_id.and_then(|c| self.text(c)),
+            group_id: plan
+                .group_id
+                .and_then(|c| self.text(c))
+                .map(String::into_boxed_str),
             supergalactic_velocity: self.supergalactic()?.map(Box::new),
-            flags: plan
-                .flags
-                .iter()
-                .filter_map(|c| self.text(c.index).map(|t| (c.name.clone(), t)))
-                .chain(
-                    self.marks
-                        .iter()
-                        .map(|(flag, text)| ((*flag).to_owned(), (*text).to_owned())),
-                )
-                .collect::<BTreeMap<_, _>>(),
+            flags: Flags::named(
+                plan.flags
+                    .iter()
+                    .filter_map(|(index, name)| self.text(*index).map(|t| (Arc::clone(name), t)))
+                    .chain(
+                        self.marks
+                            .iter()
+                            .map(|(flag, text)| (flag_name(flag), (*text).to_owned())),
+                    ),
+            ),
             references: Box::default(),
         };
         entry.check().map_err(entry_reason)?;
@@ -325,6 +331,22 @@ impl Row<'_, '_> {
                     probability: *probability,
                 },
                 _ => Uncertainty::NoneReported,
+            },
+            Some(Errors::Scaled { error, factor }) => match self.error(error, unit)? {
+                Some(sigma) => Uncertainty::Symmetric {
+                    sigma: sigma * factor,
+                },
+                None => Uncertainty::NoneReported,
+            },
+            Some(Errors::Catalogue {
+                sigma,
+                times_one_plus_z,
+            }) => Uncertainty::Symmetric {
+                sigma: if *times_one_plus_z {
+                    sigma * (1.0 + value)
+                } else {
+                    *sigma
+                },
             },
         };
         Quantity::new(value, unit, uncertainty)
@@ -444,32 +466,4 @@ fn entry_reason(error: EntryError) -> LeftOutReason {
         EntryError::Value(e) => value_reason(&e),
         _ => LeftOutReason::UnusableValue,
     }
-}
-
-/// `measured`, a velocity standing for H0 times a comoving distance in `cosmology` from `from`
-/// km/s up, as the redshift at that distance, its uncertainty scaled by dz/dv = E(z) / c, and
-/// true; below `from`, it is as published, a cz, and false.
-fn comoving_redshift(
-    measured: Quantity,
-    from: f64,
-    cosmology: &Cosmology,
-) -> Result<(Quantity, bool), LeftOutReason> {
-    let v = measured
-        .to(Unit::KilometrePerSecond)
-        .map_err(|_| LeftOutReason::UnusableValue)?;
-    if v.value < from {
-        return Ok((measured, false));
-    }
-    let z = cosmology
-        .redshift_at(v.value / cosmology.hubble_constant)
-        .map_err(|_| LeftOutReason::UnusableValue)?;
-    let om = cosmology.omega_matter;
-    let expansion = (om * (1.0 + z).powi(3) + 1.0 - om).sqrt();
-    Quantity::new(
-        z,
-        Unit::Dimensionless,
-        v.uncertainty.scaled(expansion / SPEED_OF_LIGHT),
-    )
-    .map(|q| (q, true))
-    .map_err(|_| LeftOutReason::UnusableValue)
 }

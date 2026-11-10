@@ -49,6 +49,19 @@ pub struct ExtentRule {
     /// one of them never joins a galaxy that holds another entry of it.
     pub identities: Vec<SourceId>,
     pub identities_basis: String,
+    /// Fibres of one survey on one nearby galaxy that no source gives an extent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fibres: Option<FibreRule>,
+}
+
+/// The fibre rule: below the extent rule's cz, fibres of one listed survey within `radius_arcsec`
+/// and the extent rule's velocity tolerance of every fibre already joined are one galaxy.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FibreRule {
+    pub surveys: Vec<SourceId>,
+    pub radius_arcsec: f64,
+    pub basis: String,
 }
 
 impl ExtentRule {
@@ -73,6 +86,14 @@ impl ExtentRule {
         ] {
             if text.trim().is_empty() {
                 return err(name, "is blank");
+            }
+        }
+        if let Some(f) = &self.fibres {
+            if !positive(f.radius_arcsec) {
+                return err("fibres.radius_arcsec", "is not positive");
+            }
+            if f.surveys.is_empty() || f.basis.trim().is_empty() {
+                return err("fibres", "needs its surveys and its basis");
             }
         }
         for (i, s) in self.sources.iter().enumerate() {

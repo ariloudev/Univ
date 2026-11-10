@@ -86,14 +86,17 @@ async fn an_offline_build_writes_a_checked_release_and_names_it_in_the_summary()
         "Z Stage tiles: 3 items\n".to_owned(),
         // The build's phases, each a step of its six.
         "Z Stage build: 6 items\n".to_owned(),
-        "Z Step build: rules: 4 files\n".to_owned(),
+        format!(
+            "Z Step build: rules: {} files\n",
+            univ_ingest::crossmatch::RULES.len()
+        ),
         "Z Step build: tiles: 3 tiles and 3 manifests\n".to_owned(),
         "Z Step build: volume grids: 0 grids in 0 files\n".to_owned(),
         "Z Step build: checks: every check passed\n".to_owned(),
-        "Z Step build: manifest: 29 files checked against their SHA-256\n".to_owned(),
+        "Z Step build: manifest: 36 files checked against their SHA-256\n".to_owned(),
         "Z Stage build done: ".to_owned(),
         format!(
-            "Z Step build: release 1: every check passed; 29 files listed with their SHA-256 in \
+            "Z Step build: release 1: every check passed; 36 files listed with their SHA-256 in \
              {}\n",
             dir.join("manifest.yaml").display()
         ),

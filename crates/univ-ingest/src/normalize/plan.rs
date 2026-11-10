@@ -3,10 +3,11 @@
 //! apply to it.
 
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use univ_model::cosmology::Cosmology;
 use univ_model::distance::{DistanceKind, Measure, Method};
-use univ_model::entry::RedshiftKind;
+use univ_model::entry::{RedshiftKind, flag_name};
 use univ_model::position::Frame;
 use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
@@ -51,6 +52,17 @@ pub(super) enum Errors {
         low: Col,
         high: Col,
         probability: f64,
+    },
+    /// An error column's value times a factor the source states.
+    Scaled {
+        error: Col,
+        factor: f64,
+    },
+    /// One error the source states for its whole catalogue, in the value's unit, times
+    /// (1 + z) where it is stated per unit of (1 + z).
+    Catalogue {
+        sigma: f64,
+        times_one_plus_z: bool,
     },
 }
 
@@ -121,7 +133,10 @@ pub(super) struct Plan {
     pub spectral_type: Option<SpectralTypePlan>,
     pub group_id: Option<usize>,
     pub supergalactic: Option<[Col; 3]>,
-    pub flags: Vec<Col>,
+    /// The quality columns, each with its name shared by every entry's flags.
+    pub flags: Vec<(usize, Arc<str>)>,
+    /// The cross-identifier columns, each with its name shared by every entry's.
+    pub cross_ids: Vec<(usize, Arc<str>)>,
     pub redshifts: Vec<RedshiftPlan>,
     pub distances: Vec<DistancePlan>,
     pub rules: Vec<RulePlan>,
@@ -130,6 +145,24 @@ pub(super) struct Plan {
     pub leaving: Changed,
     /// Parsecs for stars, megaparsecs otherwise.
     pub distance_unit: Unit,
+}
+
+/// Each column `definition` takes as `field`, by its index in the header, with its name shared
+/// by every entry that carries it.
+fn named_columns(
+    definition: &SourceDefinition,
+    field: Field,
+    r: &Resolver<'_>,
+) -> Result<Vec<(usize, Arc<str>)>, NormalizeError> {
+    definition
+        .columns
+        .iter()
+        .filter(|c| c.field == field)
+        .map(|c| {
+            r.col(&c.column)
+                .map(|col| (col.index, flag_name(&col.name)))
+        })
+        .collect()
 }
 
 /// Finds the columns of a definition in a table's header.
@@ -242,8 +275,24 @@ impl Resolver<'_> {
         };
         let error = r.error.clone().map(ErrorColumns::Symmetric);
         let comoving = r.comoving_velocity.as_ref().map(ComovingVelocity::read);
+        let mut measured = self.reading(&r.column, error.as_ref())?;
+        if let (Some(factor), Some(Errors::Symmetric(error))) = (r.error_scale, &measured.error) {
+            measured.error = Some(Errors::Scaled {
+                error: error.clone(),
+                factor,
+            });
+        }
+        if let Some(c) = &r.catalogue_error {
+            let sigma = c
+                .in_unit(measured.value.unit)
+                .ok_or_else(|| self.unsupported("a catalogue error in another unit"))?;
+            measured.error = Some(Errors::Catalogue {
+                sigma,
+                times_one_plus_z: c.times_one_plus_z,
+            });
+        }
         Ok(RedshiftPlan {
-            measured: self.reading(&r.column, error.as_ref())?,
+            measured,
             kind,
             frame: r.frame,
             comoving: comoving
@@ -389,12 +438,8 @@ impl Plan {
             spectral_type: r.spectral_type()?,
             group_id: r.field(Field::GroupId)?.map(|c| c.index),
             supergalactic: r.supergalactic()?,
-            flags: definition
-                .columns
-                .iter()
-                .filter(|c| c.field == Field::Quality)
-                .map(|c| r.col(&c.column))
-                .collect::<Result<_, _>>()?,
+            flags: named_columns(definition, Field::Quality, &r)?,
+            cross_ids: named_columns(definition, Field::CrossIdentifier, &r)?,
             redshifts: n
                 .redshifts
                 .iter()

@@ -33,11 +33,11 @@ fn object(entries: Vec<(&str, Vec<ColourIndex>)>) -> Object {
     let entries = entries
         .into_iter()
         .map(|(source, colours)| CatalogueEntry {
-            colours,
+            colours: colours.into(),
             ..bare(source, "1")
         })
         .collect();
-    release_object(1, entries, None).object
+    *release_object(1, entries, None).object
 }
 
 fn chosen(o: &Object) -> Option<(f64, ColourBands)> {

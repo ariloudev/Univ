@@ -1,8 +1,30 @@
 import { describe, expect, it } from "vitest";
 
-import type { Sight } from "../scene/frustum.ts";
-import type { Vec3 } from "../scene/vec.ts";
-import { type Extent, type Holding, POINT_BUDGET, REFINE_SPACING, type Tile, apparentSize, extentOf, plan, spacing, treeOf } from "./lod.ts";
+import { type Sight, sightOf } from "../scene/frustum.ts";
+import { IDENTITY, type Vec3 } from "../scene/vec.ts";
+import {
+  type Extent,
+  HELD_PREFERENCE,
+  type Holding,
+  type Levels,
+  HELD_VIEW_MARGIN,
+  KEEP_SPACING,
+  POINT_BUDGET,
+  REFINE_SPACING,
+  type Tile,
+  type Tree,
+  apparentSize,
+  extentOf,
+  detailOf,
+  drawnShare,
+  neededAt,
+  onsetsOf,
+  plan,
+  planEvery,
+  rankOf,
+  spacing,
+  treeOf,
+} from "./lod.ts";
 
 function tile(id: string, centre: Vec3, edge: number, points = 10): Tile {
   const [domain = "", address = ""] = id.split("/");
@@ -14,6 +36,7 @@ function tile(id: string, centre: Vec3, edge: number, points = 10): Tile {
     centre,
     edge,
     points,
+    slice: [0, 1],
   };
 }
 
@@ -46,7 +69,54 @@ function holding(settled: string[], points = 0, pending: string[] = [], extents:
 }
 
 const ids = (tiles: readonly Tile[]) => tiles.map((t) => t.id);
+/** The levels of the web's tiles of `TILES`. */
+const WEB = treeOf(TILES).levels.get("web") as Levels;
 const ROOTS = ["web/r", "stars/r"];
+
+/** The eight children of the cube `address` of `domain` about `centre` with edge `edge`, those
+ * whose centre `keep` accepts, each of `points` points. */
+const children = (id: string, centre: Vec3, edge: number, points: number, keep = (_: Vec3) => true): Tile[] =>
+  Array.from({ length: 8 }, (_, i): [number, Vec3] => [
+    i,
+    [centre[0] + (((i & 1) * 2 - 1) * edge) / 4, centre[1] + (((i & 2) - 1) * edge) / 4, centre[2] + (((i & 4) / 2 - 1) * edge) / 4],
+  ])
+    .filter(([, c]) => keep(c))
+    .map(([i, c]) => tile(`${id}${String(i)}`, c, edge / 2, points));
+
+/** A catalogue that draws each tile as soon as it is fetched, on `tree` within `budget`. */
+function simulatedCatalogue(tree: Tree<Tile>, budget = POINT_BUDGET) {
+  const settled = new Set<string>();
+  const drawn = new Map<string, { readonly extent?: Extent }>();
+  const pending = new Set<string>();
+  const fetched: string[] = [];
+  let points = 0;
+  return {
+    fetched,
+    points: () => points,
+    /** Fetches and drops what `sight` asks for, `count` families a round, until it asks for
+     * nothing: how many tiles that fetched and dropped. */
+    settle(sight: Sight, count = 4): number {
+      let moved = 0;
+      for (let round = 0; round < 1000; round += 1) {
+        const next = plan(tree, { settled, drawn, pending, points }, sight, count, budget);
+        if (next.fetch.length === 0 && next.drop.length === 0) return moved;
+        for (const t of next.drop) {
+          settled.delete(t.id);
+          drawn.delete(t.id);
+          points -= t.points;
+        }
+        for (const t of next.fetch) {
+          settled.add(t.id);
+          drawn.set(t.id, {});
+          points += t.points;
+          fetched.push(t.id);
+        }
+        moved += next.fetch.length + next.drop.length;
+      }
+      throw new Error("the view did not settle");
+    },
+  };
+}
 
 describe("choosing tiles", () => {
   it("fetches the root of every scale domain before any other tile", () => {
@@ -61,28 +131,30 @@ describe("choosing tiles", () => {
     expect(apparentSize(TILES[4] as Tile, eye)).toBeGreaterThan(apparentSize(TILES[3] as Tile, eye));
   });
 
-  it("refines a tile only while its points lie farther apart on screen than 3 pixels", () => {
+  it("refines a tile only while a typical tile of its level would have its points farther apart on screen than 3 pixels", () => {
     expect(REFINE_SPACING).toBe(3);
     const far = sight([1e6, 0, 0]);
-    expect(spacing(TILES[0] as Tile, far)).toBeLessThan(REFINE_SPACING);
+    expect(spacing(TILES[0] as Tile, WEB, far)).toBeLessThan(REFINE_SPACING);
     expect(plan(treeOf(TILES), holding(ROOTS), far, 10).fetch).toEqual([]);
     // Nearer, the same tile's points spread apart, and its children are wanted.
     expect(ids(plan(treeOf(TILES), holding(ROOTS), sight([3000, 0, 0]), 10).fetch)).toContain("web/r1");
   });
 
-  it("measures a tile read by where its points lie, not by its cube", () => {
+  it("measures a tile read by the distance of its points, not of its cube", () => {
     // The web's root is 1000 Mpc across, but its points lie within 10 Mpc of its centre.
     const root = TILES[0] as Tile;
     const extent = extentOf(new Float32Array([-10, 0, 0, 10, 0, 0, 0, -5, 5]), root.centre);
     // The box of the points spans x −10 to 10, y −5 to 0 and z 0 to 5.
     expect(extent.centre).toEqual([0, -2.5, 2.5]);
     expect(extent.radius).toBeCloseTo(Math.hypot(10, 2.5, 2.5));
-    const from = sight([3000, 0, 0]);
-    expect(spacing(root, from, extent)).toBeLessThan(spacing(root, from));
-    // So seen from 3 Gpc its points already lie closer than 3 px, and it is not refined.
+    // A typical root of 10 points 1000 Mpc across has its points 3 px apart from 105,409 Mpc: its
+    // cube reaches nearer than that from 106,000 Mpc, its points do not.
+    const from = sight([106_000, 0, 0]);
+    expect(spacing(root, WEB, from)).toBeGreaterThan(REFINE_SPACING);
+    expect(spacing(root, WEB, from, extent)).toBeLessThan(REFINE_SPACING);
     const held = holding(ROOTS, 0, [], { "web/r": extent });
-    expect(spacing(root, from, extent)).toBeLessThan(REFINE_SPACING);
     expect(plan(treeOf(TILES), held, from, 10).fetch).toEqual([]);
+    expect(ids(plan(treeOf(TILES), holding(ROOTS), from, 10).fetch)).toContain("web/r1");
     expect(extentOf(new Float32Array(0), [1, 2, 3])).toEqual({ centre: [1, 2, 3], radius: 0, core: { centre: [1, 2, 3], radius: 0 } });
   });
 
@@ -94,11 +166,32 @@ describe("choosing tiles", () => {
     expect(extent.radius).toBeGreaterThan(500);
     expect(extent.core.radius).toBeLessThan(40);
     const from = sight([5000, 0, 0]);
-    expect(spacing(TILES[0] as Tile, from, extent)).toBeLessThan(spacing(TILES[0] as Tile, from, { ...extent, core: extent }));
+    expect(spacing(TILES[0] as Tile, WEB, from, extent)).toBeLessThan(spacing(TILES[0] as Tile, WEB, from, { ...extent, core: extent }));
   });
 
-  it("holds no more than 3,000,000 points, counting those on their way", () => {
-    expect(POINT_BUDGET).toBe(3_000_000);
+  it("refines regions at one distance alike, however many points their tiles hold", () => {
+    // Two split tiles of one level, of 1,000 and of 10 points, as far from the eye: both are
+    // measured as the level's typical tile, of 505 points, so both are refined or neither.
+    const tiles = [
+      tile("web/r", [0, 0, 0], 1000),
+      tile("web/r0", [-250, -250, 250], 500, 1000),
+      tile("web/r1", [250, -250, 250], 500, 10),
+      ...children("web/r0", [-250, -250, 250], 500, 10),
+      ...children("web/r1", [250, -250, 250], 500, 10),
+    ];
+    const tree = treeOf(tiles);
+    const levels = tree.levels.get("web") as Levels;
+    expect(levels.points[1]).toBe(505);
+    const eye: Vec3 = [0, -250, 4000];
+    const [dense, sparse] = [tiles[1] as Tile, tiles[2] as Tile];
+    expect(spacing(dense, levels, sight(eye, true))).toBeCloseTo(spacing(sparse, levels, sight(eye, true)));
+    const next = plan(tree, holding(["web/r", "web/r0", "web/r1"], 1030), sight(eye, true), 10);
+    const parents = new Set(next.fetch.map((t) => t.parent));
+    expect(parents).toEqual(new Set(["web/r0", "web/r1"]));
+  });
+
+  it("holds no more than 6,000,000 points, counting those on their way", () => {
+    expect(POINT_BUDGET).toBe(6_000_000);
     // The root's children in view, r7 and r1, come as a family of 20 points: with room for 25
     // they are fetched, with room for 15 and nothing to drop they are not.
     expect(ids(plan(treeOf(TILES), holding(ROOTS, POINT_BUDGET - 25), sight([300, 300, 300]), 10).fetch)).toEqual(["web/r7", "web/r1"]);
@@ -115,31 +208,11 @@ describe("choosing tiles", () => {
 describe("a view that does not change", () => {
   it("settles, within a budget too small for all it wants, and fetches no tile twice", () => {
     // Eight children of 10 points about a root of 10, all in view; room for the root and three.
-    const children = Array.from({ length: 8 }, (_, i) =>
-      tile(`web/r${i}`, [((i & 1) * 2 - 1) * 250, ((i & 2) - 1) * 250, ((i & 4) / 2 - 1) * 250], 500),
-    );
-    const tiles = [tile("web/r", [0, 0, 0], 1000), ...children];
-    const settled = new Set<string>();
-    const fetched: string[] = [];
-    let points = 0;
-    let rounds = 0;
-    for (; rounds < 50; rounds += 1) {
-      const drawn = new Map([...settled].map((id) => [id, {}]));
-      const next = plan(treeOf(tiles), { settled, drawn, pending: new Set(), points }, sight([900, 300, 100], true), 2, 40);
-      if (next.fetch.length === 0 && next.drop.length === 0) break;
-      for (const t of next.drop) {
-        settled.delete(t.id);
-        points -= t.points;
-      }
-      for (const t of next.fetch) {
-        settled.add(t.id);
-        points += t.points;
-        fetched.push(t.id);
-      }
-    }
-    expect(rounds).toBeLessThan(50);
-    expect(points).toBeLessThanOrEqual(40);
-    expect(new Set(fetched).size).toBe(fetched.length);
+    const tiles = [tile("web/r", [0, 0, 0], 1000), ...children("web/r", [0, 0, 0], 1000, 10)];
+    const catalogue = simulatedCatalogue(treeOf(tiles), 40);
+    catalogue.settle(sight([900, 300, 100], true), 2);
+    expect(catalogue.points()).toBeLessThanOrEqual(40);
+    expect(new Set(catalogue.fetched).size).toBe(catalogue.fetched.length);
   });
 });
 
@@ -219,5 +292,154 @@ describe("making room", () => {
   it("fetches a dropped tile again once the view needs it", () => {
     const back = plan(treeOf(TILES), holding([...ROOTS, "web/r1", "web/r7"]), sight(eye, true), 10);
     expect(ids(back.fetch)).toContain("web/r0");
+  });
+});
+
+describe("a view that moves a little", () => {
+  it("keeps a held tile's children while its points lie farther apart on screen than 2 pixels", () => {
+    expect(KEEP_SPACING).toBe(2);
+    // The web's root seen from where its points lie 2.5 pixels apart: below the spacing that
+    // refines it, above the one that keeps its children.
+    const root = tile("web/r", [0, 0, 0], 1000);
+    const eye: Vec3 = [500 * Math.sqrt(3) + (1000 * 1000) / Math.sqrt(10) / 2.5, 0, 0];
+    expect(spacing(root, WEB, sight(eye))).toBeCloseTo(2.5);
+    const held = children("web/r", [0, 0, 0], 1000, 10);
+    // A tile near the eye that the view wants, and a held one it does not (its parent's points
+    // too crowded on screen to refine), larger on screen than the web's children.
+    const near = tile("near/r", [eye[0] - 20, 30, 0], 10);
+    const wanted = tile("near/r0", [eye[0] - 22.5, 27.5, -2.5], 5);
+    const dense = tile("dense/r", [eye[0] - 50, -30, 0], 20, 1e8);
+    const unwanted = tile("dense/r0", [eye[0] - 55, -35, -5], 10);
+    expect(apparentSize(unwanted, eye)).toBeGreaterThan(apparentSize(held[0] as Tile, eye));
+    const holds = [root, ...held, near, dense, unwanted];
+    const points = holds.reduce((sum, t) => sum + t.points, 0);
+    const next = plan(treeOf([...holds, wanted]), holding(ids(holds), points), sight(eye, true), 4, points);
+    // Room for the wanted tile is made from the tile the view does not want, the web's
+    // children kept.
+    expect(ids(next.fetch)).toEqual(["near/r0"]);
+    expect(ids(next.drop)).toEqual(["dense/r0"]);
+  });
+
+  describe("with room for one of two families", () => {
+    // The web's root and two children held; the first child's two children held, the second's
+    // not. The budget holds the root, its children and one family.
+    const tiles = [
+      tile("web/r", [0, 0, 0], 1000, 1),
+      tile("web/r0", [-250, -250, -250], 500, 1),
+      tile("web/r00", [-375, -375, -375], 250, 1),
+      tile("web/r07", [-125, -125, -125], 250, 1),
+      tile("web/r7", [250, 250, 250], 500, 1),
+      tile("web/r70", [125, 125, 125], 250, 1),
+      tile("web/r77", [375, 375, 375], 250, 1),
+    ];
+    const held = holding(["web/r", "web/r0", "web/r00", "web/r07", "web/r7"], 5);
+    const largest = (eye: Vec3, family: string) =>
+      Math.max(...tiles.filter((t) => t.parent === family).map((t) => apparentSize(t, eye)));
+
+    it("keeps the held family where the other is less than half again its size on screen", () => {
+      expect(HELD_PREFERENCE).toBe(1.5);
+      const eye: Vec3 = [3e4, 3e4, 3e4];
+      expect(largest(eye, "web/r7")).toBeGreaterThan(largest(eye, "web/r0"));
+      expect(largest(eye, "web/r7")).toBeLessThan(HELD_PREFERENCE * largest(eye, "web/r0"));
+      expect(plan(treeOf(tiles), held, sight(eye, true), 4, 5)).toEqual({ fetch: [], drop: [] });
+    });
+
+    it("prefers a family that holds only some of its tiles in view", () => {
+      // The first family's second tile is not held: the family still counts half again its
+      // size, so the view fetches that tile rather than trading the family for the other.
+      const eye: Vec3 = [3e4, 3e4, 3e4];
+      const part = holding(["web/r", "web/r0", "web/r00", "web/r7"], 4);
+      expect(plan(treeOf(tiles), part, sight(eye, true), 4, 5)).toEqual({ fetch: [tiles[3]], drop: [] });
+    });
+
+    it("trades it for the other once that is more than half again its size on screen", () => {
+      const eye: Vec3 = [700, 700, 700];
+      expect(largest(eye, "web/r7")).toBeGreaterThan(HELD_PREFERENCE * largest(eye, "web/r0"));
+      const next = plan(treeOf(tiles), held, sight(eye, true), 4, 5);
+      expect(ids(next.fetch).sort()).toEqual(["web/r70", "web/r77"]);
+      expect(ids(next.drop).sort()).toEqual(["web/r00", "web/r07"]);
+    });
+  });
+
+  it("settles when turned by 0.1 degree and back again and again, its budget full, and follows a larger turn", () => {
+    expect(HELD_VIEW_MARGIN).toBeCloseTo(Math.PI / 180);
+    // SIMULATED: an octree five levels deep over a cloud 1,500 Mpc in radius, 800 points a tile,
+    // more than a budget of 3,000,000 can hold of what the view wants, seen from 1,500 Mpc off a
+    // focus 670 Mpc from its centre, so that the view's sides cut through it.
+    const budget = 3_000_000;
+    const tiles: Tile[] = [tile("web/r", [0, 0, 0], 4000, 800)];
+    const inCloud = (edge: number) => (c: Vec3) => Math.hypot(...c) - edge * 0.433 <= 1500;
+    for (let level = 0, edge = 4000; level < 5; level += 1, edge /= 2) {
+      for (const parent of tiles.filter((t) => t.edge === edge)) tiles.push(...children(parent.id, parent.centre, edge, 800, inCloud(edge)));
+    }
+    expect(tiles.length * 800).toBeGreaterThan(POINT_BUDGET);
+    const catalogue = simulatedCatalogue(treeOf(tiles), budget);
+    const turned = (yaw: number) => sightOf({ focus: [600, 300, 0], distance: 1500, yaw, pitch: 0.2 }, IDENTITY, 1000, 700);
+    const turn = (0.1 * Math.PI) / 180;
+    catalogue.settle(turned(0.3));
+    // Full: no family of eight more tiles fits.
+    expect(catalogue.points()).toBeGreaterThan(budget - 8 * 800);
+    expect(catalogue.points()).toBeLessThanOrEqual(budget);
+    catalogue.settle(turned(0.3 + turn));
+    const after = Array.from({ length: 4 }, () => catalogue.settle(turned(0.3)) + catalogue.settle(turned(0.3 + turn)));
+    expect(after).toEqual([0, 0, 0, 0]);
+    expect(catalogue.settle(turned(0.3 + (30 * Math.PI) / 180))).toBeGreaterThan(0);
+  });
+});
+
+describe("level of detail turned off", () => {
+  it("fetches every tile, the coarser levels first, whatever the view and the budget, and drops none", () => {
+    // The plan takes no view, and the budget is already spent twice over.
+    expect(planEvery(treeOf(TILES), holding([], POINT_BUDGET * 2), 3)).toEqual({ fetch: [TILES[0], TILES[1], TILES[2]], drop: [] });
+    expect(ids(planEvery(treeOf(TILES), holding(ROOTS, POINT_BUDGET * 2), 10).fetch)).toEqual(["web/r0", "web/r1", "web/r7", "web/r70"]);
+    expect(ids(planEvery(treeOf(TILES), holding(ROOTS, 0, ["web/r1"]), 2).fetch)).toEqual(["web/r0", "web/r7"]);
+    expect(planEvery(treeOf(TILES), holding(ids(TILES)), 10)).toEqual({ fetch: [], drop: [] });
+  });
+
+  it("is followed, once turned on again, by dropping what the view does not want until the points held fit the budget", () => {
+    // Every tile held, 60 points, within a budget of 30: the view at x ≥ 0 wants none of the
+    // root's children within it, so r0 (out of view) goes first, then the smaller r70, then r1.
+    const next = plan(treeOf(TILES), holding(ids(TILES), 60), sight([300, 300, 300]), 6, 30);
+    expect(next.fetch).toEqual([]);
+    expect(ids(next.drop)).toEqual(["web/r0", "web/r70", "web/r1"]);
+  });
+});
+
+describe("the share of a domain drawn", () => {
+  // Three levels: a root keeping a tenth of the domain, a level adding three tenths, and leaves
+  // holding the rest; typical split tiles of 100 points, 1000 and 500 Mpc across. Seen with a
+  // focal length of 1000 px, level 1 is needed within 33,333 Mpc and level 2 within 16,667 Mpc.
+  const levels: Levels = { edges: [1000, 500, 250], points: [100, 100, 0], cumulative: [0.1, 0.4, 1] };
+  const onsets = onsetsOf(levels, 1000);
+  const detail = detailOf(levels, onsets);
+  const parent = tile("web/r", [0, 0, 0], 1000, 100);
+
+  it("rises level by level as a typical tile of the level above has its points from 3 to 6 pixels apart", () => {
+    expect(onsets[1]).toBeCloseTo(100_000 / 3);
+    expect(onsets[2]).toBeCloseTo(50_000 / 3);
+    expect(spacing(parent, levels, { ...sight([0, 0, 0]), eye: [onsets[1] ?? 0, 0, 0] }, { centre: [0, 0, 0], radius: 0, core: { centre: [0, 0, 0], radius: 0 } })).toBeCloseTo(3);
+    expect(neededAt(detail, 1e6)).toBeCloseTo(0.1);
+    expect(neededAt(detail, 100_000 / 3)).toBeCloseTo(0.1);
+    expect(neededAt(detail, 200_000 / 9)).toBeCloseTo(0.25);
+    expect(neededAt(detail, 50_000 / 3)).toBeCloseTo(0.4);
+    expect(neededAt(detail, 100_000 / 9)).toBeCloseTo(0.7);
+    expect(neededAt(detail, 25_000 / 3)).toBeCloseTo(1);
+    expect(neededAt(detail, 1)).toBeCloseTo(1);
+  });
+
+  it("ranks a tile's points evenly through its slice, in their order", () => {
+    const child = { ...tile("web/r0", [0, 0, 0], 500, 3), slice: [0.1, 0.4] as const };
+    expect([0, 1, 2].map((i) => rankOf(child, i, 3))).toEqual([0.15, 0.25, 0.35].map((r) => expect.closeTo(r, 10)));
+  });
+
+  it("draws every point of a root, and of a tile the first whose rank lies below the share its nearest points need", () => {
+    const root = { ...parent, slice: [0, 0.1] as const };
+    const child = { ...tile("web/r0", [0, 0, 0], 500, 100), slice: [0.1, 0.4] as const };
+    const from = (distance: number): Vec3 => [distance, 0, 0];
+    const at = { centre: [0, 0, 0] as Vec3, radius: 0 };
+    expect(drawnShare(root, detail, from(1e9), at)).toBe(1);
+    expect(drawnShare(child, detail, from(1e6), at)).toBeCloseTo(0, 6);
+    expect(drawnShare(child, detail, from(200_000 / 9), at)).toBeCloseTo(0.5);
+    expect(drawnShare(child, detail, from(1000), at)).toBe(1);
   });
 });

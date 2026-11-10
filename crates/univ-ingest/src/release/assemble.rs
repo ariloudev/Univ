@@ -7,39 +7,42 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use univ_model::derive::{MODEL_VERSION, Release};
-use univ_model::position::{BARYCENTRE, ICRS_CARTESIAN_NAME};
 use univ_model::redshift::CmbCorrection;
-use univ_model::release::cells::{MAX_STRUCTURE_LEVEL, SPACES, STRUCTURE_SPAN};
 use univ_model::release::manifest::{
-    CellIndex, CellSpaceInfo, Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestSource,
-    NotIndexed, RecordedFile, ReleaseManifest, Versions,
+    Counts, D1Estimate, FORMAT, Ids, MANIFEST_VERSION, ManifestFile, RELEASE_BUDGET_BYTES,
+    RecordedFile, ReleaseManifest, ShardManifest, Target, Versions,
 };
-use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseRow};
+use univ_model::release::rows::{GridRow, ObjectCellRow, ReleaseFileRow, ReleaseRow};
+use univ_model::release::shards::Database;
 use univ_model::release::{Row, SCHEMA_VERSION, keys};
 
+use super::cells::cell_index;
+use super::check::D1_KEYS;
 use super::check::{Failed, Subject, check_all, d1_derived, d1_size};
-use super::d1::{D1Writer, PartSink};
+use super::d1::{Before, D1Writer, PartSink};
 use super::entries::Numbering;
 use super::files::DirSink;
+use super::kept::Kept;
+use super::meta::manifest_sources;
 use super::objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 use super::outline::Outlined;
-use super::terms::{SourceIndex, Terms};
+use super::sharded::{Sharding, repeated_id, shard_manifests, write_shard_index};
+use super::terms::SourceIndex;
 use super::{
-    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, cell_rows, coverages, domain_rows,
-    grid_files, outlines_on, placements, read_grid, source_detail_rows, source_rows,
+    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, coverages, domain_rows, grid_files,
+    index_rows, object_cells, outlines_on, placements, read_grid, source_detail_rows, source_rows,
     structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
 use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
 use crate::watch::Watch;
 
-/// Objects turned into rows between two looks at the build's stop flag.
-const OBJECTS_BETWEEN_CHECKS: usize = 10_000;
-
 /// A release written into its directory, with the failures of its checks.
 pub struct Written {
     pub manifest: ReleaseManifest,
     pub failed: Vec<Failed>,
+    /// What the release numbered and placed, for the next release to keep.
+    pub kept: Kept,
 }
 
 /// Writes each rules file of the cross-match's basis as it was read, giving its entry in the
@@ -72,130 +75,158 @@ fn tile_count(inputs: &Inputs<'_>) -> usize {
 
 /// What the D1 rows came to.
 struct D1Done {
+    /// The catalogue database's estimate.
     estimate: D1Estimate,
+    kept: Kept,
+    shards: Vec<ShardManifest>,
     failed: Vec<Failed>,
     objects: ObjectCounts,
     cells: CellRows,
+    /// The placed objects, each with its row in the cell index.
+    object_cells: u64,
     structures: u64,
 }
 
-/// Writes every D1 row of release `number` through `writer`, the grids' rows given, under
-/// `release`, with the sources numbered by `sources`: both made once for the build.
+/// Writes every D1 row of release `numbering.release` into `sink`, the grids' rows given,
+/// under `release`, numbered by `numbering`, which keeps what `previous` numbered: both made
+/// once for the build. The objects are written to the object shards planned for them, keeping
+/// the cells `previous` placed, the rest to the catalogue.
 fn d1_rows(
     inputs: &Inputs<'_>,
-    number: u32,
-    mut writer: D1Writer<'_>,
+    sink: &mut DirSink<'_>,
     grids: &WrittenGrids,
     release: &Release,
-    sources: SourceIndex,
+    numbering: Numbering,
+    before: &Before<'_>,
     watch: Watch<'_>,
 ) -> Result<D1Done, String> {
+    let previous = before.kept;
     let crossed = inputs.crossed;
-    let ranking = &crossed.basis.ranking;
-    let numbering = Numbering {
-        release: number,
-        terms: Terms::default(),
-        sources,
+    let number = numbering.release;
+    let repeated = repeated_id(&crossed.objects);
+    let cells = object_cells(&crossed.objects, inputs.definitions, &crossed.cosmology)?;
+    let sharding = Sharding {
+        definitions: inputs.definitions,
+        cosmology: &crossed.cosmology,
+        cells: &cells,
     };
-    let objects = write_objects(inputs, numbering, &mut writer, watch)?;
+    let budget = crossed.basis.config.shard_budget();
+    let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
+    let files = file_rows(number, &sink.files);
+    let mut writer = D1Writer::new(sink, packing.count())?;
+    writer.compare_with(before, number)?;
+    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
+    sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
-        numbering: Numbering { mut terms, .. },
-        chains,
+        numbering:
+            Numbering {
+                mut terms,
+                sources: index,
+                chains,
+                ..
+            },
         counts,
         ..
     } = objects;
-    let sources = source_rows(number, inputs.definitions, &counts.per_source, inputs.cache)?;
+    let sources = source_rows(
+        number,
+        inputs.definitions,
+        &index,
+        &counts.per_source,
+        inputs.cache,
+        &inputs.crossed.basis.designations,
+    )?;
     writer.add_all(&sources.sources)?;
     writer.add_all(&sources.payloads)?;
     writer.add_all(&sources.normalizations)?;
+    writer.add_all(&sources.terms)?;
+    writer.add_all(&sources.reading)?;
     writer.add_all(chains.rows())?;
     let (issued, replaced) = ledger_rows(&crossed.next.ledger)?;
     writer.add_all(&issued)?;
     writer.add_all(&replaced)?;
-    let (structures, bounds) = write_structures(&mut writer, inputs, number, release, grids)?;
+    let (structures, bounds) =
+        write_structures(&mut writer, inputs, number, release, grids, &index)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;
     writer.add_all(&grids.rows)?;
-    let cells = cell_rows(
-        number,
-        &crossed.objects,
-        inputs.definitions,
-        &crossed.cosmology,
-        &bounds,
-    )?;
-    for c in &cells.objects {
-        writer.add(&ObjectCellRow {
-            release: number,
-            domain: terms.id(c.domain),
-            ix: c.ix,
-            iy: c.iy,
-            iz: c.iz,
-            object_id: c.object_id,
-        })?;
-    }
+    writer.add_all(&files)?;
+    drop(cells);
+    let cells = index_rows(number, &bounds)?;
     writer.add_all(&cells.structures)?;
+    write_shard_index(&mut writer, number, &packing, &mut terms)?;
     writer.add_all(&terms.rows(number))?;
-    let source_ids: Vec<String> = inputs
-        .definitions
-        .iter()
-        .map(|d| d.id.to_string())
-        .collect();
-    let row = ReleaseRow {
-        number,
-        built_at: inputs.built_at.clone(),
-        cosmology: json(&crossed.cosmology)?,
-        peculiar_velocity_km_s: ranking.peculiar_velocity_km_s,
-        model_version: MODEL_VERSION.to_owned(),
-        ingest_version: env!("CARGO_PKG_VERSION").to_owned(),
-        schema_version: SCHEMA_VERSION,
-        matching_rules: text(inputs, "matching"),
-        ranking_rule: text(inputs, "ranking"),
-        ranking_rule_name: ranking.rule.clone(),
-        sources: json(&source_ids)?,
-        objects: counts.objects,
-        structures,
-        grids: grids.rows.len() as u64,
-        tiles: tile_count(inputs) as u64,
-        // Estimated with the widest integer here, then set to the estimate it is part of,
-        // which therefore errs high by at most a few bytes.
-        d1_estimated_bytes: i64::MAX.unsigned_abs(),
+    let kept = Kept {
+        terms: terms.numbering(),
+        sources: index.numbering(),
+        chains: chains.numbering(),
+        cells: packing.held(),
+        loose: packing.buckets(),
+        ..Kept::default()
     };
-    let total = writer.estimated_bytes() + ReleaseRow::TABLE.estimated_bytes(&row.values());
+    let row = release_row(inputs, number, counts.objects, structures, grids.rows.len())?;
+    let total = writer.estimated_bytes_in(Database::Catalogue)
+        + ReleaseRow::TABLE.estimated_bytes(&row.values());
     writer.add(&ReleaseRow {
         d1_estimated_bytes: total,
         ..row
     })?;
+    let object_cells = writer.rows(ObjectCellRow::TABLE.name);
     let written = writer.finish()?;
     let mut estimate = written.estimate;
     // The release's row records the estimate it is part of, computed with its widest value.
     estimate.estimated_bytes = total;
+    let shards = shard_manifests(&packing, written.shards);
     let mut failed = written.failed;
-    failed.extend(d1_size(&estimate));
+    failed.extend(repeated.map(|id| Failed {
+        check: D1_KEYS,
+        cause: format!(
+            "table objects: object id {id} is given to two objects, whose rows repeat its key \
+             (release = {number}, id = {id})"
+        ),
+    }));
+    failed.extend(sizes(&estimate, &shards, budget));
     failed.extend(d1_derived(
         counts.not_kept,
         counts.first_not_kept.as_deref(),
     ));
     Ok(D1Done {
         estimate,
+        kept,
+        shards,
         failed,
         objects: counts,
         cells,
+        object_cells,
         structures,
     })
 }
 
+/// The size checks of each database: the catalogue's `estimate` within a release's budget,
+/// each of the `shards` within `budget`.
+fn sizes(estimate: &D1Estimate, shards: &[ShardManifest], budget: u64) -> Vec<Failed> {
+    let catalogue = d1_size(Database::Catalogue, estimate, RELEASE_BUDGET_BYTES);
+    let each = shards
+        .iter()
+        .filter_map(|s| d1_size(Database::Shard(s.index), &s.d1, budget));
+    catalogue.into_iter().chain(each).collect()
+}
+
 /// Writes the `source_details`, `structures` and `structure_details` rows of release `number`
 /// through `writer`, its structures placed under `release` and the run's dipole, with the
-/// `outline` columns the grids gave; it gives how many structures it wrote and their boxes.
+/// `outline` columns the grids gave and the sources numbered by `index`; it gives how many
+/// structures it wrote and their boxes.
 fn write_structures(
     writer: &mut D1Writer<'_>,
     inputs: &Inputs<'_>,
     number: u32,
     release: &Release,
     grids: &WrittenGrids,
+    index: &SourceIndex,
 ) -> Result<(u64, Vec<StructureBounds>), String> {
     let crossed = inputs.crossed;
     let covered = coverages(&crossed.objects, inputs.definitions);
-    writer.add_all(&source_detail_rows(number, inputs.definitions, &covered)?)?;
+    let details = source_detail_rows(number, inputs.definitions, index, &covered)?;
+    writer.add_all(&details)?;
     let correction = CmbCorrection::new(crossed.dipole);
     let placing = Placing {
         release,
@@ -278,28 +309,10 @@ fn write_grids(
     Ok(grids)
 }
 
-/// Turns every object into its rows through `writer`, looking at the build's stop flag every
-/// [`OBJECTS_BETWEEN_CHECKS`] objects.
-fn write_objects<'a>(
-    inputs: &Inputs<'a>,
-    numbering: Numbering,
-    writer: &mut D1Writer<'_>,
-    watch: Watch<'_>,
-) -> Result<ObjectWriter<'a>, String> {
-    let crossed = inputs.crossed;
-    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
-    for (n, o) in crossed.objects.iter().enumerate() {
-        if n % OBJECTS_BETWEEN_CHECKS == 0 {
-            watch.check()?;
-        }
-        objects.write(writer, o)?;
-    }
-    Ok(objects)
-}
-
 /// Writes release `number` of `inputs` into the new directory `dir` and checks it, telling
 /// `watch` as each of its phases is done: the rules, the tiles, the volume grids, the D1 rows and
-/// the checks. Each file written, each grid and every [`OBJECTS_BETWEEN_CHECKS`] objects is a
+/// the checks. Each file written, each grid and every
+/// [`super::sharded::OBJECTS_BETWEEN_CHECKS`] objects is a
 /// safe point at which the build stops once the owner asks it to.
 ///
 /// # Errors
@@ -310,9 +323,11 @@ pub fn write_release(
     inputs: &Inputs<'_>,
     number: u32,
     dir: &Path,
+    before: &Before<'_>,
     watch: Watch<'_>,
 ) -> Result<Written, String> {
-    let mut sink = DirSink::new(dir, number, watch)?;
+    let previous = before.kept;
+    let mut sink = DirSink::new(dir, watch)?;
     let recorded = rules(inputs, &mut sink)?;
     watch.step(format!("rules: {} files", recorded.len()));
     for d in &inputs.tiles.domains {
@@ -330,21 +345,22 @@ pub fn write_release(
     let crossed = inputs.crossed;
     let release = Release::new(&crossed.cosmology)
         .with_peculiar_velocity(crossed.basis.ranking.peculiar_velocity_km_s);
-    let mut sources = SourceIndex::new(inputs.definitions.iter().map(|d| &d.id));
+    let mut sources = SourceIndex::new(&previous.sources, inputs.definitions.iter().map(|d| &d.id));
     let grids = write_grids(inputs, number, &mut sink, &release, &mut sources)?;
+    let numbering = Numbering::kept(number, sources, previous);
     let d1 = d1_rows(
-        inputs,
-        number,
-        D1Writer::new(&mut sink)?,
-        &grids,
-        &release,
-        sources,
-        watch,
+        inputs, &mut sink, &grids, &release, numbering, before, watch,
     )?;
     let sql_files = sink.files.iter().filter(|f| f.key.is_none()).count();
     watch.step(format!(
-        "D1 rows: {} rows in {sql_files} SQL files",
-        d1.estimate.tables.iter().map(|t| t.rows).sum::<u64>()
+        "D1 rows: {} rows in {sql_files} SQL files, in the catalogue database and {} object \
+         shard(s)",
+        std::iter::once(&d1.estimate)
+            .chain(d1.shards.iter().map(|s| &s.d1))
+            .flat_map(|e| &e.tables)
+            .map(|t| t.rows)
+            .sum::<u64>(),
+        d1.shards.len()
     ));
     watch.check()?;
     let mut failed = check_all(&Subject {
@@ -381,16 +397,7 @@ pub fn write_release(
         },
         rules: recorded,
         cell_index: cell_index(&d1.cells),
-        sources: inputs
-            .definitions
-            .iter()
-            .map(|d| ManifestSource {
-                id: d.id.to_string(),
-                redistribution: d.redistribution.status.as_str().to_owned(),
-                review: d.redistribution.review.as_str().to_owned(),
-                entries: d1.objects.per_source.get(&d.id).copied().unwrap_or(0),
-            })
-            .collect(),
+        sources: manifest_sources(inputs.definitions, &d1.objects.per_source),
         counts: Counts {
             objects: d1.objects.objects,
             placed: d1.objects.placed,
@@ -399,45 +406,74 @@ pub fn write_release(
             structures_indexed: d1.cells.structures_indexed,
             grids: grids.rows.len() as u64,
             tiles: tile_count(inputs) as u64,
-            object_cells: d1.cells.objects.len() as u64,
+            object_cells: d1.object_cells,
             structure_cells: d1.cells.structures.len() as u64,
         },
+        parent: before.rows.map(|_| number - 1),
         ids: Ids {
             issued_first: assigned.issued.map(|r| r.first.get()),
             issued_last: assigned.issued.map(|r| r.last.get()),
             replaced: assigned.replaced.len() as u64,
         },
         d1: d1.estimate,
+        shards: d1.shards,
         files,
     };
-    Ok(Written { manifest, failed })
+    Ok(Written {
+        manifest,
+        failed,
+        kept: d1.kept,
+    })
 }
 
-/// The cell index's scheme, as the manifest records it.
-fn cell_index(cells: &CellRows) -> CellIndex {
-    CellIndex {
-        scheme: "uniform grid of cubes anchored at the origin, cell = floor(coordinate / (edge \
-                 * 2^level)); objects at level 0 of their scale domain, structures at the \
-                 finest level their box meets at most structure_span cells a side"
-            .to_owned(),
-        frame: format!("{ICRS_CARTESIAN_NAME}, origin the {BARYCENTRE}"),
-        spaces: SPACES
-            .iter()
-            .map(|s| CellSpaceInfo {
-                name: s.name().to_owned(),
-                unit: s.unit().to_owned(),
-                edge: s.edge(),
-            })
-            .collect(),
-        structure_span: STRUCTURE_SPAN,
-        max_structure_level: MAX_STRUCTURE_LEVEL,
-        not_indexed: cells
-            .not_indexed
-            .iter()
-            .map(|(structure, reason)| NotIndexed {
-                structure: structure.clone(),
-                reason: reason.clone(),
-            })
-            .collect(),
-    }
+/// The rows of `release_files` of release `number`: each R2 file of `files` by its path and
+/// SHA-256.
+fn file_rows(number: u32, files: &[ManifestFile]) -> Vec<ReleaseFileRow> {
+    files
+        .iter()
+        .filter(|f| f.target == Target::R2)
+        .map(|f| ReleaseFileRow {
+            release: number,
+            path: f.path.clone(),
+            sha256: f.sha256.clone(),
+        })
+        .collect()
+}
+
+/// The row of release `number` in `releases`, holding `objects`, `structures` and `grids`, its
+/// estimate set to the widest integer for the caller to replace.
+fn release_row(
+    inputs: &Inputs<'_>,
+    number: u32,
+    objects: u64,
+    structures: u64,
+    grids: usize,
+) -> Result<ReleaseRow, String> {
+    let crossed = inputs.crossed;
+    let ranking = &crossed.basis.ranking;
+    let source_ids: Vec<String> = inputs
+        .definitions
+        .iter()
+        .map(|d| d.id.to_string())
+        .collect();
+    Ok(ReleaseRow {
+        number,
+        built_at: inputs.built_at.clone(),
+        cosmology: json(&crossed.cosmology)?,
+        peculiar_velocity_km_s: ranking.peculiar_velocity_km_s,
+        model_version: MODEL_VERSION.to_owned(),
+        ingest_version: env!("CARGO_PKG_VERSION").to_owned(),
+        schema_version: SCHEMA_VERSION,
+        matching_rules: text(inputs, "matching"),
+        ranking_rule: text(inputs, "ranking"),
+        ranking_rule_name: ranking.rule.clone(),
+        sources: json(&source_ids)?,
+        objects,
+        structures,
+        grids: grids as u64,
+        tiles: tile_count(inputs) as u64,
+        // Estimated with the widest integer here, then set to the estimate it is part of,
+        // which therefore errs high by at most a few bytes.
+        d1_estimated_bytes: i64::MAX.unsigned_abs(),
+    })
 }

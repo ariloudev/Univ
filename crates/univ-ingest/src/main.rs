@@ -8,20 +8,23 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use clap::{Args, Parser, Subcommand};
 use univ_ingest::acquire::Acquired;
-use univ_ingest::display::{Outcome, RunDisplay, stage_name};
+use univ_ingest::display::{RunDisplay, stage_name};
 use univ_ingest::events::{Event, EventSink, Stage};
 use univ_ingest::fetch::{Fetcher, RetryPolicy, SystemClock};
 use univ_ingest::lock::StateLock;
 use univ_ingest::normalize::Normalized;
 use univ_ingest::run::{
-    BuildOptions, DEFAULT_BUILD, DEFAULT_CONFIG, DEFAULT_PERSIST, DEFAULT_TILES, FetchOptions,
-    MatchOptions, RunReport, StoreCommand, StoreRun, TileOptions, build_stage, display_for_stderr,
-    drawing, fetch, interrupted, match_stage_until, normalize_stage_until, now, owner_interrupt,
-    select, store_command, tiles_stage, until_set,
+    BuildOptions, DEFAULT_BUILD, DEFAULT_TILES, FetchOptions, MatchOptions, RunReport,
+    StoreCommand, TileOptions, build_stage, display_for_stderr, drawing, fetch, interrupted,
+    match_stage_until, normalize_stage_until, now, owner_interrupt, select, tiles_stage, until_set,
 };
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::DEFAULT_STATE;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
+
+mod store_cli;
+
+use store_cli::{LocalArgs, ReindexArgs, StoreArgs, on_store, reindex};
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -67,97 +70,17 @@ enum Command {
     /// pruning time and keeping the id ledger, so every id still resolves, and last its local
     /// build in the build output. The release latest points to is refused.
     Prune(StoreArgs),
-}
-
-#[derive(Args)]
-struct StoreArgs {
-    /// The release number.
-    number: u32,
-    /// The build output, whose `releases/{n}` holds the release.
-    #[arg(long, value_name = "DIR", default_value = DEFAULT_BUILD)]
-    out: PathBuf,
-    /// The state directory, which records each release built; a release it does not record is
-    /// not published.
-    #[arg(long, value_name = "DIR", default_value = DEFAULT_STATE)]
-    state: PathBuf,
-    /// Wrangler's local state directory, as `wrangler dev --persist-to` takes it.
-    #[arg(long, value_name = "DIR", default_value = DEFAULT_PERSIST)]
-    persist_to: PathBuf,
-    /// The Wrangler configuration naming the local D1 and R2 bindings; Wrangler is run from
-    /// the `node_modules` beside it.
-    #[arg(long, value_name = "FILE", default_value = DEFAULT_CONFIG)]
-    config: PathBuf,
-}
-
-/// Runs the publish or prune `command` on the run display. A first Ctrl-C stops it once the unit
-/// in hand is uploaded and checked, as the journal then lists it; a second stops it at once.
-async fn on_store(args: StoreArgs, command: StoreCommand) -> ExitCode {
-    let number = args.number;
-    let run = StoreRun {
-        number,
-        out: args.out,
-        state: args.state,
-        persist_to: args.persist_to,
-        config: args.config,
-    };
-    let display = display_for_stderr();
-    let stop = Arc::new(AtomicBool::new(false));
-    let (shown, flag) = (display.clone(), stop.clone());
-    let work =
-        tokio::task::spawn_blocking(move || store_command(&run, command, shown.as_ref(), &flag));
-    let mut work = std::pin::pin!(drawing(display.as_ref(), work));
-    let first = tokio::select! {
-        done = &mut work => Some(done),
-        () = owner_interrupt(tokio::signal::ctrl_c()) => None,
-    };
-    let interrupted_run = first.is_none();
-    let done = if let Some(done) = first {
-        done
-    } else {
-        stop.store(true, Ordering::Relaxed);
-        display.emit(Event::Stopping {
-            what: stopping(command, number),
-        });
-        tokio::select! {
-            done = &mut work => done,
-            () = owner_interrupt(tokio::signal::ctrl_c()) => {
-                display.finish(vec![], Outcome::Stopped {
-                    stage: command.stage(),
-                    reason: "stopped at once by the owner".to_owned(),
-                });
-                // Returning would have the runtime wait for the unit in hand; the journal lists
-                // only the units done, so the next run uploads that one again.
-                std::process::exit(i32::from(INTERRUPTED));
-            }
-        }
-    };
-    let outcome = done.unwrap_or_else(|e| Outcome::Stopped {
-        stage: command.stage(),
-        reason: e.to_string(),
-    });
-    let failed = matches!(outcome, Outcome::Stopped { .. });
-    display.finish(vec![], outcome);
-    if interrupted_run && failed {
-        ExitCode::from(INTERRUPTED)
-    } else {
-        ExitCode::from(u8::from(failed))
-    }
-}
-
-/// What a publish or prune says once the owner interrupted it.
-fn stopping(command: StoreCommand, number: u32) -> String {
-    match command {
-        StoreCommand::Publish => format!(
-            "the publish of release {number} stops once the unit in hand is uploaded and \
-             checked, latest left where it was; publishing release {number} again continues \
-             from its journal. Ctrl-C again stops at once, and the unit in hand is uploaded \
-             again by the next run"
-        ),
-        StoreCommand::Prune => format!(
-            "the prune of release {number} stops once the step in hand is done; pruning \
-             release {number} again finishes it. Ctrl-C again stops at once"
-        ),
-    }
+    /// Brings the local D1 and R2 of releases published before rows were shared between
+    /// releases (schema 5) under shared rows (schema 6), in place: each table rebuilt with its
+    /// rows valid from their release to the next, each R2 file copied to the key of its SHA-256,
+    /// and the old keys deleted last. Nothing is built or uploaded again, and a stopped run is
+    /// finished by the next; a store already at schema 6 is left as it is. A publish does the
+    /// same first.
+    Migrate(LocalArgs),
+    /// Makes again, from the local D1, the state's row index and numbering of the release latest
+    /// points to: what the next build compares its rows with to write only its change. The
+    /// state's last release must be the one latest points to, and the local D1 of schema 6.
+    Reindex(ReindexArgs),
 }
 
 #[derive(Args)]
@@ -227,8 +150,9 @@ struct FetchArgs {
     /// Make no request: use only what is on disk, and fail on the first item missing.
     #[arg(long)]
     offline: bool,
-    /// Where chunks, files and provenance are kept between runs.
-    #[arg(long, default_value = ".cache/univ-ingest")]
+    /// Where chunks, files and provenance are kept between runs: by default the Univ home
+    /// folder's downloads, beside this repository, which its projects share.
+    #[arg(long, env = "UNIV_INGEST_CACHE", default_value = DEFAULT_CACHE)]
     cache: PathBuf,
     /// The directory of source definitions.
     #[arg(long, default_value = "sources")]
@@ -370,8 +294,26 @@ async fn every_stage(
     stages.run(display.clone(), normalized, until).await;
 }
 
+/// With the `dhat-heap` feature, every allocation goes through DHAT, which writes the heap's
+/// profile to `dhat-heap.json` when the run ends.
+/// The download cache, from the repository root, where Univ Ingest runs: the Univ home
+/// folder's `downloads/univ-ingest`.
+const DEFAULT_CACHE: &str = "../downloads/univ-ingest";
+
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
+/// mimalloc, except under the heap profiler: it gives back the pages of freed small blocks,
+/// which the system allocator keeps.
+#[cfg(not(feature = "dhat-heap"))]
+#[global_allocator]
+static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[tokio::main]
 async fn main() -> ExitCode {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
     let (args, until) = match Cli::parse().command {
         Command::Fetch(args) => (args, Until::Fetch),
         Command::Normalize(args) => (args, Until::Normalize),
@@ -386,8 +328,10 @@ async fn main() -> ExitCode {
             let (state, out) = (m.state, args.out);
             (m.fetch, Until::Build { state, out })
         }
-        Command::Publish(args) => return on_store(args, StoreCommand::Publish).await,
-        Command::Prune(args) => return on_store(args, StoreCommand::Prune).await,
+        Command::Publish(args) => return on_store(args.into(), StoreCommand::Publish).await,
+        Command::Prune(args) => return on_store(args.into(), StoreCommand::Prune).await,
+        Command::Reindex(args) => return reindex(&args),
+        Command::Migrate(args) => return on_store(args.into(), StoreCommand::Migrate).await,
     };
     // A match, tiles or build run holds the state directory's lock until it ends.
     let Ok(_lock) = lock_state(&until) else {

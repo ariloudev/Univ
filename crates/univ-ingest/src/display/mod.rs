@@ -319,6 +319,7 @@ pub fn stage_name(stage: Stage) -> &'static str {
         Stage::Release => "build",
         Stage::Publish => "publish",
         Stage::Prune => "prune",
+        Stage::Migrate => "migrate",
     }
 }
 

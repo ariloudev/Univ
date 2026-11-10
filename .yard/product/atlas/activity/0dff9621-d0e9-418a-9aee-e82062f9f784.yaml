@@ -1,0 +1,145 @@
+session: 0dff9621-d0e9-418a-9aee-e82062f9f784
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0-alpha.3"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-08T19:52:46Z
+turns:
+  - started: 2026-11-07T21:05:16Z
+    ended: 2026-11-07T21:05:45Z
+  - started: 2026-11-07T21:07:46Z
+    ended: 2026-11-07T21:09:35Z
+  - started: 2026-11-07T21:12:57Z
+    ended: 2026-11-07T21:17:02Z
+  - started: 2026-11-07T21:18:41Z
+    ended: 2026-11-08T01:53:41Z
+  - started: 2026-11-08T02:09:44Z
+    ended: 2026-11-08T02:10:33Z
+  - started: 2026-11-08T02:20:35Z
+    ended: 2026-11-08T02:21:29Z
+  - started: 2026-11-08T02:29:39Z
+    ended: 2026-11-08T02:29:54Z
+  - started: 2026-11-08T02:29:54Z
+    ended: 2026-11-08T07:12:02Z
+  - started: 2026-11-08T10:42:13Z
+    ended: 2026-11-08T10:42:52Z
+  - started: 2026-11-08T15:01:34Z
+    ended: 2026-11-08T15:02:10Z
+  - started: 2026-11-08T15:06:06Z
+    ended: 2026-11-08T15:40:26Z
+  - started: 2026-11-08T15:40:55Z
+    ended: 2026-11-08T16:05:00Z
+  - started: 2026-11-08T19:06:29Z
+    ended: 2026-11-08T19:07:42Z
+  - started: 2026-11-08T19:08:11Z
+    ended: 2026-11-08T19:45:07Z
+  - started: 2026-11-08T19:48:43Z
+    ended: 2026-11-08T19:49:11Z
+  - started: 2026-11-08T19:49:18Z
+    ended: 2026-11-08T19:50:06Z
+  - started: 2026-11-08T19:52:46Z
+subagents:
+  - agent: a5e19e89b66b2125f
+    type: Explore
+    started: 2026-11-07T21:16:59Z
+    ended: 2026-11-07T21:18:41Z
+    stage: 01a1b7d4-7643-74c0-a873-b025cbfc7509
+plan:
+  - started: 2026-11-07T21:16:47Z
+    ended: 2026-11-07T21:23:10Z
+spec:
+  - started: 2026-11-07T21:08:40Z
+    ended: 2026-11-07T21:09:35Z
+loft:
+  - commands:
+      - find
+    agent: main
+    started: 2026-11-07T21:08:28Z
+    ended: 2026-11-07T21:08:29Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-07T21:08:52Z
+    ended: 2026-11-07T21:08:53Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-07T21:09:00Z
+    ended: 2026-11-07T21:09:01Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-07T21:09:24Z
+    ended: 2026-11-07T21:09:26Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+  - commands:
+      - check
+    agent: main
+    started: 2026-11-07T21:09:28Z
+    ended: 2026-11-07T21:09:29Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+  - commands:
+      - fmt
+      - check
+      - status
+    agent: main
+    started: 2026-11-07T21:13:31Z
+    ended: 2026-11-07T21:13:33Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b024a8a46f6e
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-07T21:15:29Z
+    ended: 2026-11-07T21:15:31Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b025cbfc7509
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-07T21:16:17Z
+    ended: 2026-11-07T21:16:19Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b025cbfc7509
+  - commands:
+      - fmt
+      - check
+      - status
+    agent: main
+    started: 2026-11-07T21:41:51Z
+    ended: 2026-11-07T21:41:53Z
+    failed: false
+    stage: 01a1b7d4-7643-74c0-a873-b0260293654b
