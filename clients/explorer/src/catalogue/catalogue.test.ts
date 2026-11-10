@@ -163,7 +163,7 @@ describe("the catalogue", () => {
     }
   });
 
-  it("counts the Galaxy's tracers by source, not by kind of value, each in its source's colour", async () => {
+  it("counts the Galaxy's tracers by source, each in its source's colour, and their kinds of value apart from the other points", async () => {
     // The cosmic web's fixture, served as the tracers' domain.
     const web = server(undefined, undefined, ["galaxy_tracers"]);
     const http: Http = { ...web, fetch: (url) => web.fetch(url.replace("/galaxy_tracers/", "/cosmic_web/")) };

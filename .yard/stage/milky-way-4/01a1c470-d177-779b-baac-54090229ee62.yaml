@@ -266,6 +266,30 @@ blocks:
           **Skipped:**
           - One shared `messageOf` for six existing copies: a change outside this wave.
           - One per-domain style record in place of the domain-name checks: three modules for two domains, and no third domain is planned.
+      - key: 01a1c494-fcb9-750b-8c85-0763aef9a4ea
+        at: 2026-11-10T08:31:00Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build and review issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | **The dust map was normalized as a table of rows**: `reads_rows` takes any all-FITS file source for tables, and the dust map is the first grid in FITS. Neither a release build nor release 13 could have been made | the preview build, "a table lacks the column MEAN" | `reads_rows` is false for every volume grid; tested. `b0f88fc` | fixed |
+          | 2 | Release 13's first run had the same bug | the cause of #1 | Stopped by its PID after fetching 108 of 768 Bailer-Jones chunks, its stale lock removed (its process ended), restarted on `b0f88fc`; the fetched chunks are hits | fixed |
+          | 3 | The R16F texture of 125 texels a row (250 bytes) failed WebGL's default 4-byte row alignment, so the haze would silently not draw | `/code-review` | `UNPACK_ALIGNMENT` 1, and floats uploaded for WebGL to turn into half floats. `e2275ee` | fixed |
+          | 4 | A relative `UNIV_LOCAL_STATE` reached Wrangler, run from the Worker's directory, as another folder; the lookup bench ignored it | `/code-review` | Made absolute in one `local_state`, which the lookup bench uses too | fixed |
+          | 5 | 32 steps per star and 96 per pixel whatever the dust crossed; a copy of 15.6 M floats, and allocations, per sample | `/code-review`, cleanup review | Steps as cells crossed; zero-copy decode; plain loop | fixed |
+          | 6 | The tracers' kinds of value were no longer counted in the key | `/code-review` | Counted, and shown under the tracer key | fixed |
+          | 7 | An odd-sided grid would be drawn slightly displaced | `/code-review` | Refused | fixed |
+          | 8 | Markers set the dust off with a second uniform call per frame; constants sent as uniforms every frame; the dust frame computed twice | cleanup review | The kind is checked in the shader; constants in GLSL; placed once per frame | fixed |
+          | 9 | The half-float converter, hand-written vector maths, a duplicated colour-bytes helper, Scene's misplaced doc comment, an unlimited cache | cleanup review, `/code-review` | Removed, `vec.ts` helpers, shared `toBytes`, moved, a cache of one | fixed |
+          | 10 | **Two tracer colours each shared by two sources**: the tracer domain's manifest lists seven sources (69 tracers take the distance of the Gaia star they match, so Gaia and Bailer-Jones are among them) and the palette had five, so Bailer-Jones was the open clusters' green and Gaia the masers' magenta | the key in the preview screenshots | Crimson and forest green added, chosen by a search to stand ≥ 0.3 apart from the star colours, the grey, the kind colours and the other tracers; a test that the palette covers seven. `463a554` | fixed |
+
+          **Skipped:**
+          - One shared `messageOf` for six existing copies: a change outside this wave.
+          - One per-domain style record in place of the domain-name checks: three modules for two domains, and no third domain is planned.
   - key: 01a1c47e-75e8-7658-b005-d09307fb27c1
     id: w4-t-preview
     kind: task
@@ -279,6 +303,15 @@ blocks:
         title: "Screenshots on a preview release (the owner asked)"
         detail: "Scratch release in .cache/univ-ingest/preview: 16 of the 768 Gaia chunks (1 in 48 stars to G < 14) with Bailer-Jones, Hipparcos, the five tracer sources and the dust map; own state and Wrangler dir; explore via UNIV_LOCAL_STATE."
         state: active
+      - key: 01a1c494-fcb9-750b-8c85-076200b19f4a
+        at: 2026-11-10T08:31:00Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Screenshots on a preview release (the owner asked)"
+        detail: "Scratch release in .cache/univ-ingest/preview: 16 of the 768 Gaia chunks (1 in 48 stars to G < 14) with Bailer-Jones, Hipparcos, the five tracer sources and the dust map; own state and Wrangler dir; explore via UNIV_LOCAL_STATE. 612,315 objects, 523,966 placed, 1 volume grid. Shot in headless Chromium on the Metal GPU, no WebGL errors: the plane edge-on with and without dust, face-on, and the key. The dust lies in the plane, around a cleared Local Bubble. Sent to the owner."
+        state: done
   - key: 01a1c47f-4958-715e-a6b7-4ea1f6119a87
     id: w4-release-13-run
     kind: note
