@@ -71,3 +71,22 @@ blocks:
           | 11 | The prepare script copies OpenNGC's skeleton | reuse | kept: the scripts run with `python3 -I`, which blocks a shared module |
           | 12 | The test helper branches on `Prepared` access | altitude | kept: test-only, and the general path would change how every recorded answer is read |
           | 13 | `ObjectWriter` could take the domain from the tiles' cell rather than recompute it | reuse | kept: both now call the one `domain_of`, so they cannot drift |
+  - key: 01a1c431-e85c-70f2-b03b-6662127602ab
+    id: w2-gate-issues
+    kind: note
+    versions:
+      - key: 01a1c431-e85c-70f2-b03b-6663c885a61b
+        at: 2026-11-10T06:42:47Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Gate and integration, run 1"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | `matching/rules.rs` reached 511 lines, over the 500-line rule | `cargo xtask check`, gate `lines` | The rules' checks moved to `matching/check.rs` (376 + 142 lines), in `22cc4e7` | fixed |
+          | 2 | The explorer's e2e test expected "2 of 3 domains" after turning stars off; the fixture release now lists four domains, Galaxy tracers empty | `cargo xtask integration`, explorer Playwright test 14 | Expects "3 of 4 domains"; the Worker's own e2e tests passed | fixed |
+
+          The gate and integration run again on `22cc4e7`.
+        tone: warning
