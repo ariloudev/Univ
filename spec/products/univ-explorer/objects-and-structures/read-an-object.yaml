@@ -54,6 +54,8 @@ requirements:
         name: "The panel gives each spectral type the object's sources publish, as published, with its source and its kind of value."
       - key: 01a1a8ac-052e-72b3-a33e-b33ba7b45072
         name: "The panel gives each colour index of the object with its bands, its uncertainty and its source."
+      - key: 01a1c7c5-a164-7706-ad2c-c82776d44e42
+        name: "The panel gives each age of the object in millions of years with its uncertainty, its kind of value and its source, and the logarithm as its source publishes it."
       - key: 01a1a8ac-052e-72b3-a33e-b33c05d6a7a7
         name: "Where no source publishes a spectral type, or only an unknown one, the panel gives the class the colour index suggests, labelled as estimated for a main-sequence star and citing Pecaut & Mamajek 2013."
       - key: 01a1a8ac-052e-72b3-a33e-b33dc8e38c1d

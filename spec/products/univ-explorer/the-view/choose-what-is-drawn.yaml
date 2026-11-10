@@ -109,10 +109,24 @@ requirements:
       shall: "offer, for the points and for the structures, one control that turns all of their groups on and one that turns them off."
     criteria:
       - key: 01a1bcf9-343a-712a-a28c-751a2eefe88f
-        name: "All, for the points, turns every scale domain, source and kind of value on."
+        name: "All, for the points, turns every scale domain, source and kind of value on, and draws the Galaxy's tracers of any age."
       - key: 01a1bcf9-343a-712a-a28c-751b082d1288
         name: "None, for the points, turns every scale domain off."
       - key: 01a1bcf9-343a-712a-a28c-751c56321a25
         name: "All, for the structures, turns every kind of structure on."
       - key: 01a1bcf9-343a-712a-a28c-751ddc8c2d45
         name: "None, for the structures, turns every kind of structure off."
+  - key: 01a1c7c5-a164-7706-ad2c-c8283a6cf1d5
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "offer, in the Show drawer, a choice of the age below which the Galaxy's tracers are drawn: any age, or younger than 100, 30 or 10 million years, any age when the view opens."
+    criteria:
+      - key: 01a1c7c5-a164-7706-ad2c-c829df008c94
+        name: "With an age chosen, a point of the Galaxy tracers domain whose age is at or above it is not drawn, and a point without an age is drawn as its other groups say."
+      - key: 01a1c7c5-a164-7706-ad2c-c82aea0d2f15
+        name: "The choice names the share of the Galaxy tracers' points with an age, so that the reader knows which tracers it acts on."
+      - key: 01a1c7c5-a164-7706-ad2c-c82b30be9905
+        name: "The age chosen is kept in the page's address, and reloading the page draws the same tracers."
+      - key: 01a1c7c5-a164-7706-ad2c-c82c968f363a
+        name: "A point not drawn for its age is not named by the pointer nor chosen by a click, and the key does not count it."
