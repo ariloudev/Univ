@@ -89,6 +89,26 @@ describe("the bars and the view's drawer", () => {
     expect((items[1]?.querySelector("span") as HTMLElement).style.background).toBe(probe.style.background);
   });
 
+  it("name the dust map's source and unit and say its values are reconstructed, while it is drawn", () => {
+    const frame = createStore(0);
+    const dust = {
+      volume: { n: 1, corner: -5, edge: 10, densities: new Float32Array([0.01]) },
+      title: "Edenhofer et al. 2024 3D dust map",
+      citation: "Edenhofer G. et al. 2024, A&A 685, A82",
+      credit: "CC BY 4.0",
+      unit: "extinction_zgr23_per_parsec",
+      kind: "reconstructed",
+    };
+    const { rerender } = render(<KeyBar catalogue={() => tally()} frame={frame} release={13} dust={dust} />);
+    const key = screen.getByTestId("dust-key").textContent ?? "";
+    expect(key).toContain("Edenhofer et al. 2024 3D dust map");
+    expect(key).toContain("extinction in the units of Zhang, Green & Rix 2023 per parsec");
+    expect(key).toContain("reconstructed, not measured");
+    expect(key).toContain("A&A 685, A82");
+    rerender(<KeyBar catalogue={() => tally()} frame={frame} release={13} />);
+    expect(screen.queryByTestId("dust-key")).toBeNull();
+  });
+
   it("leave the Galaxy's tracers out of the key where the release has none", () => {
     show(tally());
     expect(screen.queryByTestId("tracer-key")).toBeNull();

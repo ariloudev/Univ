@@ -55,6 +55,15 @@ blocks:
         title: "Tracer colours per source and their key lines"
         detail: "batchOf, kinds/colours, key"
         state: active
+      - key: 01a1c474-375b-7220-9722-fe20925eba04
+        at: 2026-11-10T07:55:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tracer colours per source and their key lines"
+        detail: "scene/tracers.ts palette (green, magenta, violet, teal, lime), tested apart from black-body colours at 2,000–40,000 K, the grey and the galaxy blue; per-source counts in the catalogue; TracerKey."
+        state: done
   - key: 01a1c470-d177-779b-baac-540dde171cdc
     id: w4-t2
     kind: task
@@ -68,6 +77,15 @@ blocks:
         title: "Tracer points twice the stars' size"
         detail: "per-domain size"
         state: open
+      - key: 01a1c474-375b-7220-9722-fe214aab8f34
+        at: 2026-11-10T07:55:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tracer points twice the stars' size"
+        detail: "pointSizeOf(domain), set per domain in drawBatch."
+        state: done
   - key: 01a1c470-d177-779b-baac-540ee3b05553
     id: w4-t3
     kind: task
@@ -80,6 +98,15 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Inferred stars at half opacity, said in the key"
         state: open
+      - key: 01a1c474-375b-7220-9722-fe22b4250751
+        at: 2026-11-10T07:55:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Inferred stars at half opacity, said in the key"
+        detail: "alpha byte halved for inferred stars in batchOf; stars.inferred counted; key note."
+        state: done
   - key: 01a1c470-d177-779b-baac-540f4e1ce838
     id: w4-t4
     kind: task
@@ -92,6 +119,14 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Dust switch, fetch once, decode and downsample, failure message"
         state: open
+      - key: 01a1c474-375b-7220-9722-fe23fc676352
+        at: 2026-11-10T07:55:13Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust switch, fetch once, decode and downsample, failure message"
+        state: active
   - key: 01a1c470-d177-779b-baac-5410f5fc181a
     id: w4-t5
     kind: task

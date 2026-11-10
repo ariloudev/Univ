@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Swatch } from "./Swatch.tsx";
 import { SwitchBox } from "./SwitchBox.tsx";
 import type { Switch } from "./addressSwitch.ts";
+import type { DustMap } from "../api/dust.ts";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
@@ -104,7 +105,18 @@ function Popover({ label, children, width = "w-96", side = "left-0" }: { label: 
 
 /** The bottom bar's key and credits: the stars' colours and the count of each kind of value in
  * one line, each opening into the full key, and the credits of the drawn points' sources. */
-export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => Tally | undefined; frame: Store<number>; release: number }) {
+export function KeyBar({
+  catalogue: tally,
+  frame,
+  release,
+  dust,
+}: {
+  catalogue: () => Tally | undefined;
+  frame: Store<number>;
+  release: number;
+  /** The dust map drawn, if it is. */
+  dust?: DustMap | undefined;
+}) {
   useStore(frame);
   const catalogue = tally();
   if (catalogue === undefined) return null;
@@ -127,6 +139,7 @@ export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => 
       </div>
       <Popover label="Key">
         <Key catalogue={catalogue} />
+        <DustKey dust={dust} />
       </Popover>
       {missing > 0 ? <span className="shrink-0 text-warn">{missing.toLocaleString("en-GB")} tiles not drawn</span> : null}
       <Popover label="Credits" width="w-[28rem]" side="right-0">
@@ -208,5 +221,27 @@ function TracerKey({ lines }: { lines: ReturnType<Tally["tracers"]> }) {
         ))}
       </ul>
     </>
+  );
+}
+
+/** The units the dust map's header may name, in words. */
+const DUST_UNITS: Record<string, string> = {
+  extinction_zgr23_per_parsec: "extinction in the units of Zhang, Green & Rix 2023 per parsec",
+};
+
+/** The dust map in the key, while it is drawn: its source, its unit, and that its values are
+ * reconstructed, and how it is drawn. */
+function DustKey({ dust }: { dust: DustMap | undefined }) {
+  if (dust === undefined) return null;
+  return (
+    <div data-testid="dust-key" className="mt-2 space-y-1">
+      <h2 className="font-semibold">Dust</h2>
+      <p className="text-xs">
+        The mean dust density of the {dust.title}, in {DUST_UNITS[dust.unit] ?? dust.unit}, {dust.kind}, not measured: drawn
+        as a brown haze where the dust lies, and dimming the stars behind it, for display rather than as their photometric
+        extinction.
+      </p>
+      <p className="text-xs text-dim">{dust.citation}</p>
+    </div>
   );
 }

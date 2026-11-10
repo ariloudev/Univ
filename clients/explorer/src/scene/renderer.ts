@@ -6,6 +6,8 @@
 import { type Detail, type DrawnDetail, EVERYTHING, EVERY_POINT } from "../catalogue/lod.ts";
 import { type View, pixelsAt } from "./camera.ts";
 import { type ToDraw, drawList } from "./drawList.ts";
+import { Dust } from "./dust.ts";
+import type { DustVolume } from "./dustGrid.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
@@ -139,6 +141,8 @@ export class Renderer implements Drawer {
   /** The markers' slot of the table of colours, set for each structure's markers as drawn. */
   private readonly markerColour: WebGLUniformLocation | null;
   private readonly opacity: WebGLUniformLocation | null;
+  /** The dust map, drawn once it is given (draw-the-dust-map). */
+  private readonly dust: Dust;
 
   constructor(canvas: HTMLCanvasElement) {
     // No multisampling: the points soften their own edges, and samples multiply blending's cost.
@@ -171,6 +175,13 @@ export class Renderer implements Drawer {
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
+    this.dust = new Dust(gl, this.points.program, (vertex, fragment) => compile(gl, vertex, fragment).program);
+  }
+
+  /** Draws the dust map's `volume`, placed by `toGalactic` (the ICRS to galactic axes), and dims
+   * the points behind it; none, to draw no dust. */
+  setDust(volume: DustVolume | undefined, toGalactic: Mat3): void {
+    this.dust.set(volume, toGalactic);
   }
 
   private buffer(
@@ -350,6 +361,7 @@ export class Renderer implements Drawer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
+    this.dust.drawHaze(frame);
     this.drawOutlines(frame, width, height, ratio);
     this.drawPoints(frame, sight, view.distance);
     this.drawMarkers(frame);
@@ -388,6 +400,7 @@ export class Renderer implements Drawer {
     const now = performance.now();
     for (const id of this.fades.gone(now)) this.forget(id);
     this.use(this.points, frame);
+    this.dust.usePoints(frame);
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
@@ -423,6 +436,8 @@ export class Renderer implements Drawer {
   private drawMarkers(frame: Frame): void {
     const gl = this.gl;
     gl.uniform1f(this.opacity, 1);
+    // The dust dims no marker: a structure's place is shown whatever lies before it.
+    this.dust.usePoints(frame, false);
     // Every marker drawn: one level holding all, and a slice that ranks every point first.
     this.useDetail(EVERYTHING);
     gl.uniform2f(this.detailAt.slice, 0, 0);
@@ -456,6 +471,7 @@ export class Renderer implements Drawer {
 
   /** Lets go of everything drawn, as when the view closes. */
   dispose(): void {
+    this.dust.clear();
     for (const drawn of [...this.batches.values(), ...this.markers.values()]) this.release(drawn);
     for (const outline of this.outlines.values()) this.releaseOutline(outline);
     this.batches.clear();
