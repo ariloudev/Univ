@@ -163,6 +163,21 @@ describe("the catalogue", () => {
     }
   });
 
+  it("counts the Galaxy's tracers by source, not by kind of value, each in its source's colour", async () => {
+    // The cosmic web's fixture, served as the tracers' domain.
+    const web = server(undefined, undefined, ["galaxy_tracers"]);
+    const http: Http = { ...web, fetch: (url) => web.fetch(url.replace("/galaxy_tracers/", "/cosmic_web/")) };
+    const drawn: string[] = [];
+    const catalogue = await loaded(http, drawn);
+    await until(() => drawn.length >= 1);
+    const points = fixtureTiles("cosmic_web").find((t) => `galaxy_tracers/${t.address}` === drawn[0])?.points ?? [];
+    const lines = catalogue.tracers();
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.reduce((sum, line) => sum + line.points, 0)).toBe(points.length);
+    expect(catalogue.kinds.reduce((a, b) => a + b, 0)).toBe(0);
+    expect(new Set(lines.map((line) => line.colour)).size).toBe(Math.min(lines.length, 5));
+  });
+
   it("leaves a tile that fails its SHA-256 undrawn and counts it", async () => {
     const drawn: string[] = [];
     const catalogue = await loaded(server("stars/r"), drawn);

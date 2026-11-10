@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import type { Controller } from "../scene/controller.ts";
-import { POINT_CSS } from "../scene/kinds.ts";
+import { POINT_CSS, css } from "../scene/kinds.ts";
+import { tracerColour } from "../scene/tracers.ts";
 import { fakeController } from "../test/world.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { KeyBar, type Tally, ViewDrawer, Whereabouts } from "./Panels.tsx";
@@ -23,7 +24,8 @@ const SOURCE = manifestOf("stars").sources[0];
 function tally(failed = 0, unread = 0): Tally {
   return {
     kinds: [1200, 30, 4, 0],
-    stars: { coloured: 98_500, grey: 1500 },
+    stars: { coloured: 98_500, grey: 1500, inferred: 4000 },
+    tracers: () => [],
     failed,
     unread,
     credits: () => (SOURCE === undefined ? [] : [{ ...SOURCE, domain: "stars" }]),
@@ -65,6 +67,31 @@ describe("the bars and the view's drawer", () => {
     expect(key).toContain("98,500 stars in the colour of the temperature their colour index gives");
     expect(key).toContain("Pecaut & Mamajek 2013");
     expect(key).toContain("1,500 stars in grey, with no colour index");
+  });
+
+  it("say that fainter stars have inferred distances, and how many", () => {
+    show(tally());
+    const note = screen.getByTestId("inferred-key").textContent ?? "";
+    expect(note).toContain("Fainter stars have inferred distances");
+    expect(note).toContain("4,000 stars");
+  });
+
+  it("name each source of the Galaxy's tracers in its colour, with its points drawn", () => {
+    const lines = [
+      { id: "hunt-reffert-2023", title: "Open clusters", colour: tracerColour(0), points: 6818 },
+      { id: "li-2023-rr-lyrae", title: "RR Lyrae stars", colour: tracerColour(1), points: 12 },
+    ];
+    show({ ...tally(), tracers: () => lines });
+    const items = within(screen.getByTestId("tracer-key")).getAllByRole("listitem");
+    expect(items.map((li) => li.textContent)).toEqual(["Open clusters: 6,818 points", "RR Lyrae stars: 12 points"]);
+    const probe = document.createElement("span");
+    probe.style.background = css(tracerColour(1));
+    expect((items[1]?.querySelector("span") as HTMLElement).style.background).toBe(probe.style.background);
+  });
+
+  it("leave the Galaxy's tracers out of the key where the release has none", () => {
+    show(tally());
+    expect(screen.queryByTestId("tracer-key")).toBeNull();
   });
 
   it("credit each source of the drawn points with its title, citation and credit, naming the release", () => {

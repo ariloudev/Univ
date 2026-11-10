@@ -14,6 +14,7 @@ import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
+import { pointSizeOf } from "./tracers.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
 /** The browser cannot draw with WebGL2. */
@@ -36,9 +37,6 @@ export interface Points {
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
 }
-
-/** The diameter of a point, in device pixels. */
-const POINT_SIZE = 2;
 
 interface Drawn {
   vao: WebGLVertexArrayObject;
@@ -390,7 +388,6 @@ export class Renderer implements Drawer {
     const now = performance.now();
     for (const id of this.fades.gone(now)) this.forget(id);
     this.use(this.points, frame);
-    gl.uniform1f(this.pointSize, POINT_SIZE);
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
@@ -411,6 +408,7 @@ export class Renderer implements Drawer {
       const domainDetail = detail.detail(batch.domain);
       this.useDetail(domainDetail);
       this.domainOpacity = detailOpacity(domainDetail, distance);
+      gl.uniform1f(this.pointSize, pointSizeOf(batch.domain));
     }
     const inside = detail.inside(batch.id);
     this.useInside(batch, inside);

@@ -6,7 +6,7 @@ import type { Switch } from "./addressSwitch.ts";
 import type { Catalogue } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
-import { KINDS, POINT_CSS } from "../scene/kinds.ts";
+import { KINDS, POINT_CSS, css } from "../scene/kinds.ts";
 import { Mark } from "./Mark.tsx";
 import { GREY_CSS, STAR_GRADIENT } from "../scene/starColour.ts";
 import { StarScale } from "./record/charts.tsx";
@@ -86,7 +86,7 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
 }
 
 /** What the key reads of the catalogue. */
-export type Tally = Pick<Catalogue, "kinds" | "stars" | "failed" | "unread" | "credits">;
+export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "failed" | "unread" | "credits">;
 
 /** A part of the bottom bar that opens upward over the view. */
 function Popover({ label, children, width = "w-96", side = "left-0" }: { label: string; children: ReactNode; width?: string; side?: string }) {
@@ -161,7 +161,12 @@ function Key({ catalogue }: { catalogue: Tally }) {
           <Swatch colour={GREY_CSS} />
           {catalogue.stars.grey.toLocaleString("en-GB")} stars in grey, with no colour index.
         </p>
+        <p className="text-xs" data-testid="inferred-key">
+          Fainter stars have inferred distances: {catalogue.stars.inferred.toLocaleString("en-GB")} stars, drawn half as
+          opaque, whose preferred distance leans on its source's prior more than on their parallax.
+        </p>
       </div>
+      <TracerKey lines={catalogue.tracers()} />
       <h2 className="flex items-center gap-2 font-semibold">
         <Swatch colour={POINT_CSS} />
         Other points, by the kind of value of each distance
@@ -185,5 +190,23 @@ function Key({ catalogue }: { catalogue: Tally }) {
         </p>
       ) : null}
     </div>
+  );
+}
+
+/** The Galaxy's tracers in the key: each source in its colour, with its points drawn. */
+function TracerKey({ lines }: { lines: ReturnType<Tally["tracers"]> }) {
+  if (lines.length === 0) return null;
+  return (
+    <>
+      <h2 className="font-semibold">The Galaxy's tracers, by source, drawn twice a star's size</h2>
+      <ul data-testid="tracer-key" className="space-y-1 text-xs">
+        {lines.map((line) => (
+          <li key={line.id} className="flex items-center gap-2">
+            <Swatch colour={css(line.colour)} />
+            {line.title}: {line.points.toLocaleString("en-GB")} points
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

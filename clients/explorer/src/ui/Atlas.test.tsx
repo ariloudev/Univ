@@ -230,7 +230,7 @@ describe("the explorer laid out as an atlas", () => {
   });
 
   it("holds the key and the credits in its bottom bar once the catalogue is read", () => {
-    const catalogue = { kinds: [5, 0, 0, 0], stars: { coloured: 3, grey: 1 }, failed: 0, unread: 0, credits: () => [] };
+    const catalogue = { kinds: [5, 0, 0, 0], stars: { coloured: 3, grey: 1, inferred: 0 }, tracers: () => [], failed: 0, unread: 0, credits: () => [] };
     show({}, fakeWorld({ catalogue: catalogue as unknown as ReturnType<typeof fakeWorld>["catalogue"] }));
     const bottom = screen.getByRole("contentinfo");
     expect(within(bottom).getByText("Key")).toBeTruthy();

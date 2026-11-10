@@ -1,0 +1,157 @@
+key: 01a1c470-d177-779b-baac-54090229ee62
+id: w4-build
+versions:
+  - key: 01a1c470-d177-779b-baac-541602a3d20d
+    at: 2026-11-10T07:51:30Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 4"
+    goal: "The explorer colours and sizes the Galaxy's tracers by source with their counts in the key, draws inferred stars at half opacity, and draws the dust map as a translucent volume that dims only the stars behind it, each criterion verified by a focused test"
+    status: active
+blocks:
+  - key: 01a1c470-d177-779b-baac-540bc0d67cf4
+    id: w4-plan
+    kind: note
+    versions:
+      - key: 01a1c470-d177-779b-baac-5418e3cc1b08
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 4 plan (pre-approved by the owner)"
+        markdown: |-
+          **From the survey:**
+          - Each tile point already carries its source index and the kind of value of its preferred distance, so the tile format does not change.
+          - Points are drawn additively with no depth buffer. A star is therefore dimmed in its own vertex shader, by the dust a 3D texture holds between the eye and the star; this is how the spec's "dims the stars behind it and not those in front" is met.
+          - The dust's own look is a full-screen ray-marched pass drawn before the points.
+          - The explorer has no grid code yet. The server serves `/v1/grids/{id}` (header) and `/v1/grids/{id}/fields/0` (samples).
+
+          | Task | Change | Criteria (draw-the-catalogues, draw-the-dust-map) | Verified by |
+          |---|---|---|---|
+          | t1 tracer colours and key | a colour per source of `galaxy_tracers`, set per point in `batchOf`; a key line per source with its colour and its drawn count | own colour, distinct from star temperatures and the galaxy blue; key names each source with colour and count | Vitest: palette distance from black-body colours at 2,000–40,000 K and from the galaxy blue; key rendering with counts |
+          | t2 tracer size | a point size per domain, twice the stars' for tracers | twice the size | Vitest on the size rule |
+          | t3 inferred stars | star alpha halved when the kind is inferred; the key says fainter stars have inferred distances | half opacity; the key says so | Vitest on `batchOf` and the key |
+          | t4 dust switch and fetch | `dust` address switch in the Show drawer, off by default; header and field 0 fetched once a release on first turn-on; decoded; NaN read as no dust; averaged 2×2×2 to 125³ half floats (3.9 MB on the GPU); on failure the switch turns off and a message names the grid and the error | switch; address; fetched once; message; points kept | Vitest on the switch, fetch-once, decode, downsample and NaN handling |
+          | t5 dust volume | `scene/dust.ts`: a 3D texture placed by the manifest's galactic rotation, parsecs to scene megaparsecs, and a ray-marched translucent haze | position and orientation; no-data cells add nothing | Vitest on the CPU mirror of the placement transform |
+          | t6 dimming | the point vertex shader integrates the texture from the eye to the star and dims the star's colour by it (a display scale, labelled as such) | dims stars behind dust, not those in front | Vitest on a CPU mirror of the integral: a star in front of a cloud is not dimmed, one behind is |
+          | t7 key | the dust key names the source, the unit and that the values are reconstructed, from the grid header | key | Vitest |
+          | t8 e2e | Playwright: the switch lands in the address. The fixture release has no dust grid, so turning it on shows the failure message and the points stay drawn. No WebGL `INVALID_` errors | address; message; points kept | `cargo xtask integration` |
+          | t9 review | `/simplify`, `/code-review`, the gate and integration once, the trace, close and merge | | green |
+
+          The dimming is a display cue, not photometry: the key and the README say so. The look on real data waits for release 13, whose full ingest needs the owner's approval.
+  - key: 01a1c470-d177-779b-baac-540c4dd6148a
+    id: w4-t1
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-5419aec74409
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tracer colours per source and their key lines"
+        detail: "batchOf, kinds/colours, key"
+        state: active
+  - key: 01a1c470-d177-779b-baac-540dde171cdc
+    id: w4-t2
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-541aa2e638ed
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tracer points twice the stars' size"
+        detail: "per-domain size"
+        state: open
+  - key: 01a1c470-d177-779b-baac-540ee3b05553
+    id: w4-t3
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-541bdc8ea4b9
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Inferred stars at half opacity, said in the key"
+        state: open
+  - key: 01a1c470-d177-779b-baac-540f4e1ce838
+    id: w4-t4
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-541c9b2ee644
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust switch, fetch once, decode and downsample, failure message"
+        state: open
+  - key: 01a1c470-d177-779b-baac-5410f5fc181a
+    id: w4-t5
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-541dd42d5793
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust volume pass placed in galactic parsecs"
+        detail: "scene/dust.ts"
+        state: open
+  - key: 01a1c470-d177-779b-baac-54110390e2aa
+    id: w4-t6
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-541ecd50f560
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Stars dimmed by the dust before them"
+        state: open
+  - key: 01a1c470-d177-779b-baac-54123c8f4f37
+    id: w4-t7
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-541ff8639794
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust key: source, unit, reconstructed"
+        state: open
+  - key: 01a1c470-d177-779b-baac-54135f6c7339
+    id: w4-t8
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-5420474e5fd6
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Playwright: dust switch, failure path, no WebGL errors"
+        state: open
+  - key: 01a1c470-d177-779b-baac-5415ae9f81c9
+    id: w4-build-issues
+    kind: note
+    versions:
+      - key: 01a1c470-d177-779b-baac-5422b94504f5
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
