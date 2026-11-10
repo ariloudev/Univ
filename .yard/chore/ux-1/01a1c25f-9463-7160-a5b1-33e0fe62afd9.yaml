@@ -10,6 +10,15 @@ versions:
     title: "Review and gate"
     goal: "/simplify and /code-review, then the full gate and integration"
     status: planned
+  - key: 01a1c2c8-4e49-7338-a776-d601b57a9725
+    at: 2026-11-10T00:07:49Z
+    revision: 36
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Review and gate"
+    goal: "/simplify and /code-review, then the full gate and integration"
+    status: active
 blocks:
   - key: 01a1c269-2633-716a-b8dd-fe48c4648b34
     id: t-review

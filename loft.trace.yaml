@@ -5190,6 +5190,15 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
         body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+  - node: 01a1c2a8-c234-72f0-adea-08ecd8fc538a
+    reviewed: 8d7174600660adabb471577126451c08cca2d1c282abe20c5d3729a779674ea4
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "closes its record, and then makes Earth the focus again"
+        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "closing a record with its close button lets go, making Earth the focus again"
+        body: 1615b04dad6ae7fd0f51d88299eb48580dfd058fac987c3824593ca2825b5fb1
   - node: 01a1c25f-d5cd-76b6-b0cb-7d969cb2496a
     reviewed: 8b43bd15679c496deea294c14b3d54233bf2c38c9b6535b034dfdd864c227569
     tests:
@@ -5562,6 +5571,15 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the release's structures and reads one, culling the view to it from the top bar"
         body: d3616e276f4922980aae1674f13491ac7c1097b47ebc1b2e76157650429b1ae7
+  - node: 01a1c2a8-c234-72f0-adea-08edc266ef00
+    reviewed: 917ab6e42d0c8d98f5dcbaf9faf7481cb7f56c8b65fb4c8a29a43c0e84e119ff
+    tests:
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "closes its record, and then makes Earth the focus again"
+        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "closing a record with its close button lets go, making Earth the focus again"
+        body: 1615b04dad6ae7fd0f51d88299eb48580dfd058fac987c3824593ca2825b5fb1
   - node: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
     reviewed: bfc7c0c216c9076ca7eacd0066db15d72b4773269fe0ff39809742d2df4a1aa6
     tests:
@@ -5602,8 +5620,8 @@ links:
         name: "lists the structures nearest first, under headings with their counts, those not placed last"
         body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-094a-7307-be66-e7859f3c18c9
     reviewed: 10beb421cdcb9a3708301339d9da58c0bd236e44020e8081e079e4121a1c0359
     tests:
@@ -5617,8 +5635,8 @@ links:
         name: "lists the structures nearest first, under headings with their counts, those not placed last"
         body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-094a-7307-be66-e7862a633a0c
     reviewed: 96f911335598a803d0672a185fd78ae20c8c42e3cc4e944230ee54d537ca51b6
     tests:
@@ -5653,8 +5671,8 @@ links:
         name: "gives each structure's distance, and draws a dot on the shared axis for each one placed"
         body: aa77d495d2231f752cf0744b1688afc520c09d96c9cbcc25a51c8977b39609cb
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-094a-7307-be66-e789414bdf63
     reviewed: d7cb7fd95a8f37850486ec19de9846f3d816706b3bedc9f4c75376212f1347bb
     tests:
@@ -5674,8 +5692,8 @@ links:
         name: "orders the list by name instead from its switch, without headings, keeping each dot"
         body: d96fd99f6e12f7ca0abd811baaed11eeac0ae270b62b7e406f236ab5509beed8
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-094a-7307-be66-e78bb3c7f814
     reviewed: 79d05220fdd58ac79938eebb369a32f51da9f5a7395eb8d77b2d01b2c4771b6b
     tests:
@@ -5692,8 +5710,8 @@ links:
         name: "narrows the list to the structures whose name or kind holds the text typed, counting them out of all"
         body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-46e4-76f7-bee6-bda8fefa62ad
     reviewed: 494c00533f92cca766acdbb198f5f41e44aba69c90c298b89083583cbff6e57d
     tests:
@@ -5701,8 +5719,8 @@ links:
         name: "narrows the list to the structures whose name or kind holds the text typed, counting them out of all"
         body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-094a-7307-be66-e78c9329851d
     reviewed: 1b840d1852d9cf7bdea1590643cb1fbc1918b5e7f0a0bc590c202a9e049add0f
     tests:
@@ -5710,14 +5728,47 @@ links:
         name: "says so where no structure's name or kind holds the text typed"
         body: bdba5c71349e02b8ff37a3cf9ff00ca34f7916dd6d0dcdfb46085d04b28bb5f2
       - file: "clients/explorer/e2e/explorer.spec.ts"
-        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box"
-        body: 444b6a7857905007851359888710e34e332d294252a46a88c4ca1495ae42922b
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
   - node: 01a1c278-094a-7307-be66-e78dcc50c90f
     reviewed: 752dfffe54c9f0c10bd994d63f038a6a29307915248c6efcfdc4f0b9ef5b0d00
     tests:
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "marks the chosen structure's row as chosen, and no other"
         body: 298ec43cc34c08b4da39f82418b1fbfdfa162f1c4c0066f7fe1f9e99d1c35fb2
+  - node: 01a1c2a8-c234-72f0-adea-08ee84d5f646
+    reviewed: 4c5936b90a988e1483e741799b233b4a6540d87489cb8347fd8233949136ee8a
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "keeps the order and the find text across visits"
+        body: 9e5386132661a5df7499d35c40b72235e2cdd92046178a0a161ac30c121c07be
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "forgets the order and the find text once they are back to nearest first and empty"
+        body: 470c9d9dcc8d6e8caea83e8d1d3d6166a94c452f8324432ec9810ec9d1587bf6
+      - file: "clients/explorer/src/ui/localState.test.ts"
+        name: "opens as kept, and keeps each value set as its writer gives it"
+        body: efa360f5a04c5d91a0daf95e20645771f2f4fbe7aad9ea882fa92de71cc28248
+  - node: 01a1c2a8-c234-72f0-adea-08efaed02a8a
+    reviewed: 78fe97697b27b74e65f093ba36f179a0700d7ed7b90dddc00ce5e81e3eff00d9
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "keeps the order and the find text across visits"
+        body: 9e5386132661a5df7499d35c40b72235e2cdd92046178a0a161ac30c121c07be
+      - file: "clients/explorer/src/ui/localState.test.ts"
+        name: "is read back as written, and is gone once written as none"
+        body: a17c2e6448ce175ede259608b521a25d58a30fe41d638e67c2bc19ec0b6bb17a
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
+        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+  - node: 01a1c2a8-c234-72f0-adea-08f063f64c50
+    reviewed: f6390e11ca0fa56816066bb588068706d42d967da7a9d973d22a695a65e3970b
+    tests:
+      - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
+        name: "opens nearest first with an empty find box where nothing is kept, or local storage is refused"
+        body: f41222011056a527b6872f03d792563daf91152b0cc10200144ac5c2fa2bbefb
+      - file: "clients/explorer/src/ui/localState.test.ts"
+        name: "is none, and writing it does not fail, where the browser refuses local storage"
+        body: 5da3246ee64076c3270cbf390ccf7c04a029db83d763ef9e7e0b3f7e06c00489
   - node: 01a1b13c-1e10-748d-8008-e7e17df5ce8a
     reviewed: 0bb887b3e772297bd79e8a2955746d05e19763fc1739607c18c2fc09843548fa
     tests:
