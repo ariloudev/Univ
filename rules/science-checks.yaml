@@ -705,11 +705,12 @@ checks:
       - paper: "univ-server specification, Build octree tiles"
         locator: "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
         quote: >-
-          "Each object belongs to one scale domain: stars where the source definition of the
-          catalogue entry that holds its preferred distance names stars, and otherwise nearby
-          galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby
-          Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the
-          distance came from."
+          "Each object belongs to one scale domain: Galaxy tracers where any of its catalogue
+          entries comes from a source whose definition names Galaxy tracers, otherwise stars where
+          the source definition of the catalogue entry that holds its preferred distance names
+          stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the
+          depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web
+          beyond, whatever source the distance came from."
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
   - id: nearby-galaxies-from-no-star-source
@@ -736,6 +737,41 @@ checks:
         AND scale_domain = term('cosmic_web') AND (distance_mpc <= 11.0 OR distance_mpc IS NULL)
     expect: { equals: 0 }
     cite: *domains
+
+  - id: tracers-in-tracer-domain
+    title: Every placed object with a tracer source's entry in galaxy_tracers, and no other there
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o WHERE o.release = :release AND o.placed = 1
+        AND coalesce((SELECT t.term = 'galaxy_tracers' FROM terms t WHERE t.release = o.release
+        AND t.id = o.scale_domain), 0) <> EXISTS (SELECT 1 FROM entries e
+        JOIN sources s ON s.release = e.release AND s.n = e.source
+        WHERE e.release = o.release AND e.object_id = o.id AND s.scale_domain = 'galaxy_tracers')
+    expect: { equals: 0 }
+    cite: *domains
+
+  - id: tracers-name-their-kind
+    title: Every object with a tracer source's entry is an open or globular cluster, a classical Cepheid, an RR Lyrae star or a star-forming region
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o WHERE o.release = :release
+        AND EXISTS (SELECT 1 FROM entries e JOIN sources s ON s.release = e.release AND s.n = e.source
+        WHERE e.release = o.release AND e.object_id = o.id AND s.scale_domain = 'galaxy_tracers')
+        AND (SELECT t.term FROM terms t WHERE t.release = o.release AND t.id = o.kind) NOT IN
+        ('open_cluster', 'globular_cluster', 'classical_cepheid', 'rr_lyrae_star',
+        'star_forming_region')
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical
+          Cepheid, RR Lyrae star or star-forming region."
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
 
   - id: redshift-distances-carry-peculiar-velocity
     title: Every redshift distance carries at least the 300 km/s term
@@ -874,6 +910,30 @@ checks:
         AS scale_domain, placed, count(*) AS objects, min(distance_mpc) AS min_mpc, max(distance_mpc) AS max_mpc
         FROM objects o WHERE o.release = :release GROUP BY 1, 2 ORDER BY 1, 2
     cite: *domains
+
+  - id: pulsating-stars-joined-to-gaia
+    title: Cepheids and RR Lyrae stars joined to their Gaia DR3 star, by source
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT s.id AS source, count(*) AS stars, sum(EXISTS (SELECT 1 FROM entries g
+        JOIN sources gs ON gs.release = g.release AND gs.n = g.source
+        WHERE g.release = e.release AND g.object_id = e.object_id
+        AND gs.id = 'gaia-dr3-bright')) AS joined_to_gaia
+        FROM entries e JOIN sources s ON s.release = e.release AND s.n = e.source
+        WHERE e.release = :release AND s.id IN ('skowron-2025-cepheids', 'li-2023-rr-lyrae')
+        GROUP BY s.id ORDER BY s.id
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "A Cepheid or RR Lyrae star joins the object of its Gaia DR3 source by the source id its
+          source gives, as a published cross-identification."
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
+    note: >-
+      Only the stars below G = 14 have a Gaia DR3 entry in the release, so most of the fainter
+      RR Lyrae stars stand alone.
 
   - id: unplaced-by-reason
     title: Unplaced objects by reason
