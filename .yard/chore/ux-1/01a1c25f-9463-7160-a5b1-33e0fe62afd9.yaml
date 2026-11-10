@@ -19,6 +19,15 @@ versions:
     title: "Review and gate"
     goal: "/simplify and /code-review, then the full gate and integration"
     status: active
+  - key: 01a1c2f2-f45b-7157-88f2-f9cdfe4f0c42
+    at: 2026-11-10T00:54:24Z
+    revision: 44
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Review and gate"
+    goal: "/simplify and /code-review, then the full gate and integration"
+    status: done
 blocks:
   - key: 01a1c269-2633-716a-b8dd-fe48c4648b34
     id: t-review
@@ -73,6 +82,15 @@ blocks:
         title: "Full gate and integration"
         detail: "Done when `cargo xtask check` and `cargo xtask integration` have each run once, green, after the review fixes."
         state: active
+      - key: 01a1c2f2-f45b-7157-88f2-f9cc265f7567
+        at: 2026-11-10T00:54:24Z
+        revision: 44
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Full gate and integration"
+        detail: "`cargo xtask check` passed (13 gates; `loft verify` skipped off the publish branch), and `cargo xtask integration` passed (21 of 21 explorer e2e, plus the Rust end-to-end tests), at d07318c, after the review fixes and the rusqlite upgrade."
+        state: done
   - key: 01a1c269-2633-716a-b8dd-fe4a119902d8
     id: t-close
     kind: task
@@ -86,6 +104,15 @@ blocks:
         title: "Close the Yard Log; leave the branch unmerged"
         detail: "Done when the Yard Log is closed and committed. The owner merges `chore/ux-1` only when they ask."
         state: open
+      - key: 01a1c2f2-f45b-7157-88f2-f9cf0a115915
+        at: 2026-11-10T00:54:24Z
+        revision: 44
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Close the Yard Log; leave the branch unmerged"
+        detail: "The Yard Log is closed and committed with this write. chore/ux-1 is not merged."
+        state: done
   - key: 01a1c2c8-67ce-7693-9ed9-3ad9e95279c7
     id: review-issues
     kind: note
@@ -239,3 +266,38 @@ blocks:
           | 2 | `api_fixture` failed: SQLite 3.54 writes reals with the fewest digits that round-trip, so testkit_objects.sql no longer matched what ingest writes | `cargo xtask check` | Regenerated with `UPDATE_FIXTURES=1`. A script confirmed that 111 lines changed and all 1,774 numbers are equal as doubles, with no other text changed (1097787) | fixed, awaiting the gate |
           | 3 | The object let-go e2e test read the distance before the double-click's fly-in was drawn, and passed earlier only by timing | `cargo xtask integration` (1 failed, 20 passed) | The test waits until the distance has changed before reading it (1097787) | fixed, awaiting integration |
         tone: warning
+      - key: 01a1c2f2-f45b-7157-88f2-f9cb5a9debb1
+        at: 2026-11-10T00:54:24Z
+        revision: 44
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Gate issues after the upgrade"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | 1 | My first rerun reported success though the gate and integration had both failed, because the background command ended in an `echo` | Reading the logs | The rerun's exit status is now the gate's and integration's own | fixed |
+          | 2 | `api_fixture` failed: SQLite 3.54 writes reals with the fewest digits that round-trip, so testkit_objects.sql no longer matched what ingest writes | `cargo xtask check` | Regenerated with `UPDATE_FIXTURES=1`. A script confirmed that 111 lines changed and all 1,774 numbers are equal as doubles, with no other text changed (1097787) | fixed |
+          | 3 | The object let-go e2e test read the distance before the double-click's fly-in was drawn, and passed earlier only by timing | `cargo xtask integration` (1 failed, 20 passed) | The test waits until the distance has changed before reading it (1097787) | fixed |
+          | 4 | `loft reconcile` failed the gate on that test's changed body | `cargo xtask check` | Reviewed and accepted (d07318c) | fixed |
+        tone: success
+  - key: 01a1c2f2-f45b-7157-88f2-f9caef73abf4
+    id: review-done
+    kind: note
+    versions:
+      - key: 01a1c2f2-f45b-7157-88f2-f9ce4626aad9
+        at: 2026-11-10T00:54:24Z
+        revision: 44
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "What the review produced"
+        markdown: |-
+          - **The review:** 15 findings fixed and 5 skipped with reasons (8bcf8f5).
+          - **The advisory:** RUSTSEC-2026-0459 is fixed by `rusqlite` 0.41, as the owner chose (276377f). The objects fixture was regenerated for SQLite 3.54's number format, with every value unchanged (1097787).
+          - **The gate and integration are green** at d07318c.
+
+          **Left for the owner:**
+          - **Merge:** chore/ux-1 is unmerged and waits for the owner to ask.
+          - **Explorer:** their `cargo xtask explore` needs a restart, because I stopped its Worker by mistake.
+        tone: success
