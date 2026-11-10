@@ -158,11 +158,14 @@ test("lets the chosen object go by a click on its point, making Earth the focus 
   const mark = page.getByTestId("chosen-mark").locator("span");
   await expect.poll(async () => (await mark.boundingBox()) !== null).toBe(true);
   const point = await centreOf(mark);
+  const distance = page.getByTestId("distance");
+  const seen = (await distance.textContent()) ?? "";
   await page.waitForTimeout(PAST_A_DOUBLE_CLICK_MS);
   await page.mouse.dblclick(point.x, point.y);
+  // Flown in close, and drawn so, before the distance it leaves is read.
+  await expect(distance).not.toHaveText(seen);
   await expect(panel.getByTestId("lede")).toBeVisible();
   await expect(page).toHaveURL(/\?object=\d+/);
-  const distance = page.getByTestId("distance");
   const before = (await distance.textContent()) ?? "";
   const centre = await centreOf(mark);
   await page.waitForTimeout(PAST_A_DOUBLE_CLICK_MS);

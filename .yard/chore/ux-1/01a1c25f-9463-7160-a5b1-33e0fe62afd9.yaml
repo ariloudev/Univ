@@ -212,3 +212,12 @@ blocks:
         title: "rusqlite 0.32 → 0.41 (RUSTSEC-2026-0459)"
         detail: "Bump `rusqlite` in univ-api, univ-ingest and xtask, update Cargo.lock, and fix any API changes. Done when `cargo deny check advisories` passes and the crates' tests pass."
         state: active
+      - key: 01a1c2e5-9e30-75be-b458-f6ca88707635
+        at: 2026-11-10T00:39:50Z
+        revision: 42
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "rusqlite 0.32 → 0.41 (RUSTSEC-2026-0459)"
+        detail: "Done in 276377f: univ-api, univ-ingest and xtask are on `rusqlite` 0.41.1 (`libsqlite3-sys` 0.39.1, SQLite 3.54.x). Two API changes were fixed: `column_names()` now returns an iterator (8 call sites), and `u64` conversion now needs the `fallible_uint` feature, which keeps 0.32's checked conversion. `cargo clippy --workspace --all-targets` and `cargo deny check` pass."
+        state: done
