@@ -54,6 +54,46 @@ binding = "OBJECTS_7"
 database_name = "univ-objects-7"
 database_id = "00000000-0000-0000-0000-000000000107"
 
+[[d1_databases]]
+binding = "OBJECTS_8"
+database_name = "univ-objects-8"
+database_id = "00000000-0000-0000-0000-000000000108"
+
+[[d1_databases]]
+binding = "OBJECTS_9"
+database_name = "univ-objects-9"
+database_id = "00000000-0000-0000-0000-000000000109"
+
+[[d1_databases]]
+binding = "OBJECTS_10"
+database_name = "univ-objects-10"
+database_id = "00000000-0000-0000-0000-000000000110"
+
+[[d1_databases]]
+binding = "OBJECTS_11"
+database_name = "univ-objects-11"
+database_id = "00000000-0000-0000-0000-000000000111"
+
+[[d1_databases]]
+binding = "OBJECTS_12"
+database_name = "univ-objects-12"
+database_id = "00000000-0000-0000-0000-000000000112"
+
+[[d1_databases]]
+binding = "OBJECTS_13"
+database_name = "univ-objects-13"
+database_id = "00000000-0000-0000-0000-000000000113"
+
+[[d1_databases]]
+binding = "OBJECTS_14"
+database_name = "univ-objects-14"
+database_id = "00000000-0000-0000-0000-000000000114"
+
+[[d1_databases]]
+binding = "OBJECTS_15"
+database_name = "univ-objects-15"
+database_id = "00000000-0000-0000-0000-000000000115"
+
 [[r2_buckets]]
 binding = "RELEASES"
 bucket_name = "univ-releases"

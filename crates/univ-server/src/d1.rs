@@ -1,7 +1,7 @@
-//! The backend of the Worker: the releases' catalogue database as its D1 binding `DB`, their
-//! object shards as `OBJECTS_0` … `OBJECTS_7`, the univ-layers database as `LAYERS`, the
-//! releases bucket as its R2 binding `RELEASES`, the rate limiters `ANON`, `BASIC`, `STANDARD`
-//! and `EXTENDED`, and the secret `OWNER_SECRET`.
+//! The backend of the Worker: the releases' catalogue database as its D1 binding `DB`, each
+//! object shard the configuration binds as `OBJECTS_{i}`, the univ-layers database as `LAYERS`,
+//! the releases bucket as its R2 binding `RELEASES`, the rate limiters `ANON`, `BASIC`,
+//! `STANDARD` and `EXTENDED`, and the secret `OWNER_SECRET`.
 
 use serde_json::Value;
 use std::collections::BTreeMap;

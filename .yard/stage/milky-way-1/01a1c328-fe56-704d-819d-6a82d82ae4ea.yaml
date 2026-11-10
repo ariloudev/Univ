@@ -1,0 +1,3077 @@
+key: 01a1c328-fe56-704d-819d-6a82d82ae4ea
+id: w1-review
+versions:
+  - key: 01a1c328-fe56-704d-819d-6a8644ee5f9d
+    at: 2026-11-10T01:53:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 1"
+    goal: "/simplify and /code-review findings are fixed, and cargo xtask check and integration pass once"
+    status: planned
+  - key: 01a1c34c-cd95-77c1-864f-4f57241d5927
+    at: 2026-11-10T02:32:32Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 1"
+    goal: "/simplify and /code-review findings are fixed, and cargo xtask check and integration pass once"
+    status: active
+  - key: 01a1c371-7fcb-7695-978f-c1a1ee49a284
+    at: 2026-11-10T03:12:37Z
+    revision: 18
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 1"
+    goal: "/simplify and /code-review findings are fixed, and cargo xtask check and integration pass once"
+    status: done
+blocks:
+  - key: 01a1c32a-9ac8-73c6-af9b-d55962515aad
+    id: t8-review
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d565804d0977
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate and trace wave 1"
+        detail: "/simplify and /code-review, the full gate, integration and the trace view."
+        state: open
+      - key: 01a1c34c-cd95-77c1-864f-4f586542921a
+        at: 2026-11-10T02:32:32Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate and trace wave 1"
+        detail: "/simplify and /code-review, the full gate, integration and the trace view."
+        state: active
+      - key: 01a1c365-c66a-7216-8e51-b8924f08be04
+        at: 2026-11-10T02:59:49Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate and trace wave 1"
+        detail: "/simplify and /code-review done and fixed. Next: the full gate, integration and the trace view."
+        state: active
+      - key: 01a1c371-7fcb-7695-978f-c1a09a7bde05
+        at: 2026-11-10T03:12:37Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate and trace wave 1"
+        detail: "The /simplify and /code-review findings are fixed or kept with reasons. Integration passed on 72c33f6. cargo xtask check passed 13 gates on 84be45c, loft verify skipped off develop. The trace view is recorded."
+        state: done
+  - key: 01a1c365-c66a-7216-8e51-b890ef6a7bb4
+    id: review-issues
+    kind: note
+    versions:
+      - key: 01a1c365-c66a-7216-8e51-b8911c295c91
+        at: 2026-11-10T02:59:49Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review findings and what became of them"
+        markdown: |-
+          **`/simplify`** (4 reviewers), applied in `39a477d`:
+          - The ranking reads an object's open candidates once per winner (`Pool`, `Steps`) and probes the inferred set-aside only where it left a candidate out.
+          - One science check bounds the inferred share both ways; shard counts in the tests come from the configuration.
+          - The test helpers (`holds`, `build_next_within`, `workspace`) are shared, and `positive()` is reused.
+          - Skipped: removing the ratio from the ranking rule (the spec requires it there); moving the four older copies of the remove-a-source setup (outside the diff); merging the two runs of `four_releases` (the comparison is the point).
+
+          **`/code-review` (medium)**:
+
+          | # | Finding | Outcome |
+          |---|---|---|
+          | 1 | An estimated distance too uncertain to place its star set an inferred one aside, leaving the star unplaced | fixed in `0a30444` (spec wording) and the commit after it; new test `an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside` |
+          | 2 | The Bailer-Jones join chunks ran on the synchronous endpoint | fixed: `run: async` |
+          | 3 | The ratio lives in the ranking rule and the source rule | kept: the spec states it in the ranking rule, and a test holds them equal |
+          | 4 | A 3% floor sits near the expected 3.8% | fixed: floor 2%, with the 0.76% without a parallax cited |
+          | 5 | The ratio is the uncorrected parallax's | kept and documented in the rule's basis: the zero point moves it by a few hundredths |
+          | 6 | A null written as `null` or `NaN` matched neither rule | fixed: `is: ["", "null", "NaN"]` |
+          | 7 | `sets_aside` repeats a length check | kept: it spares about 95% of stars an allocation (the efficiency reviewer's point) |
+          | 8 | `among` runs up to four times per winner | already bounded: it runs only where a step left a candidate out |
+          | 9 | Reconstructed non-redshift distances are not set aside | kept: the spec names inferred only, and no source gives one |
+          | 10 | An inferred candidate still counts toward the redshift threshold | kept: a star has no redshift, and no galaxy source gives an inferred distance |
+  - key: 01a1c367-0f4d-7445-a1bf-c90da7fe8ba0
+    id: w1-trace
+    kind: loft
+    versions:
+      - key: 01a1c367-0f4d-7445-a1bf-c90e00b358bd
+        at: 2026-11-10T03:01:13Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: trace
+        note: "Wave 1 links its nine criteria: the G < 14 cut, the parallax ratio carried, the four inferred and estimated cases, the ratio in the ranking rule, inferred placement and the set-aside. The two prune-then-change tests join AC-541. The criteria still unlinked belong to waves 2–4."
+        base: "product/milky-way"
+        recorded:
+          commit: "72c33f6b7598feb8b606c7cdc448cd55e8a1ed7c"
+          branch: "stage/milky-way-1"
+          loft: 2.3.0
+          at: 2026-11-10T03:01:13Z
+        report: |
+          {
+            "base": "product/milky-way",
+            "commit": "2edb4e4735caa18a50a3d3cc5446a0b4c7075808",
+            "counts": {
+              "features": 3
+            },
+            "features": [
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1833afc5c0fc",
+                    "label": "AC-1",
+                    "name": "A source definition gives the source's id, title, provider, access method, query and cuts.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 69,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "a_definition_gives_id_title_provider_access_query_and_cuts"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1834e602c6b1",
+                    "label": "AC-2",
+                    "name": "A source definition maps each column it takes to a univ-model field with the column's unit.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 91,
+                            "lastLine": 99
+                          }
+                        ],
+                        "name": "each_column_maps_to_a_model_field_with_its_unit"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1835412ca8ed",
+                    "label": "AC-3",
+                    "name": "A source definition names the frame and epoch of the source's positions.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 101,
+                            "lastLine": 109
+                          }
+                        ],
+                        "name": "a_definition_names_frame_epoch_citation_terms_credit_and_scale_domain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1836d60c8672",
+                    "label": "AC-4",
+                    "name": "A source definition gives the primary citation, the terms of use, the required credit and the scale domain.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 101,
+                            "lastLine": 109
+                          }
+                        ],
+                        "name": "a_definition_names_frame_epoch_citation_terms_credit_and_scale_domain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183725365029",
+                    "label": "AC-5",
+                    "name": "A source definition lists the mirrors to try, in order.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 111,
+                            "lastLine": 119
+                          }
+                        ],
+                        "name": "mirrors_are_kept_in_the_order_written"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d8-3f35-70aa-853f-45a22adb93e1",
+                    "label": "AC-519",
+                    "name": "A source definition may give the form its catalogue writes a designation in, such as `HIP {identifier}`, with the catalogue documentation the form is cited from.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [
+                      "TR-008"
+                    ],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_reading.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 67,
+                            "lastLine": 77
+                          }
+                        ],
+                        "name": "a_definition_may_give_its_designation_form_with_its_citation"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d8-3f35-70aa-853f-45a3db453005",
+                    "label": "AC-520",
+                    "name": "A source definition may give the meaning of each value of a flag column it takes, with the catalogue documentation the meaning is cited from.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_reading.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 79,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_definition_may_give_the_meaning_of_each_value_of_a_flag_column_with_its_citation"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183984aea659",
+                    "label": "AC-6",
+                    "name": "The message names the source definition, the field and what is wrong with it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 121,
+                            "lastLine": 137
+                          }
+                        ],
+                        "name": "an_unknown_unit_frame_or_scale_domain_is_refused_naming_the_file_and_field"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 139,
+                            "lastLine": 167
+                          }
+                        ],
+                        "name": "an_incomplete_definition_is_refused_naming_the_missing_field"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d8-3f35-70aa-853f-45a4a7c6a5fc",
+                    "label": "AC-521",
+                    "name": "A designation form that does not hold `{identifier}` exactly once is refused.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_reading.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 105
+                          }
+                        ],
+                        "name": "a_designation_form_that_does_not_hold_the_identifier_exactly_once_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7d8-3f35-70aa-853f-45a5418a1492",
+                    "label": "AC-522",
+                    "name": "A flag meaning given for a column the definition does not take as a flag is refused.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_reading.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 107,
+                            "lastLine": 120
+                          }
+                        ],
+                        "name": "a_flag_meaning_for_a_column_not_taken_as_a_flag_is_refused"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b838-25fc-71d6-a728-9b6a30cffe28",
+                    "label": "AC-523",
+                    "name": "A source definition may take a column as the entry's identifier in another catalogue, such as the PGC number OpenNGC gives an NGC galaxy, which a published cross-identification joins the entry by.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/name_sources.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 111,
+                            "lastLine": 125
+                          }
+                        ],
+                        "name": "openngc_rows_marked_duplicate_or_nonexistent_are_left_out_each_with_its_reason"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/name_sources.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 388,
+                            "lastLine": 413
+                          }
+                        ],
+                        "name": "every_cross_identifier_the_matching_rules_read_is_a_column_its_source_defines"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183b90085a10",
+                    "label": "AC-7",
+                    "name": "The redistribution status is permitted, permitted with credit, permission pending, or forbidden.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 270,
+                            "lastLine": 296
+                          }
+                        ],
+                        "name": "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 71
+                          }
+                        ],
+                        "name": "a_pending_source_names_whom_permission_was_asked_of_and_when"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183ca629c7f8",
+                    "label": "AC-8",
+                    "name": "The source definition quotes the terms of use it judged and states the reasoning for its status.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 270,
+                            "lastLine": 296
+                          }
+                        ],
+                        "name": "the_redistribution_status_is_one_of_three_with_quoted_terms_and_reasoning"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-58fcaa8b8bee",
+                    "label": "AC-444",
+                    "name": "A source whose status is permission pending names whom permission is asked of, and the date it was asked once the request is sent.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 61,
+                            "lastLine": 71
+                          }
+                        ],
+                        "name": "a_pending_source_names_whom_permission_was_asked_of_and_when"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 89,
+                            "lastLine": 95
+                          }
+                        ],
+                        "name": "a_pending_status_without_its_request_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 82
+                          }
+                        ],
+                        "name": "a_pending_source_not_yet_asked_names_whom_and_no_date"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 106,
+                            "lastLine": 118
+                          }
+                        ],
+                        "name": "a_request_names_someone_and_a_calendar_date"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-58fd8e368264",
+                    "label": "AC-445",
+                    "name": "A source whose terms allow only non-commercial use is marked non-commercial, with the clause that says so quoted.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 120,
+                            "lastLine": 135
+                          }
+                        ],
+                        "name": "a_non_commercial_source_quotes_the_clause_that_limits_it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1b7dc-04ef-7334-abc7-37e61d47a4c1",
+                    "label": "AC-524",
+                    "name": "A source whose terms require data adapted from it to be shared under the same licence is marked share-alike, with the clause that says so quoted.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_terms.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 137,
+                            "lastLine": 154
+                          }
+                        ],
+                        "name": "a_share_alike_source_quotes_the_clause_that_binds_it"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183ee3b99b68",
+                    "label": "AC-9",
+                    "name": "The message names the source and quotes its terms of use.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183d2d91487a",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 324,
+                            "lastLine": 333
+                          }
+                        ],
+                        "name": "a_forbidden_source_blocks_a_release_naming_it_and_quoting_its_terms"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1840046e9bc8",
+                    "label": "AC-10",
+                    "name": "The galaxy sources are SDSS DR17 spectroscopic galaxies, BOSS DR17 Great Wall region, 6dFGS DR3, 2MRS, 2M++ catalogue and Cosmicflows-4 distances.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "every_source_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1841361113b6",
+                    "label": "AC-11",
+                    "name": "The Local Group and nearby sources are McConnachie 2012 Local Group and the Updated Nearby Galaxy Catalog.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "every_source_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1842afd6d59e",
+                    "label": "AC-12",
+                    "name": "The star sources are the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars, Bailer-Jones 2021 distances, the Gaia DR3 Hipparcos cross-identification, the Hipparcos new reduction and the researched star distances.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "every_source_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18439d96b214",
+                    "label": "AC-13",
+                    "name": "The structure and field sources are the CF4++ density grid, CF4 basins of attraction, 2M++ reconstruction, eRASS1 clusters and Researched structures.",
+                    "requirement": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 46,
+                            "lastLine": 58
+                          }
+                        ],
+                        "name": "every_source_has_a_valid_definition"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-58ff5749b30b",
+                    "label": "AC-446",
+                    "name": "The spectroscopic sources are DESI DR1 redshifts, SDSS DR17 distant galaxies and quasars, 2dFGRS and GAMA DR4 redshifts.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 20,
+                            "lastLine": 41
+                          }
+                        ],
+                        "name": "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "twodfgrs_gives_each_redshift_its_catalogues_rms"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/pending_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 66,
+                            "lastLine": 92
+                          }
+                        ],
+                        "name": "gama_keeps_its_own_redshifts_of_quality_three_or_more_above_the_stars"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-5900bff82962",
+                    "label": "AC-447",
+                    "name": "The 21 cm source is ALFALFA α.100.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 81
+                          }
+                        ],
+                        "name": "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-59016fa68370",
+                    "label": "AC-448",
+                    "name": "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/pending_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 39,
+                            "lastLine": 64
+                          }
+                        ],
+                        "name": "twompz_reads_its_prepared_file_with_the_catalogues_photometric_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/pending_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 94,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "wise_supercosmos_reads_its_gzipped_csv_with_the_catalogues_scatter"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-5902c9bf1383",
+                    "label": "AC-449",
+                    "name": "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies.",
+                    "requirement": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 43,
+                            "lastLine": 56
+                          }
+                        ],
+                        "name": "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5f9f47eb4b7",
+                    "label": null,
+                    "name": "The Gaia DR3 stars and the Bailer-Jones 2021 distances take every Gaia DR3 source with a G magnitude below 14.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 85,
+                            "lastLine": 100
+                          }
+                        ],
+                        "name": "the_gaia_stars_and_their_distances_take_every_source_below_g_14"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                    "label": null,
+                    "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 24,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "a_parallax_below_five_times_its_error_makes_both_distances_inferred"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5fb497eb9df",
+                    "label": null,
+                    "name": "The star cluster sources are Hunt & Reffert 2023 open clusters and Baumgardt & Vasiliev 2021 globular clusters.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5fc305bf6e9",
+                    "label": null,
+                    "name": "The variable star sources are Skowron 2025 classical Cepheids and Li 2023 RR Lyrae.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5fda2de7bf8",
+                    "label": null,
+                    "name": "The star-forming region source is Reid 2019 maser parallaxes.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5fe0e6a94b9",
+                    "label": null,
+                    "name": "The dust source is the Edenhofer 2024 dust map.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5ff9e1131e1",
+                    "label": null,
+                    "name": "Each source of a Galaxy tracer names the Galaxy tracers scale domain.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                "label": "F-1",
+                "name": "Define a source",
+                "requirements": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1832b1bae1e2",
+                    "label": "RQ-1",
+                    "name": "Univ Ingest shall read each source from its source definition in the repository.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "read each source from its source definition in the repository.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1838f05eb5b7",
+                    "label": "RQ-2",
+                    "name": "If a source definition is incomplete or names an unknown unit, frame or scale domain, then Univ Ingest shall refuse the run before fetching anything and name the field.",
+                    "statement": {
+                      "condition": "a source definition is incomplete or names an unknown unit, frame or scale domain",
+                      "form": "unwanted",
+                      "shall": "refuse the run before fetching anything and name the field.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183a6daa9364",
+                    "label": "RQ-3",
+                    "name": "Univ Ingest shall record in each source definition whether its terms permit redistributing its data, with the terms it rests on.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "record in each source definition whether its terms permit redistributing its data, with the terms it rests on.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183d2d91487a",
+                    "label": "RQ-4",
+                    "name": "If a source definition's redistribution status is forbidden, then Univ Ingest shall refuse to publish any release that holds the source.",
+                    "statement": {
+                      "condition": "a source definition's redistribution status is forbidden",
+                      "form": "unwanted",
+                      "shall": "refuse to publish any release that holds the source.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-183f79f9ae1c",
+                    "label": "RQ-5",
+                    "name": "Univ Ingest shall provide a source definition for each source of the first release.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "provide a source definition for each source of the first release.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-58fec7b6f3d1",
+                    "label": "RQ-152",
+                    "name": "Univ Ingest shall provide a source definition for each source that release 10 adds.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "provide a source definition for each source that release 10 adds.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                    "label": null,
+                    "name": "Univ Ingest shall provide a source definition for each source that release 13 adds or widens, to show the Milky Way in depth.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "provide a source definition for each source that release 13 adds or widens, to show the Milky Way in depth.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186415c2b2be",
+                    "label": "AC-36",
+                    "name": "Each position is stored in ICRS with the epoch of its source.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 66,
+                            "lastLine": 76
+                          }
+                        ],
+                        "name": "each_position_is_stored_in_icrs_with_the_epoch_of_its_source"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 192,
+                            "lastLine": 236
+                          }
+                        ],
+                        "name": "a_b1950_structure_position_is_moved_to_the_icrs_with_its_e_terms"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_rescaling.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 238,
+                            "lastLine": 274
+                          }
+                        ],
+                        "name": "an_unstated_equinox_is_placed_as_j2000_and_carries_its_systematic_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1865763fa63d",
+                    "label": "AC-37",
+                    "name": "Each native value keeps its published unit beside the normalized value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 78,
+                            "lastLine": 117
+                          }
+                        ],
+                        "name": "each_native_value_keeps_its_published_unit_beside_the_normalized_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18663bbd5e71",
+                    "label": "AC-38",
+                    "name": "Normalized values use degrees for angles, km/s for velocities, parsecs for stellar distances and megaparsecs for extragalactic ones.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 119,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "normalized_values_use_degrees_km_s_parsecs_for_stars_and_megaparsecs_beyond"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1867aeb456fd",
+                    "label": "AC-39",
+                    "name": "Each value is classified by its kind of value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 145,
+                            "lastLine": 181
+                          }
+                        ],
+                        "name": "each_value_is_classified_by_its_kind_of_value"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a232-7345-778b-a4c5-046f187e8323",
+                    "label": "AC-298",
+                    "name": "A redshift read from a published velocity that its source definition infers, without the source stating it, to stand for a comoving distance is inferred, not measured.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_groups.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 48,
+                            "lastLine": 61
+                          }
+                        ],
+                        "name": "a_group_velocity_read_as_a_comoving_distance_is_inferred_and_one_read_as_cz_measured"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186820f4df2c",
+                    "label": "AC-40",
+                    "name": "Each uncertainty is typed as a symmetric error, an asymmetric interval, a stated interval with no probability, an upper or lower limit, a credible region, or none reported.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 183,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "each_uncertainty_is_typed_by_the_form_its_source_published"
+                      },
+                      {
+                        "file": "crates/univ-model/src/distance/convert.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 222
+                          }
+                        ],
+                        "name": "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/structure_tracers.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 117,
+                            "lastLine": 152
+                          }
+                        ],
+                        "name": "a_member_placed_at_its_structure_s_redshift_slice_carries_the_slice_s_width"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 210
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186959bf0d6e",
+                    "label": "AC-41",
+                    "name": "A value published without an uncertainty is marked as having none reported, never as having zero uncertainty.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 208,
+                            "lastLine": 233
+                          }
+                        ],
+                        "name": "a_value_published_without_an_error_is_marked_none_reported"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-59032696dddd",
+                    "label": "AC-455",
+                    "name": "An uncertainty a source states once for its whole catalogue, such as 2dFGRS's rms of 85 km/s or 2MPZ's photometric redshift scatter of 0.015, is given to each of its values as an estimated uncertainty that cites where it is stated.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 58,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "twodfgrs_gives_each_redshift_its_catalogues_rms"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/catalogue_error.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 57
+                          }
+                        ],
+                        "name": "an_rms_velocity_for_the_catalogue_is_each_velocitys_symmetric_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/catalogue_error.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 59,
+                            "lastLine": 78
+                          }
+                        ],
+                        "name": "a_scatter_per_one_plus_z_grows_with_each_redshift"
+                      },
+                      {
+                        "file": "crates/univ-api/src/objects/record_tests.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 54,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "a_redshift_whose_source_states_one_uncertainty_for_its_catalogue_is_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1aa2d-9931-7550-bba8-ae02a06fd78a",
+                    "label": "AC-456",
+                    "name": "A redshift error that a source defines as a multiple of another column, such as ALFALFA's half the error on the HI line's width, is that column's value times the stated factor.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 71,
+                            "lastLine": 81
+                          }
+                        ],
+                        "name": "alfalfa_velocities_are_heliocentric_cz_with_half_the_width_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1aa2d-9931-7550-bba8-ae03b8e720b0",
+                    "label": "AC-457",
+                    "name": "A source read from files reads FITS binary tables or gzipped CSV tables, the latter in pieces of whole lines, so that no file is held unpacked whole.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/src/normalize/csv_file.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 142,
+                            "lastLine": 149
+                          }
+                        ],
+                        "name": "a_gzipped_csv_file_is_read_whole_in_pieces_of_lines"
+                      },
+                      {
+                        "file": "crates/univ-ingest/src/normalize/csv_file.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 151,
+                            "lastLine": 163
+                          }
+                        ],
+                        "name": "comments_and_blank_lines_are_layout_wherever_a_piece_ends"
+                      },
+                      {
+                        "file": "crates/univ-ingest/src/normalize/csv_file.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 165,
+                            "lastLine": 170
+                          }
+                        ],
+                        "name": "a_header_without_a_defined_column_is_an_error_even_with_no_rows"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186b82bcfc95",
+                    "label": "AC-42",
+                    "name": "The kinds of distance are parallax, geometric or photogeometric, primary indicator, secondary indicator, spectroscopic redshift and photometric redshift.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 235,
+                            "lastLine": 266
+                          }
+                        ],
+                        "name": "the_kinds_of_distance_are_the_six_the_specification_names"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186c1d4c0f38",
+                    "label": "AC-43",
+                    "name": "The method names the indicator, such as Cepheids, the tip of the red giant branch, masers, type Ia supernovae, surface brightness fluctuations, Tully-Fisher or fundamental plane.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 268,
+                            "lastLine": 298
+                          }
+                        ],
+                        "name": "the_method_names_the_indicator"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 33
+                          }
+                        ],
+                        "name": "cosmicflows_groups_without_a_five_method_distance_are_direct_calibrations"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186d9b7a0c04",
+                    "label": "AC-44",
+                    "name": "A distance published in h⁻¹ Mpc or for a stated Hubble constant keeps that constant beside its native value.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 300,
+                            "lastLine": 332
+                          }
+                        ],
+                        "name": "a_distance_in_h_inverse_mpc_or_for_a_stated_hubble_constant_keeps_that_constant"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186e940da69e",
+                    "label": "AC-45",
+                    "name": "A distance modulus is kept as published beside the distance derived from it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 334,
+                            "lastLine": 356
+                          }
+                        ],
+                        "name": "a_distance_modulus_is_kept_as_published_beside_the_distance_derived_from_it"
+                      },
+                      {
+                        "file": "crates/univ-model/src/distance/convert.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 201,
+                            "lastLine": 222
+                          }
+                        ],
+                        "name": "a_symmetric_modulus_error_maps_to_the_exact_asymmetric_distance_interval"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f835cca0e82",
+                    "label": "AC-299",
+                    "name": "Each distance names its measure: luminosity, comoving, Euclidean or unspecified.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "a_distance_takes_the_measure_its_definition_states_and_a_modulus_gives_a_luminosity_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8400aee970",
+                    "label": "AC-300",
+                    "name": "A distance derived from a distance modulus is a luminosity distance.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_distances.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 35,
+                            "lastLine": 54
+                          }
+                        ],
+                        "name": "a_distance_takes_the_measure_its_definition_states_and_a_modulus_gives_a_luminosity_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187089f08fa0",
+                    "label": "AC-46",
+                    "name": "A heliocentric redshift is kept as measured.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 11,
+                            "lastLine": 24
+                          }
+                        ],
+                        "name": "a_heliocentric_redshift_is_kept_as_measured"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a931-2c8a-73a8-91f2-59042cfff012",
+                    "label": "AC-458",
+                    "name": "A barycentric redshift, such as DESI's, is kept as measured and named barycentric, never relabelled heliocentric.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 362,
+                            "lastLine": 375
+                          }
+                        ],
+                        "name": "a_barycentric_redshift_reads_back_named_barycentric"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 20,
+                            "lastLine": 41
+                          }
+                        ],
+                        "name": "desi_redshifts_are_measured_spectroscopic_and_barycentric"
+                      },
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 361,
+                            "lastLine": 381
+                          }
+                        ],
+                        "name": "a_barycentric_redshift_is_kept_as_measured_and_named_barycentric"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 378,
+                            "lastLine": 399
+                          }
+                        ],
+                        "name": "a_barycentric_redshift_names_its_frame_in_the_distance_chain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187151a4aac5",
+                    "label": "AC-47",
+                    "name": "The CMB-frame redshift uses the Planck 2018 dipole of 369.82 km/s toward galactic longitude 264.021° and latitude 48.253°.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 313,
+                            "lastLine": 325
+                          }
+                        ],
+                        "name": "the_planck_2018_dipole_is_used_and_its_apex_matches_astropy_in_icrs"
+                      },
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 327,
+                            "lastLine": 344
+                          }
+                        ],
+                        "name": "cz_rises_toward_the_apex_falls_away_from_it_and_holds_across_it"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 26,
+                            "lastLine": 38
+                          }
+                        ],
+                        "name": "the_cmb_redshift_uses_the_planck_2018_dipole"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1872f4143cd2",
+                    "label": "AC-48",
+                    "name": "The derivation is recorded with the redshift it was derived from.",
+                    "requirement": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-model/src/redshift.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 346,
+                            "lastLine": 359
+                          }
+                        ],
+                        "name": "the_derivation_keeps_the_measured_redshift_and_the_dipole"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 40,
+                            "lastLine": 53
+                          }
+                        ],
+                        "name": "the_cmb_derivation_is_recorded_with_the_redshift_it_was_derived_from"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f30c829322",
+                    "label": "AC-335",
+                    "name": "Hipparcos-2's B−V and V−I and Gaia DR3's BP−RP are kept as measured colour indices, each naming its two bands.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "hipparcos_2_keeps_its_b_v_with_its_error_and_its_v_i_with_none_reported"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/object_reads.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 130,
+                            "lastLine": 216
+                          }
+                        ],
+                        "name": "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f45f5a703d",
+                    "label": "AC-336",
+                    "name": "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "hipparcos_2_keeps_its_b_v_with_its_error_and_its_v_i_with_none_reported"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f5d5a8d638",
+                    "label": "AC-337",
+                    "name": "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 57,
+                            "lastLine": 75
+                          }
+                        ],
+                        "name": "gcns_derives_bp_rp_from_its_two_magnitudes_and_gives_none_where_they_are_blank"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f71d672808",
+                    "label": "AC-338",
+                    "name": "A spectral type is kept character for character as its source publishes it, with that source.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f809221737",
+                    "label": "AC-339",
+                    "name": "A spectral type its source classified from a star's spectrum, such as the Hipparcos catalogue's, is measured.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 77,
+                            "lastLine": 89
+                          }
+                        ],
+                        "name": "the_hipparcos_catalogue_keeps_its_spectral_type_as_measured_with_its_source_flag"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f9d5d7fa2d",
+                    "label": "AC-340",
+                    "name": "A spectral type a source estimated from a model fitted to low-resolution spectra, such as Gaia DR3's ESP-HS class, is estimated.",
+                    "requirement": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_colours.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 55
+                          }
+                        ],
+                        "name": "gaia_keeps_its_bp_rp_and_its_esp_hs_type_as_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187496ae140f",
+                    "label": "AC-49",
+                    "name": "The source's provenance gives the count of entries left out for each reason.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 173,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "a_failed_normalization_leaves_no_earlier_report_in_the_provenance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18755300ea38",
+                    "label": "AC-50",
+                    "name": "No entry is left out without a reason recorded.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 358,
+                            "lastLine": 388
+                          }
+                        ],
+                        "name": "no_entry_is_left_out_without_a_reason"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 390,
+                            "lastLine": 407
+                          }
+                        ],
+                        "name": "a_simulated_galaxy_and_an_unsuitable_redshift_are_left_out_and_counted"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 87
+                          }
+                        ],
+                        "name": "a_row_repeating_an_identifier_is_left_out_and_counted_and_the_match_goes_on"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f8501160747",
+                    "label": "AC-301",
+                    "name": "A row whose cells are all blank is left out under the reason `blank_row`.",
+                    "requirement": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "rules": [
+                      "TR-008"
+                    ],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_rows.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 17,
+                            "lastLine": 35
+                          }
+                        ],
+                        "name": "a_row_of_blank_cells_is_left_out_as_blank_but_a_final_empty_line_is_no_row"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1aa2d-9931-7550-bba8-ae05fcc0d255",
+                    "label": "AC-459",
+                    "name": "A rule's condition tests one column with exactly one of: the cell is one of a list of values, none of a list of values, or a number below a bound.",
+                    "requirement": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "a_rule_may_leave_out_rows_whose_cell_is_below_a_number"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 113,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "a_rule_may_leave_out_rows_whose_cell_is_none_of_its_values"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 128,
+                            "lastLine": 151
+                          }
+                        ],
+                        "name": "a_condition_gives_exactly_one_test"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1aa2d-9931-7550-bba8-ae06fd8a5b30",
+                    "label": "AC-460",
+                    "name": "A row a rule selects out of the source, such as another survey's redshift that GAMA re-serves or a star in a galaxy survey, is counted under the reason `outside_selection`, and the rule's basis says why.",
+                    "requirement": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 111
+                          }
+                        ],
+                        "name": "a_rule_may_leave_out_rows_whose_cell_is_below_a_number"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 113,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "a_rule_may_leave_out_rows_whose_cell_is_none_of_its_values"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1aa2d-9931-7550-bba8-ae077f98b2cc",
+                    "label": "AC-461",
+                    "name": "A cell too large for a double to hold exactly, such as an SDSS specObjID, is compared with a condition's values as text.",
+                    "requirement": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/galaxy_surveys.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 153,
+                            "lastLine": 161
+                          }
+                        ],
+                        "name": "identifiers_beyond_two_to_the_53_compare_as_text"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1877e0c274f2",
+                    "label": "AC-51",
+                    "name": "Each fix in a source definition names the defect, the change it makes and the evidence for it.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 362,
+                            "lastLine": 377
+                          }
+                        ],
+                        "name": "each_fix_names_its_defect_change_and_evidence_or_is_refused"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/source_definitions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 379,
+                            "lastLine": 393
+                          }
+                        ],
+                        "name": "every_fix_of_the_first_release_names_its_defect_change_and_evidence"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/cosmicflows_positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 100,
+                            "lastLine": 129
+                          }
+                        ],
+                        "name": "a_replaced_group_position_names_kourkchi_and_tully_and_the_fix"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-187827977f54",
+                    "label": "AC-52",
+                    "name": "Cosmicflows-4's SGX, SGY and SGZ columns are read as km/s, as the evidence shows, although VizieR labels them Mpc.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 409,
+                            "lastLine": 435
+                          }
+                        ],
+                        "name": "cosmicflows_sgx_sgy_and_sgz_are_read_as_km_s_though_vizier_labels_them_mpc"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18790159a9dd",
+                    "label": "AC-53",
+                    "name": "The source's provenance lists each fix applied with the number of entries it changed.",
+                    "requirement": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 437,
+                            "lastLine": 478
+                          }
+                        ],
+                        "name": "the_report_lists_each_fix_applied_with_the_entries_it_changed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_stage.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 50,
+                            "lastLine": 143
+                          }
+                        ],
+                        "name": "the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_count"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 55,
+                            "lastLine": 124
+                          }
+                        ],
+                        "name": "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c6027604a178",
+                    "label": null,
+                    "name": "A Bailer-Jones distance of a star whose parallax is less than five times its error is inferred.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 24,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "a_parallax_below_five_times_its_error_makes_both_distances_inferred"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c603c8d6589e",
+                    "label": null,
+                    "name": "A Bailer-Jones distance of a star whose parallax is zero or negative, or that has none, is inferred.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 24,
+                            "lastLine": 36
+                          }
+                        ],
+                        "name": "a_parallax_below_five_times_its_error_makes_both_distances_inferred"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 51,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "exactly_five_is_estimated_and_a_blank_ratio_is_inferred"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c6045ac7b6f1",
+                    "label": null,
+                    "name": "A Bailer-Jones distance of a star whose parallax is at least five times its error is estimated.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 51,
+                            "lastLine": 70
+                          }
+                        ],
+                        "name": "exactly_five_is_estimated_and_a_blank_ratio_is_inferred"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 38,
+                            "lastLine": 49
+                          }
+                        ],
+                        "name": "the_bright_stars_ratios_far_above_five_leave_their_distances_estimated"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c605905af8ee",
+                    "label": null,
+                    "name": "The ratio of five and its basis are stated in the ranking rule, which the release records.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 112,
+                            "lastLine": 126
+                          }
+                        ],
+                        "name": "the_prior_led_parallax_ratio_is_the_rule_s_parameter_recorded_for_the_manifest"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 72,
+                            "lastLine": 83
+                          }
+                        ],
+                        "name": "the_definition_s_bound_is_the_ranking_rule_s_prior_led_ratio"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c606e2fa0dcc",
+                    "label": null,
+                    "name": "A star keeps the Gaia DR3 parallax and parallax error that its distance's kind of value rests on, as measured values.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/normalize_sources.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 223,
+                            "lastLine": 260
+                          }
+                        ],
+                        "name": "gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                    "label": null,
+                    "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 164,
+                            "lastLine": 171
+                          }
+                        ],
+                        "name": "an_inferred_distance_alone_still_wins_and_places_its_star"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c609c99b51a3",
+                    "label": null,
+                    "name": "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star or star-forming region.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c60af84ad06b",
+                    "label": null,
+                    "name": "A Cepheid or RR Lyrae star keeps its pulsation type as its source publishes it.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c60bab2a9a0e",
+                    "label": null,
+                    "name": "A Cepheid's or RR Lyrae star's distance is an estimated primary-indicator distance whose method names the relation its source used.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c60c55259d8f",
+                    "label": null,
+                    "name": "An open or globular cluster's distance is an estimated distance whose method names how its source derived it.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c60d21b0fe2e",
+                    "label": null,
+                    "name": "A maser's parallax is kept as measured with its error, and a distance is derived from it only under the parallax rule of the ranking rule.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c60efaeb5601",
+                    "label": null,
+                    "name": "A Cepheid or RR Lyrae star joins the object of its Gaia DR3 source by the source id its source gives, as a published cross-identification.",
+                    "requirement": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "rules": [
+                      "TR-001"
+                    ],
+                    "tests": []
+                  }
+                ],
+                "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                "label": "F-4",
+                "name": "Normalize records",
+                "requirements": [
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18637db5e446",
+                    "label": "RQ-15",
+                    "name": "Univ Ingest shall convert each catalogue entry into univ-model values while keeping each native value.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "convert each catalogue entry into univ-model values while keeping each native value.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186a829fb7fa",
+                    "label": "RQ-16",
+                    "name": "Univ Ingest shall record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "record each distance with its kind, its measure, its method and, where it depends on one, its Hubble constant or cosmology.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-186f83aad488",
+                    "label": "RQ-17",
+                    "name": "Univ Ingest shall keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each redshift in the frame its source published it in and derive its value in the CMB frame.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f2606141e8",
+                    "label": "RQ-115",
+                    "name": "Univ Ingest shall keep each colour index a source publishes for a star, between the two bands the source names.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each colour index a source publishes for a star, between the two bands the source names.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1a6e4-22e1-765d-b404-01f6f668422b",
+                    "label": "RQ-116",
+                    "name": "Univ Ingest shall keep each spectral type a source publishes for a star as the text the source gives.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep each spectral type a source publishes for a star as the text the source gives.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-18734f56d5aa",
+                    "label": "RQ-18",
+                    "name": "If a catalogue entry fails validation, then Univ Ingest shall leave the entry out of the release and count it under its reason.",
+                    "statement": {
+                      "condition": "a catalogue entry fails validation",
+                      "form": "unwanted",
+                      "shall": "leave the entry out of the release and count it under its reason.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1aa2d-9931-7550-bba8-ae0461c674ae",
+                    "label": "RQ-154",
+                    "name": "Univ Ingest shall leave out the rows that a source definition's rules select out, as a query's WHERE clause would for a source read whole from a file, and count them.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "leave out the rows that a source definition's rules select out, as a query's WHERE clause would for a source read whole from a file, and count them.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f22-2ad9-716e-876f-1876f53660fb",
+                    "label": "RQ-19",
+                    "name": "Univ Ingest shall fix a known defect of a source only as its source definition states the fix.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "fix a known defect of a source only as its source definition states the fix.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c601520a52af",
+                    "label": null,
+                    "name": "Univ Ingest shall classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                    "label": null,
+                    "name": "Univ Ingest shall keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              },
+              {
+                "criteria": [
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab998407d632",
+                    "label": "AC-60",
+                    "name": "The uncertainty of a redshift distance includes a peculiar-velocity term, 300 km/s unless the release's ranking rule sets another.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 60,
+                            "lastLine": 95
+                          }
+                        ],
+                        "name": "a_redshift_distance_beats_tully_fisher_at_15000_km_s_and_loses_at_1000"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 97,
+                            "lastLine": 112
+                          }
+                        ],
+                        "name": "the_peculiar_velocity_term_is_the_rule_s_parameter"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 34,
+                            "lastLine": 69
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_ranks_by_its_peculiar_velocity_term"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions_chain.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 176,
+                            "lastLine": 210
+                          }
+                        ],
+                        "name": "a_redshift_without_an_error_keeps_the_peculiar_velocity_term_and_a_stated_interval_its_bounds"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 277,
+                            "lastLine": 298
+                          }
+                        ],
+                        "name": "a_group_s_redshift_without_an_error_beats_its_uncertain_modulus"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 300,
+                            "lastLine": 324
+                          }
+                        ],
+                        "name": "m81_keeps_its_cepheid_distance_whatever_its_redshift_s_error"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d33ff182c93",
+                    "label": "AC-302",
+                    "name": "Among an object's redshift distances, a measured redshift ranks before an estimated, inferred or reconstructed one, such as a 2M++ clone or a photometric redshift.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 114,
+                            "lastLine": 137
+                          }
+                        ],
+                        "name": "a_measured_6dfgs_redshift_beats_a_2mpp_clone"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d346e01f5b4",
+                    "label": "AC-303",
+                    "name": "Among redshift distances alike in being measured or not, the one with the smallest published velocity uncertainty ranks first.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 89,
+                            "lastLine": 112
+                          }
+                        ],
+                        "name": "eso_460_g001_is_placed_by_2mrs_s_redshift_with_the_smaller_velocity_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 139,
+                            "lastLine": 157
+                          }
+                        ],
+                        "name": "of_two_measured_redshifts_the_smaller_velocity_error_wins"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d359227b0b4",
+                    "label": "AC-304",
+                    "name": "Among redshift distances alike in being measured or not, one without a published velocity uncertainty ranks after every one with one, and is given none.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 159,
+                            "lastLine": 173
+                          }
+                        ],
+                        "name": "a_redshift_without_a_velocity_error_ranks_after_one_with_one_and_is_given_none"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d36092547c6",
+                    "label": "AC-305",
+                    "name": "Redshift distances that tie on whether they were measured and on their velocity uncertainty, or both lack one, rank by method rank, then by the source the ranking rule lists first.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 175,
+                            "lastLine": 192
+                          }
+                        ],
+                        "name": "redshifts_alike_in_kind_and_error_rank_by_method_then_source_order"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a24c-8649-746c-8af0-2d37ff3d9739",
+                    "label": "AC-306",
+                    "name": "Only the redshift distance that ranks first among the object's redshift distances, its leading redshift distance, is compared with the object's other candidates.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 194,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "only_the_leading_redshift_competes_with_an_indicator_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f77617e6ee1",
+                    "label": "AC-307",
+                    "name": "Where any geometric, primary-indicator or secondary-indicator distance is a candidate, the leading redshift distance is set aside if its fractional uncertainty, with its peculiar-velocity term, exceeds the threshold the release's ranking rule states.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 155,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 194,
+                            "lastLine": 226
+                          }
+                        ],
+                        "name": "only_the_leading_redshift_competes_with_an_indicator_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1c319-7860-76e8-92ac-c600a1803611",
+                    "label": null,
+                    "name": "Where any measured or estimated geometric, primary-indicator or secondary-indicator distance precise enough to place its object is a candidate, an inferred one, such as a Bailer-Jones distance resting on a parallax below five times its error, is set aside.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 143,
+                            "lastLine": 162
+                          }
+                        ],
+                        "name": "an_estimated_indicator_distance_wins_over_an_inferred_one_that_is_more_precise"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 173,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "two_inferred_distances_still_compete_by_uncertainty"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_parallax.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 206
+                          }
+                        ],
+                        "name": "an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f788275d038",
+                    "label": "AC-308",
+                    "name": "Among the remaining candidates with a published uncertainty, the one with the smallest fractional distance uncertainty leads.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "no_loop_a_tully_fisher_distance_without_an_error_does_not_beat_a_5_percent_redshift"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 155,
+                            "lastLine": 182
+                          }
+                        ],
+                        "name": "a_redshift_above_the_threshold_is_set_aside_for_an_indicator_distance"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9ac704109a",
+                    "label": "AC-61",
+                    "name": "A tie is broken by method rank: geometric, then primary indicator, then secondary indicator, then spectroscopic redshift, then photometric redshift.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 114,
+                            "lastLine": 151
+                          }
+                        ],
+                        "name": "a_tie_is_broken_by_method_rank"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f79f4feda94",
+                    "label": "AC-309",
+                    "name": "A candidate without a published uncertainty wins only if its method rank is strictly better than that of every remaining candidate with a published uncertainty.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 88,
+                            "lastLine": 105
+                          }
+                        ],
+                        "name": "a_trgb_distance_without_an_error_beats_a_ten_percent_redshift_by_method_rank"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 107,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "a_five_percent_distance_of_the_same_method_rank_beats_one_without_an_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "no_loop_a_tully_fisher_distance_without_an_error_does_not_beat_a_5_percent_redshift"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e65204c3c532",
+                    "label": "AC-310",
+                    "name": "Where no candidate without a published uncertainty wins, the leader among the candidates with a published uncertainty wins.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 107,
+                            "lastLine": 138
+                          }
+                        ],
+                        "name": "a_five_percent_distance_of_the_same_method_rank_beats_one_without_an_error"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 140,
+                            "lastLine": 153
+                          }
+                        ],
+                        "name": "no_loop_a_tully_fisher_distance_without_an_error_does_not_beat_a_5_percent_redshift"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e653f6590128",
+                    "label": "AC-311",
+                    "name": "Where more than one candidate without a published uncertainty qualifies to win, the one with the best method rank wins.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "among_distances_without_an_error_the_best_method_then_the_rule_s_source_order_wins"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e6548a057bc6",
+                    "label": "AC-312",
+                    "name": "Where qualifying candidates without a published uncertainty share the best method rank, the one whose source the ranking rule lists first wins.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 184,
+                            "lastLine": 205
+                          }
+                        ],
+                        "name": "among_distances_without_an_error_the_best_method_then_the_rule_s_source_order_wins"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a149-623d-7310-8064-e655ca08d473",
+                    "label": "AC-313",
+                    "name": "A candidate published without an uncertainty is given none in the ranking, never an invented one.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 73,
+                            "lastLine": 86
+                          }
+                        ],
+                        "name": "a_cepheid_distance_without_an_error_beats_a_redshift_six_times_uncertain"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9b3e95c24c",
+                    "label": "AC-62",
+                    "name": "The ranking rule and its parameters are recorded in the release manifest.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 153,
+                            "lastLine": 172
+                          }
+                        ],
+                        "name": "the_ranking_rule_and_its_parameters_are_recorded_for_the_manifest"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 350,
+                            "lastLine": 366
+                          }
+                        ],
+                        "name": "the_too_uncertain_limit_is_the_rule_s_parameter_recorded_for_the_manifest"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9ce127e733",
+                    "label": "AC-63",
+                    "name": "The object names its preferred measurement and the comparison that made it win: fractional uncertainty, the redshift threshold, method rank, source order, or, between redshift distances, kind of value or velocity uncertainty.",
+                    "requirement": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 174,
+                            "lastLine": 202
+                          }
+                        ],
+                        "name": "the_object_names_its_preferred_measurement_and_the_uncertainty_that_made_it_win"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 228,
+                            "lastLine": 244
+                          }
+                        ],
+                        "name": "the_object_names_the_comparison_that_decided"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 368,
+                            "lastLine": 386
+                          }
+                        ],
+                        "name": "the_comparison_recorded_is_the_one_that_decided_between_tied_candidates"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 388,
+                            "lastLine": 406
+                          }
+                        ],
+                        "name": "the_source_order_is_recorded_only_where_the_sources_differ"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_redshifts.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 228,
+                            "lastLine": 243
+                          }
+                        ],
+                        "name": "the_object_names_kind_of_value_or_velocity_uncertainty_as_what_decided"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9e42fa2c14",
+                    "label": "AC-64",
+                    "name": "A Gaia position is preferred over a Hipparcos one, and either over a survey position, unless a published uncertainty says otherwise.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 204,
+                            "lastLine": 230
+                          }
+                        ],
+                        "name": "gaia_is_preferred_over_hipparcos_and_either_over_a_survey_unless_an_error_says_otherwise"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1adfa-315f-708f-8cd8-bf4bc1cdc275",
+                    "label": "AC-462",
+                    "name": "An object that holds pieces of a nearby galaxy takes the position of the galaxy whose extent took them, never a piece's.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 122,
+                            "lastLine": 141
+                          }
+                        ],
+                        "name": "a_galaxy_that_took_pieces_takes_its_own_position_whatever_the_order_of_its_entries"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/extents.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 275,
+                            "lastLine": 308
+                          }
+                        ],
+                        "name": "a_smaller_galaxy_that_takes_a_larger_ones_group_hosts_it_and_gives_the_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1adfa-315f-708f-8cd8-bf4cdd697c86",
+                    "label": "AC-463",
+                    "name": "Among positions without a published uncertainty, a position from a 21 cm survey's beam ranks after an optical or infrared survey's.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 232,
+                            "lastLine": 247
+                          }
+                        ],
+                        "name": "a_21_cm_beam_position_ranks_after_a_survey_position"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-aba03617706c",
+                    "label": "AC-65",
+                    "name": "The object can be looked up but appears in no tile and in no bounded volume query.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 249,
+                            "lastLine": 270
+                          }
+                        ],
+                        "name": "an_object_without_a_distance_is_found_but_not_placed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/positions.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 357,
+                            "lastLine": 376
+                          }
+                        ],
+                        "name": "an_object_without_a_distance_or_a_position_is_not_placed"
+                      }
+                    ]
+                  },
+                  {
+                    "key": "01a1a147-6018-75e1-9409-3f7a2ff48aad",
+                    "label": "AC-314",
+                    "name": "An object whose preferred distance has a fractional uncertainty above 1 (100%) is given no three-dimensional position, with \"distance too uncertain\" as the reason.",
+                    "requirement": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "rules": [],
+                    "tests": [
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 246,
+                            "lastLine": 275
+                          }
+                        ],
+                        "name": "an_object_whose_distance_is_more_than_100_percent_uncertain_is_not_placed"
+                      },
+                      {
+                        "file": "crates/univ-ingest/tests/ranking_order.rs",
+                        "located": true,
+                        "locations": [
+                          {
+                            "firstLine": 326,
+                            "lastLine": 348
+                          }
+                        ],
+                        "name": "an_object_placed_only_by_a_redshift_without_an_error_below_300_km_s_is_too_uncertain"
+                      }
+                    ]
+                  }
+                ],
+                "key": "01a19f23-636e-7035-8185-ab97eb9c2fb9",
+                "label": "F-6",
+                "name": "Choose the preferred measurement",
+                "requirements": [
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab988f5d57b7",
+                    "label": "RQ-24",
+                    "name": "Univ Ingest shall choose as an object's preferred distance the measurement that ranks first: its leading redshift distance by kind of value and velocity uncertainty, against its other distances by fractional distance uncertainty and method rank.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "choose as an object's preferred distance the measurement that ranks first: its leading redshift distance by kind of value and velocity uncertainty, against its other distances by fractional distance uncertainty and method rank.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9dfac6edfe",
+                    "label": "RQ-25",
+                    "name": "Univ Ingest shall take an object's sky position from its catalogue entry with the smallest position uncertainty.",
+                    "statement": {
+                      "condition": null,
+                      "form": "ubiquitous",
+                      "shall": "take an object's sky position from its catalogue entry with the smallest position uncertainty.",
+                      "system": "Univ Ingest"
+                    }
+                  },
+                  {
+                    "key": "01a19f23-636e-7035-8185-ab9fe065861e",
+                    "label": "RQ-26",
+                    "name": "If an object has no distance, or its preferred distance has a fractional uncertainty above 1, then Univ Ingest shall keep the object with its sky position alone and give it no derived three-dimensional position.",
+                    "statement": {
+                      "condition": "an object has no distance, or its preferred distance has a fractional uncertainty above 1",
+                      "form": "unwanted",
+                      "shall": "keep the object with its sky position alone and give it no derived three-dimensional position.",
+                      "system": "Univ Ingest"
+                    }
+                  }
+                ]
+              }
+            ],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 712,
+              "linked": 680,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
+  - key: 01a1c36b-ce3e-7524-b799-b914f82e3f46
+    id: review-issues-gate
+    kind: note
+    versions:
+      - key: 01a1c36b-ce3e-7524-b799-b915bb6d5cfd
+        at: 2026-11-10T03:06:24Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Gate run 1: loft reconcile"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | `loft reconcile --fail-on warning` stopped the gate. AC-91, AC-92 and AC-166 (the scale domains, wave 2) and AC-362 (one colour for the galaxy domains, wave 4) were reworded by release 13's spec, so their reviewed links went stale before the code that meets them exists. | `cargo xtask check` (gate run 1) | Each is now `unverified`, with the wave that will meet it and the tests that wave restores, in `84be45c` | fixed |
+
+          Integration passed on `72c33f6`: 21 explorer tests and the Worker's end-to-end tests. The gate runs again on `84be45c`.
+        tone: warning
+  - key: 01a1c371-7fcb-7695-978f-c19fd4ff1df8
+    id: w1-produced
+    kind: note
+    versions:
+      - key: 01a1c371-7fcb-7695-978f-c1a277385953
+        at: 2026-11-10T03:12:37Z
+        revision: 18
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "What wave 1 produced"
+        markdown: |-
+          - **Gaia DR3 stars and Bailer-Jones distances to G < 14**, in 768 chunks run as archive jobs: 16,844,156 sources and 16,716,140 distances, counted live on 2026-11-10.
+          - **Inferred distances:** a Bailer-Jones distance resting on ϖ/σ < 5 (or a null or non-positive ratio) is inferred. The ranking sets it aside beside a measured or estimated distance precise enough to place the star, and otherwise it places the star like any other.
+          - **16 object shards bound**, on the owner's choice after one chunk measured 1.8 KB a star (release 13 ≈ 61 GB in its shards).
+          - **Pruning proven safe for additive releases** by `prune_then_change.rs`, before any real prune.
+          - **Science check** `inferred-share-of-gaia-stars`, 2–8%.
+
+          **Left open for later waves:** AC-91, AC-92 and AC-166 (wave 2) and AC-362 (wave 4) are unverified until those waves meet them. The full fetch takes about 14 hours and waits for the owner's approval, with the release stage.
+        tone: success

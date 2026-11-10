@@ -1,0 +1,346 @@
+key: 01a1c328-fe56-704d-819d-6a8107024c0d
+id: w1-measure
+versions:
+  - key: 01a1c328-fe56-704d-819d-6a85f4b75854
+    at: 2026-11-10T01:53:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Measure on one chunk"
+    goal: "A one-chunk scratch build gives the D1 bytes per star and the cells that leave shard 0"
+    status: planned
+  - key: 01a1c348-6515-7452-a90d-89f3241967eb
+    at: 2026-11-10T02:27:44Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Measure on one chunk"
+    goal: "A one-chunk scratch build gives the D1 bytes per star and the cells that leave shard 0"
+    status: active
+  - key: 01a1c34c-cd95-77c1-864f-4f56a559c402
+    at: 2026-11-10T02:32:32Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Measure on one chunk"
+    goal: "A one-chunk scratch build gives the D1 bytes per star and the cells that leave shard 0"
+    status: done
+blocks:
+  - key: 01a1c32a-9ac8-73c6-af9b-d5581350ff25
+    id: t7-measure
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d564093b9520
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Measure a one-chunk scratch build"
+        detail: "Bytes per star and the cells leaving shard 0, plus the inferred-share science check. Done when the note is written."
+        state: open
+      - key: 01a1c348-6515-7452-a90d-89f4c49213d0
+        at: 2026-11-10T02:27:44Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Measure a one-chunk scratch build"
+        detail: "Bytes per star and the cells leaving shard 0, plus the inferred-share science check. Done when the note is written."
+        state: active
+      - key: 01a1c34c-cd95-77c1-864f-4f557bd25a37
+        at: 2026-11-10T02:32:32Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Measure a one-chunk scratch build"
+        detail: "1,797 B a star (shard 1,773 plus catalogue 24), 33 s a chunk job. Shards 12–15 bound on the owner's choice. The inferred-share science checks (3%–8%) are added."
+        state: done
+  - key: 01a1c34b-f676-77d9-8cb8-362f4b701e06
+    id: measure-result
+    kind: note
+    versions:
+      - key: 01a1c34b-f676-77d9-8cb8-36319646c188
+        at: 2026-11-10T02:31:37Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "One chunk measured: a star costs twice what I assumed"
+        markdown: |-
+          **The scratch build** (its own cache, state and output under `.cache/univ-ingest/scratch/`; the real store is untouched) took chunk 0 of the 768 G < 14 chunks. It holds 21,937 Gaia sources and 21,792 Bailer-Jones distances, giving 21,937 objects, 21,792 placed and 145 with no distance.
+
+          | Table (shard) | Rows | Bytes per star |
+          |---|---|---|
+          | measurements | 172,693 (7.9 a star) | 793 |
+          | entries | 43,729 (2 a star) | 417 |
+          | objects | 21,937 | 305 |
+          | designations | 43,729 (2 a star: `Gaia DR3` and `Gaia EDR3`, the same source_id) | 225 |
+          | object_cells | 21,792 | 33 |
+          | object_shards (catalogue) | 21,937 | 24 |
+          | **all** | | **≈ 1,797** |
+
+          **What that means for release 13:**
+          - My earlier estimate used release 12's average, 0.9 KB an object. A Gaia star with its distances costs 1.8 KB.
+          - About 16.36M new Gaia objects × 1.77 KB ≈ **29 GB more** in the object shards, plus about 0.4 GB in the catalogue. The decision and the plan said about 15 GB.
+          - The shards then hold about 32.3 + 29 ≈ **61 GB** for release 13. At the 4.5 GB per-release budget that needs at least 14 object shards, and **16** to leave slack for packing whole cells. Twelve are bound now.
+
+          **Fetch time:** each chunk was one archive job of about 33 s, with chunks fetched one after another. 768 chunks of each of two sources take about **14 hours**. The run resumes from the chunks on disk if it stops.
+
+          **Also seen:** each star is designated twice, as `Gaia DR3 <id>` and `Gaia EDR3 <id>` (Bailer-Jones names its source EDR3). That is 225 B a star, about 3.7 GB over the cut, for one identifier written two ways.
+        tone: warning
+  - key: 01a1c34b-f676-77d9-8cb8-36309cffa3b9
+    id: q-capacity
+    kind: question
+    versions:
+      - key: 01a1c34b-f676-77d9-8cb8-3632dcc02da5
+        at: 2026-11-10T02:31:37Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "Release 13 at G < 14 needs about 29 GB more, not 15. How should it fit?"
+        header: "Capacity"
+        context: "Measured on one real chunk of 21,937 stars: 1.8 KB a star in D1. Release 12's shards hold 32.3 GB; with G < 14 the shards hold about 61 GB, against 4.5 GB per shard for each release."
+        options:
+          - label: "Bind 16 shards"
+            detail: "Keep G < 14 and bind four more object shards, 16 in all (72 GB of per-release budget). This is a config change and a test, as for shards 8–11. Local disk grows by about 30 GB for D1 and 30 GB for the build, with 1 TB free. Recommended: the owner's choice of G < 14 stands, and nothing about the rows changes."
+            recommended: true
+          - label: "Slim rows first"
+            detail: "Before release 13, a task in wave 1 stops designating each star twice. Gaia DR3 and EDR3 share the identifier, so the Bailer-Jones entry would carry no second designation, saving about 225 B a star, 3.7 GB. It would then look for other savings in measurements. Twelve shards may still not be enough. It changes a spec criterion (AC-73: each designation keeps the source that gave it)."
+          - label: "G < 13 instead"
+            detail: "7.4M stars, about 12 GB more, within the 12 shards now bound. Half the detail asked for. The decision would be superseded again."
+    responses:
+      - key: 01a1c34c-2cd3-7502-b96c-d8e8227fc3e1
+        at: 2026-11-10T02:31:51Z
+        revision: 13
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        chosen:
+          - "Bind 16 shards"
+  - key: 01a1c34c-cd95-77c1-864f-4f51b14db29f
+    id: d-capacity
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1c34c-cd95-77c1-864f-4f53a7ac234c
+        at: 2026-11-10T02:32:32Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bind 16 object shards and keep G < 14"
+        consequence: "Shards 12–15 are bound beside 8–11 (both wrangler.toml files, the config and publisher tests). The G < 14 decision now states about 29 GB more, 16 shards and about 14 hours of fetching. Release 13 then holds about 61 GB in its shards, within 72 GB."
+        question: 01a1c34b-f676-77d9-8cb8-36309cffa3b9
+  - key: 01a1c34c-cd95-77c1-864f-4f527f3852cd
+    id: w1-spec-change-3
+    kind: loft
+    versions:
+      - key: 01a1c34c-cd95-77c1-864f-4f542b74a1ed
+        at: 2026-11-10T02:32:32Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: spec-change
+        note: "The unpublished G < 14 decision is corrected in place with the measured 1.8 KB a star: about 29 GB more, 16 object shards and about 14 hours of fetching. Its G < 12 and G < 15 assessments are rescaled the same way."
+        base: "product/milky-way"
+        recorded:
+          commit: "62ba4c1ce9757807ec33193f853a3d7fb49dfddb"
+          branch: "stage/milky-way-1"
+          loft: 2.3.0
+          at: 2026-11-10T02:32:32Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 1,
+              "graph.diff": 3,
+              "graph.edges": 1,
+              "graph.nodes": 9,
+              "status.base.added": 0,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5da24c9d23c",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers",
+                  "words": {
+                    "after": "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers\n\nRelease 13 takes Gaia DR3 stars below G = 14 with their Bailer-Jones 2021 distances, beside the Gaia Catalogue of Nearby Stars and Hipparcos, and adds open and globular clusters, classical Cepheids, RR Lyrae stars, maser parallaxes and the Edenhofer 2024 dust map.",
+                    "before": "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers\n\nRelease 13 takes Gaia DR3 stars below G = 14 with their Bailer-Jones 2021 distances, beside the Gaia Catalogue of Nearby Stars and Hipparcos, and adds open and globular clusters, classical Cepheids, RR Lyrae stars, maser parallaxes and the Edenhofer 2024 dust map."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                  "words": {
+                    "after": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "before": "The Bailer-Jones 2021 distances carry the Gaia DR3 parallax and parallax error of each source they give a distance to."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "words": {
+                    "after": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "before": "A star whose only distance is inferred is still placed, at that distance."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5da24c9d23c",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers",
+                  "words": {
+                    "after": "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers\n\nRelease 13 takes Gaia DR3 stars below G = 14 with their Bailer-Jones 2021 distances, beside the Gaia Catalogue of Nearby Stars and Hipparcos, and adds open and globular clusters, classical Cepheids, RR Lyrae stars, maser parallaxes and the Edenhofer 2024 dust map.",
+                    "before": "Take Gaia DR3 stars to G < 14, with the Galaxy's tracers\n\nRelease 13 takes Gaia DR3 stars below G = 14 with their Bailer-Jones 2021 distances, beside the Gaia Catalogue of Nearby Stars and Hipparcos, and adds open and globular clusters, classical Cepheids, RR Lyrae stars, maser parallaxes and the Edenhofer 2024 dust map."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a1c319-7860-76e8-92ac-c5da24c9d23c",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1c319-7860-76e8-92ac-c5f854eb67f1"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 13 adds or widens, to show the Milky Way in depth.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5f854eb67f1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c601520a52af",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "parent": "01a1c319-7860-76e8-92ac-c601520a52af"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 108,
+                    "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 144,
+                    "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  }
+                ],
+                "commit": "2edb4e4735caa18a50a3d3cc5446a0b4c7075808",
+                "removed": [],
+                "revision": "product/milky-way"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 8,
+                "publishedAt": "2026-11-10T00:58:19Z",
+                "stateRoot": "2737388e7982ae9afc71aeea4312e3d06c188090bdefb7a71943cc0a812ee2ae"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/milky-way-1",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

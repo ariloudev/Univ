@@ -1,0 +1,144 @@
+key: 01a1c328-fe56-704d-819d-6a7f2c44d6a6
+id: w1-plan
+versions:
+  - key: 01a1c328-fe56-704d-819d-6a83034e3e29
+    at: 2026-11-10T01:53:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Plan wave 1"
+    goal: "The owner has approved wave 1's branch plan, with its tasks registered"
+    status: active
+  - key: 01a1c32a-9ac8-73c6-af9b-d55be06d890a
+    at: 2026-11-10T01:55:11Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Plan wave 1"
+    goal: "The owner has approved wave 1's branch plan, with its tasks registered"
+    status: done
+blocks:
+  - key: 01a1c32a-4fe8-77c1-891b-02431a035877
+    id: plan-29-plan-crystalline-hopping-yeti-01a1c328-fe56-704d-819d-6a7f2c44d6a6
+    kind: plan
+    versions:
+      - key: 01a1c32a-4fe8-77c1-891b-0244a4a6ee59
+        at: 2026-11-10T01:54:52Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 1 branch plan: deeper Gaia stars and inferred distances (`stage/milky-way-1`)"
+        markdown: |
+          # Wave 1 branch plan: deeper Gaia stars and inferred distances (`stage/milky-way-1`)
+
+          ## Context
+
+          This is the first wave of the approved release 13 plan. That plan is kept in the
+          `product/milky-way` Yard Log as the plan block "Build plan: a deeper Milky Way (release 13)".
+          Wave 1 lets the stars go to G < 14, marks Bailer-Jones distances that lean on the prior as
+          inferred, sets them aside in ranking, binds four more object shards, and proves with tests that
+          pruning followed by a change build keeps additive releases intact. The branch is cut from
+          `product/milky-way` at `2edb4e4`.
+
+          Two findings since the release plan:
+          - **The inferred rule needs no new rule machinery.** `source/rules.rs` `Condition::matches`
+            already tests `below` a number and `is: [""]`, which matches a blank cell. Gaia's
+            `parallax_over_error` column carries the ratio, so the rule is written in the source YAML. One
+            test then holds its bound equal to the ratio the ranking rule states.
+          - **A spec conflict needs a minor fix.** The ranking rule's published `too_uncertain_above: 1.0`
+            (RQ-26) leaves unplaced an object whose distance is more uncertain than itself. The new
+            criterion "A star whose only distance is inferred is still placed, at that distance" would
+            contradict it for those few stars.
+            - The criterion becomes: "An inferred distance places its star as any other distance does,
+              under the ranking rule's threshold for a distance too uncertain to place."
+            - This is a minor spec change (standing pre-approval). It is committed and its `spec-change`
+              view recorded before any code.
+
+          ## Tasks
+
+          0. **Spec fix.** Reword that criterion in
+             `spec/products/univ-ingest/normalization/normalize-records.yaml`. Run `loft fmt` and
+             `loft check --fail-on warning`, commit `spec:`, and record the `spec-change` block.
+          1. **Ratio in the ranking rule.**
+             - Add `prior_led_parallax_ratio: 5.0` and `prior_led_parallax_basis` (Bailer-Jones et al.
+               2021, AJ 161, 147, on the prior's weight at large fractional parallax error; quoted once
+               fetched) to `rules/ranking.yaml`.
+             - Add the field to `RankingRules` (`crates/univ-ingest/src/ranking/rules.rs:15`), refusing a
+               value that is not finite and positive.
+             - Done when: a `ranking_rules` test refuses 0, −1 and NaN, and accepts 5.
+          2. **Bailer-Jones rows marked inferred.**
+             - `sources/bailer-jones-2021.yaml` selects `g.parallax`, `g.parallax_error` and
+               `g.parallax_over_error`, and keeps the parallax and its error as measured values.
+             - Two rules set `kind_of_value: inferred` on both distance readings:
+               `when: {column: parallax_over_error, below: 5}` and `when: {column: parallax_over_error,
+               is: [""]}`.
+             - A repository test checks that every Bailer-Jones `below` bound equals
+               `RankingRules.prior_led_parallax_ratio`.
+             - Done when: a new test `crates/univ-ingest/tests/normalize_bailer_jones_kind.rs`, on a
+               recorded fixture of six rows (ϖ/σ = 4.9, 5.0, 7, −0.3, 0 and blank), gives inferred, estimated,
+               estimated, inferred, inferred and inferred.
+          3. **Ranking set-aside.**
+             - In `ranking/distance.rs` `remaining()` (:199), when any open non-redshift candidate is
+               measured or estimated, drop the open non-redshift candidates that are inferred.
+             - Where the set-aside decides the winner, `Decided` gains `KindOfValue`
+               (`univ-model/src/object/preferred.rs:103`), and the API's text for it follows.
+             - Done when: tests in `ranking_parallax.rs` show that an estimated Cepheid-like
+               primary-indicator distance with a larger fraction beats an inferred Bailer-Jones distance,
+               and that an inferred distance alone still wins and places.
+          4. **G < 14 queries.**
+             - `sources/gaia-dr3-bright.yaml` and `sources/bailer-jones-2021.yaml` cut at G < 14, in 768
+               chunks of about 22,000 rows. The titles become "(G < 14)", and the ids stay.
+             - The live `COUNT(*)` runs once in the background and its result goes into `cuts` with the
+               date. No full fetch runs.
+             - Done when: `univ-ingest` checks the definitions, and the recorded chunk-0 fixtures still
+               normalize.
+          5. **Four more object shards.**
+             - Add `OBJECTS_8` … `OBJECTS_11` (`univ-objects-8` … `-11`, ids `…0108` … `…0111`) to
+               `wrangler.toml` and `crates/univ-server/wrangler.toml`.
+             - The loop in `crates/univ-server/tests/config.rs:55` goes to 12, and the doc comment in
+               `crates/univ-server/src/d1.rs:2` follows. The Worker binds by name, so no routing code
+               changes.
+             - Done when: the config test passes, and `cargo xtask integration` loads the fixture state.
+          6. **Prune-then-change tests.** `crates/univ-ingest/tests/prune_then_change.rs`, on the memory
+             store, reusing the helpers of `tests/shared_rows.rs` and `tests/prune.rs`:
+             - (a) Publish 1–3, prune 1 and 2, then build and publish 4 as a change. The rows valid in 3
+               and 4 equal those of the same releases built and published without pruning, and 4 writes
+               only its change.
+             - (b) A tight budget makes release *n* move a cell to a new shard; prune *n*−1. The old
+               shard's copies are deleted, the new shard's kept, and every read of *n* is unchanged.
+             - Done when: both pass.
+          7. **Measure on one chunk** (stage *Measure on one chunk*).
+             - Build a scratch release from chunk 0 of the G < 14 queries (about 22k stars), with its own
+               `--out` and `--state` under `.cache/univ-ingest/scratch/`, never the real state.
+             - Read its `d1_estimate` per star and which star cells would leave shard 0, then write a note.
+             - Add the science check `inferred-share-of-gaia-stars`, at 3–8%, citing the 2026-11-10 sample
+               at 4.6%.
+             - Done when: the note gives the bytes per star and the projected GB per shard.
+          8. **Review.** `/simplify` and `/code-review` in parallel, findings fixed and listed in
+             `build-issues`. Then `cargo xtask check` once and `cargo xtask integration` once. Link the
+             tests in `loft.trace.yaml`, run `loft reconcile --accept`, record the `trace` view, close the
+             Yard Log, and wait for the owner's word to merge.
+
+          The `build-issues` note of *Build wave 1* is kept throughout.
+
+          ## Verification
+
+          - Focused tests between tasks:
+            - `cargo test -p univ-ingest ranking normalize_bailer prune_then_change`
+            - `cargo test -p univ-server config`
+            - clippy on the touched crates, and `cargo fmt --check`
+            - `loft check` after task 0
+          - The wave ends with the full gate and integration green, each run once.
+        planMode: true
+    responses:
+      - key: 01a1c32a-6d3c-7171-972f-a474fe11ca69
+        at: 2026-11-10T01:55:00Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: approved
