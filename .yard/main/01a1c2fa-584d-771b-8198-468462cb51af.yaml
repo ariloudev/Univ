@@ -1,0 +1,40 @@
+key: 01a1c2fa-584d-771b-8198-468462cb51af
+id: asked-toolu-01nntggce8cu9wrg4hcvnbjh
+versions:
+  - key: 01a1c2fa-584d-771b-8198-4686865fa2a9
+    at: 2026-11-10T01:02:28Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "659efa7c-bd48-4781-a542-1417b043d536"
+    title: "Asked in the session"
+    status: active
+blocks:
+  - key: 01a1c2fa-584d-771b-8198-46850e36691f
+    id: ask-toolu-01nntggce8cu9wrg4hcvnbjh-1
+    kind: question
+    versions:
+      - key: 01a1c2fa-584d-771b-8198-46873442a677
+        at: 2026-11-10T01:02:28Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        prompt: "All 712 commits already pushed to github.com/ariloudev/Univ are signed ariloudev <ariloudev@local>. Should I rewrite them to contact@askloft.ai? That changes every commit hash on main and develop, and needs a force-push over what's on GitHub."
+        header: "Old commits"
+        options:
+          - label: "Rewrite and force-push"
+            detail: "Rewrite the author and committer email on all 712 commits with git filter-repo (or filter-branch), then force-push main and develop. GitHub then credits every commit to you. Every hash changes, so commit hashes recorded in the Yard Logs and notes no longer match the history."
+          - label: "New commits only"
+            detail: "Leave history as it is. Only commits from now on use contact@askloft.ai, so the old ones stay unlinked on GitHub. Nothing is rewritten or force-pushed."
+        ownWords: true
+    responses:
+      - key: 01a1c2fa-b912-76d2-ac1e-64d665797c28
+        at: 2026-11-10T01:02:53Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "New commits only"
