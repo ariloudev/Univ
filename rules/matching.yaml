@@ -631,6 +631,18 @@ pairs:
       between Hipparcos's epoch J1991.25 and J2000 is a few arcseconds, and two stars bright
       enough to be named rarely lie within an arcminute of each other. Mesarthim (gamma Arietis)
       lies 1 arcsec from HIP 8832.
+  - sources: [openngc, baumgardt-vasiliev-2021]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: none }
+    basis: >-
+      Measured on 2026-11-10: the 107 globular clusters both name the same (Baumgardt's NGC_104
+      as OpenNGC's NGC 104) lie a median 3 arcsec apart, 90% within 9 and all within 40 (NGC 288);
+      60 arcsec takes every one of them, far inside a globular cluster's few-arcminute core. Ten
+      other OpenNGC objects lie within 60 arcsec of a cluster; where one is a cluster's second
+      candidate, the rule above keeps both apart and linked. Neither publishes a line of sight to
+      compare. The open clusters of Hunt & Reffert 2023 are not paired: their densest points lie a
+      median 50 arcsec and up to degrees from OpenNGC's positions, so a tolerance wide enough to
+      join them would join other clusters and nebulae too.
   - sources: [openngc, twomrs]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: none }

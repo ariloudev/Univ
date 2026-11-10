@@ -115,3 +115,15 @@ fn a_star_two_tracer_sources_name_differently_is_counted_as_a_conflict() {
     assert!(m.objects[0].kind.is_tracer());
     assert_eq!(m.report.conflicting_kinds, 1);
 }
+
+#[test]
+fn a_globular_cluster_joins_the_openngc_object_of_the_same_cluster_by_position() {
+    // Positions as recorded on 2026-11-10: 47 Tuc in Baumgardt's table, NGC_104 at (6.023792,
+    // -72.081306), and OpenNGC's NGC 104 3 arcsec away (SIMULATED offset of that size).
+    let cluster = entry("baumgardt-vasiliev-2021", "NGC_104", 6.023_792, -72.081_306);
+    let named = entry("openngc", "NGC 104", 6.023_792, -72.081_306 + 3.0 / 3600.0);
+    let rules = matching_rules().with_object_kinds(&common::read_sources());
+    let m = match_entries(&rules, vec![cluster, named]);
+    assert_eq!(m.objects.len(), 1, "one cluster");
+    assert_eq!(m.objects[0].kind, ObjectKind::GlobularCluster);
+}
