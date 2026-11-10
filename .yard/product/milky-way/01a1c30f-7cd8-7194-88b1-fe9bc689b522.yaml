@@ -28,3 +28,12 @@ versions:
     title: "Wave 2: Galaxy tracers domain and sources"
     goal: "A fourth scale domain, Galaxy tracers, holds Hunt & Reffert, Baumgardt & Vasiliev, Skowron, Li and Reid objects, tiled, served and listed, merged into product/milky-way"
     status: planned
+  - key: 01a1c371-c088-71b2-a21d-8506c39f93e6
+    at: 2026-11-10T03:12:54Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 2: Galaxy tracers domain and sources"
+    goal: "A fourth scale domain, Galaxy tracers, holds Hunt & Reffert, Baumgardt & Vasiliev, Skowron, Li and Reid objects, tiled, served and listed, merged into product/milky-way"
+    status: active
