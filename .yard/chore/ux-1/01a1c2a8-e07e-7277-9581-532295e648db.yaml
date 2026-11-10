@@ -410,6 +410,15 @@ blocks:
         title: "Closing a record lets go and returns to Earth"
         detail: "`selection.close` becomes the let-go itself (`letGo(clear, world?.controller)`), used by both panels' close buttons, a second click and the list, with a new e2e test for the close buttons. Done when `pnpm check` is green; the e2e test runs in integration."
         state: active
+      - key: 01a1c2c3-a0ec-7207-8acd-3db57cab9dd6
+        at: 2026-11-10T00:02:43Z
+        revision: 35
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Closing a record lets go and returns to Earth"
+        detail: "Done in f6f28db. `selection.close` is the let-go itself (`letGo(clear, world?.controller)`), so both panels' close buttons, a second click and the list all return to Earth. Adds the e2e test \"closing a record with its close button lets go, making Earth the focus again\". `pnpm check` is green; the e2e test runs in integration under f-trace."
+        state: done
   - key: 01a1c2c3-32d0-72af-82d4-535c224f96b0
     id: f-kept
     kind: task
@@ -423,6 +432,15 @@ blocks:
         title: "The depth index keeps its order and find text"
         detail: "localState.ts (`readLocal`, `writeLocal`, `useLocalState`); storedDrawer.ts built on it, keeping its exports; DepthIndex's order and find text kept; unit tests, and the e2e test reloads. Done when `pnpm check` is green."
         state: open
+      - key: 01a1c2c3-a0ec-7207-8acd-3db69bcb99b0
+        at: 2026-11-10T00:02:43Z
+        revision: 35
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The depth index keeps its order and find text"
+        detail: "localState.ts (`readLocal`, `writeLocal`, `useLocalState`); storedDrawer.ts built on it, keeping its exports; DepthIndex's order and find text kept; unit tests, and the e2e test reloads. Done when `pnpm check` is green."
+        state: active
   - key: 01a1c2c3-32d0-72af-82d4-535de982b151
     id: f-trace
     kind: task

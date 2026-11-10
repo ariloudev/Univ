@@ -218,7 +218,7 @@ test("lists the release's structures and reads one, culling the view to it from 
   await expect(inside).toHaveCount(0);
 });
 
-test("lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box", async ({ page }) => {
+test("lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload", async ({ page }) => {
   await page.getByRole("navigation", { name: "Panels" }).getByRole("button", { name: "Structures" }).click();
   const list = page.getByTestId("structures");
   const rows = list.getByRole("button");
@@ -253,6 +253,12 @@ test("lists the structures outward from Earth, under headings, each on one axis,
   await expect(list.getByRole("heading", { level: 3 })).toHaveCount(0);
   const byName = await rows.evaluateAll((buttons) => buttons.map((b) => (b.getAttribute("aria-label") ?? "").split(", ")[0] ?? ""));
   expect(byName).toEqual([...byName].sort((a, b) => a.localeCompare(b)));
+  // The order and the find text are kept across a reload, with the drawer.
+  await page.getByRole("searchbox", { name: "Find a structure" }).fill("void");
+  await page.reload();
+  await expect(page.getByRole("button", { name: "A to Z" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("searchbox", { name: "Find a structure" })).toHaveValue("void");
+  await expect(page.getByTestId("structures-count")).toHaveText(`${voids} of ${total}`);
 });
 
 test("takes the structures' outlines away from their switch, still naming each and choosing it by its name, and keeps it off across a reload", async ({ page }) => {

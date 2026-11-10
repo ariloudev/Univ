@@ -1,9 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { DepthRow } from "./depth.ts";
-import { DepthIndex } from "./DepthIndex.tsx";
+import { DepthIndex, FIND_KEY, ORDER_KEY } from "./DepthIndex.tsx";
 
 const row = (id: string, name: string, kind: string, distance: number | undefined, known: DepthRow["known"] = "observed"): DepthRow => ({ id, name, kind, colour: "#9e73ff", known, distance });
 
@@ -16,6 +16,11 @@ const ROWS: DepthRow[] = [
 ];
 
 const none = () => undefined;
+
+afterEach(() => {
+  localStorage.clear();
+  vi.restoreAllMocks();
+});
 const names = (): string[] => within(screen.getByTestId("structures")).getAllByRole("button").map((b) => (b.getAttribute("aria-label") ?? "").split(",")[0] ?? "");
 
 describe("the Structures drawer as a depth index (see-the-structures)", () => {
@@ -86,6 +91,43 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
     render(<DepthIndex rows={[]} chosen={undefined} onChoose={none} />);
     expect(screen.getByTestId("structures").textContent).toBe("No structures are drawn. Turn their kinds on in the Show drawer.");
     expect(screen.getByTestId("structures-count").textContent).toBe("0");
+  });
+
+  it("keeps the order and the find text across visits", async () => {
+    const { unmount } = render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
+    await userEvent.click(screen.getByRole("button", { name: "A to Z" }));
+    await userEvent.type(screen.getByRole("searchbox", { name: "Find a structure" }), "void");
+    expect(localStorage.getItem(ORDER_KEY)).toBe("name");
+    expect(localStorage.getItem(FIND_KEY)).toBe("void");
+    unmount();
+    render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
+    expect(screen.getByRole("button", { name: "A to Z" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole<HTMLInputElement>("searchbox", { name: "Find a structure" }).value).toBe("void");
+    expect(names()).toEqual(["Bootes Void", "Local Void"]);
+  });
+
+  it("forgets the order and the find text once they are back to nearest first and empty", async () => {
+    localStorage.setItem(ORDER_KEY, "name");
+    localStorage.setItem(FIND_KEY, "void");
+    render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
+    await userEvent.click(screen.getByRole("button", { name: "Nearest first" }));
+    await userEvent.clear(screen.getByRole("searchbox", { name: "Find a structure" }));
+    expect(localStorage.getItem(ORDER_KEY)).toBeNull();
+    expect(localStorage.getItem(FIND_KEY)).toBeNull();
+  });
+
+  it("opens nearest first with an empty find box where nothing is kept, or local storage is refused", () => {
+    const { unmount } = render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
+    expect(screen.getByRole("button", { name: "Nearest first" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole<HTMLInputElement>("searchbox", { name: "Find a structure" }).value).toBe("");
+    unmount();
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("The operation is insecure.", "SecurityError");
+    });
+    render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
+    expect(screen.getByRole("button", { name: "Nearest first" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole<HTMLInputElement>("searchbox", { name: "Find a structure" }).value).toBe("");
+    expect(names()).toHaveLength(5);
   });
 
   it("marks the chosen structure's row as chosen, and no other", () => {

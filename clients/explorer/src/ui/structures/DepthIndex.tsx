@@ -1,5 +1,4 @@
-import { useState } from "react";
-
+import { useLocalState } from "../localState.ts";
 import { words } from "../text.ts";
 import { DEPTH_TICKS, type DepthRow, KNOWN_WORDS, type Known, banded, byName, depthX, distanceText, matching } from "./depth.ts";
 
@@ -84,6 +83,18 @@ const Ticks = () => (
 
 type Order = "distance" | "name";
 
+/** The local storage keys that keep the order and the find text across visits. */
+export const ORDER_KEY = "univ-explorer.structures-order";
+export const FIND_KEY = "univ-explorer.structures-find";
+
+/** The order kept, nearest first unless it is by name; kept only where it is by name. */
+const orderOf = (kept: string | undefined): Order => (kept === "name" ? "name" : "distance");
+const keptOrder = (order: Order): string | undefined => (order === "name" ? order : undefined);
+
+/** The find text kept, none for an empty box. */
+const textOf = (kept: string | undefined): string => kept ?? "";
+const keptText = (text: string): string | undefined => (text === "" ? undefined : text);
+
 const ORDERS: readonly { order: Order; text: string }[] = [
   { order: "distance", text: "Nearest first" },
   { order: "name", text: "A to Z" },
@@ -91,10 +102,10 @@ const ORDERS: readonly { order: Order; text: string }[] = [
 
 /** The Structures drawer (see-the-structures): the structures outward from Earth, under headings
  * of distance, each placed on one logarithmic axis of distance that every row shares; or by name;
- * narrowed by what is typed. */
+ * narrowed by what is typed; its order and find text kept across visits. */
 export function DepthIndex({ rows, chosen, onChoose }: { rows: readonly DepthRow[]; chosen: string | undefined; onChoose: (id: string) => void }) {
-  const [text, setText] = useState("");
-  const [order, setOrder] = useState<Order>("distance");
+  const [text, setText] = useLocalState(FIND_KEY, textOf, keptText);
+  const [order, setOrder] = useLocalState(ORDER_KEY, orderOf, keptOrder);
   const found = matching(rows, text);
   const groups = order === "distance" ? banded(found) : [{ heading: undefined, rows: byName(found) }];
   return (
