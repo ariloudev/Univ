@@ -10,6 +10,15 @@ versions:
     title: "Build wave 3"
     goal: "The Edenhofer 2024 dust map is defined, read from its HEALPix file and resampled into mean and standard-deviation grids of 10 pc cells about the Sun, published with the release, each criterion verified by its focused test"
     status: active
+  - key: 01a1c454-eb54-7644-8aec-6c0c15e61d39
+    at: 2026-11-10T07:21:02Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 3"
+    goal: "The Edenhofer 2024 dust map is defined, read from its HEALPix file and resampled into mean and standard-deviation grids of 10 pc cells about the Sun, published with the release, each criterion verified by its focused test"
+    status: done
 blocks:
   - key: 01a1c440-c1ed-745b-a8c9-b03cf1a2e579
     id: w3-plan
@@ -156,6 +165,15 @@ blocks:
         title: "Fetch and resample the real map once"
         detail: "Fetched 3,252,715,200 bytes; MD5 matches Zenodo's 10c823a5…. Resampling whole in release mode."
         state: active
+      - key: 01a1c454-eb54-7644-8aec-6c0a92343100
+        at: 2026-11-10T07:21:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Fetch and resample the real map once"
+        detail: "6.4 s in release mode; 52.35% of cells hold data; densest cell at Orion A."
+        state: done
   - key: 01a1c440-c1ed-745b-a8c9-b043c15391d1
     id: w3-build-issues
     kind: note
@@ -170,3 +188,28 @@ blocks:
         markdown: |-
           | # | Issue | Found by | Fix | State |
           |---|---|---|---|---|
+  - key: 01a1c454-eb54-7644-8aec-6c091b6835a4
+    id: w3-measured
+    kind: note
+    versions:
+      - key: 01a1c454-eb54-7644-8aec-6c0bf80af2c1
+        at: 2026-11-10T07:21:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "The real map, resampled once"
+        markdown: |-
+          `mean_and_std_healpix.fits` from Zenodo, 3,252,715,200 bytes, MD5 matching the record's. Resampled whole by `the_real_map_resamples_whole` (by hand, `--release`):
+
+          | Measure | Value |
+          |---|---|
+          | Time | 6.4 s (21 s with the test's build) |
+          | Memory | under 2 GB resident including the compile; the grid itself is about 0.4 GB (two f64 fields of 15.6 M cells, counts, 786,432 directions) |
+          | Cells holding data | 8,179,792 of 15,625,000 (0.5235, the shell's share of the cube: π/6 × (1 − (69/1250)³)) |
+          | Density per pc | median 1.09e-5, 99th percentile 1.34e-3, max 3.95e-2 |
+          | Densest cell | l 208.8°, b −19.7°, 430 pc: **Orion A** (l ≈ 209°, b ≈ −19.5°, about 400–430 pc), so the frame and axes are right |
+          | Release files | two of 62.5 MB (15.6 M little-endian f32 each) and a header |
+
+          **For wave 4:** the explorer will need a smaller texture than the 62.5 MB mean grid. Two ways: read it once and downsample in the client, or serve a coarser copy. This is decided in wave 4's plan.
+        tone: success

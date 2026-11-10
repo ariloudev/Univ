@@ -18,16 +18,15 @@
 
 mod resample;
 
-use std::fs::File;
-use std::io::{BufReader, Read, Seek};
+use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 
 use univ_model::grid::Axis;
 use univ_model::position::Frame;
 use univ_model::units::Unit;
 
-use super::{GridReadError, Published, open};
-use crate::fits::{BLOCK, Header, SampleKind, fill};
+use super::{GridReadError, Published, open, read_numbers};
+use crate::fits::{BLOCK, Header, Sample, SampleKind, sample};
 
 pub use resample::read_edenhofer;
 
@@ -37,10 +36,9 @@ pub const SOURCE: &str = "edenhofer-2024-dust";
 pub const FILE: &str = "mean_and_std_healpix.fits";
 /// Cells along X, Y and Z of the whole grid.
 pub const CELLS: [usize; 3] = [250; 3];
-/// The distances from the Sun, in pc, within which the map holds data (Edenhofer et al. 2024:
-/// 69 pc to 1.25 kpc); a cell whose centre lies outside them holds no data.
-pub const NEAREST_PC: f64 = 69.0;
-pub const FARTHEST_PC: f64 = 1_250.0;
+/// The distances the paper gives the map, 69 pc to 1.25 kpc: the file's outermost distance
+/// boundaries must round to them, within 1%.
+const PAPER_REACH_PC: [f64; 2] = [69.0, 1_250.0];
 
 /// The published grid: a cube of 2,500 pc a side centred on the Sun, in 250 cells of 10 pc,
 /// galactic Cartesian, the first cell centred half a cell in from −1,250 pc.
@@ -57,26 +55,57 @@ const PUBLISHED: Published = Published {
 /// The unit the images name in `CUNIT`.
 const DUST_UNIT: &str = "E of Zhang, Green, and Rix (2023)";
 
-/// One image of the map: where its samples begin in the file, and its scaling.
-#[derive(Clone, Copy, Debug)]
+/// One image of the map: where its samples begin in the file, its scaling and its shape.
+#[derive(Clone, Copy, Debug, PartialEq)]
 struct Image {
     offset: u64,
     /// `BSCALE` and `BZERO`.
     scaling: (f64, f64),
+    /// The `HEALPix` order, log2 of `NSIDE`.
+    order: u8,
+    bins: usize,
+}
+
+impl Image {
+    fn pixels(self) -> usize {
+        12 << (2 * self.order)
+    }
+
+    /// The values of `bins` from the reader's place, one per pixel and bin, as stored scaled.
+    /// A value that is not finite is refused: NaN in the grid marks only the cells outside the
+    /// map's distance bins.
+    fn values(self, reader: &mut impl Read, bins: usize) -> Result<Vec<f64>, GridReadError> {
+        let (scale, zero) = self.scaling;
+        read_numbers(reader, self.pixels() * bins, 4, |b| {
+            let value = zero + scale * single(b)?;
+            if value.is_finite() {
+                Ok(value)
+            } else {
+                Err(layout(format!("a value that is not finite, {value}")))
+            }
+        })
+    }
 }
 
 /// The map's layout, read from its headers.
 #[derive(Debug)]
 struct Map {
-    /// The `HEALPix` order, log2 of `NSIDE`.
-    order: u8,
-    pixels: usize,
     mean: Image,
     std: Image,
     /// The centre of each distance bin, in pc.
     centres: Vec<f64>,
     /// The `centres.len() + 1` boundaries of the bins, in pc, increasing.
     boundaries: Vec<f64>,
+}
+
+impl Map {
+    /// The innermost and outermost distance boundaries, in pc: where the map holds data.
+    fn reach(&self) -> (f64, f64) {
+        (
+            self.boundaries[0],
+            self.boundaries[self.boundaries.len() - 1],
+        )
+    }
 }
 
 /// A reason the file does not have the layout the reader takes.
@@ -87,59 +116,39 @@ fn layout(reason: impl Into<String>) -> GridReadError {
     }
 }
 
-/// The bytes a unit's data take with their padding to a whole block.
-fn padded(bytes: usize) -> Result<i64, GridReadError> {
-    i64::try_from(bytes.div_ceil(BLOCK) * BLOCK).map_err(|_| layout("an HDU too large to skip"))
-}
-
 /// Reads the map's layout: every header, the two images' places and the distance bins.
 fn read_map(path: &Path) -> Result<Map, GridReadError> {
     let mut reader = open(path)?;
     let (mut mean, mut std, mut centres, mut boundaries) = (None, None, None, None);
     while let Some(header) = Header::read_from(&mut reader)? {
-        let bytes = header.data_bytes()?;
-        let name = header
-            .get("EXTNAME")
-            .unwrap_or_default()
-            .trim_end()
-            .to_owned();
-        match name.as_str() {
-            "MEAN" | "STD." => {
-                let at = reader.stream_position()?;
-                let image = image(&header, at).map_err(|e| layout(format!("{name}: {e}")))?;
-                let slot = if name == "MEAN" { &mut mean } else { &mut std };
-                *slot = Some(image);
-                reader.seek_relative(padded(bytes)?)?;
+        let start = reader.stream_position()?;
+        let name = header.get("EXTNAME").unwrap_or_default().trim_end();
+        let named = |e: GridReadError| layout(format!("{name}: {e}"));
+        match name {
+            "MEAN" => mean = Some(image(&header, start).map_err(named)?),
+            "STD." => std = Some(image(&header, start).map_err(named)?),
+            "RADIAL PIXEL CENTERS" => centres = Some(column(&mut reader, &header).map_err(named)?),
+            "RADIAL PIXEL BOUNDARIES" => {
+                boundaries = Some(column(&mut reader, &header).map_err(named)?);
             }
-            "RADIAL PIXEL CENTERS" | "RADIAL PIXEL BOUNDARIES" => {
-                let column =
-                    column(&mut reader, &header).map_err(|e| layout(format!("{name}: {e}")))?;
-                let rest = padded(bytes)? - i64::try_from(bytes).unwrap_or(i64::MAX);
-                reader.seek_relative(rest)?;
-                let slot = if name == "RADIAL PIXEL CENTERS" {
-                    &mut centres
-                } else {
-                    &mut boundaries
-                };
-                *slot = Some(column);
-            }
-            _ => reader.seek_relative(padded(bytes)?)?,
+            _ => {}
         }
+        let bytes = u64::try_from(header.data_bytes()?.div_ceil(BLOCK) * BLOCK)
+            .map_err(|_| layout("an HDU too large to skip"))?;
+        reader.seek(SeekFrom::Start(start + bytes))?;
     }
     let missing = |what: &str| layout(format!("no {what} extension"));
-    let ((mean, shape), (std, std_shape)) = (
-        mean.ok_or_else(|| missing("MEAN"))?,
-        std.ok_or_else(|| missing("STD."))?,
-    );
+    let mean = mean.ok_or_else(|| missing("MEAN"))?;
+    let std = std.ok_or_else(|| missing("STD."))?;
     let centres = centres.ok_or_else(|| missing("RADIAL PIXEL CENTERS"))?;
     let boundaries = boundaries.ok_or_else(|| missing("RADIAL PIXEL BOUNDARIES"))?;
-    if shape != std_shape {
-        return Err(layout(format!("STD. is {std_shape:?}, MEAN {shape:?}")));
+    if (mean.order, mean.bins) != (std.order, std.bins) {
+        return Err(layout("STD. differs in shape from MEAN"));
     }
-    let (order, pixels, bins) = shape;
-    if centres.len() != bins || boundaries.len() != bins + 1 {
+    if centres.len() != mean.bins || boundaries.len() != mean.bins + 1 {
         return Err(layout(format!(
-            "{bins} distance bins, but {} centres and {} boundaries",
+            "{} distance bins, but {} centres and {} boundaries",
+            mean.bins,
             centres.len(),
             boundaries.len()
         )));
@@ -148,40 +157,39 @@ fn read_map(path: &Path) -> Result<Map, GridReadError> {
         && centres
             .iter()
             .zip(boundaries.windows(2))
-            .all(|(c, b)| b[0] <= *c && *c <= b[1])
-        && boundaries.first().is_some_and(|b| *b > 0.0);
+            .all(|(c, b)| b[0] <= *c && *c <= b[1]);
     if !ordered {
         return Err(layout(
             "the distance bins do not increase, each centre within its bounds",
         ));
     }
-    Ok(Map {
-        order,
-        pixels,
+    let map = Map {
         mean,
         std,
         centres,
         boundaries,
-    })
+    };
+    let (near, far) = map.reach();
+    let [paper_near, paper_far] = PAPER_REACH_PC;
+    if (near / paper_near - 1.0).abs() > 0.01 || (far / paper_far - 1.0).abs() > 0.01 {
+        return Err(layout(format!(
+            "the bins reach {near} to {far} pc, not the paper's {paper_near} to {paper_far}"
+        )));
+    }
+    Ok(map)
 }
 
-/// An image's place and its (order, pixels, bins), checked against the layout the reader takes.
-fn image(header: &Header, offset: u64) -> Result<(Image, (u8, usize, usize)), GridReadError> {
-    let text = |key: &str| header.get(key).unwrap_or_default().trim_end().to_owned();
+/// An image's place and shape, checked against the layout the reader takes.
+fn image(header: &Header, offset: u64) -> Result<Image, GridReadError> {
+    plain(header, "IMAGE")?;
     if header.sample_kind()? != SampleKind::F32 {
         return Err(layout("BITPIX is not -32"));
     }
-    if text("ORDERING") != "NEST" {
-        return Err(layout(format!(
-            "ORDERING is {:?}, not NEST",
-            text("ORDERING")
-        )));
-    }
-    if text("CUNIT") != DUST_UNIT {
-        return Err(layout(format!(
-            "CUNIT is {:?}, not {DUST_UNIT:?}",
-            text("CUNIT")
-        )));
+    for (key, want) in [("ORDERING", "NEST"), ("CUNIT", DUST_UNIT)] {
+        let got = header.get(key).unwrap_or_default().trim_end();
+        if got != want {
+            return Err(layout(format!("{key} is {got:?}, not {want}")));
+        }
     }
     let nside = header.integer("NSIDE")?.and_then(|n| u64::try_from(n).ok());
     let order = nside
@@ -192,22 +200,23 @@ fn image(header: &Header, offset: u64) -> Result<(Image, (u8, usize, usize)), Gr
     let [pixels, bins] = header.axes()?[..] else {
         return Err(layout("not a two-dimensional image"));
     };
-    if pixels != 12 << (2 * order) {
+    let image = Image {
+        offset,
+        scaling: header.scaling()?,
+        order,
+        bins,
+    };
+    if pixels != image.pixels() {
         return Err(layout(format!(
             "{pixels} pixels, not 12 NSIDE² for NSIDE 2^{order}"
         )));
     }
-    Ok((
-        Image {
-            offset,
-            scaling: header.scaling()?,
-        },
-        (order, pixels, bins),
-    ))
+    Ok(image)
 }
 
 /// The one column of 32-bit floats of a binary table, read at the reader's place.
-fn column(reader: &mut BufReader<File>, header: &Header) -> Result<Vec<f64>, GridReadError> {
+fn column(reader: &mut impl Read, header: &Header) -> Result<Vec<f64>, GridReadError> {
+    plain(header, "BINTABLE")?;
     let form = header.get("TFORM1").unwrap_or_default().trim();
     let [width, rows] = header.axes()?[..] else {
         return Err(layout("not a table of rows"));
@@ -217,25 +226,25 @@ fn column(reader: &mut BufReader<File>, header: &Header) -> Result<Vec<f64>, Gri
             "not one column of 32-bit floats (TFORM1 {form:?})"
         )));
     }
-    let mut bytes = vec![0_u8; rows * 4];
-    if fill(reader, &mut bytes)? < bytes.len() {
-        return Err(layout("the table ends early"));
+    read_numbers(reader, rows, 4, single)
+}
+
+/// One big-endian 32-bit float.
+fn single(bytes: &[u8]) -> Result<f64, GridReadError> {
+    sample(SampleKind::F32, bytes)
+        .map(Sample::to_f64)
+        .ok_or_else(|| layout("a sample of the wrong width"))
+}
+
+/// Refuses an extension that is not a `kind` (IMAGE or BINTABLE) of one group without a heap,
+/// whose data are then exactly its axes' product.
+fn plain(header: &Header, kind: &str) -> Result<(), GridReadError> {
+    let xtension = header.get("XTENSION").unwrap_or_default().trim_end();
+    if xtension != kind {
+        return Err(layout(format!("XTENSION is {xtension:?}, not {kind}")));
     }
-    Ok(floats(&bytes, (1.0, 0.0)).collect())
-}
-
-/// Big-endian 32-bit floats, scaled as `BZERO + BSCALE × stored`.
-fn floats(bytes: &[u8], (scale, zero): (f64, f64)) -> impl Iterator<Item = f64> + '_ {
-    bytes.as_chunks::<4>().0.iter().map(move |&b| {
-        let stored = f32::from_be_bytes(b);
-        zero + scale * f64::from(stored)
-    })
-}
-
-/// Reads `buf.len()` bytes or fails.
-fn read_exact(reader: &mut impl Read, buf: &mut [u8]) -> Result<(), GridReadError> {
-    if fill(reader, buf)? < buf.len() {
-        return Err(layout("an image ends before its last distance bin"));
+    if header.count("PCOUNT", Some(0))? != 0 || header.count("GCOUNT", Some(1))? != 1 {
+        return Err(layout("PCOUNT or GCOUNT other than 0 and 1"));
     }
     Ok(())
 }

@@ -50,8 +50,9 @@ pub enum Dimension {
     HubbleScaledLength,
     Magnitude,
     Dimensionless,
-    /// Extinction per unit length, in its source's extinction scale.
-    ExtinctionDensity,
+    /// Extinction per unit length in the extinction scale of Zhang, Green & Rix 2023, which no
+    /// other scale converts to without a cited relation.
+    ExtinctionZgr23Density,
 }
 
 /// A conversion that cannot be made.
@@ -79,7 +80,7 @@ impl Unit {
             Self::MegaparsecOverH => Dimension::HubbleScaledLength,
             Self::Magnitude => Dimension::Magnitude,
             Self::Dimensionless => Dimension::Dimensionless,
-            Self::ExtinctionZgr23PerParsec => Dimension::ExtinctionDensity,
+            Self::ExtinctionZgr23PerParsec => Dimension::ExtinctionZgr23Density,
         }
     }
 

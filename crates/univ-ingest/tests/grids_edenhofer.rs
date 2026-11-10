@@ -15,14 +15,15 @@ mod common;
 
 use std::path::{Path, PathBuf};
 
-use univ_ingest::grids::edenhofer::{CELLS, FARTHEST_PC, NEAREST_PC};
+use univ_ingest::fits::BLOCK;
+use univ_ingest::grids::edenhofer::CELLS;
 use univ_ingest::grids::{GridReadError, Window, read_edenhofer};
 use univ_ingest::release::{grid_files, is_grid, read_grid};
 use univ_ingest::tiles::sha256;
 use univ_model::derive::Release;
 use univ_model::grid::{CellUncertainty, Grid, Samples};
 use univ_model::healpix;
-use univ_model::position::Frame;
+use univ_model::position::{Frame, norm};
 use univ_model::release::keys;
 use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
@@ -44,11 +45,26 @@ fn text(s: &str) -> String {
 fn hdu(cards: &[String], data: &[u8]) -> Vec<u8> {
     let mut out: Vec<u8> = cards.concat().into_bytes();
     out.extend(format!("{:<80}", "END").bytes());
-    out.resize(out.len().div_ceil(2_880) * 2_880, b' ');
+    out.resize(out.len().div_ceil(BLOCK) * BLOCK, b' ');
     let start = out.len();
     out.extend(data);
-    out.resize(start + data.len().div_ceil(2_880) * 2_880, 0);
+    out.resize(start + data.len().div_ceil(BLOCK) * BLOCK, 0);
     out
+}
+
+/// An extension of two axes, `naxis`, with its own cards after the required ones, and its data.
+fn extension(kind: &str, bitpix: &str, naxis: [usize; 2], own: &[String], data: &[u8]) -> Vec<u8> {
+    let mut cards = vec![
+        card("XTENSION", &text(kind)),
+        card("BITPIX", bitpix),
+        card("NAXIS", "2"),
+        card("NAXIS1", &naxis[0].to_string()),
+        card("NAXIS2", &naxis[1].to_string()),
+        card("PCOUNT", "0"),
+        card("GCOUNT", "1"),
+    ];
+    cards.extend_from_slice(own);
+    hdu(&cards, data)
 }
 
 fn be(values: impl Iterator<Item = f32>) -> Vec<u8> {
@@ -97,36 +113,23 @@ impl Simulated {
     fn write(&self, dir: &Path, ordering: &str) -> PathBuf {
         let n = Self::pixels();
         let image = |name: &str, value: fn(usize, usize) -> f32| {
-            let cards = [
-                card("XTENSION", &text("IMAGE")),
-                card("BITPIX", "-32"),
-                card("NAXIS", "2"),
-                card("NAXIS1", &n.to_string()),
-                card("NAXIS2", &BINS.to_string()),
-                card("PCOUNT", "0"),
-                card("GCOUNT", "1"),
+            let own = [
                 card("EXTNAME", &text(name)),
                 card("NSIDE", &(1_u32 << ORDER).to_string()),
                 card("ORDERING", &text(ordering)),
                 card("CUNIT", &text(UNIT)),
             ];
             let data = be((0..BINS).flat_map(|b| (0..n).map(move |p| value(b, p))));
-            hdu(&cards, &data)
+            extension("IMAGE", "-32", [n, BINS], &own, &data)
         };
         let table = |name: &str, values: &[f32]| {
-            let cards = [
-                card("XTENSION", &text("BINTABLE")),
-                card("BITPIX", "8"),
-                card("NAXIS", "2"),
-                card("NAXIS1", "4"),
-                card("NAXIS2", &values.len().to_string()),
-                card("PCOUNT", "0"),
-                card("GCOUNT", "1"),
+            let own = [
                 card("TFIELDS", "1"),
                 card("TFORM1", &text("E")),
                 card("EXTNAME", &text(name)),
             ];
-            hdu(&cards, &be(values.iter().copied()))
+            let data = be(values.iter().copied());
+            extension("BINTABLE", "8", [4, values.len()], &own, &data)
         };
         let primary = [
             card("SIMPLE", "T"),
@@ -161,26 +164,28 @@ impl Simulated {
                 s.2 += 1;
             }
         }
+        let (inner, outer) = (
+            f64::from(self.boundaries[0]),
+            f64::from(self.boundaries[BINS]),
+        );
         let mut out = vec![(None, false); g.cells()];
         for x in 0..g.shape[0] {
             for y in 0..g.shape[1] {
                 for z in 0..g.shape[2] {
                     let i = g.sample_index([x, y, z]).unwrap();
                     let c = g.centre([x, y, z]);
-                    let r = c.iter().map(|v| v * v).sum::<f64>().sqrt();
+                    let r = norm(c);
                     let (mean, std, n) = sums[i];
-                    out[i] = if !(NEAREST_PC..=FARTHEST_PC).contains(&r) {
+                    out[i] = if !(inner..=outer).contains(&r) {
                         (None, n > 0)
                     } else if n > 0 {
                         (Some((mean / f64::from(n), std / f64::from(n))), true)
                     } else {
                         let bin = self.boundaries.partition_point(|&b| f64::from(b) <= r);
-                        let at = (1..=BINS).contains(&bin).then(|| {
-                            let p = usize::try_from(healpix::hash(ORDER, c)).unwrap();
-                            let b = bin - 1;
-                            (f64::from(Self::mean(b, p)), f64::from(Self::std(b, p)))
-                        });
-                        (at, false)
+                        let b = bin.min(BINS) - 1;
+                        let p = usize::try_from(healpix::hash(ORDER, c)).unwrap();
+                        let at = (f64::from(Self::mean(b, p)), f64::from(Self::std(b, p)));
+                        (Some(at), false)
                     };
                 }
             }
@@ -387,7 +392,9 @@ fn the_real_map_resamples_whole() {
     let g = &grid.geometry;
     let held: Vec<usize> = (0..mean.len()).filter(|&i| !mean[i].is_nan()).collect();
     // The cells within 69–1,250 pc of the Sun: a spherical shell's share of the cube.
-    let shell = std::f64::consts::FRAC_PI_6 * (1.0 - (NEAREST_PC / FARTHEST_PC).powi(3));
+    // The bins reach from 68.62 to 1,248.10 pc in the published file.
+    let (inner, outer) = (68.618_73_f64, 1_248.100_1_f64);
+    let shell = std::f64::consts::FRAC_PI_6 * (outer.powi(3) - inner.powi(3)) / 1_250_f64.powi(3);
     #[expect(clippy::cast_precision_loss)]
     let share = held.len() as f64 / mean.len() as f64;
     assert!((share - shell).abs() < 0.002, "{share} not {shell}");
@@ -416,7 +423,7 @@ fn the_real_map_resamples_whole() {
         g.centre([i / n, (i % n) / m, i % m])
     };
     let c = at(peak);
-    let r = c.iter().map(|v| v * v).sum::<f64>().sqrt();
+    let r = norm(c);
     let l = c[1].atan2(c[0]).to_degrees().rem_euclid(360.0);
     let b = (c[2] / r).asin().to_degrees();
     eprintln!(
@@ -428,4 +435,23 @@ fn the_real_map_resamples_whole() {
         quantile(0.99),
         mean[peak]
     );
+}
+
+#[test]
+fn a_map_holding_a_value_that_is_not_finite_is_refused_so_nan_marks_only_no_data() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = Simulated::new().write(dir.path(), "NEST");
+    // The first value of MEAN, after the primary HDU's block and MEAN's header block.
+    let mut bytes = std::fs::read(&path).unwrap();
+    bytes[2 * BLOCK..2 * BLOCK + 4].copy_from_slice(&f32::NAN.to_be_bytes());
+    std::fs::write(&path, bytes).unwrap();
+    let refused = read_edenhofer(
+        &path,
+        Window::Cutout {
+            start: [129, 120, 120],
+        },
+        [2; 3],
+    );
+    let refused = refused.unwrap_err().to_string();
+    assert!(refused.contains("not finite"), "{refused}");
 }
