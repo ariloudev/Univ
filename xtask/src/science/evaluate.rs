@@ -127,7 +127,7 @@ fn rows(
     limit: usize,
 ) -> Result<(Vec<String>, usize, usize), String> {
     let mut q = statement(release, sql)?;
-    let columns: Vec<String> = q.column_names().iter().map(|c| (*c).to_owned()).collect();
+    let columns: Vec<String> = q.column_names().map(str::to_owned).collect();
     let mut rows = q.raw_query();
     let (mut lines, mut kept, mut left_out) = (Vec::new(), 0, 0);
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {

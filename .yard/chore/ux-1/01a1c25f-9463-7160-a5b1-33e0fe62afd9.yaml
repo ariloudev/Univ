@@ -42,6 +42,15 @@ blocks:
         title: "/simplify and /code-review, findings fixed"
         detail: "Both run on the branch's changes against develop. Done when every confirmed finding is fixed or put to the owner."
         state: active
+      - key: 01a1c2d1-dbbf-7598-838f-80ed3fc9b074
+        at: 2026-11-10T00:18:15Z
+        revision: 38
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "/simplify and /code-review, findings fixed"
+        detail: "15 findings fixed in 8bcf8f5 and 5 skipped with reasons (see Review findings). `pnpm check` is green (474 tests), integration passed (21 of 21 e2e), and 22 changed trace links were re-accepted after review."
+        state: done
   - key: 01a1c269-2633-716a-b8dd-fe49a00ea8f5
     id: t-gate
     kind: task
@@ -55,6 +64,15 @@ blocks:
         title: "Full gate and integration"
         detail: "Done when `cargo xtask check` and `cargo xtask integration` have each run once, green, after the review fixes."
         state: open
+      - key: 01a1c2d1-dbbf-7598-838f-80ee480b75c6
+        at: 2026-11-10T00:18:15Z
+        revision: 38
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Full gate and integration"
+        detail: "Done when `cargo xtask check` and `cargo xtask integration` have each run once, green, after the review fixes."
+        state: active
   - key: 01a1c269-2633-716a-b8dd-fe4a119902d8
     id: t-close
     kind: task
@@ -83,3 +101,114 @@ blocks:
           | # | Finding | From | Fix | State |
           |---|---|---|---|---|
           | | None yet | | | |
+      - key: 01a1c2d1-dbbf-7598-838f-80ec2eb55cf3
+        at: 2026-11-10T00:18:15Z
+        revision: 38
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Review findings"
+        markdown: |-
+          From `/code-review` and `/simplify`'s four reviewers (reuse, simplification, efficiency, altitude), all fixed in 8bcf8f5 except where marked skipped.
+
+          | # | Finding | From | Fix | State |
+          |---|---|---|---|---|
+          | 1 | A double-click on the chosen item let it go before choosing it again: the cull was lost, the record reloaded, and two flights competed | code-review | A click on what is chosen lets it go only after 300 ms with no double-click (`clickChooser`), and the second-click flag is gone | fixed |
+          | 2 | The list toggled against the pending choice but marked the loaded one | code-review | `Selection.structureId` marks the row, and one `isChosen(target)` serves the view, the list and the marker | fixed |
+          | 3 | A structure whose record was not read was labelled observed | code-review | Known in no way: a dim dot and no status words | fixed |
+          | 4 | 999.5 to 1,000 Mpc read as Gpc under the "100 Mpc to 1 Gpc" heading | code-review | Mpc below 1,000 exactly, as the headings divide | fixed |
+          | 5 | A stale comment said letting go leaves the view | code-review | Removed with the rewrite | fixed |
+          | 6 | After a let-go click, a quick click on a new point was ignored | code-review | The second-click ignore is gone | fixed |
+          | 7 | `useLocalState`'s setter changed identity each render | code-review | `useCallback` | fixed |
+          | 8 | `storedDrawer`/`storeDrawer` were used only by tests | code-review, simplification, altitude | storedDrawer.ts is its hook alone; its tests drive the hook | fixed |
+          | 9 | The one-caller `letGo()` helper, and `ChosenIds` | simplification | Inlined `returnToEarth()` into `selection.close` | fixed |
+          | 10 | `OnChoose.letGo` asked and acted at once | simplification | `isChosen(found)` and `letGo()` apart | fixed |
+          | 11 | The e2e let-go check was pasted four times, and the find box looked up five times | simplification | `expectEarthTheFocus`, and one `find` locator | fixed |
+          | 12 | StructuresPanel.test.tsx tested only the record panel | simplification | Renamed StructureRecordPanel.test.tsx, with its trace paths | fixed |
+          | 13 | A square swatch, a second dot glyph, a second distance format | reuse | `Swatch`, `Dot` (now exported, with `dotted`) and `shortDistance` for the ticks | fixed |
+          | 14 | `KNOWN_WORDS` repeated `words()` | reuse | `words(known)` | fixed |
+          | 15 | Gridlines recomputed `depthX` in every row | efficiency (optional) | Tick positions computed once | fixed |
+          | 16 | `distanceText` could use `shortDistance` | reuse | Skipped: the approved criterion asks for whole Mpc, which `shortDistance` does not give | skipped |
+          | 17 | Read clicks' count from the browser in `bindMouse` | altitude | Skipped: the deferred let-go (1) makes the second-click flag unnecessary without changing the input layer | skipped |
+          | 18 | Move the camera moves into the selection | altitude | Skipped: a larger refactor outside this change | skipped |
+          | 19 | `PAST_A_DOUBLE_CLICK_MS` repeats the app's window | reuse | Skipped: low cost; `DOUBLE_CLICK_MS` lives in a module e2e should not import | skipped |
+          | 20 | The list does not add "(approximate)" to names as the view does | altitude | Skipped: the list names the structure, while "(approximate)" describes how its outline is drawn | skipped |
+        tone: success
+  - key: 01a1c2d7-2572-7587-9c7d-75f661130307
+    id: gate-deny
+    kind: note
+    versions:
+      - key: 01a1c2d7-2573-76f1-a95e-b638e3b49c3f
+        at: 2026-11-10T00:24:02Z
+        revision: 39
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The gate fails at deny, on a new advisory"
+        markdown: |-
+          `cargo xtask check` passed every gate up to `deny` (Rust tests, clippy, fmt, lines, loft, the explorer's 474 tests, fallow and build), then failed on one new advisory.
+
+          - **What:** RUSTSEC-2026-0459 (CVE-2026-119375). SQLite before 3.54.0 can return uninitialized page-cache memory when it opens a database together with a `-wal` file of a different page size. The attack is local and needs crafted files.
+          - **Where:** `libsqlite3-sys` 0.30.1, bundled through `rusqlite` 0.32.1 (with the `bundled` feature) in univ-api (dev), univ-ingest and xtask.
+          - **The fix upstream:** `rusqlite` 0.41, which bundles SQLite 3.54.x and needs Rust 1.89. The toolchain is `stable`.
+          - **Not this branch's doing:** chore/ux-1 changes no Rust code or Cargo.lock, so develop fails the same way.
+          - **Exposure here:** these crates open only databases they write themselves: the local D1 state, the science scratch database and the test fixtures.
+        tone: warning
+  - key: 01a1c2d7-2572-7587-9c7d-75f73f023a2d
+    id: ask-deny
+    kind: question
+    versions:
+      - key: 01a1c2d7-2573-76f1-a95e-b639614d06fd
+        at: 2026-11-10T00:24:02Z
+        revision: 39
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        prompt: "How should the new SQLite advisory (RUSTSEC-2026-0459) that fails the gate be handled?"
+        header: "Advisory"
+        context: "The gate's only failure is `deny`, on RUSTSEC-2026-0459 in the SQLite that `rusqlite` 0.32 bundles (univ-api dev, univ-ingest, xtask). It fails on develop too; this branch changes no Rust. The fix is `rusqlite` 0.41, which may change its API in places, and the toolchain is stable. These crates open only SQLite files they write themselves."
+        options:
+          - label: "Own branch first"
+            detail: "Upgrade `rusqlite` to 0.41 on its own branch from develop (with its own Yard Log and gate), then bring develop into chore/ux-1 and run this branch's gate again. This keeps one intent per branch and fixes develop too. I recommend it."
+            recommended: true
+          - label: "Upgrade here"
+            detail: "Upgrade `rusqlite` to 0.41 on chore/ux-1 itself. It's quicker, but it mixes a dependency upgrade into a UX branch."
+          - label: "Ignore with reason"
+            detail: "Add RUSTSEC-2026-0459 to deny.toml's ignore list, with the reason that only self-written SQLite files are opened, and upgrade later. Quickest, but it leaves a known flaw in the bundled SQLite."
+    responses:
+      - key: 01a1c2e2-740f-7359-a1f0-1c8ffc1a3b74
+        at: 2026-11-10T00:36:23Z
+        revision: 40
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        chosen:
+          - "Upgrade here"
+  - key: 01a1c2e2-8a29-73c0-bf60-099633908b23
+    id: decide-deny
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1c2e2-8a2a-74a0-9d84-088a6e7c62a7
+        at: 2026-11-10T00:36:28Z
+        revision: 41
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Upgrade rusqlite to 0.41 on chore/ux-1"
+        consequence: "univ-api, univ-ingest and xtask move to `rusqlite` 0.41, which bundles SQLite 3.54.x, in their own commit on this branch. The gate then runs again in full. The branch carries a dependency upgrade beside its UX work."
+        question: 01a1c2d7-2572-7587-9c7d-75f73f023a2d
+  - key: 01a1c2e2-8a29-73c0-bf60-099777223a9d
+    id: t-rusqlite
+    kind: task
+    versions:
+      - key: 01a1c2e2-8a2a-74a0-9d84-088bb65a97e0
+        at: 2026-11-10T00:36:28Z
+        revision: 41
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "rusqlite 0.32 → 0.41 (RUSTSEC-2026-0459)"
+        detail: "Bump `rusqlite` in univ-api, univ-ingest and xtask, update Cargo.lock, and fix any API changes. Done when `cargo deny check advisories` passes and the crates' tests pass."
+        state: active

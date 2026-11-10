@@ -35,7 +35,7 @@ struct Loaded {
 /// numbers, text as strings, NULL as null.
 pub fn rows(db: &Connection, sql: &str, id: i64) -> Vec<Row> {
     let mut q = db.prepare(sql).unwrap();
-    let names: Vec<String> = q.column_names().iter().map(|s| (*s).to_owned()).collect();
+    let names: Vec<String> = q.column_names().map(str::to_owned).collect();
     q.query_map([id], |r| {
         let mut row = Row::new();
         for (i, name) in names.iter().enumerate() {

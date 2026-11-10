@@ -23,4 +23,4 @@ subtle = "2.6.1"
 utoipa = "6.0.0"
 
 [dev-dependencies]
-rusqlite = { version = "0.32.1", features = ["bundled"] }
+rusqlite = { version = "0.41", features = ["bundled", "fallible_uint"] }

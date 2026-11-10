@@ -30,11 +30,7 @@ const SHARD_TABLES: [(&str, &str); 5] = [
 /// Every row of `table` in `db` as text, without its release, by the value of `by`.
 fn rows_by(db: &rusqlite::Connection, table: &str, by: &str) -> BTreeMap<String, Vec<String>> {
     let mut stmt = db.prepare(&format!("SELECT * FROM {table}")).unwrap();
-    let names: Vec<String> = stmt
-        .column_names()
-        .iter()
-        .map(|s| (*s).to_owned())
-        .collect();
+    let names: Vec<String> = stmt.column_names().map(str::to_owned).collect();
     let mut out: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut rows = stmt.query([]).unwrap();
     while let Some(row) = rows.next().unwrap() {
