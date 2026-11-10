@@ -6283,3 +6283,64 @@ blocks:
           - **The depth index** keeps its order and find text across visits, as the drawer is kept (c0c1802).
           - **Tests and trace:** integration passed (21 of 21 e2e), and the trace is complete (671 of 671).
         tone: success
+  - key: 01a1c2f6-965c-7213-a9a4-0771d1b153af
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1c2f6-965c-7213-a9a4-07721fc8c64a
+        at: 2026-11-10T00:58:22Z
+        revision: 46
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        view: publish
+        note: "Published as sequence 8 at 9b30049 on develop, after chore/ux-1 merged in at 2f0b066. The state root is `2737388e7982ae9afc71aeea4312e3d06c188090bdefb7a71943cc0a812ee2ae`, and `loft verify` passed. The new labels run to AC-670."
+        recorded:
+          commit: "9b300493e5e315f4a4080df829b62115d708fb1f"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-10T00:58:22Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 63,
+              "constraint": 8,
+              "criterion": 670,
+              "decision": 33,
+              "feature": 42,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 184
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "9b300493e5e315f4a4080df829b62115d708fb1f",
+                "removed": [],
+                "revision": "9b300493e5e315f4a4080df829b62115d708fb1f"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 8,
+                "publishedAt": "2026-11-10T00:58:19Z",
+                "stateRoot": "2737388e7982ae9afc71aeea4312e3d06c188090bdefb7a71943cc0a812ee2ae"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
