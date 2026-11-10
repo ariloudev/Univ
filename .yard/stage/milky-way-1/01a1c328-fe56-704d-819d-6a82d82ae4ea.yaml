@@ -42,3 +42,44 @@ blocks:
         title: "Review, gate and trace wave 1"
         detail: "/simplify and /code-review, the full gate, integration and the trace view."
         state: active
+      - key: 01a1c365-c66a-7216-8e51-b8924f08be04
+        at: 2026-11-10T02:59:49Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate and trace wave 1"
+        detail: "/simplify and /code-review done and fixed. Next: the full gate, integration and the trace view."
+        state: active
+  - key: 01a1c365-c66a-7216-8e51-b890ef6a7bb4
+    id: review-issues
+    kind: note
+    versions:
+      - key: 01a1c365-c66a-7216-8e51-b8911c295c91
+        at: 2026-11-10T02:59:49Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review findings and what became of them"
+        markdown: |-
+          **`/simplify`** (4 reviewers), applied in `39a477d`:
+          - The ranking reads an object's open candidates once per winner (`Pool`, `Steps`) and probes the inferred set-aside only where it left a candidate out.
+          - One science check bounds the inferred share both ways; shard counts in the tests come from the configuration.
+          - The test helpers (`holds`, `build_next_within`, `workspace`) are shared, and `positive()` is reused.
+          - Skipped: removing the ratio from the ranking rule (the spec requires it there); moving the four older copies of the remove-a-source setup (outside the diff); merging the two runs of `four_releases` (the comparison is the point).
+
+          **`/code-review` (medium)**:
+
+          | # | Finding | Outcome |
+          |---|---|---|
+          | 1 | An estimated distance too uncertain to place its star set an inferred one aside, leaving the star unplaced | fixed in `0a30444` (spec wording) and the commit after it; new test `an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside` |
+          | 2 | The Bailer-Jones join chunks ran on the synchronous endpoint | fixed: `run: async` |
+          | 3 | The ratio lives in the ranking rule and the source rule | kept: the spec states it in the ranking rule, and a test holds them equal |
+          | 4 | A 3% floor sits near the expected 3.8% | fixed: floor 2%, with the 0.76% without a parallax cited |
+          | 5 | The ratio is the uncorrected parallax's | kept and documented in the rule's basis: the zero point moves it by a few hundredths |
+          | 6 | A null written as `null` or `NaN` matched neither rule | fixed: `is: ["", "null", "NaN"]` |
+          | 7 | `sets_aside` repeats a length check | kept: it spares about 95% of stars an allocation (the efficiency reviewer's point) |
+          | 8 | `among` runs up to four times per winner | already bounded: it runs only where a step left a candidate out |
+          | 9 | Reconstructed non-redshift distances are not set aside | kept: the spec names inferred only, and no source gives one |
+          | 10 | An inferred candidate still counts toward the redshift threshold | kept: a star has no redshift, and no galaxy source gives an inferred distance |

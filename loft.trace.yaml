@@ -180,6 +180,18 @@ links:
       - file: "crates/univ-ingest/tests/galaxy_surveys.rs"
         name: "the_rest_of_sdss_takes_distant_galaxies_and_quasars"
         body: 17ec1f38d53b489780a7c496de06afca2495ef8f40d83ea4fb046fa21f6893df
+  - node: 01a1c319-7860-76e8-92ac-c5f9f47eb4b7
+    reviewed: 5d2c3aaddf502b184ddeb315cdaab4c6c032fd6f31facec78318f8a10568ff52
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "the_gaia_stars_and_their_distances_take_every_source_below_g_14"
+        body: 53b0b5d0edee8e269c91166482cc4025254bd7b5b0674e31b29788d67d45b6bb
+  - node: 01a1c319-7860-76e8-92ac-c5fae6ebd0d3
+    reviewed: 18e94ae3b77f2f918b0b5bc1332d0d07d2a41b07f530814a6bfa4cd2352f8295
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "a_parallax_below_five_times_its_error_makes_both_distances_inferred"
+        body: dbbc658a1d9c0e3fd988501c4e6636c15031b4269ccf02c3f0ec38d7c5b1c432
   - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
     reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db
     tests:
@@ -753,6 +765,54 @@ links:
       - file: "crates/univ-ingest/tests/normalize_redshifts.rs"
         name: "a_fix_drops_a_value_on_the_rows_it_names_keeps_the_entry_and_counts_the_entries_it_changed"
         body: e3576cd6d5884051391f2087321b3f5a1e1957173a0c8aff1d1ec46a1911df45
+  - node: 01a1c319-7860-76e8-92ac-c6027604a178
+    reviewed: f21771e9b5b7bf14a00b5ef0b370e125f9df4e10ea7e68f6a77e128a9b092610
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "a_parallax_below_five_times_its_error_makes_both_distances_inferred"
+        body: dbbc658a1d9c0e3fd988501c4e6636c15031b4269ccf02c3f0ec38d7c5b1c432
+  - node: 01a1c319-7860-76e8-92ac-c603c8d6589e
+    reviewed: d35607b4c0134ec58f43ebdde60954d2d15dec670d37534d8640b1ff8dee85d0
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "a_parallax_below_five_times_its_error_makes_both_distances_inferred"
+        body: dbbc658a1d9c0e3fd988501c4e6636c15031b4269ccf02c3f0ec38d7c5b1c432
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "exactly_five_is_estimated_and_a_blank_ratio_is_inferred"
+        body: 7901242d9ab6113f3fc8660f866a0684db29a3875111782e75075bf272f60490
+  - node: 01a1c319-7860-76e8-92ac-c6045ac7b6f1
+    reviewed: 379febda6a6cad35caa82e18bc13e3398ef689cfc48c09089a8f0649650b7eb1
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "exactly_five_is_estimated_and_a_blank_ratio_is_inferred"
+        body: 7901242d9ab6113f3fc8660f866a0684db29a3875111782e75075bf272f60490
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "the_bright_stars_ratios_far_above_five_leave_their_distances_estimated"
+        body: 9220a02423219453ae7f6e97e85e2ee04be8b506826cbaf827d379cc2c64d702
+  - node: 01a1c319-7860-76e8-92ac-c605905af8ee
+    reviewed: 2557e1fbc6a078605e99ffea571399118eeb8b7d095a5d4cb2790d004631f67b
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "the_prior_led_parallax_ratio_is_the_rule_s_parameter_recorded_for_the_manifest"
+        body: 3c91a8a28a127d7fad891b95167f93be2a42fe44d0a103bb953b01d13652392c
+      - file: "crates/univ-ingest/tests/normalize_bailer_jones_kind.rs"
+        name: "the_definition_s_bound_is_the_ranking_rule_s_prior_led_ratio"
+        body: 7731d2c33a720a9302f157af09701ec93a542234c5f266ea6851f59df2bb69af
+  - node: 01a1c319-7860-76e8-92ac-c606e2fa0dcc
+    reviewed: 820666c2f25489319b00f4539e0123ae354789aede73c3545e9bc558b0492317
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_sources.rs"
+        name: "gaia_rows_keep_icrs_at_2016_their_errors_parallax_and_proper_motion"
+        body: b3dd10d484dd95a65589640bcea7edb8ad80daeba526e76c73420cb98af6f52c
+  - node: 01a1c319-7860-76e8-92ac-c6074783ae9b
+    reviewed: d6b0a0361c345a540e8021c5bc6c1db462638331840faf0e458ab4fc3a8a08ff
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "an_inferred_distance_alone_still_wins_and_places_its_star"
+        body: 20b8527acee373363cf2b54a9a812b6cbfdd963c32492852cbfef372b6fe6e6f
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside"
+        body: a9afdb9466da29e7d196888f615c1b9bf29a55f3fe862ebed9d631320e87d267
   - node: 01a19f22-2ad9-716e-876f-187cf88a2254
     reviewed: add8e24c470b97fbc83bca5e65c152e361f002377e3cdeaef04479098482e4d9
     tests:
@@ -951,6 +1011,18 @@ links:
       - file: "crates/univ-ingest/tests/ranking_redshifts.rs"
         name: "only_the_leading_redshift_competes_with_an_indicator_distance"
         body: 81716a682a4fd788c6ff34ba9834e7dbaa9816eebb6f441e448ff86a212d7e55
+  - node: 01a1c319-7860-76e8-92ac-c600a1803611
+    reviewed: e39fe70d01e808c60ec390b315494cbe8ae303d54a4dbf48b091ddfd8302485f
+    tests:
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "an_estimated_indicator_distance_wins_over_an_inferred_one_that_is_more_precise"
+        body: a88ed426a59d47879f429128a6086b1a91025914be782f633250e92e8115308e
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "two_inferred_distances_still_compete_by_uncertainty"
+        body: 6853f70f5aeed923c5d956c2a11ccd0af3009289d8d62dbf98cb27840db56f1b
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside"
+        body: a9afdb9466da29e7d196888f615c1b9bf29a55f3fe862ebed9d631320e87d267
   - node: 01a1a147-6018-75e1-9409-3f788275d038
     reviewed: 8449297d3d58af667a318db84f0c0521f00a4ffb9f5f53171ebece5c2848d34e
     tests:
@@ -1710,6 +1782,12 @@ links:
       - file: "crates/univ-ingest/tests/prune.rs"
         name: "a_file_a_release_part_way_through_publishing_holds_is_not_pruned"
         body: 4ff1d4393274493e7bb43c6a467c088798da6f49771714ab1f99818e0d8e13bb
+      - file: "crates/univ-ingest/tests/prune_then_change.rs"
+        name: "after_pruning_the_releases_before_the_latest_the_next_change_builds_and_reads_as_without"
+        body: b892ad18bc1545a4cbb1f7acfb0df821fcb8499833b9c6c0874ca8c206881cef
+      - file: "crates/univ-ingest/tests/prune_then_change.rs"
+        name: "pruning_after_a_cell_moved_shards_deletes_only_the_old_shard_s_copies"
+        body: f60ed52a35ba25154ef5904000e7bf07e28367c8193772e3adb2353368927c14
   - node: 01a19f23-636f-72bd-b194-153927026b4b
     reviewed: 45de105f2d87e0207a33a91851d9ebe5d790feb9775179cf420bf241520dbd66
     tests:

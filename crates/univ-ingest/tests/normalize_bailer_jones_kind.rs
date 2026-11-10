@@ -81,3 +81,20 @@ fn the_definition_s_bound_is_the_ranking_rule_s_prior_led_ratio() {
         .collect();
     assert_eq!(bounds, [rules.prior_led_parallax_ratio]);
 }
+
+#[test]
+fn the_gaia_stars_and_their_distances_take_every_source_below_g_14() {
+    for id in ["gaia-dr3-bright", "bailer-jones-2021"] {
+        let definition = definition_of(id);
+        let univ_ingest::source::Access::Tap { query, count, .. } = &definition.access else {
+            panic!("{id} is read by TAP")
+        };
+        assert!(query.contains("phot_g_mean_mag < 14"), "{id}: {query}");
+        assert!(
+            count
+                .as_deref()
+                .is_some_and(|c| c.contains("phot_g_mean_mag < 14")),
+            "{id}"
+        );
+    }
+}
