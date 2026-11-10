@@ -1,7 +1,9 @@
 // The Galaxy's tracers (draw-the-catalogues): open and globular clusters, Cepheids, RR Lyrae stars
 // and masers, each source in a colour of its own, chosen away from the stars' black-body colours
 // (red through white to pale blue), their grey, and the blue of the other domains' points, and
-// drawn twice the size of a star, so that the few thousand tracers stand out among the stars.
+// drawn twice the size of a star, so that they stand out among the stars. A tracer matched to a
+// Gaia star whose distance it takes is drawn in that source's colour, so the domain's manifest
+// lists the Gaia sources too, and there is a colour for each of its seven sources.
 
 import type { Rgba } from "./drawing.ts";
 import { POINT_OPACITY } from "./kinds.ts";
@@ -14,13 +16,15 @@ export const TRACERS_DOMAIN = "galaxy_tracers";
 export const POINT_SIZE = 2;
 
 /** The colours of the tracer sources, by their place in the domain's manifest, then again from
- * the first: green, magenta, violet, teal and lime. */
+ * the first: green, magenta, violet, teal, lime, crimson and forest green. */
 export const TRACER_COLOURS: readonly Rgba[] = [
   [0.3, 0.85, 0.35, POINT_OPACITY],
   [0.95, 0.3, 0.85, POINT_OPACITY],
   [0.65, 0.4, 1, POINT_OPACITY],
   [0.15, 0.85, 0.75, POINT_OPACITY],
   [0.8, 0.95, 0.2, POINT_OPACITY],
+  [0.9, 0.1, 0.35, POINT_OPACITY],
+  [0.1, 0.6, 0.15, POINT_OPACITY],
 ];
 
 /** The colour of the tracer source at `index` in its manifest. */

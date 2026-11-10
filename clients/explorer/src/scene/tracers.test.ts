@@ -16,6 +16,10 @@ describe("the Galaxy's tracers", () => {
     }
   });
 
+  it("has a colour for each of the seven sources the domain's manifest lists", () => {
+    expect(TRACER_COLOURS.length).toBeGreaterThanOrEqual(7);
+  });
+
   it("colours each point by its source, from the first colour again past the last", () => {
     const bytes = tracerBytes(Uint16Array.from([0, 1, TRACER_COLOURS.length]));
     expect([...bytes.slice(0, 4)]).toEqual([...bytes.slice(8, 12)]);

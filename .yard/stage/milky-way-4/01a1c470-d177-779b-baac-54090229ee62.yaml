@@ -243,6 +243,29 @@ blocks:
         markdown: |-
           | # | Issue | Found by | Fix | State |
           |---|---|---|---|---|
+      - key: 01a1c48a-61b3-75fc-a2fe-cd68e43ca41c
+        at: 2026-11-10T08:19:25Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build and review issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | **The dust map was normalized as a table of rows**: `reads_rows` takes any all-FITS file source for tables, and the dust map is the first grid in FITS. Neither a release build nor release 13 could have been made | the preview build, "a table lacks the column MEAN" | `reads_rows` is false for every volume grid; tested. `b0f88fc` | fixed |
+          | 2 | Release 13's first run had the same bug | the cause of #1 | Stopped by its PID after fetching 108 of 768 Bailer-Jones chunks, its stale lock removed (its process ended), restarted on `b0f88fc`; the fetched chunks are hits | fixed |
+          | 3 | The R16F texture of 125 texels a row (250 bytes) failed WebGL's default 4-byte row alignment, so the haze would silently not draw | `/code-review` | `UNPACK_ALIGNMENT` 1, and floats uploaded for WebGL to turn into half floats. `e2275ee` | fixed |
+          | 4 | A relative `UNIV_LOCAL_STATE` reached Wrangler, run from the Worker's directory, as another folder; the lookup bench ignored it | `/code-review` | Made absolute in one `local_state`, which the lookup bench uses too | fixed |
+          | 5 | 32 steps per star and 96 per pixel whatever the dust crossed; a copy of 15.6 M floats, and allocations, per sample | `/code-review`, cleanup review | Steps as cells crossed; zero-copy decode; plain loop | fixed |
+          | 6 | The tracers' kinds of value were no longer counted in the key | `/code-review` | Counted, and shown under the tracer key | fixed |
+          | 7 | An odd-sided grid would be drawn slightly displaced | `/code-review` | Refused | fixed |
+          | 8 | Markers set the dust off with a second uniform call per frame; constants sent as uniforms every frame; the dust frame computed twice | cleanup review | The kind is checked in the shader; constants in GLSL; placed once per frame | fixed |
+          | 9 | The half-float converter, hand-written vector maths, a duplicated colour-bytes helper, Scene's misplaced doc comment, an unlimited cache | cleanup review, `/code-review` | Removed, `vec.ts` helpers, shared `toBytes`, moved, a cache of one | fixed |
+
+          **Skipped:**
+          - One shared `messageOf` for six existing copies: a change outside this wave.
+          - One per-domain style record in place of the domain-name checks: three modules for two domains, and no third domain is planned.
   - key: 01a1c47e-75e8-7658-b005-d09307fb27c1
     id: w4-t-preview
     kind: task
