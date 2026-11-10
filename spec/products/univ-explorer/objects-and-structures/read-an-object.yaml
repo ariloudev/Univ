@@ -76,6 +76,23 @@ requirements:
         name: "The chosen object is marked in the view."
       - key: 01a1a497-e843-728a-bce8-3fec1fe0b4b3
         name: "The chosen object is kept in the page's address, so that reloading the page shows it again."
+  - key: 01a1c25f-d5cd-76b6-b0cb-7d943afeab40
+    statement:
+      form: event_driven
+      when: "the person clicks the drawn point of the object already chosen, or closes its record"
+      system: "Univ Explorer"
+      shall: "let the object go, closing its record and making Earth the focus again."
+    criteria:
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d95dbb0dc01
+        name: "A click on the chosen object's point closes its record, and the point is no longer marked as chosen."
+      - key: 01a1c2a8-c234-72f0-adea-08ecd8fc538a
+        name: "Closing the object's record with its close button lets the object go as a click on its point does."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d969cb2496a
+        name: "Once the object is let go, Earth is the focus again, at the distance from the eye to the focus the view had."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d97b9058d19
+        name: "Once the object is let go, the page's address no longer names it."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7d98f8d78c05
+        name: "A double-click on the chosen object's point flies to it and leaves it chosen."
   - key: 01a1a497-e843-728a-bce8-3fedaa2c488c
     statement:
       form: unwanted

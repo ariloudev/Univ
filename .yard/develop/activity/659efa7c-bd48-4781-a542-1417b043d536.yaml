@@ -23,9 +23,13 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-09T22:08:41Z
+lastEnded: 2026-11-09T22:11:02Z
 turns:
   - started: 2026-11-09T22:08:27Z
+    ended: 2026-11-09T22:08:57Z
+  - started: 2026-11-09T22:10:27Z
+    ended: 2026-11-09T22:10:41Z
+  - started: 2026-11-09T22:11:02Z
 loft:
   - commands:
       - fmt

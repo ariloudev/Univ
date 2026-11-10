@@ -185,11 +185,7 @@ fn rows(db: &Connection, sql: &str) -> rusqlite::Result<Vec<QueryRow>> {
         statement.execute([])?;
         return Ok(Vec::new());
     }
-    let names: Vec<String> = statement
-        .column_names()
-        .iter()
-        .map(|n| (*n).to_owned())
-        .collect();
+    let names: Vec<String> = statement.column_names().map(str::to_owned).collect();
     let mut out = Vec::new();
     let mut query = statement.query([])?;
     while let Some(row) = query.next()? {

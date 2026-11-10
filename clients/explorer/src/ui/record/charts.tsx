@@ -40,9 +40,9 @@ function Axis({ ticks, x, y, top, unit }: { ticks: readonly number[]; x: (v: num
   );
 }
 
-/** A dot with the panel's ring about it, filled or open. */
-function Dot({ cx, cy, colour, open = false }: { cx: number; cy: number; colour: string; open?: boolean }) {
-  return <circle cx={cx} cy={cy} r={4.5} fill={open ? PANEL : colour} stroke={open ? colour : PANEL} strokeWidth={2} />;
+/** A dot with the panel's ring about it, filled, or open, its ring dotted where `dotted`. */
+export function Dot({ cx, cy, colour, open = false, dotted = false }: { cx: number; cy: number; colour: string; open?: boolean; dotted?: boolean }) {
+  return <circle cx={cx} cy={cy} r={4.5} fill={open ? PANEL : colour} stroke={open ? colour : PANEL} strokeWidth={2} strokeDasharray={dotted ? "1.8 1.8" : undefined} />;
 }
 
 /** One measurement of a dot plot: its label, value and uncertainty, and whether it is the one

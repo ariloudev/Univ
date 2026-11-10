@@ -7,7 +7,7 @@ import { ObjectPanel } from "./ObjectPanel.tsx";
 import type { Overlay } from "./overlay.ts";
 import { HoverLabel, StructureNames } from "./SceneOverlay.tsx";
 import { StructureRecordPanel } from "./record/StructureRecordPanel.tsx";
-import { StructureList } from "./StructuresPanel.tsx";
+import { DepthIndex } from "./structures/DepthIndex.tsx";
 
 const none = () => undefined;
 
@@ -20,7 +20,7 @@ describe("names, as atlases name areas and points", () => {
     render(
       <>
         <StructureNames names={[{ id: "kbc", centre: [0, 0, 0], text: "KBC void" }]} overlay={overlay} />
-        <StructureList list={[{ id: "shapley", name: "Shapley Supercluster", kind: "supercluster", scale_domain: "cosmic_web" }]} onChoose={none} />
+        <DepthIndex rows={[{ id: "shapley", name: "Shapley Supercluster", kind: "supercluster", colour: "", known: "observed", distance: 226 }]} chosen={undefined} onChoose={none} />
         <StructureRecordPanel detail={structureDetail({ id: "laniakea", name: "Laniakea" })} approximate={false} onClose={none} />
       </>,
     );

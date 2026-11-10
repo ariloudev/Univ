@@ -54,4 +54,13 @@ describe("a double-click", () => {
     expect(clicked(100, 100)).toBe("at 100");
     expect(clicked(300, 100)).toBe("at 300");
   });
+
+  it("finds nothing where nothing is under the pointer, and a click there starts no double-click", () => {
+    let clock = 0;
+    const under: (string | undefined)[] = [undefined, "a point"];
+    const clicked = firstOfDouble(() => under.shift(), () => clock);
+    expect(clicked(100, 100)).toBeUndefined();
+    clock += 100;
+    expect(clicked(100, 100)).toBe("a point");
+  });
 });

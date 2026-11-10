@@ -95,7 +95,7 @@ fn dump<'a>(dbs: impl Iterator<Item = &'a Connection>, table: &str, out: &mut St
                 valid_in("", "?1")
             ))
             .unwrap();
-        let columns: Vec<String> = q.column_names().iter().map(|c| (*c).to_owned()).collect();
+        let columns: Vec<String> = q.column_names().map(str::to_owned).collect();
         let mut rows = q.query([RELEASE]).unwrap();
         while let Some(row) = rows.next().unwrap() {
             let order: Vec<KeyValue> = key

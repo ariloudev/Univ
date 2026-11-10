@@ -2,13 +2,13 @@ import { useState } from "react";
 
 import type { ReleaseSummary } from "../api/schemas.ts";
 import { AtlasPage } from "./Atlas.tsx";
-import type { DrawerName } from "./Rail.tsx";
 import { ReleasePicker } from "./ReleasePicker.tsx";
 import { Scene } from "./Scene.tsx";
 import { ServerUnreachable, TryAgain } from "./ServerUnreachable.tsx";
 import { useLevelOfDetail } from "./levelOfDetail.ts";
 import { SwitchBox } from "./SwitchBox.tsx";
 import { useReleases } from "./useReleases.ts";
+import { useStoredDrawer } from "./storedDrawer.ts";
 
 /** Univ Explorer: the releases of Univ Server, and the view of the one chosen. */
 export function App() {
@@ -44,7 +44,7 @@ function Explorer({ releases, latest }: { releases: ReleaseSummary[]; latest: nu
   const levelOfDetail = useLevelOfDetail();
   // The top bar's place for the view's parts, and the drawer open, outlive each release's view.
   const [topBar, setTopBar] = useState<HTMLElement | null>(null);
-  const [drawer, setDrawer] = useState<DrawerName>();
+  const [drawer, setDrawer] = useStoredDrawer();
   const shown = releases.find((r) => r.number === release);
   const start = (
     <>

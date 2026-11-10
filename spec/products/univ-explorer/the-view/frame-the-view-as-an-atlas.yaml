@@ -98,6 +98,19 @@ requirements:
         name: "The bottom bar holds the scale, the key and the credits in one line no taller than 30 CSS pixels."
       - key: 01a1b7f5-f51b-71f9-80de-cd296b50d30d
         name: "On a window narrower than 1,024 CSS pixels, a drawer and the record open over the view and close again."
+  - key: 01a1c25f-d5cd-76b6-b0cb-7d9ff2af08e2
+    statement:
+      form: event_driven
+      when: "the explorer opens"
+      system: "Univ Explorer"
+      shall: "open the drawer that was open when the person last left it in the same browser."
+    criteria:
+      - key: 01a1c25f-d5cd-76b6-b0cb-7da07ed45c84
+        name: "Each time a drawer opens or closes, the explorer keeps which drawer is open, or that none is, in the browser's local storage."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7da1d8eca54a
+        name: "When the explorer opens, the drawer kept in local storage is open."
+      - key: 01a1c25f-d5cd-76b6-b0cb-7da23d69692f
+        name: "Where local storage keeps no drawer, or one the rail no longer offers, or the browser refuses local storage, the explorer opens with no drawer open."
   - key: 01a1b7d7-c032-73ad-803e-b10ec3cb74b8
     statement:
       form: ubiquitous

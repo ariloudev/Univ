@@ -55,7 +55,8 @@ function arrive(world: World, record: ObjectRecord, fly: boolean): void {
   if (fly && place !== undefined) world.controller.approach(place);
 }
 
-/** The chosen object of `release` in `world`, and the way to choose another. */
+/** The chosen object of `release` in `world`, its id while one is asked for, and the way to
+ * choose another. */
 export function useChosen(release: number, world: World | undefined) {
   const [request, setRequest] = useState<Request | undefined>(() => {
     const named = objectInAddress(location.search);
@@ -107,5 +108,5 @@ export function useChosen(release: number, world: World | undefined) {
       return same ? current : { id, ...options };
     });
   }, []);
-  return { chosen, choose };
+  return { chosen, chosenId: request?.id, choose };
 }

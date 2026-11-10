@@ -322,11 +322,7 @@ fn run(
 ) -> Result<Vec<Row>, BackendError> {
     let error = |error: rusqlite::Error| BackendError(error.to_string());
     let mut statement = connection.prepare(sql).map_err(error)?;
-    let names: Vec<String> = statement
-        .column_names()
-        .iter()
-        .map(|name| (*name).to_owned())
-        .collect();
+    let names: Vec<String> = statement.column_names().map(str::to_owned).collect();
     let params: Vec<rusqlite::types::Value> = params.iter().map(sql_value).collect();
     let mut rows = statement
         .query(rusqlite::params_from_iter(params))

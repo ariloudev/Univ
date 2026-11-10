@@ -22,10 +22,14 @@ import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
 import { NOTHING, type Volume } from "../scene/volume.ts";
 import { insideInAddress } from "./inside.ts";
+import { clickChooser } from "./letGo.ts";
+
+/** What a click can choose: a structure's name, or a point. */
+export type Clicked = { name: NameLabel } | { point: ScenePoint };
 
 /** What is under the pointer, where the pointer is: a structure's name, which a click
  * chooses, or else a point. */
-export type Hover = ({ x: number; y: number } & ({ name: NameLabel } | { point: ScenePoint })) | undefined;
+export type Hover = ({ x: number; y: number } & Clicked) | undefined;
 
 /** What is under the pointer at `x`, `y`: a name before a point, as a click chooses. */
 function under(world: World, element: HTMLCanvasElement, x: number, y: number): Hover {
@@ -55,10 +59,13 @@ export interface World {
 }
 
 /** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to;
- * a structure whose name was clicked. */
+ * a structure whose name was clicked; and, asking whether what a click found is chosen already,
+ * a click that lets it go (read-an-object, see-the-structures). */
 export interface OnChoose {
   point: (point: ScenePoint) => void;
   structure: (id: string) => void;
+  isChosen: (found: Clicked) => boolean;
+  letGo: () => void;
 }
 
 function surroundings(element: HTMLElement): Surroundings {
@@ -181,9 +188,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   };
   const clicked = firstOfDouble((x, y) => under(world, element, x, y), () => performance.now());
   // A click centres the view on the point; a double-click flies in close to it.
-  const chooser = (close: boolean) => (x: number, y: number) => {
-    const found = clicked(x, y);
-    if (found === undefined) return;
+  const choose = (found: Clicked, close: boolean) => {
     if ("name" in found) {
       onChoose.current.structure(found.name.id);
       return;
@@ -194,12 +199,18 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     clearHover();
     onChoose.current.point(found.point);
   };
+  // A click on what is chosen lets it go, unless a double-click follows (read-an-object).
+  const clicks = clickChooser<Clicked>({ isChosen: (found) => onChoose.current.isChosen(found), letGo: () => onChoose.current.letGo(), choose });
+  const at = (gesture: (found: Clicked) => void) => (x: number, y: number) => {
+    const found = clicked(x, y);
+    if (found !== undefined) gesture(found);
+  };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
     pan: (dx, dy) => controller.pan(dx, dy),
     zoom: (steps) => controller.zoom(steps),
-    click: chooser(false),
-    doubleClick: chooser(true),
+    click: at(clicks.click),
+    doubleClick: at(clicks.doubleClick),
     hover: (x, y) => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
       hovering = requestAnimationFrame(() => hover.set(under(world, element, x, y)));
@@ -216,6 +227,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   resize.observe(element);
   return () => {
     unbind();
+    clicks.cancel();
     resize.disconnect();
     if (hovering !== undefined) cancelAnimationFrame(hovering);
   };

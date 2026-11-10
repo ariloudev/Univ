@@ -42,6 +42,9 @@ const DRAWERS: readonly { name: DrawerName; label: string; title: string; icon: 
   },
 ];
 
+/** Whether `value` names a drawer the rail opens. */
+export const isDrawerName = (value: unknown): value is DrawerName => DRAWERS.some((d) => d.name === value);
+
 /** The title of drawer `name`. */
 export const drawerTitle = (name: DrawerName): string => DRAWERS.find((d) => d.name === name)?.title ?? name;
 
