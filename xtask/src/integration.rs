@@ -110,10 +110,21 @@ pub fn serve(root: &Path) -> bool {
         .is_some_and(|state| succeeded(wrangler(root, "dev", &state).status(), "wrangler dev"))
 }
 
-/// The real local state, its release tables and the univ-layers migrations brought up to date;
-/// none, having said why.
+/// The variable that names another local state for `serve`, `explore` and the benches, such as
+/// a scratch release's, in place of the real one.
+const STATE_VARIABLE: &str = "UNIV_LOCAL_STATE";
+
+/// The real local state, or the one `UNIV_LOCAL_STATE` names, its release tables and the
+/// univ-layers migrations brought up to date; none, having said why.
 pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
-    let state = root.join(REAL_STATE);
+    let state = std::env::var_os(STATE_VARIABLE)
+        .map_or_else(|| root.join(REAL_STATE), std::path::PathBuf::from);
+    if state != root.join(REAL_STATE) {
+        eprintln!(
+            "on the local state {} that {STATE_VARIABLE} names",
+            state.display()
+        );
+    }
     if !state.is_dir() {
         eprintln!(
             "{} holds no published release: run `univ-ingest publish` first",

@@ -515,3 +515,34 @@ test("reads an object's record as a gazetteer entry: on the sky, its catalogues,
   await expect(panel.getByTestId("catalogues")).toBeVisible();
   await expect(panel.getByTestId("sky")).toContainText(/RA \d{2}h \d{2}m [\d.]+s, Dec [+−]\d{2}° \d{2}′ [\d.]+″/);
 });
+
+test("turns the dust map on from the Show drawer, and, the release holding no dust grid, turns it off again saying why, the points still drawn, without a WebGL error", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    // The grid's 404 is the case under test; WebGL's errors, as warnings, are not.
+    if (/INVALID_|GL_INVALID|GL ERROR/.test(message.text())) errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await firstPoints(page);
+  const stars = page.getByTestId("star-key");
+  await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  const section = page.getByTestId("dust-switch");
+  const toggle = section.getByRole("switch", { name: "Dust map" });
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await expect(section.getByRole("status")).toContainText("edenhofer-2024-dust could not be drawn");
+  await expect(toggle).not.toBeChecked();
+  await expect(page).not.toHaveURL(/dust=on/);
+  await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
+  await expect(page.getByTestId("dust-key")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("opens on an address that turns the dust map on, and says why it cannot be drawn", async ({ page }) => {
+  await page.goto("/?dust=on");
+  await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  await expect(page.getByTestId("dust-switch").getByRole("status")).toContainText("could not be drawn");
+  await expect(page).not.toHaveURL(/dust=on/);
+});

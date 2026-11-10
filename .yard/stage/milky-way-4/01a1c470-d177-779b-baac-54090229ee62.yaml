@@ -127,6 +127,15 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Dust switch, fetch once, decode and downsample, failure message"
         state: active
+      - key: 01a1c47c-94f7-7171-bc51-bc8c0bff4c82
+        at: 2026-11-10T08:04:21Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust switch, fetch once, decode and downsample, failure message"
+        detail: "api/dust.ts (kept per release), ui/useDustMap.ts (address switch dust=on, failure turns it off with a message naming the grid), Show drawer section."
+        state: done
   - key: 01a1c470-d177-779b-baac-5410f5fc181a
     id: w4-t5
     kind: task
@@ -140,6 +149,15 @@ blocks:
         title: "Dust volume pass placed in galactic parsecs"
         detail: "scene/dust.ts"
         state: open
+      - key: 01a1c47c-94f7-7171-bc51-bc8dd60fe72e
+        at: 2026-11-10T08:04:21Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust volume pass placed in galactic parsecs"
+        detail: "scene/dust.ts: R16F 125³ texture; haze ray-marched in 96 steps; dustFrame places it by the manifest's to_galactic; tested on the CPU."
+        state: done
   - key: 01a1c470-d177-779b-baac-54110390e2aa
     id: w4-t6
     kind: task
@@ -152,6 +170,15 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Stars dimmed by the dust before them"
         state: open
+      - key: 01a1c47c-94f7-7171-bc51-bc8e66b03fa0
+        at: 2026-11-10T08:04:21Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Stars dimmed by the dust before them"
+        detail: "The point shader integrates 32 steps of the segment eye→point clipped to the grid; markers not dimmed. CPU mirror columnTo tested: a star in front 1.0, behind a cloud dimmed."
+        state: done
   - key: 01a1c470-d177-779b-baac-54123c8f4f37
     id: w4-t7
     kind: task
@@ -164,6 +191,15 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Dust key: source, unit, reconstructed"
         state: open
+      - key: 01a1c47c-94f7-7171-bc51-bc8f3076ee3d
+        at: 2026-11-10T08:04:21Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust key: source, unit, reconstructed"
+        detail: "DustKey in the Key popover while drawn."
+        state: done
   - key: 01a1c470-d177-779b-baac-54135f6c7339
     id: w4-t8
     kind: task
@@ -176,6 +212,14 @@ blocks:
           session: "918a7610-2359-46e7-a590-437534c76364"
         title: "Playwright: dust switch, failure path, no WebGL errors"
         state: open
+      - key: 01a1c47c-94f7-7171-bc51-bc90eab2b12e
+        at: 2026-11-10T08:04:21Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Playwright: dust switch, failure path, no WebGL errors"
+        state: active
   - key: 01a1c470-d177-779b-baac-5415ae9f81c9
     id: w4-build-issues
     kind: note
