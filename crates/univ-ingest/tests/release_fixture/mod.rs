@@ -162,6 +162,15 @@ pub fn build_next(f: &Fixture) -> BuiltRelease {
     built(f, &crossed, &tiles, &f.definitions, &f.structures).unwrap()
 }
 
+/// [`build_next`] with object shards of `budget` estimated D1 bytes in place of
+/// [`SHARD_BUDGET`].
+pub fn build_next_within(f: &Fixture, budget: u64) -> BuiltRelease {
+    let mut crossed = cross(f);
+    crossed.basis.config.shard_budget_bytes = Some(budget);
+    let tiles = tiles(f, &crossed);
+    built(f, &crossed, &tiles, &f.definitions, &f.structures).unwrap()
+}
+
 pub fn read_manifest(dir: &Path) -> ReleaseManifest {
     let text = std::fs::read_to_string(dir.join(keys::MANIFEST)).unwrap();
     serde_norway::from_str(&text).unwrap()

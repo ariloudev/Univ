@@ -157,6 +157,15 @@ blocks:
         title: "G < 14 queries in 768 chunks"
         detail: "gaia-dr3-bright and bailer-jones-2021, with the live count recorded. Done when the definitions check and fixtures normalize."
         state: active
+      - key: 01a1c344-7381-7046-be03-0386feb92576
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "G < 14 queries in 768 chunks"
+        detail: "Both queries cut at G < 14 in 768 chunks. Live COUNT(*) on 2026-11-10: 16,844,156 sources and 16,716,140 Bailer-Jones distances, recorded in cuts. The decoder's simulated manifest was regenerated for the new title."
+        state: done
   - key: 01a1c32a-9ac8-73c6-af9b-d556ce538cda
     id: t5-shards
     kind: task
@@ -170,6 +179,15 @@ blocks:
         title: "Bind object shards 8 to 11"
         detail: "Both wrangler.toml files and the config test. Done when the config test passes."
         state: open
+      - key: 01a1c344-7381-7046-be03-0387b1a0c764
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bind object shards 8 to 11"
+        detail: "Both wrangler.toml files bind OBJECTS_8 to OBJECTS_11. The config test and the publisher's bound-shards test now expect 12."
+        state: done
   - key: 01a1c32a-9ac8-73c6-af9b-d557856938ac
     id: t6-prune-tests
     kind: task
@@ -183,6 +201,15 @@ blocks:
         title: "Prune-then-change tests"
         detail: "tests/prune_then_change.rs, cases (a) and (b). Done when both pass."
         state: open
+      - key: 01a1c344-7381-7046-be03-0388a2b1fcee
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Prune-then-change tests"
+        detail: "tests/prune_then_change.rs, cases (a) and (b). Done when both pass."
+        state: active
   - key: 01a1c32a-9ac8-73c6-af9b-d55aaa5b6821
     id: build-issues
     kind: note
@@ -210,6 +237,21 @@ blocks:
           |---|---|---|---|---|
           | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | criterion reworded, `2cfb2ef` | fixed |
           | 2 | Carrying the parallax and its error on the Bailer-Jones entries would make each a second, duplicate inverted-parallax candidate beside the Gaia entry's, and a rule can test only a declared column | reading `ranking/distance.rs` `candidates()` and `source/normalization.rs` `known()` | the query selects `g.parallax_over_error` as a quality column; criterion reworded | fixed |
+      - key: 01a1c344-7381-7046-be03-0389b446bc3c
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | criterion reworded, `2cfb2ef` | fixed |
+          | 2 | Carrying the parallax and its error on the Bailer-Jones entries would make each a second, duplicate inverted-parallax candidate beside the Gaia entry's, and a rule can test only a declared column | reading `ranking/distance.rs` `candidates()` and `source/normalization.rs` `known()` | the query selects `g.parallax_over_error` as a quality column; criterion reworded, `e97cb9d` | fixed |
+          | 3 | The publisher's test pinned the bound shard count at 8 | `publish::wrangler` unit test after binding shards 8–11 | it now expects 12 | fixed |
+          | 4 | The decoder's simulated manifest records source titles, so the renamed Gaia title changed it | `tile_decoder_fixtures` | regenerated with `UPDATE_FIXTURES=1` | fixed |
+          | 5 | 128,016 Gaia sources below G = 14 have no Bailer-Jones distance (no parallax), so unless GCNS or Hipparcos places them they stay unplaced. The decision says “every star of the cut is placed” | live counts of 2026-11-10 | none needed in code; the release stage's note reports the count | noted |
   - key: 01a1c32a-ba83-75ab-af7a-776a87fb6f90
     id: w1-spec-change
     kind: loft
