@@ -105,8 +105,8 @@ impl RankingRules {
         if !(u.is_finite() && u > 0.0) {
             return bad("too_uncertain_above", "is not a positive number");
         }
-        let r = self.prior_led_parallax_ratio;
-        if !(r.is_finite() && r > 0.0) {
+        let ratio = self.prior_led_parallax_ratio;
+        if !(ratio.is_finite() && ratio > 0.0) {
             return bad("prior_led_parallax_ratio", "is not a positive number");
         }
         let mut seen = std::collections::HashSet::new();

@@ -64,6 +64,15 @@ blocks:
         title: "prior_led_parallax_ratio in the ranking rule"
         detail: "rules/ranking.yaml and RankingRules. Done when the ranking_rules test refuses 0, -1 and NaN and accepts 5."
         state: active
+      - key: 01a1c32b-8987-72a9-8a3a-294aafde9e76
+        at: 2026-11-10T01:56:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "prior_led_parallax_ratio in the ranking rule"
+        detail: "rules/ranking.yaml and RankingRules, with the test the_prior_led_parallax_ratio_is_the_rule_s_parameter_recorded_for_the_manifest."
+        state: done
   - key: 01a1c32a-9ac8-73c6-af9b-d5532bef577b
     id: t2-inferred
     kind: task
@@ -77,6 +86,15 @@ blocks:
         title: "Bailer-Jones rows marked inferred below the ratio"
         detail: "Query columns, two YAML rules and a consistency test. Done when normalize_bailer_jones_kind.rs passes on six fixture rows."
         state: open
+      - key: 01a1c32b-8987-72a9-8a3a-294bc350ba24
+        at: 2026-11-10T01:56:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bailer-Jones rows marked inferred below the ratio"
+        detail: "Query columns, two YAML rules and a consistency test. Done when normalize_bailer_jones_kind.rs passes on six fixture rows."
+        state: active
   - key: 01a1c32a-9ac8-73c6-af9b-d554c31f3113
     id: t3-setaside
     kind: task
@@ -144,6 +162,18 @@ blocks:
           | # | Issue | Found by | Fix | State |
           |---|---|---|---|---|
           | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | reword the criterion (task t0) | in hand |
+      - key: 01a1c32d-f4b0-77b1-853a-b5785f3e0c80
+        at: 2026-11-10T01:58:51Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | criterion reworded, `2cfb2ef` | fixed |
+          | 2 | Carrying the parallax and its error on the Bailer-Jones entries would make each a second, duplicate inverted-parallax candidate beside the Gaia entry's, and a rule can test only a declared column | reading `ranking/distance.rs` `candidates()` and `source/normalization.rs` `known()` | the query selects `g.parallax_over_error` as a quality column; criterion reworded | fixed |
   - key: 01a1c32a-ba83-75ab-af7a-776a87fb6f90
     id: w1-spec-change
     kind: loft
@@ -237,6 +267,182 @@ blocks:
               "base": {
                 "added": [],
                 "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 144,
+                    "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  }
+                ],
+                "commit": "2edb4e4735caa18a50a3d3cc5446a0b4c7075808",
+                "removed": [],
+                "revision": "product/milky-way"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 8,
+                "publishedAt": "2026-11-10T00:58:19Z",
+                "stateRoot": "2737388e7982ae9afc71aeea4312e3d06c188090bdefb7a71943cc0a812ee2ae"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/milky-way-1",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1c32d-f4b0-77b1-853a-b576e32b8709
+    id: w1-spec-change-2
+    kind: loft
+    versions:
+      - key: 01a1c32d-f4b0-77b1-853a-b577b794f4f7
+        at: 2026-11-10T01:58:51Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: spec-change
+        note: "A second minor wording fix (build issue 2). The Bailer-Jones distances carry Gaia's `parallax_over_error`, the ratio the inferred rule tests, rather than the parallax and its error. Both of those stay measured on the same star's Gaia DR3 entry."
+        base: "product/milky-way"
+        recorded:
+          commit: "e97cb9d1ec0c7b036df1e56268d62eb8fbc496c4"
+          branch: "stage/milky-way-1"
+          loft: 2.3.0
+          at: 2026-11-10T01:58:51Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 2,
+              "graph.edges": 0,
+              "graph.nodes": 9,
+              "status.base.added": 0,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                  "words": {
+                    "after": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "before": "The Bailer-Jones 2021 distances carry the Gaia DR3 parallax and parallax error of each source they give a distance to."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "words": {
+                    "after": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "before": "A star whose only distance is inferred is still placed, at that distance."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 13 adds or widens, to show the Milky Way in depth.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5f854eb67f1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c601520a52af",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "parent": "01a1c319-7860-76e8-92ac-c601520a52af"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 108,
+                    "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
                   {
                     "column": 14,
                     "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
