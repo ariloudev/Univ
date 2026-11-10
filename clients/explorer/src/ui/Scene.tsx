@@ -13,7 +13,7 @@ import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
-import { isChosen, letGo } from "./letGo.ts";
+import { type Target, isChosen, targetOf } from "./letGo.ts";
 import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 
@@ -68,13 +68,12 @@ export function Scene({
   const { world, domains, rotations, overlay, problem } = useWorld(release, canvas, {
     point: (point) => selection.object(point.id),
     structure: (id) => selection.structureById(id),
-    letGo: (found) => {
-      const chosenAlready = isChosen(found, { object: chosenId, structure: structureId });
-      if (chosenAlready) selection.close();
-      return chosenAlready;
-    },
+    isChosen: (found) => chosenAlready(targetOf(found)),
+    letGo: () => selection.close(),
   });
   const { chosen, chosenId, choose } = useChosen(release, world);
+  /** Whether `target` is what is chosen, though its record is still being read. */
+  const chosenAlready = (target: Target) => isChosen(target, { object: chosenId, structure: structureId });
   const [hidden, apply] = useHidden();
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
   const { domain, source, kind } = hidden;
@@ -97,6 +96,7 @@ export function Scene({
     context,
     chosen,
     structure: detail,
+    structureId,
     inside,
     approximate: structureId !== undefined && structures.drawings.get(structureId)?.approximate === true,
     object: (id, options) => {
@@ -109,14 +109,14 @@ export function Scene({
       if (world !== undefined) flyToStructure(world, structures, id);
     },
     structureFromList: (id) => {
-      if (id === structureId) selection.close();
+      if (chosenAlready({ structure: id })) selection.close();
       else selection.structureById(id);
     },
     close: () => {
-      letGo(() => {
-        choose(undefined);
-        structureChoice.close();
-      }, world?.controller);
+      choose(undefined);
+      structureChoice.close();
+      // The view no longer turns and zooms about the place of what was let go.
+      world?.controller.returnToEarth();
     },
   };
   return (

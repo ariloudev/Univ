@@ -3,7 +3,7 @@
 // a statistical claim, or reconstructed.
 
 import type { StructureSummary } from "../../api/structures.ts";
-import { figures, whole } from "../../scene/format.ts";
+import { figures, shortDistance, whole } from "../../scene/format.ts";
 import { structureCss } from "../../scene/kinds.ts";
 import { norm } from "../../scene/vec.ts";
 import type { Structures } from "../useStructures.ts";
@@ -12,31 +12,32 @@ import { words } from "../text.ts";
 /** How a structure is known, as its record says. */
 export type Known = "observed" | "statistical_claim" | "reconstructed";
 
-const KNOWN: readonly Known[] = ["observed", "statistical_claim", "reconstructed"];
+/** The ways a structure is known, in the legend's order. */
+export const KNOWN: readonly Known[] = ["observed", "statistical_claim", "reconstructed"];
 
-/** The words for how a structure is known. */
-export const KNOWN_WORDS: Record<Known, string> = { observed: "observed", statistical_claim: "statistical claim", reconstructed: "reconstructed" };
-
-/** One row of the index: a structure, its kind's colour, how it is known, and the distance from
- * Earth to its centre as the view places it, megaparsecs, where it is placed. */
+/** One row of the index: a structure, its kind's colour, how it is known where its record says,
+ * and the distance from Earth to its centre as the view places it, megaparsecs, where it is
+ * placed. */
 export interface DepthRow {
   id: string;
   name: string;
   kind: string;
   colour: string;
-  known: Known;
+  known: Known | undefined;
   distance: number | undefined;
 }
 
-/** The rows of `shown`, named and placed as `structures` draws them. A record that says nothing of how the
- * structure is known, or says what the explorer does not know, reads as observed. */
+/** The rows of `shown`, named and placed as `structures` draws them. A structure whose record is
+ * not read, or says nothing the explorer knows of how it is known, is known in no way at all:
+ * never taken for observed. */
 export function depthRows(shown: readonly StructureSummary[], structures: Pick<Structures, "details" | "drawings">): DepthRow[] {
   return shown.map((s) => {
     const drawing = structures.drawings.get(s.id);
     const status = structures.details.get(s.id)?.status;
-    const known = KNOWN.find((k) => k === status) ?? "observed";
+    const known = KNOWN.find((k) => k === status);
     const centre = drawing?.centre;
-    // The name as drawn, "(at least)" after it where its shape is a lower limit on its extent.
+    // The name the view gives the structure, "(at least)" after it where its shape is a lower
+    // limit on its extent.
     return { id: s.id, name: drawing?.name ?? s.name, kind: s.kind, colour: structureCss(s.kind), known, distance: centre === undefined ? undefined : norm(centre) };
   });
 }
@@ -45,11 +46,12 @@ export function depthRows(shown: readonly StructureSummary[], structures: Pick<S
 const AROUND_US = 0.5;
 
 /** A distance in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from
- * there; "around us" for a structure centred on Earth, and "not placed" for none. */
+ * there, as the headings divide them; "around us" for a structure centred on Earth, and "not
+ * placed" for none. */
 export function distanceText(mpc: number | undefined): string {
   if (mpc === undefined) return "not placed";
   if (mpc < AROUND_US) return "around us";
-  return Math.round(mpc) < 1000 ? `${whole(mpc)} Mpc` : `${figures(mpc / 1000)} Gpc`;
+  return mpc < 1000 ? `${whole(mpc)} Mpc` : `${figures(mpc / 1000)} Gpc`;
 }
 
 /** The axis's ends, as powers of ten of megaparsecs: 10 Mpc to 10 Gpc. */
@@ -57,12 +59,7 @@ const NEAR = 1;
 const FAR = 4;
 
 /** The axis's labelled ticks, megaparsecs, with their words. */
-export const DEPTH_TICKS: readonly { mpc: number; text: string }[] = [
-  { mpc: 10, text: "10 Mpc" },
-  { mpc: 100, text: "100 Mpc" },
-  { mpc: 1000, text: "1 Gpc" },
-  { mpc: 10_000, text: "10 Gpc" },
-];
+export const DEPTH_TICKS: readonly { mpc: number; text: string }[] = [10, 100, 1000, 10_000].map((mpc) => ({ mpc, text: shortDistance(mpc) }));
 
 /** Where `mpc` lies along an axis `width` long: logarithmically from 10 Mpc to 10 Gpc, held at
  * its ends. */

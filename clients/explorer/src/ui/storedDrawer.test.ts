@@ -1,13 +1,14 @@
 import { act, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { DRAWER_KEY, storeDrawer, storedDrawer, useStoredDrawer } from "./storedDrawer.ts";
+import { DRAWER_KEY, useStoredDrawer } from "./storedDrawer.ts";
 
-const refused = (): Storage => {
+const refuse = () => {
   throw new DOMException("The operation is insecure.", "SecurityError");
 };
 
 afterEach(() => {
+  vi.restoreAllMocks();
   localStorage.clear();
 });
 
@@ -25,7 +26,8 @@ describe("the drawer kept in local storage (frame-the-view-as-an-atlas)", () => 
 
   it("opens no drawer where the one kept is not one the rail opens", () => {
     localStorage.setItem(DRAWER_KEY, "layers");
-    expect(storedDrawer(() => localStorage)).toBeUndefined();
+    const { result } = renderHook(() => useStoredDrawer());
+    expect(result.current[0]).toBeUndefined();
   });
 
   it("keeps each drawer opened, and that none is once it closes", () => {
@@ -43,9 +45,14 @@ describe("the drawer kept in local storage (frame-the-view-as-an-atlas)", () => 
   });
 
   it("opens no drawer, and keeps none without failing, where the browser refuses local storage", () => {
-    expect(storedDrawer(refused)).toBeUndefined();
-    expect(() => {
-      storeDrawer(refused, "view");
-    }).not.toThrow();
+    localStorage.setItem(DRAWER_KEY, "show");
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(refuse);
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(refuse);
+    const { result } = renderHook(() => useStoredDrawer());
+    expect(result.current[0]).toBeUndefined();
+    act(() => {
+      result.current[1]("view");
+    });
+    expect(result.current[0]).toBe("view");
   });
 });

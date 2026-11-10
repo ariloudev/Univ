@@ -3,7 +3,7 @@
 // depth index's order and find text (see-the-structures). Where the browser refuses its storage,
 // nothing is kept and the page opens as ever.
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const local = (): Storage => localStorage;
 
@@ -31,11 +31,13 @@ export function writeLocal(key: string, value: string | undefined, storage: () =
  * value set, kept as `write` gives it (none to keep nothing). */
 export function useLocalState<T>(key: string, read: (kept: string | undefined) => T, write: (value: T) => string | undefined): [T, (value: T) => void] {
   const [value, setValue] = useState(() => read(readLocal(key)));
-  return [
-    value,
-    (next) => {
+  // One setter for the hook's life, as useState's own is.
+  const set = useCallback(
+    (next: T) => {
       setValue(next);
       writeLocal(key, write(next));
     },
-  ];
+    [key, write],
+  );
+  return [value, set];
 }

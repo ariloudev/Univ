@@ -32,22 +32,22 @@ describe("the depth index's rows (see-the-structures)", () => {
     expect(rowOf?.name).toBe("Vela Supercluster (at least)");
   });
 
-  it("leave a structure with no placed shape unplaced, and read a record silent on how it is known as observed", () => {
+  it("leave a structure with no placed shape unplaced, and one whose record is not read known in no way", () => {
     const [rowOf] = depthRows([{ id: "sa68", name: "SA 68 Supercluster", kind: "supercluster", scale_domain: "cosmic_web" }], {
       drawings: new Map([["sa68", drawing("sa68", undefined)]]),
       details: new Map(),
     });
     expect(rowOf?.distance).toBeUndefined();
-    expect(rowOf?.known).toBe("observed");
+    expect(rowOf?.known).toBeUndefined();
   });
 
-  it("read a reconstructed structure as such, and a status the explorer does not know as observed", () => {
+  it("read a reconstructed structure as such, and a structure whose record is not read, or whose status the explorer does not know, as known in no way", () => {
     const shown = [
       { id: "ga", name: "Great Attractor", kind: "attractor", scale_domain: "cosmic_web" },
       { id: "x", name: "X", kind: "void", scale_domain: "cosmic_web" },
     ];
     const rows = depthRows(shown, { drawings: new Map(), details: new Map([["ga", structureDetail({ status: "reconstructed" })], ["x", structureDetail({ status: "rumoured" })]]) });
-    expect(rows.map((r) => r.known)).toEqual(["reconstructed", "observed"]);
+    expect(rows.map((r) => r.known)).toEqual(["reconstructed", undefined]);
   });
 });
 
@@ -55,7 +55,8 @@ describe("a structure's distance in words (see-the-structures)", () => {
   it("is in whole megaparsecs below 1,000 Mpc, and in gigaparsecs to three figures from there", () => {
     expect(distanceText(11.4)).toBe("11 Mpc");
     expect(distanceText(226.4)).toBe("226 Mpc");
-    expect(distanceText(999.6)).toBe("1 Gpc");
+    expect(distanceText(999.6)).toBe("1,000 Mpc");
+    expect(distanceText(1000)).toBe("1 Gpc");
     expect(distanceText(1038)).toBe("1.04 Gpc");
     expect(distanceText(6627)).toBe("6.63 Gpc");
   });

@@ -54,10 +54,21 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
     expect(screen.getByTestId("depth-legend").textContent).toBe("observedstatistical claimreconstructed");
     const dot = (name: RegExp) => screen.getByRole("button", { name }).querySelector("circle");
-    expect(dot(/^Bootes Void/)?.getAttribute("data-known")).toBeNull();
-    expect(dot(/^Giant Arc/)?.getAttribute("data-known")).toBe("statistical_claim");
-    expect(dot(/^Local Void/)?.getAttribute("stroke-dasharray")).toBe("1.6 1.6");
+    const known = (name: RegExp) => screen.getByRole("button", { name }).querySelector("[data-known]")?.getAttribute("data-known");
+    expect(known(/^Bootes Void/)).toBe("observed");
+    expect(dot(/^Bootes Void/)?.getAttribute("fill")).toBe("#9e73ff");
+    expect(known(/^Giant Arc/)).toBe("statistical_claim");
+    expect(dot(/^Giant Arc/)?.getAttribute("fill")).toBe("var(--color-panel)");
+    expect(known(/^Local Void/)).toBe("reconstructed");
+    expect(dot(/^Local Void/)?.getAttribute("stroke-dasharray")).toBe("1.8 1.8");
     expect(screen.getByRole("button", { name: /^Giant Arc/ }).getAttribute("aria-label")).toContain("statistical claim");
+  });
+
+  it("marks a structure known in no way in the dim, and says nothing of it", () => {
+    render(<DepthIndex rows={[{ ...row("x", "Unread Wall", "wall", 300), known: undefined }]} chosen={undefined} onChoose={none} />);
+    const button = screen.getByRole("button", { name: "Unread Wall, wall, 300 Mpc" });
+    expect(button.querySelector("circle")?.getAttribute("fill")).toBe("var(--color-dim)");
+    expect(button.querySelector("[data-known]")).toBeNull();
   });
 
   it("orders the list by name instead from its switch, without headings, keeping each dot", async () => {

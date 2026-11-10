@@ -27,6 +27,15 @@ describe("a value kept in local storage (frame-the-view-as-an-atlas, see-the-str
     }).not.toThrow();
   });
 
+  it("gives one setter for the hook's life", () => {
+    const read = (kept: string | undefined) => kept ?? "";
+    const write = (text: string) => text;
+    const { result, rerender } = renderHook(() => useLocalState("text", read, write));
+    const first = result.current[1];
+    rerender();
+    expect(result.current[1]).toBe(first);
+  });
+
   it("opens as kept, and keeps each value set as its writer gives it", () => {
     localStorage.setItem("order", "name");
     const read = (kept: string | undefined) => kept ?? "distance";

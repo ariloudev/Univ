@@ -4076,7 +4076,7 @@ links:
         body: a14bb66ba866f36cebf91054670415c73b681091973d70818ab7faf27d3ea656
       - file: "clients/explorer/src/ui/useWorld.test.ts"
         name: "chooses what its first click found, though that click has moved the view"
-        body: 3f7e3036a4cf5f4beefea0aba557af67821cd6b77439458393165ed6ab663889
+        body: 3e273b423cfd45a7bf8172ef7161330dc8be1394435af0a9bdb7e973d0546c23
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "centres the view on a point clicked, keeping the distance, with the grid and the distance rings drawn over it"
         body: 3399d49cc77f05671f0cf4e410968d4cfd89d87e7a20b62b201bb40c45477567
@@ -4835,10 +4835,10 @@ links:
         body: 53a518aa248d496ca6ffe731ba6c9c25d66adf3cfbcbe92bfdb6b88a2f00a841
       - file: "clients/explorer/src/ui/storedDrawer.test.ts"
         name: "opens no drawer where the one kept is not one the rail opens"
-        body: e2b7f2c5e7d837bbd503ec7f92bf06911a4e06e273a2d1f8118f209dd8bce4ef
+        body: bbeb25ac5b7cbac9a7b415d47005296481d8c4f46c49bd337753c3637be2fb9f
       - file: "clients/explorer/src/ui/storedDrawer.test.ts"
         name: "opens no drawer, and keeps none without failing, where the browser refuses local storage"
-        body: e6d2b07a724f33c4db87f6497c981ec197d61f6eddf3f77d3c1ea67e647e5e69
+        body: 9c9ee92b41570df0b6af8ef91b5cf386f6f7b0ad4f6bcf549302221280dae740
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "keeps the drawer open across a reload, and none once it is closed"
         body: 4abcc5920ec559636a7157f91896586208d4902e80cd2c710e6a3f7c7bfe7c4a
@@ -5182,50 +5182,41 @@ links:
     reviewed: 5d170ef3abf90ab3d64043c6c3da95117c3a9b75005fbf3c41308d5ee2e72827
     tests:
       - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "is on the chosen object's point, and on no other point"
-        body: cc44d413dd46c2f49ceeac531637671611531c0c6112176676363d75fe86f55b
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "lets it go, and chooses nothing"
-        body: 6614d0fa582c63f6d8a434b4496aee71466fb00a9c34d73d2a4f937d4bee5041
+        name: "is the chosen object's point, and no other point"
+        body: f4ad4bd7474f62c9e2d7b6d45334eff5a794966bfe3636d368b7d67119c1651c
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "lets it go once a double-click's time has passed, and chooses nothing"
+        body: e2a66140eaf3e4ae92849d598b51a602d20d736dddb965aa83782c9c97dc2937
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
   - node: 01a1c2a8-c234-72f0-adea-08ecd8fc538a
     reviewed: 8d7174600660adabb471577126451c08cca2d1c282abe20c5d3729a779674ea4
     tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "closes its record, and then makes Earth the focus again"
-        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "closing a record with its close button lets go, making Earth the focus again"
-        body: 1615b04dad6ae7fd0f51d88299eb48580dfd058fac987c3824593ca2825b5fb1
+        body: 7372e19dc1570dae2b70e3d7ddc596ddf6b0b9f6916931fc7a6b5eb8aca618fe
   - node: 01a1c25f-d5cd-76b6-b0cb-7d969cb2496a
     reviewed: 8b43bd15679c496deea294c14b3d54233bf2c38c9b6535b034dfdd864c227569
     tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "closes its record, and then makes Earth the focus again"
-        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
   - node: 01a1c25f-d5cd-76b6-b0cb-7d97b9058d19
     reviewed: 5b6f6f036bab1121b6c08893d6f4d40e316818db22ebd467b094174d6993c4cc
     tests:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
   - node: 01a1c25f-d5cd-76b6-b0cb-7d98f8d78c05
     reviewed: bbd9ca1d20eda42ee6d99a2538b76b6d4d5f0e932fb95f7d0dc9d927ade887d4
     tests:
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "leaves the second click of a double-click to the double-click, letting nothing go"
-        body: 47df893545dfe7a989199a5676399aa6203c3a50f3b92b3d5c2c8b7e28e13a95
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "is chosen by a double-click, which lets nothing go"
-        body: 2694abdfa97a38f1b3c0be4e238bf43ffcc1a77fcad2b35c8e7d6c7611d4c15a
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "lets nothing go where a double-click follows, which keeps it chosen"
+        body: 864ede29b0ca138495a873b19654f9d62463fe4ed2b18a9c945e957cfee6c829
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen object go by a click on its point, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 740b59abf2db84bb59b0ac40daa452d9eb2b6d8a4f0711a381e13be49143491b
+        body: accdf0209e7ae4121604c1180840ee8a54cf40639c2f02829c79eb20a89d1fdf
   - node: 01a1a497-e843-728a-bce8-3fee23d1c65a
     reviewed: 7e45f65eb420b5b929a6974834b750c1b64e6f1cbfcaf95e00a177b22e6ec457
     tests:
@@ -5295,7 +5286,7 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "draws a grid, or a structure with no placed shape, as its bounding box, marked approximate"
         body: e9c122d1c3ec225de062c402e806d1d4a81f8324664cc5e90eda8c6610cea6c7
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "say when a structure is drawn by its bounding box, or not placed at all"
         body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
   - node: 01a1a776-3b75-725b-96e4-8079d9d916bf
@@ -5337,7 +5328,7 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "lists but does not draw a structure with neither a shape nor a bounding box"
         body: e7bf9df60ded63e08ed92808f6874259b3fd2aa9e42175ae783b3fe9bc69a6c0
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "say when a structure is drawn by its bounding box, or not placed at all"
         body: a5304d3fa44dc6fc89260bdff112847abfefdebcdd63521684153b02aaa56b3c
   - node: 01a1a497-e843-728a-bce8-3ff67c685244
@@ -5361,7 +5352,7 @@ links:
       - file: "clients/explorer/src/scene/structures.test.ts"
         name: "is followed by \"(at least)\" where its papers give its shape as a lower limit on its extent"
         body: 2fb9725e8726725fa2e67bb414395aa6e204d6098ca936eb5c8be71977a41802
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "name a structure whose shape is a lower limit on its extent \"(at least)\" in the panel"
         body: d675804ba31e64cd7cf9998d47b4319595f4bd6a739f03cd97a3a61752979edf
   - node: 01a1a497-e843-728a-bce8-3ff70e744c39
@@ -5469,10 +5460,10 @@ links:
   - node: 01a1a497-e843-728a-bce8-3ffa426590e2
     reviewed: f0b8b7ee41de7be2ce86c64da40f91c05bc36dcc41c0bcfc3c8cb094a930a4c5
     tests:
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "give a structure's kind, scale domain, how it was placed, and the paper each number is cited from"
         body: 9b44efa60ea5163834f0b1a7370812db39f803bd306ce37263e88fd00f9e21ff
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "name a primitive shape by its form"
         body: 3200f915dd9bdb858982604758ed2be53848840e4c807849ff79cd061569f9ee
   - node: 01a1bcba-dd8e-750a-886c-c22b9a7cd9e8
@@ -5484,7 +5475,7 @@ links:
       - file: "clients/explorer/src/ui/record/structureText.test.ts"
         name: "leaves a radius out of the span its sentence gives, whatever its case"
         body: 6d8b40fb2e73835e5e08f35160d870c1b32dc6d954c3f061d9b47fb1eeb05a2f
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "leads with one sentence of what it is, and draws its depth as a band with its walls marked"
         body: 1f470e64649b0373a4b7136c16feaee3f1b4c342fae6ffe4a335d6bd8e3dd0cf
   - node: 01a1bcba-dd8e-750a-886c-c22cfc5bc92f
@@ -5502,7 +5493,7 @@ links:
       - file: "clients/explorer/src/scene/cosmology.test.ts"
         name: "gives the comoving distance of z = cz/c under flat ΛCDM, as Univ Server places a structure's velocities"
         body: 6160ba51d7908fd41b0da8b99daf3602e82a7412dce243db648cde40eef14057
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "leads with one sentence of what it is, and draws its depth as a band with its walls marked"
         body: 1f470e64649b0373a4b7136c16feaee3f1b4c342fae6ffe4a335d6bd8e3dd0cf
   - node: 01a1bcba-dd8e-750a-886c-c22db388ecdc
@@ -5511,7 +5502,7 @@ links:
       - file: "clients/explorer/src/ui/record/structureText.test.ts"
         name: "gives its lengths in the release cosmology, one group for each unit, a lower limit open, with what they were published as"
         body: 87bd9d39e8cbeb87cb1b3478e56de72569494d2c0b3b4be71430aec2245f37cc
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "draws its lengths as bars on one axis for each unit, a lower limit open, with what they were published as"
         body: 1ab26779e4c77edf849bd8c6faffdf487c44805f93bfed0d6d399927f7e1ff6c
   - node: 01a1bcba-dd8e-750a-886c-c22effd4e2a0
@@ -5520,7 +5511,7 @@ links:
       - file: "clients/explorer/src/ui/record/structureText.test.ts"
         name: "gives a structure placed by its members each member's distance, with its mean redshift marked"
         body: e6ee87c74f65d8eed2d9e4fb38d0e9789998898f1fdbea820ab904c6c3a0fd9d
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "draws each member of a structure placed by its members as a tick"
         body: 4ed6a90a5d67bbbc139824677c2525ca7df4ea2b9c9ae6f11375061b458cdaae
   - node: 01a1bcba-dd8e-750a-886c-c22f7aaaa8d4
@@ -5529,7 +5520,7 @@ links:
       - file: "clients/explorer/src/ui/record/structureText.test.ts"
         name: "names each paper that disputes it"
         body: 378cd14e0534d09a144d728650faa32150f589d7599d756b1999aeb28289f5cc
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "says a disputed structure is disputed, above its values, naming each paper that disputes it"
         body: d2560dfaa1cf2420cf8bba26da7bd0edbb59d0ffb11de003c7f12d6e65410994
   - node: 01a1bcba-dd8e-750a-886c-c230ee335b2d
@@ -5541,30 +5532,30 @@ links:
       - file: "clients/explorer/src/ui/record/structureText.test.ts"
         name: "gives its other values on lines, each with its paper only where it cites more than one"
         body: 1664ce7a3a41de3b429af64fff851646a47a34ea77deda2b302e08285c74b110
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "names its papers once by first author and year, and holds its notes, quotes and every value under one link"
         body: c237a160ed461214609d222bf079c9afb764b351b96824a2d676fb310ef0b680
   - node: 01a1a776-3b75-725b-96e4-807a1f1e8ef1
     reviewed: 2c7296accced82ce68b41e74f0c895b20f2900d1eed84a1f07849ab93fcca516
     tests:
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "say a structure drawn by its extents has unknown bounds, and only then"
         body: 965ce7a2b6b85638a61c733e955556e92c3b0846677571bb0a7d310367116161
   - node: 01a1b7a9-f2af-7290-9cdf-77a50a274427
     reviewed: e39f6dceb1ab6b5dd197298480ac21a55bcd087c887eb469edd05dcdba858033
     tests:
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "say an attractor's or a repeller's sphere is a symbol and which way its arrows point, and only for them"
         body: bd1eef12ecdd0d86bb60a6a66b0125128c2f5623a721941ebb57ce384739f271
   - node: 01a1c25f-d5cd-76b6-b0cb-7d9ae7ac1094
     reviewed: 5fcfec9cd60740d3439d0cca049bfe150d56974485dbf21637310fed8e9c337d
     tests:
       - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "is on the chosen structure's name, and on no other name"
-        body: ec980b026947037299593b777102b938c6eca47841dded36eb84c6b883c0b89d
+        name: "is the chosen structure, by its name in the view or in the list, and no other"
+        body: 118ea22d2c93cf423021a238f2dffa90adc5730aa34e00e9e08e951ceb505ad7
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+        body: 8c29f34589b0b17a84bfd10ef5aa9e58908e893ddc60877089303d3285a2eb09
   - node: 01a1c25f-d5cd-76b6-b0cb-7d9b40b85965
     reviewed: dfd2c76a73a995dae3a2ac849bdc366172957a56a229168bd353dcecd9793d25
     tests:
@@ -5574,12 +5565,9 @@ links:
   - node: 01a1c2a8-c234-72f0-adea-08edc266ef00
     reviewed: 917ab6e42d0c8d98f5dcbaf9faf7481cb7f56c8b65fb4c8a29a43c0e84e119ff
     tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "closes its record, and then makes Earth the focus again"
-        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "closing a record with its close button lets go, making Earth the focus again"
-        body: 1615b04dad6ae7fd0f51d88299eb48580dfd058fac987c3824593ca2825b5fb1
+        body: 7372e19dc1570dae2b70e3d7ddc596ddf6b0b9f6916931fc7a6b5eb8aca618fe
   - node: 01a1c25f-d5cd-76b6-b0cb-7d9c2459139b
     reviewed: bfc7c0c216c9076ca7eacd0066db15d72b4773269fe0ff39809742d2df4a1aa6
     tests:
@@ -5588,25 +5576,22 @@ links:
         body: 1551c8b75dc6542272f5f2ea759e09ea208d28d1b14b5d140aba772f532bd123
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+        body: 8c29f34589b0b17a84bfd10ef5aa9e58908e893ddc60877089303d3285a2eb09
   - node: 01a1c25f-d5cd-76b6-b0cb-7d9d5bd55b7c
     reviewed: 268cb39173191206d7a5c8b848ab4b7924e8454513b272d15b648488d04cb5ac
     tests:
-      - file: "clients/explorer/src/ui/letGo.test.ts"
-        name: "closes its record, and then makes Earth the focus again"
-        body: ef791d816a54319ef49c95973b9fd8f77b70dcc5e26b64852b1ff54f1ac2a4dc
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+        body: 8c29f34589b0b17a84bfd10ef5aa9e58908e893ddc60877089303d3285a2eb09
   - node: 01a1c25f-d5cd-76b6-b0cb-7d9e85b5b6eb
     reviewed: 20427d2f854c1d3283b46647eb06758061c5bd3caaf265881ea3d29f1ad18852
     tests:
-      - file: "clients/explorer/src/ui/useWorld.test.ts"
-        name: "is chosen by a double-click, which lets nothing go"
-        body: 2694abdfa97a38f1b3c0be4e238bf43ffcc1a77fcad2b35c8e7d6c7611d4c15a
+      - file: "clients/explorer/src/ui/letGo.test.ts"
+        name: "lets nothing go where a double-click follows, which keeps it chosen"
+        body: 864ede29b0ca138495a873b19654f9d62463fe4ed2b18a9c945e957cfee6c829
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lets the chosen structure go by a click on its name, making Earth the focus again, and keeps it chosen on a double-click"
-        body: 17869bf127fa683e823797452d454011cdd44cb4887f1447b9b4d60c7004fb8a
+        body: 8c29f34589b0b17a84bfd10ef5aa9e58908e893ddc60877089303d3285a2eb09
   - node: 01a1c278-094a-7307-be66-e7847bc12551
     reviewed: 32fd3cb7566ddf4a66625c46e56c1b4502e6320281b32a38c3882e1f1af6b06f
     tests:
@@ -5614,14 +5599,14 @@ links:
         name: "place each structure at the distance from Earth to its centre as drawn, in its kind's colour, known as its record says"
         body: 77549677a1062c9275de2fdac4c078aba6c9fd40b02bce5c742ed2de2b44622a
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
-        name: "leave a structure with no placed shape unplaced, and read a record silent on how it is known as observed"
-        body: 40757deac78286a03ee103aeb5ed55b0fcfbf5cf8e4f2a7b2eed2cd889081db5
+        name: "leave a structure with no placed shape unplaced, and one whose record is not read known in no way"
+        body: 15b4fb1c4f936453db5dd514c911731a9754e51368609926ed7264114032ca54
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "lists the structures nearest first, under headings with their counts, those not placed last"
         body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e7859f3c18c9
     reviewed: 10beb421cdcb9a3708301339d9da58c0bd236e44020e8081e079e4121a1c0359
     tests:
@@ -5636,7 +5621,7 @@ links:
         body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e7862a633a0c
     reviewed: 96f911335598a803d0672a185fd78ae20c8c42e3cc4e944230ee54d537ca51b6
     tests:
@@ -5651,7 +5636,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
         name: "is in whole megaparsecs below 1,000 Mpc, and in gigaparsecs to three figures from there"
-        body: b61959bd8669a3cddc3d0f84c8f31244b7eca69e2fac65c8564dca46ac46b8f9
+        body: 898ca9df373ba0a018ef4a328847b2423ffddfab0827a2393ab64cc25d41b2f8
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
         name: "reads \"around us\" for a structure centred on Earth, and \"not placed\" for one with no placed shape"
         body: 0c4138779713372ff2b88d3736c6b08e7cdff3ed42b11bbfcc0e40bba753e916
@@ -5672,16 +5657,16 @@ links:
         body: aa77d495d2231f752cf0744b1688afc520c09d96c9cbcc25a51c8977b39609cb
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e789414bdf63
     reviewed: d7cb7fd95a8f37850486ec19de9846f3d816706b3bedc9f4c75376212f1347bb
     tests:
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
-        name: "read a reconstructed structure as such, and a status the explorer does not know as observed"
-        body: 76ca5e8e45ef4c696723abbb8c511919f9dd8697dbe7d641e37eca03df7bb3c5
+        name: "read a reconstructed structure as such, and a structure whose record is not read, or whose status the explorer does not know, as known in no way"
+        body: 2afdd61280fcb48c087a842a9f669fc0fedb869103423c7e5684a32d0652b6f7
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "marks how each structure is known on its dot, as the legend says"
-        body: 1fc1f8a8c1f80215dc0148ee10968fa814cef32e43b1585d7ffd0edc34a01f5e
+        body: 8efe60112df12c982442564fcdf5aaf654ce57b043b693b639bc72e8a726f518
   - node: 01a1c278-094a-7307-be66-e78af4b30484
     reviewed: 7488b533a712fb0542429c65ac54a112e7470683778df29d7947f6dff35072ff
     tests:
@@ -5693,7 +5678,7 @@ links:
         body: d96fd99f6e12f7ca0abd811baaed11eeac0ae270b62b7e406f236ab5509beed8
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e78bb3c7f814
     reviewed: 79d05220fdd58ac79938eebb369a32f51da9f5a7395eb8d77b2d01b2c4771b6b
     tests:
@@ -5711,7 +5696,7 @@ links:
         body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-46e4-76f7-bee6-bda8fefa62ad
     reviewed: 494c00533f92cca766acdbb198f5f41e44aba69c90c298b89083583cbff6e57d
     tests:
@@ -5720,7 +5705,7 @@ links:
         body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e78c9329851d
     reviewed: 1b840d1852d9cf7bdea1590643cb1fbc1918b5e7f0a0bc590c202a9e049add0f
     tests:
@@ -5729,7 +5714,7 @@ links:
         body: bdba5c71349e02b8ff37a3cf9ff00ca34f7916dd6d0dcdfb46085d04b28bb5f2
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e78dcc50c90f
     reviewed: 752dfffe54c9f0c10bd994d63f038a6a29307915248c6efcfdc4f0b9ef5b0d00
     tests:
@@ -5759,7 +5744,7 @@ links:
         body: a17c2e6448ce175ede259608b521a25d58a30fe41d638e67c2bc19ec0b6bb17a
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: 8d4ccd580d10adfe256963c5d827c4148d6155990be60f191d449f098ce4f7a8
+        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c2a8-c234-72f0-adea-08f063f64c50
     reviewed: f6390e11ca0fa56816066bb588068706d42d967da7a9d973d22a695a65e3970b
     tests:
@@ -5835,7 +5820,7 @@ links:
   - node: 01a1b13c-1e10-748d-8008-e7e6a6d53737
     reviewed: 10c06ad8935c407e0e05124eb18a18a88ef65fff347c6de6f6fc09d753fab538
     tests:
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "say, only with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
         body: b1aa375a65a759dc48ffe17465d11d6785a3122848ee2637935de2783c33231a
   - node: 01a1b13c-1e10-748d-8008-e7e71f42aabb
@@ -5856,7 +5841,7 @@ links:
   - node: 01a1b13c-1e10-748d-8008-e7e859257b94
     reviewed: 6f5139ce1acaab0641a8b2190cb4505fe24912bc4b1623dab60a3e9148b25e7f
     tests:
-      - file: "clients/explorer/src/ui/StructuresPanel.test.tsx"
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "say, only with the cull on, that points lie at their preferred distance, and where the cull is to a box, that it is approximate"
         body: b1aa375a65a759dc48ffe17465d11d6785a3122848ee2637935de2783c33231a
   - node: 01a1b13c-1e10-748d-8008-e7e934fc10cf

@@ -33,6 +33,15 @@ blocks:
         title: "/simplify and /code-review, findings fixed"
         detail: "Both run in parallel on the branch's changes against develop. Done when every confirmed finding is fixed or put to the owner."
         state: open
+      - key: 01a1c2c8-67ce-7693-9ed9-3ada120f1dd6
+        at: 2026-11-10T00:07:56Z
+        revision: 37
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "/simplify and /code-review, findings fixed"
+        detail: "Both run on the branch's changes against develop. Done when every confirmed finding is fixed or put to the owner."
+        state: active
   - key: 01a1c269-2633-716a-b8dd-fe49a00ea8f5
     id: t-gate
     kind: task
@@ -59,3 +68,18 @@ blocks:
         title: "Close the Yard Log; leave the branch unmerged"
         detail: "Done when the Yard Log is closed and committed. The owner merges `chore/ux-1` only when they ask."
         state: open
+  - key: 01a1c2c8-67ce-7693-9ed9-3ad9e95279c7
+    id: review-issues
+    kind: note
+    versions:
+      - key: 01a1c2c8-67ce-7693-9ed9-3adbc958197f
+        at: 2026-11-10T00:07:56Z
+        revision: 37
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Review findings"
+        markdown: |-
+          | # | Finding | From | Fix | State |
+          |---|---|---|---|---|
+          | | None yet | | | |

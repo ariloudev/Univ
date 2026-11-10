@@ -65,6 +65,13 @@ async function earthFromCentre(page: Page): Promise<number> {
   return earth === null ? Number.POSITIVE_INFINITY : Math.hypot(earth.x - centre.x, earth.y - centre.y);
 }
 
+/** Earth the focus again, at the centre of the view, and the eye at the distance it read
+ * `before`: what letting go of a thing leaves (read-an-object, see-the-structures). */
+async function expectEarthTheFocus(page: Page, before: string): Promise<void> {
+  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
+  await expect(page.getByTestId("distance")).toHaveText(before);
+}
+
 /** Past the time within which a second click near a click is part of a double-click. */
 const PAST_A_DOUBLE_CLICK_MS = 600;
 
@@ -163,8 +170,7 @@ test("lets the chosen object go by a click on its point, making Earth the focus 
   await expect(panel).toHaveCount(0);
   await expect(mark).toBeHidden();
   await expect(page).not.toHaveURL(/object=/);
-  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
-  await expect(distance).toHaveText(before);
+  await expectEarthTheFocus(page, before);
 });
 
 test("closing a record with its close button lets go, making Earth the focus again", async ({ page }) => {
@@ -177,8 +183,7 @@ test("closing a record with its close button lets go, making Earth the focus aga
   await page.getByRole("button", { name: "Close the object's panel" }).click();
   await expect(page.getByRole("region", { name: "The chosen object" })).toHaveCount(0);
   await expect(page).not.toHaveURL(/object=/);
-  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
-  await expect(distance).toHaveText(before);
+  await expectEarthTheFocus(page, before);
   // A structure chosen from the list is flown to; closing its record brings the focus home.
   await page.getByRole("navigation", { name: "Panels" }).getByRole("button", { name: "Structures" }).click();
   await page.getByTestId("structures").getByRole("button", { name: /^Bootes Void/ }).click();
@@ -187,8 +192,7 @@ test("closing a record with its close button lets go, making Earth the focus aga
   before = (await distance.textContent()) ?? "";
   await page.getByRole("button", { name: "Close the structure's panel" }).click();
   await expect(page.getByRole("region", { name: "The chosen structure" })).toHaveCount(0);
-  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
-  await expect(distance).toHaveText(before);
+  await expectEarthTheFocus(page, before);
 });
 
 test("finds an object by designation, and says when nothing is found", async ({ page }) => {
@@ -221,6 +225,7 @@ test("lists the release's structures and reads one, culling the view to it from 
 test("lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload", async ({ page }) => {
   await page.getByRole("navigation", { name: "Panels" }).getByRole("button", { name: "Structures" }).click();
   const list = page.getByTestId("structures");
+  const find = page.getByRole("searchbox", { name: "Find a structure" });
   const rows = list.getByRole("button");
   await expect(rows.first()).toBeVisible();
   const total = await rows.count();
@@ -240,24 +245,24 @@ test("lists the structures outward from Earth, under headings, each on one axis,
   await expect(list.getByRole("heading", { level: 3 }).first()).toHaveText(/^(Within 100 Mpc|100 Mpc to 1 Gpc|1 to 10 Gpc|Not placed)\d+$/);
   expect(await page.getByTestId("depth-track").count()).toBe(total);
   // From the find box: only the voids, counted out of all.
-  await page.getByRole("searchbox", { name: "Find a structure" }).fill("void");
+  await find.fill("void");
   const voids = await rows.count();
   expect(voids).toBeGreaterThan(0);
   expect(voids).toBeLessThanOrEqual(total);
   await expect(page.getByTestId("structures-count")).toHaveText(`${voids} of ${total}`);
-  await page.getByRole("searchbox", { name: "Find a structure" }).fill("no such structure");
+  await find.fill("no such structure");
   await expect(list).toHaveText("No structure's name or kind holds “no such structure”. Try part of a name, or a kind such as void.");
   // By name, A to Z, without headings.
-  await page.getByRole("searchbox", { name: "Find a structure" }).fill("");
+  await find.fill("");
   await page.getByRole("button", { name: "A to Z" }).click();
   await expect(list.getByRole("heading", { level: 3 })).toHaveCount(0);
   const byName = await rows.evaluateAll((buttons) => buttons.map((b) => (b.getAttribute("aria-label") ?? "").split(", ")[0] ?? ""));
   expect(byName).toEqual([...byName].sort((a, b) => a.localeCompare(b)));
   // The order and the find text are kept across a reload, with the drawer.
-  await page.getByRole("searchbox", { name: "Find a structure" }).fill("void");
+  await find.fill("void");
   await page.reload();
   await expect(page.getByRole("button", { name: "A to Z" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("searchbox", { name: "Find a structure" })).toHaveValue("void");
+  await expect(find).toHaveValue("void");
   await expect(page.getByTestId("structures-count")).toHaveText(`${voids} of ${total}`);
 });
 
@@ -320,8 +325,7 @@ test("lets the chosen structure go by a click on its name, making Earth the focu
   await page.mouse.click(at.x, at.y);
   await expect(panel).toHaveCount(0);
   await expect(name).not.toHaveClass(/font-medium/);
-  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
-  await expect(distance).toHaveText(before);
+  await expectEarthTheFocus(page, before);
 });
 
 test("keeps the drawer open across a reload, and none once it is closed", async ({ page }) => {

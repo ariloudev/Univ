@@ -26,6 +26,8 @@ import type { World } from "./useWorld.ts";
 export interface Selection {
   chosen: ChosenObject;
   structure: StructureDetail | undefined;
+  /** The chosen structure's id, as soon as it is chosen, before its record is read. */
+  structureId: string | undefined;
   /** Whether the chosen structure is drawn by its bounding box. */
   approximate: boolean;
   /** Whether the view is culled to the chosen structure, and the way to turn it on or off;
@@ -209,7 +211,7 @@ function Drawer({
 /** The structures drawer: the depth index of the structures drawn, the chosen one marked. */
 function StructuresDrawer({ structures, selection }: { structures: ShownStructures; selection: Selection }) {
   const rows = useMemo(() => depthRows(structures.shown, structures), [structures]);
-  return <DepthIndex rows={rows} chosen={selection.structure?.id} onChoose={selection.structureFromList} />;
+  return <DepthIndex rows={rows} chosen={selection.structureId} onChoose={selection.structureFromList} />;
 }
 
 const OVER_THE_VIEW = "max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-20";

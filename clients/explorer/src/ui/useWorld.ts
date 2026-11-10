@@ -22,6 +22,7 @@ import { type ScenePoint, pointUnder } from "./scenePoint.ts";
 import { type Store, createStore } from "./store.ts";
 import { NOTHING, type Volume } from "../scene/volume.ts";
 import { insideInAddress } from "./inside.ts";
+import { clickChooser } from "./letGo.ts";
 
 /** What a click can choose: a structure's name, or a point. */
 export type Clicked = { name: NameLabel } | { point: ScenePoint };
@@ -58,12 +59,13 @@ export interface World {
 }
 
 /** What the scene tells the page of the mouse: a point clicked, or double-clicked and flown to;
- * a structure whose name was clicked; and a click on what is chosen already, which lets it go
- * where `letGo` says it was chosen (read-an-object, see-the-structures). */
+ * a structure whose name was clicked; and, asking whether what a click found is chosen already,
+ * a click that lets it go (read-an-object, see-the-structures). */
 export interface OnChoose {
   point: (point: ScenePoint) => void;
   structure: (id: string) => void;
-  letGo: (found: Clicked) => boolean;
+  isChosen: (found: Clicked) => boolean;
+  letGo: () => void;
 }
 
 function surroundings(element: HTMLElement): Surroundings {
@@ -158,27 +160,22 @@ const pointAt = (world: World, element: HTMLElement, x: number, y: number): Scen
 /** The milliseconds within which a second click, or a double-click, near a click is part of it. */
 export const DOUBLE_CLICK_MS = 500;
 
-/** `pick` at the pointer, but for a click soon after another near it, the thing the other found,
- * marked `again`: a click centres the view on what it found, so a pick at the same pixel in a
- * double-click would find another thing, or none (navigate-with-the-mouse). */
+/** `pick` at the pointer, but for a click soon after another near it, the thing the other found:
+ * a click centres the view on what it found, so a pick at the same pixel in a double-click would
+ * find another thing, or none (navigate-with-the-mouse). */
 export function firstOfDouble<T>(pick: (x: number, y: number) => T | undefined, now: () => number) {
   let last: { x: number; y: number; at: number; found: T } | undefined;
-  return (x: number, y: number): { found: T; again: boolean } | undefined => {
+  return (x: number, y: number): T | undefined => {
     const at = now();
     if (last !== undefined && at - last.at <= DOUBLE_CLICK_MS && Math.hypot(x - last.x, y - last.y) <= PICK_SLOP) {
       last.at = at;
-      return { found: last.found, again: true };
+      return last.found;
     }
     const found = pick(x, y);
     last = found === undefined ? undefined : { x, y, at, found };
-    return found === undefined ? undefined : { found, again: false };
+    return found;
   };
 }
-
-/** Whether a click, or a double-click where `double`, chooses what it `found`: a double-click
- * always does; a click does not where it is the second of a double-click, which leaves it to the
- * double-click, nor where `letGo` lets go of what it found, chosen already. */
-export const chooses = <T>(click: { found: T; again: boolean }, double: boolean, letGo: (found: T) => boolean): boolean => double || !(click.again || letGo(click.found));
 
 /** Binds the mouse and the canvas's size to the world, until the returned function. */
 function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<OnChoose>): () => void {
@@ -202,17 +199,18 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
     clearHover();
     onChoose.current.point(found.point);
   };
-  // A click on what is chosen lets it go, and leaves the view where it was.
-  const chooser = (close: boolean) => (x: number, y: number) => {
-    const click = clicked(x, y);
-    if (click !== undefined && chooses(click, close, onChoose.current.letGo)) choose(click.found, close);
+  // A click on what is chosen lets it go, unless a double-click follows (read-an-object).
+  const clicks = clickChooser<Clicked>({ isChosen: (found) => onChoose.current.isChosen(found), letGo: () => onChoose.current.letGo(), choose });
+  const at = (gesture: (found: Clicked) => void) => (x: number, y: number) => {
+    const found = clicked(x, y);
+    if (found !== undefined) gesture(found);
   };
   const unbind = bindMouse(element, {
     turn: (dx, dy) => controller.turn(dx, dy),
     pan: (dx, dy) => controller.pan(dx, dy),
     zoom: (steps) => controller.zoom(steps),
-    click: chooser(false),
-    doubleClick: chooser(true),
+    click: at(clicks.click),
+    doubleClick: at(clicks.doubleClick),
     hover: (x, y) => {
       if (hovering !== undefined) cancelAnimationFrame(hovering);
       hovering = requestAnimationFrame(() => hover.set(under(world, element, x, y)));
@@ -229,6 +227,7 @@ function bindView(element: HTMLCanvasElement, world: World, onChoose: RefObject<
   resize.observe(element);
   return () => {
     unbind();
+    clicks.cancel();
     resize.disconnect();
     if (hovering !== undefined) cancelAnimationFrame(hovering);
   };
