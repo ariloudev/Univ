@@ -1,0 +1,74 @@
+id: skowron-2025-cepheids
+title: "Skowron 2025 classical Cepheids"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJS/278/57/table1"
+  constraints: []
+  rows: 3424
+cuts:
+  - "No server-side cut: every Cepheid of table1, 3,424 by the ReadMe and as served by IDIA on 2026-11-10."
+  - >-
+    Dist and e_Dist are in pc, from the W1 magnitude averaged over AllWISE and unWISE (ReadMe);
+    the AllWISE-only and unWISE-only distances are not taken. Mode is the mode of pulsation as
+    Pietrukowicz et al. 2021 give it (F, 1O, F1O, 1O2O, F1O2O, 1O2O3O). GaiaDR3 is never blank.
+  - >-
+    The table gives Galactic coordinates; the position is VizieR's computed _RAJ2000 and
+    _DEJ2000 from them, at Gaia DR3's epoch 2016.0.
+columns:
+  - { column: GaiaDR3, field: identifier, unit: dimensionless }
+  - { column: ID, field: name, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: Dist, field: distance, unit: parsec }
+  - { column: e_Dist, field: distance_error, unit: parsec }
+  - { column: Mode, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2016.0
+citation: >-
+  Skowron D.M., Drimmel R., Khanna S., Spagna A., Poggio E., Ramos P. 2025, "The Milky Way as
+  Seen by Classical Cepheids. I. Distances Based on Mid-infrared Photometry", ApJS 278, 57.
+  2025ApJS..278...57S. VizieR catalogue J/ApJS/278/57, doi:10.26093/cds/vizier/bb-8p-1s.
+reference: { bibcode: "2025ApJS..278...57S" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Skowron et al. 2025, ApJS 278, 57.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The AAS
+    terms were not checked, and "scientific context" is not defined for a public hobby release.
+    Provisional: judged again before any public deployment.
+scale_domain: galaxy_tracers
+object_kind: classical_cepheid
+# VizieR's mirrors, checked 2026-11-10: IDIA holds the table (added to VizieR in 2026) and
+# answered first; CDS timed out from here that day; China-VO and NAO did not yet hold it.
+mirrors:
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+normalization:
+  distances:
+    - value: Dist
+      error: { symmetric: e_Dist }
+      kind: primary_indicator
+      method: cepheids
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        J/ApJS/278/57 ReadMe: Dist is the "Distance based on averaged W1" and e_Dist its
+        uncertainty; the abstract: "we instead estimate new distances for 3424 Cepheids based on
+        mid-IR photometry from the Wide-field Infrared Survey Explorer", through the
+        period-luminosity relation in W1, with extinction from a 3D map. The relation is a
+        mid-infrared (WISE W1) period-luminosity relation.

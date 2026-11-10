@@ -1,0 +1,5 @@
+source: skowron-2025-cepheids
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F278%2F57%2Ftable1&-out=GaiaDR3%2CID%2CDist%2Ce_Dist%2CMode&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-10T03:46:23Z
+sha256: af57ec6605e2cf27e77fe7700441376f7ca73322bbde2ca5cded82969183e1b9
+note: the first chunk's query cut to 5 rows

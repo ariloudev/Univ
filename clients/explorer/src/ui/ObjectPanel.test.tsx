@@ -47,6 +47,21 @@ describe("the chosen object's panel", () => {
     expect(screen.getAllByTestId("lede")[2]?.textContent).toBe("A galaxy, with a sky position only, so not placed.");
   });
 
+  it("names each of the Galaxy's tracers by its kind, before any type its Gaia star gives", () => {
+    const kinds = [
+      ["open_cluster", "An open cluster", "open cluster"],
+      ["globular_cluster", "A globular cluster", "globular cluster"],
+      ["classical_cepheid", "A classical Cepheid", "classical Cepheid"],
+      ["rr_lyrae_star", "An RR Lyrae star", "RR Lyrae star"],
+      ["star_forming_region", "A star-forming region", "star-forming region"],
+    ] as const;
+    kinds.forEach(([kind, lede, noun], i) => {
+      render(<ObjectPanel chosen={{ kind: "ready", record: { ...HIP_32754, kind } }} onChoose={close} onClose={close} />);
+      expect(screen.getAllByTestId("lede")[i]?.textContent).toMatch(new RegExp(`^${lede}`));
+      expect(screen.getAllByRole("region", { name: "The chosen object" })[i]?.textContent).toContain(`${noun} · object ${HIP_32754.id}`);
+    });
+  });
+
   it("gives the object's names and designations, each with its source", () => {
     opened(<ObjectPanel chosen={{ kind: "ready", record: ANDROMEDA }} onChoose={close} onClose={close} />);
     const names = screen.getByTestId("names").textContent ?? "";

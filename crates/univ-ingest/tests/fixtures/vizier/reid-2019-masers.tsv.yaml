@@ -1,0 +1,5 @@
+source: reid-2019-masers
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F885%2F131%2Ftable1&-out=Name%2COName%2Cplx%2Ce_plx%2CpmE%2CpmN%2CArm&-out.add=_RAJ%2C_DEJ&-out.max=5
+retrieved: 2026-11-10T03:46:27Z
+sha256: 31c80aabce4567b3cae5fd1bdd18dd253c9a14ad98dd4a68676917a5da4640c3
+note: the first chunk's query cut to 5 rows

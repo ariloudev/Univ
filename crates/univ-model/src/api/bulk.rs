@@ -18,7 +18,7 @@ pub struct ScaleDomainList {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct ScaleDomainSummary {
-    /// `stars`, `nearby_galaxies` or `cosmic_web`.
+    /// `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.
     pub name: String,
     /// The unit of its positions and of its radius.
     pub unit: Unit,

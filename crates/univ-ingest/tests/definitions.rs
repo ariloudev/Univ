@@ -8,7 +8,7 @@ use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
 /// The sources by id, with their scale domains: those of the first release, the Cosmicflows-4
 /// galaxies added for the second, the Hipparcos spectral types added for the eighth, and the
 /// galaxy surveys added for the tenth.
-const SOURCES: [(&str, ScaleDomain); 30] = [
+const SOURCES: [(&str, ScaleDomain); 35] = [
     ("sdss-dr17-galaxies", ScaleDomain::CosmicWeb),
     ("boss-dr17-great-wall", ScaleDomain::CosmicWeb),
     ("sixdfgs-dr3", ScaleDomain::CosmicWeb),
@@ -41,6 +41,12 @@ const SOURCES: [(&str, ScaleDomain); 30] = [
     ("wise-supercosmos", ScaleDomain::CosmicWeb),
     ("iau-star-names", ScaleDomain::Stars),
     ("openngc", ScaleDomain::NearbyGalaxies),
+    // Release 13's tracers of the Galaxy, each naming its kind of object.
+    ("hunt-reffert-2023", ScaleDomain::GalaxyTracers),
+    ("skowron-2025-cepheids", ScaleDomain::GalaxyTracers),
+    ("li-2023-rr-lyrae", ScaleDomain::GalaxyTracers),
+    ("reid-2019-masers", ScaleDomain::GalaxyTracers),
+    ("baumgardt-vasiliev-2021", ScaleDomain::GalaxyTracers),
 ];
 
 #[test]

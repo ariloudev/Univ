@@ -131,8 +131,14 @@ fn with_links(crossed: &mut CrossMatched) {
 }
 
 fn load() -> Loaded {
-    // DESI's redshifts are barycentric: its objects read back with that frame.
-    let fixture = fixture_with(&["desi-dr1"]);
+    // DESI's redshifts are barycentric: its objects read back with that frame. An open
+    // cluster, a Cepheid and a maser source add the Galaxy's tracers, in parsecs.
+    let fixture = fixture_with(&[
+        "desi-dr1",
+        "hunt-reffert-2023",
+        "skowron-2025-cepheids",
+        "reid-2019-masers",
+    ]);
     let mut crossed = cross(&fixture);
     with_links(&mut crossed);
     let tiles = tiles(&fixture, &crossed);

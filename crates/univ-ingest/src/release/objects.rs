@@ -195,12 +195,12 @@ impl<'a> ObjectWriter<'a> {
         Ok(())
     }
 
-    /// The scale domain of a placed object: its preferred distance's source's, or, for any
-    /// source but a star source, the one its placed distance falls in.
+    /// The scale domain of a placed object, as its tiles give it ([`domain_of`]).
     fn domain(&self, o: &ReleaseObject) -> Option<ScaleDomain> {
+        let placed = o.position.as_ref()?.distance().value;
         let preferred = o.object.preferred_distance.as_ref()?;
         let source = self.domains.get(&preferred.measurement.entry().source)?;
-        Some(domain_of(*source, o.position.as_ref()?.distance().value))
+        Some(domain_of(o.object.kind, *source, placed))
     }
 
     /// The object's own row, its chain numbered, its derived position checked against it.

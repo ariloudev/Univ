@@ -44,7 +44,7 @@ pub struct TileManifest {
     pub format: Cow<'static, str>,
     pub manifest_version: u32,
     pub release: String,
-    /// `stars`, `nearby_galaxies` or `cosmic_web`.
+    /// `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.
     #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub scale_domain: Cow<'static, str>,
     pub frame: FrameInfo,

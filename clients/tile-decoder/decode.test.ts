@@ -63,7 +63,8 @@ const everyTile = fixtures.flatMap((f) =>
 test('the fixtures hold every domain of the fixture release, a simulated one, and every node', () => {
   assert.deepEqual(
     fixtures.map((f) => f.name),
-    ['cosmic_web', 'nearby_galaxies', 'simulated', 'stars'],
+    // The fixture release holds no tracer source, so its Galaxy tracers domain has no node.
+    ['cosmic_web', 'galaxy_tracers', 'nearby_galaxies', 'simulated', 'stars'],
   );
   for (const f of fixtures) {
     assert.deepEqual(

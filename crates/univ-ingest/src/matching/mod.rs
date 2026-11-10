@@ -4,6 +4,7 @@
 //! one candidate from one source is kept apart, linked to each as a candidate match.
 
 mod assemble;
+mod check;
 mod cross_id;
 pub mod extent;
 mod fibres;
@@ -79,6 +80,11 @@ pub struct MatchReport {
     /// is also counted among the merges by position.
     #[serde(default)]
     pub fibres_of_one_galaxy: u64,
+    /// Objects whose entries' sources name different kinds of object, such as a Gaia star that
+    /// one source lists as a Cepheid and another as an RR Lyrae star: each takes the kind of
+    /// its first such entry.
+    #[serde(default)]
+    pub conflicting_kinds: u64,
 }
 
 /// Why two entries were joined.

@@ -1,0 +1,47 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-10T03:46:22 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-10T03:46:22	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJS%2F278%2F57%2Ftable1&-out=GaiaDR3%2CID%2CDist%2Ce_Dist%2CMode&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_22780057
+#Name: J/ApJS/278/57
+#Title: Milky Way as seen by classical Cepheids. I. WISE (Skowron+, 2025)
+#INFO	ivoid=ivo://cds.vizier/j/apjs/278/57	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/apjs/278/57	    IVOID of underlying data collection
+#INFO	creator=Skowron D.M.	    First author or institution
+#INFO	cites=bibcode:2025ApJS..278...57S	    Article or Data origin sources
+#INFO	journal=ApJS	    Journal name
+#INFO	original_date=2025	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJS/278/57	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier/bb-8p-1s	    Dataset identifier that can be used for citation
+#INFO	publication_date=2026-09-14	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Coosys	G:	galactic
+#Table	J_ApJS_278_57_table1:
+#Name: J/ApJS/278/57/table1
+#Title: Cepheid distance catalog
+#Column	_RAJ2000	(F12.8)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F12.8)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	GaiaDR3	(I19)	Gaia source ID (gaia_id)	[ucd=meta.id;meta.main]
+#Column	ID	(a19)	Source ID in the source catalog (survey_source_id)	[ucd=meta.id]
+#Column	Dist	(I6)	[136/180882] Distance based on averaged W1 (d_av)	[ucd=pos.distance]
+#Column	e_Dist	(I4)	[6/7147] Uncertainty in Dist (e_d_av)	[ucd=stat.error;pos.distance]
+#Column	Mode	(a6)	Mode of variability from P21 (mode)	[ucd=meta.code;src.var]
+_RAJ2000	_DEJ2000	GaiaDR3	ID	Dist	e_Dist	Mode
+deg	deg	 	 	pc	pc	
+------------	------------	-------------------	-------------------	------	----	------
+000.24680028	+60.95900166	 429385923752386944	CG_Cas             	  3174	 131	F
+000.44145880	+62.42425561	 429945884408637696	V879_Cas           	  5093	 203	F
+000.49345482	+65.24588986	 432188922485600384	J000158.43+651445.3	  8049	 323	F
+000.60588778	+62.84716488	 430052537038350976	J000225.42+625049.8	 10682	 445	F
+000.67404727	+61.86106837	 429890595286480384	EX_Cas             	  4210	 167	F
+

@@ -88,9 +88,6 @@ components:
       - key: 01a1c319-7860-76e8-92ac-c5bde6c72a87
         name: "Li 2023 RR Lyrae"
         body: "Photometric metallicities and distances of 135,873 RR Lyrae stars of Gaia DR3 (Li et al. 2023, ApJ 944, 88; VizieR J/ApJ/944/88), from a G-band absolute magnitude and metallicity relation, identified by their Gaia DR3 source ids."
-      - key: 01a1c319-7860-76e8-92ac-c5be9451c8c0
-        name: "Baumgardt & Vasiliev 2021 globular clusters"
-        body: "Distances of about 160 Galactic globular clusters combining Gaia EDR3 parallaxes, HST star counts and literature distances (Baumgardt & Vasiliev 2021, MNRAS 505, 5957; VizieR J/MNRAS/505/5957)."
       - key: 01a1c319-7860-76e8-92ac-c5bfbec6fa19
         name: "Reid 2019 maser parallaxes"
         body: "About 200 trigonometric parallaxes and proper motions of masers in high-mass star-forming regions measured by VLBI, mostly from the BeSSeL survey and VERA (Reid et al. 2019, ApJ 885, 131; VizieR J/ApJ/885/131)."
@@ -131,6 +128,13 @@ components:
       - key: 01a19f22-2ad9-716e-876f-182ccc78e8f6
         name: "eRASS1 clusters"
         body: "Groups and clusters of the first eROSITA all-sky survey (Bulbul et al. 2024), with their optical identification by Kluge et al. 2024: about 12,000, in the western Galactic hemisphere only, with photometric redshifts and spectroscopic ones for a subset."
+  - key: 01a1c414-0700-77d0-bc61-6d50d1c69555
+    name: "Galactic globular cluster database"
+    body: "Holger Baumgardt's database of the Milky Way's globular clusters (people.smp.uq.edu.au/HolgerBaumgardt/globular), whose tables carry their authors' copyright and state no terms of redistribution."
+    components:
+      - key: 01a1c319-7860-76e8-92ac-c5be9451c8c0
+        name: "Baumgardt & Vasiliev 2021 globular clusters"
+        body: "Distances of 165 Galactic globular clusters combining Gaia EDR3 parallaxes, HST star counts and literature distances (Baumgardt & Vasiliev 2021, MNRAS 505, 5957), as the database's orbits table gives them: the paper's distances are on no VizieR mirror. Permission to redistribute is pending."
   - key: 01a19f22-2ad9-716e-876f-182d7c1a086e
     name: "2M++ reconstruction host"
     body: "The site that serves the 2M++ reconstruction; its location is verified before the source definition is written."

@@ -96,6 +96,7 @@ pub fn volume_db_placed(objects: &[Placed], place: fn(u64) -> u32) -> Sqlite {
     db.exec(&sql);
     db.put("files/c05a1c", manifest(168.0, 2));
     db.put("files/57a125", manifest(48.0, 1));
+    db.put("files/9b31e0", manifest(2048.0, 0));
     db
 }
 

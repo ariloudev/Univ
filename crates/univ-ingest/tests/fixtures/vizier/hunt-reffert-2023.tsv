@@ -1,0 +1,50 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-10T03:46:21 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-10T03:46:21	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F673%2FA114%2Fclusters&-out=Name%2CRA_ICRS%2CDE_ICRS%2Cdist50%2Cdist16%2Cdist84%2CpmRA%2CpmDE%2CN%2CglobalPlx&-out.max=5&Type=o	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_36730114
+#Name: J/A+A/673/A114
+#Title: Improving the open cluster census. II. (Hunt+, 2023)
+#INFO	ivoid=ivo://cds.vizier/j/a+a/673/a114	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/a+a/673/a114	    IVOID of underlying data collection
+#INFO	creator=Hunt E.L.	    First author or institution
+#INFO	cites=bibcode:2023A&A...673A.114H	    Article or Data origin sources
+#INFO	journal=A&A	    Journal name
+#INFO	original_date=2023	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/A+A/673/A114	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier/bc-n1/lbbe	    Dataset identifier that can be used for citation
+#INFO	publication_date=2026-07-01	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Coosys	H_2016.000:	ICRS
+#Table	J_A_A_673_A114_clusters:
+#Name: J/A+A/673/A114/clusters
+#Title: Main catalogue (Table 3)
+#Column	Name	(a20)	Main accepted cluster name (1)	[ucd=meta.id;meta.main]
+#Column	RA_ICRS	(F15.11)	Right ascension of densest point (ICRS) at Ep=2016.0	[ucd=pos.eq.ra;meta.main]
+#Column	DE_ICRS	(F15.11)	Declination of densest point (ICRS) at Ep=2016.0	[ucd=pos.eq.dec;meta.main]
+#Column	dist50	(F15.8)	50th percentile of maximum likelihood distance	[ucd=pos.distance]
+#Column	dist16	(F15.8)	16th percentile of maximum likelihood distance	[ucd=pos.distance]
+#Column	dist84	(F16.8)	84th percentile of maximum likelihood distance	[ucd=pos.distance]
+#Column	pmRA	(F13.8)	Mean proper motion in right ascension multipled by cos(dec)	[ucd=pos.pm;pos.eq.ra]
+#Column	pmDE	(F12.8)	Mean proper motion in declination	[ucd=pos.pm;pos.eq.dec]
+#Column	N	(I6)	[10/153797] Number of member stars	[ucd=meta.number]
+#Column	globalPlx	(I1)	[0/1] Flag indicating clusters for which a star-by-star parallax offset correction was not possible during distance calculation	[ucd=meta.code]
+Name	RA_ICRS	DE_ICRS	dist50	dist16	dist84	pmRA	pmDE	N	globalPlx
+ 	deg	deg	pc	pc	pc	mas/yr	mas/yr	 	
+--------------------	---------------	---------------	---------------	---------------	----------------	-------------	------------	------	-
+1636-283            	249.85574296000	-28.39919379000	  6063.45669451	  5791.24202555	   6362.52422040	  -1.45490226	 -6.52578330	    38	0
+ADS_16795           	352.59216492000	+58.55341329000	   206.45788462	   206.28167669	    206.63439385	  18.65660390	  2.84661253	    41	0
+AH03_J0748+26.9     	117.15588690000	-26.97267949000	  3979.06488330	  3919.58056456	   4040.38251600	  -2.46548955	  3.18503456	    68	0
+ASCC_5              	 14.46908222000	+55.82917381000	  1740.98320690	  1721.68750605	   1760.71632064	  -2.40663082	 -1.91881768	    25	0
+ASCC_6              	 26.84215882000	+57.73860678000	  1501.88586403	  1497.86275470	   1505.93064289	  -0.83414476	  0.14917466	   209	0
+

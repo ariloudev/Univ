@@ -257,7 +257,9 @@ fn every_derived_position_names_its_frame_epoch_cosmology_and_chain() {
         let factor = Unit::Megaparsec.factor_to(read.unit).unwrap();
         let at = position.cartesian(Frame::Icrs).unwrap();
         assert_eq!([read.x, read.y, read.z], at.map(|c| c * factor));
-        assert_eq!(read.unit == Unit::Parsec, read.scale_domain == "stars");
+        // Parsecs for stars and the Galaxy's tracers, megaparsecs for galaxies.
+        let in_pc = matches!(read.scale_domain.as_str(), "stars" | "galaxy_tracers");
+        assert_eq!(read.unit == Unit::Parsec, in_pc, "{}", read.scale_domain);
         assert_eq!(
             (read.frame.as_str(), read.origin.as_str()),
             (ICRS_CARTESIAN_NAME, BARYCENTRE)
@@ -271,13 +273,11 @@ fn every_derived_position_names_its_frame_epoch_cosmology_and_chain() {
         assert_eq!(&read.native, position.native());
         assert_eq!(read.assumed_cosmology.as_ref(), position.assumed());
         assert_eq!(r.not_placed, None);
-        units.insert(format!("{:?}", read.unit));
+        units.insert((read.scale_domain.clone(), format!("{:?}", read.unit)));
     }
-    assert_eq!(
-        units.len(),
-        2,
-        "stars in parsecs, galaxies in megaparsecs: {units:?}"
-    );
+    for domain in ["stars", "galaxy_tracers", "nearby_galaxies", "cosmic_web"] {
+        assert!(units.iter().any(|(d, _)| d == domain), "{units:?}");
+    }
 }
 
 #[test]

@@ -10,7 +10,7 @@ import { whole } from "../../scene/format.ts";
 import type { RecordContext } from "../ObjectPanel.tsx";
 import { RecordBody } from "../RecordSections.tsx";
 import { decText, designationText, epochText, galacticText, masText, namesAndDesignations, raText, skyOf } from "../recordText.ts";
-import { headingOf } from "../text.ts";
+import { KIND_NOUNS, headingOf } from "../text.ts";
 import { useSources } from "../useSources.ts";
 import { Mark } from "../Mark.tsx";
 import { ColourScale, DotPlot, TickStrip } from "./charts.tsx";
@@ -77,7 +77,7 @@ function subtitleOf(record: ObjectRecord, heading: string): string {
     for (const k of keys) shown.add(k);
     others.push(d.designation ?? `${d.identifier} (${d.source})`);
   }
-  return [...others.slice(0, 2), ...(record.kind === "galaxy_group" ? ["galaxy group"] : []), `object ${record.id}`].join(" · ");
+  return [...others.slice(0, 2), ...[KIND_NOUNS[record.kind]].filter((noun) => noun !== undefined), `object ${record.id}`].join(" · ");
 }
 
 /** The preferred distance large, every distance on one axis, and what preferred it. */

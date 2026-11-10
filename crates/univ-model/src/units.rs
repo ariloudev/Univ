@@ -111,14 +111,18 @@ impl Unit {
     }
 }
 
-/// The name of the scale domain whose positions are in parsecs.
+/// The name of the scale domain of stars, whose positions are in parsecs.
 pub const STARS_DOMAIN: &str = "stars";
 
-/// The unit of the positions of the scale domain named `domain` (`stars`, `nearby_galaxies` or
-/// `cosmic_web`): parsecs for stars, megaparsecs for every other.
+/// The name of the scale domain of the Galaxy's tracers, whose positions are in parsecs.
+pub const GALAXY_TRACERS_DOMAIN: &str = "galaxy_tracers";
+
+/// The unit of the positions of the scale domain named `domain` (`stars`, `galaxy_tracers`,
+/// `nearby_galaxies` or `cosmic_web`): parsecs for stars and Galaxy tracers, megaparsecs for
+/// every other.
 #[must_use]
 pub fn scale_domain_unit(domain: &str) -> Unit {
-    if domain == STARS_DOMAIN {
+    if domain == STARS_DOMAIN || domain == GALAXY_TRACERS_DOMAIN {
         Unit::Parsec
     } else {
         Unit::Megaparsec

@@ -12,24 +12,13 @@ mod release_fixture;
 
 use std::collections::HashMap;
 
-use release_fixture::{build_next, cross, fixture, loaded};
+use release_fixture::{build_next, cross, fixture, loaded, terms};
 use rusqlite::{Connection, OptionalExtension, Row};
 use serde_json::{Value, json};
 use univ_model::object::MeasurementRef;
 use univ_model::release::chains::expand;
 use univ_model::release::rows::name_key;
 use univ_model::release::{UncertaintyColumns, keys};
-
-/// Release 1's terms by id.
-fn terms(db: &Connection) -> HashMap<i64, String> {
-    let mut q = db
-        .prepare("SELECT id, term FROM terms WHERE release = 1")
-        .unwrap();
-    q.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-        .unwrap()
-        .map(Result::unwrap)
-        .collect()
-}
 
 /// The quantity in columns `value`, `unit` and `{prefix}form`, `minus`, `plus`, `level` of a
 /// row, as univ-model serializes it.
@@ -235,6 +224,7 @@ fn every_placed_object_s_scale_domain_follows_its_placed_distance() {
         };
         let source = &o.object.preferred_distance.as_ref().unwrap().measurement;
         let expected = univ_ingest::tiles::domain_of(
+            o.object.kind,
             domain_of_source(&source.entry().source),
             position.distance().value,
         );
