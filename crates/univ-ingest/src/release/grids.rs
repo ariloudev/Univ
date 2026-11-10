@@ -18,7 +18,10 @@ use univ_model::units::Unit;
 use univ_model::value::Quantity;
 
 use super::objects::{json, snake};
-use crate::grids::{Window, basins, cf4pp, read_cf4_basins, read_cf4pp, read_twompp, twompp};
+use crate::grids::{
+    Window, basins, cf4pp, edenhofer, read_cf4_basins, read_cf4pp, read_edenhofer, read_twompp,
+    twompp,
+};
 use crate::source::SourceDefinition;
 use crate::tiles::sha256;
 
@@ -37,7 +40,13 @@ pub struct GridFiles {
 /// Whether `definition` is a volume grid this build reads.
 #[must_use]
 pub fn is_grid(definition: &SourceDefinition) -> bool {
-    [cf4pp::SOURCE, basins::SOURCE, twompp::SOURCE].contains(&definition.id.as_str())
+    [
+        cf4pp::SOURCE,
+        basins::SOURCE,
+        twompp::SOURCE,
+        edenhofer::SOURCE,
+    ]
+    .contains(&definition.id.as_str())
 }
 
 /// The file among `files` whose name is `name`.
@@ -68,6 +77,11 @@ pub fn read(definition: &SourceDefinition, files: &[PathBuf]) -> Result<Grid, St
             named(files, "twompp_density.npy")?,
             named(files, "twompp_velocity.npy")?,
             Window::Whole,
+        ),
+        edenhofer::SOURCE => read_edenhofer(
+            named(files, edenhofer::FILE)?,
+            Window::Whole,
+            edenhofer::CELLS,
         ),
         _ => return Err(format!("{id}: no volume grid reader")),
     };

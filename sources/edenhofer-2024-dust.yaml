@@ -1,0 +1,50 @@
+id: edenhofer-2024-dust
+title: "Edenhofer et al. 2024 3D dust map within 1.25 kpc (posterior mean and standard deviation)"
+provider: zenodo
+access:
+  method: files
+  files:
+    # Zenodo publishes the file's MD5, 10c823a5fcf81b47b6e15530bcdf54dc; the SHA-256 is of the
+    # copy whose MD5 matched it, fetched on 2026-11-10.
+    - path: mean_and_std_healpix.fits
+      size: 3252715200
+      sha256: 7c36dd928afcd2a774ce746ccddba95a1d8490d7a034073fd622c57217c63ae6
+cuts:
+  - >-
+    The whole file mean_and_std_healpix.fits of Zenodo record 10.5281/zenodo.8187943 (v1.0,
+    published 2023-08-01): the posterior mean and standard deviation of the dust density over the
+    reconstruction's samples, on HEALPix pixels of NSIDE 256 in the NEST ordering times 516
+    logarithmically spaced distance bins from 68.62 to 1,248.10 pc (the file's RADIAL PIXEL
+    BOUNDARIES), the pixels in galactic coordinates about the Sun.
+  - "These are reconstructed fields, not measurements: the mean and standard deviation over 12 variational posterior samples of a Gaussian-process reconstruction from distance and extinction estimates to 54 million stars derived from Gaia BP/RP spectra (the paper's abstract)."
+  - >-
+    Resampled by Univ Ingest onto a cube of 2,500 pc a side centred on the Sun, 250 cells of 10 pc
+    along the galactic Cartesian axes: each cell holds the mean of the source's values at the
+    voxel centres within it, or, where none falls, the value of the voxel holding the cell's
+    centre. Cells whose centres lie nearer than 69 pc or farther than 1,250 pc hold NaN, no data.
+  - "Not taken: the 2 kpc validation map, which the provider says uses less data and advises caution with; the posterior samples; the provider's own 2 pc Cartesian interpolation (15.7 GB)."
+columns:
+  - { column: MEAN, field: density, unit: extinction_zgr23_per_parsec }
+  - { column: STD., field: density_error, unit: extinction_zgr23_per_parsec }
+frame: galactic
+epoch: 2000.0
+citation: >-
+  Edenhofer G., Zucker C., Frank P., Saydjari A.K., Speagle J.S., Finkbeiner D., Enßlin T.A.
+  2024, "A parsec-scale Galactic 3D dust map out to 1.25 kpc from the Sun", A&A 685, A82.
+  2024A&A...685A..82E, doi:10.1051/0004-6361/202347628, arXiv:2308.01295. Data:
+  doi:10.5281/zenodo.8187943.
+reference: { bibcode: "2024A&A...685A..82E", doi: "10.1051/0004-6361/202347628" }
+terms:
+  url: "https://zenodo.org/records/8187943"
+  quote: "license: cc-by-4.0 (the record's metadata, read 2026-11-10); readme: \"All data products are made publicly available.\""
+  credit: "Edenhofer et al. 2024, A&A 685, A82 (doi:10.1051/0004-6361/202347628); data doi:10.5281/zenodo.8187943, CC BY 4.0. Resampled onto 10 pc cells by Univ Ingest."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    The Zenodo record carries the Creative Commons Attribution 4.0 licence, which permits sharing
+    and adapting with credit and a note of changes; the credit names the resampling. Provisional:
+    judged again before any public deployment.
+scale_domain: stars
+mirrors:
+  - "https://zenodo.org/records/8187943/files"

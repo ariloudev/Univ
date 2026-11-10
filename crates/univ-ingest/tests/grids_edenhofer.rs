@@ -11,13 +11,19 @@
               bins, pixels and coordinates as the paper does"
 )]
 
+mod common;
+
 use std::path::{Path, PathBuf};
 
 use univ_ingest::grids::edenhofer::{CELLS, FARTHEST_PC, NEAREST_PC};
 use univ_ingest::grids::{GridReadError, Window, read_edenhofer};
+use univ_ingest::release::{grid_files, is_grid, read_grid};
+use univ_ingest::tiles::sha256;
+use univ_model::derive::Release;
 use univ_model::grid::{CellUncertainty, Grid, Samples};
 use univ_model::healpix;
 use univ_model::position::Frame;
+use univ_model::release::keys;
 use univ_model::units::Unit;
 use univ_model::value::KindOfValue;
 
@@ -284,7 +290,7 @@ fn the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_an
     assert_eq!(field.kind, KindOfValue::Reconstructed);
     assert_eq!(
         (field.column.as_str(), field.field.as_str()),
-        ("MEAN", "dust_density")
+        ("MEAN", "density")
     );
     let CellUncertainty::StandardDeviation { column, .. } = &field.uncertainty else {
         panic!("no standard deviation")
@@ -312,4 +318,58 @@ fn a_map_in_another_ordering_is_refused() {
     let path = Simulated::new().write(dir.path(), "RING");
     let refused = read_edenhofer(&path, Window::Cutout { start: [0; 3] }, [1; 3]).unwrap_err();
     assert!(refused.to_string().contains("not NEST"), "{refused}");
+}
+
+#[test]
+fn the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = Simulated::new().write(dir.path(), "NEST");
+    let definition = common::definition_of("edenhofer-2024-dust");
+    assert!(is_grid(&definition));
+    // The whole grid is read from the file the fetch gives, by its name.
+    let missing = read_grid(&definition, &[]).unwrap_err();
+    assert!(missing.contains("mean_and_std_healpix.fits"), "{missing}");
+    let build = || {
+        let window = Window::Cutout {
+            start: [129, 120, 120],
+        };
+        let grid = read_edenhofer(&path, window, [12, 10, 10]).unwrap();
+        grid_files(13, &grid, &definition, &Release::planck_2018()).unwrap()
+    };
+    let (first, second) = (build(), build());
+    let digests = |files: &[(String, Vec<u8>)]| -> Vec<(String, String)> {
+        files.iter().map(|(p, b)| (p.clone(), sha256(b))).collect()
+    };
+    assert_eq!(digests(&first.files), digests(&second.files));
+    assert_eq!(first.row.header_key, second.row.header_key);
+    let id = "edenhofer-2024-dust";
+    let file = |path: String| &first.files.iter().find(|(p, _)| *p == path).unwrap().1;
+    let header: serde_json::Value = serde_json::from_slice(file(keys::grid_header(id))).unwrap();
+    assert_eq!(header["frame"], "galactic");
+    assert_eq!(header["unit"], "parsec");
+    assert_eq!(header["cell"], 10.0);
+    assert!(
+        header["resampling"]
+            .as_str()
+            .unwrap()
+            .contains("mean of the source's values")
+    );
+    assert!(header["no_data"].as_str().unwrap().starts_with("NaN"));
+    let field = &header["fields"][0];
+    assert_eq!(field["unit"], "extinction_zgr23_per_parsec");
+    assert_eq!(field["kind"], "reconstructed");
+    // The deviation is written as its own grid of samples, named under the mean it belongs to.
+    let sigma = file(keys::grid_samples(id, "field-0-sigma"));
+    assert_eq!(field["uncertainty"]["form"], "standard_deviation");
+    assert_eq!(field["uncertainty"]["column"], "STD.");
+    assert_eq!(field["uncertainty"]["samples"], keys::file(&sha256(sigma)));
+    let mean = file(keys::grid_samples(id, "field-0"));
+    assert_eq!(field["samples"], keys::file(&sha256(mean)));
+    // Both mark the same cells as of no data.
+    let nan = |bytes: &[u8]| -> Vec<bool> {
+        let floats = bytes.as_chunks::<4>().0.iter();
+        floats.map(|b| f32::from_le_bytes(*b).is_nan()).collect()
+    };
+    assert_eq!(nan(mean), nan(sigma));
+    assert!(nan(mean).contains(&true) && nan(mean).contains(&false));
 }

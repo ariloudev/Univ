@@ -92,7 +92,7 @@ pub fn read_edenhofer(
     }
     let field = Field {
         column: "MEAN".to_owned(),
-        field: "dust_density".to_owned(),
+        field: "density".to_owned(),
         unit: Unit::ExtinctionZgr23PerParsec,
         kind: KindOfValue::Reconstructed,
         components: Components::Scalar,

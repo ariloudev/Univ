@@ -50,6 +50,15 @@ blocks:
         title: "HEALPix NESTED pixel centres and lookup"
         detail: "univ-model, any NSIDE"
         state: active
+      - key: 01a1c44f-e681-713b-bdb5-a93e92d27750
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "HEALPix NESTED pixel centres and lookup"
+        detail: "Not needed: univ-model's healpix module already gives hash() and centre() for the nested scheme, and a univ-ingest test holds it to cdshealpix. The reader uses it."
+        state: dropped
   - key: 01a1c440-c1ed-745b-a8c9-b03e84cb4897
     id: w3-t2
     kind: task
@@ -63,6 +72,15 @@ blocks:
         title: "Dust unit, resampling note and no-data marker"
         detail: "model and grid header"
         state: open
+      - key: 01a1c44f-e681-713b-bdb5-a93ffd5f9620
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust unit, resampling note and no-data marker"
+        detail: "8e7b15c: Unit::ExtinctionZgr23PerParsec (its own dimension); Grid.resampling and Grid.no_data, written into the header only when set, so existing grids' headers keep their bytes. OpenAPI gains the unit value only."
+        state: done
   - key: 01a1c440-c1ed-745b-a8c9-b03fbc3e82e1
     id: w3-t3
     kind: task
@@ -76,6 +94,15 @@ blocks:
         title: "Edenhofer reader and resampler"
         detail: "grids/edenhofer.rs"
         state: open
+      - key: 01a1c44f-e681-713b-bdb5-a94085b2916f
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer reader and resampler"
+        detail: "grids/edenhofer/{mod,resample}.rs: the layout read from headers alone, then two passes (count voxel centres per cell from the geometry, then stream both images bin by bin). Five tests on a SIMULATED NSIDE 8, 64-bin map, every cell of a cut-out checked against a brute-force reading."
+        state: done
   - key: 01a1c440-c1ed-745b-a8c9-b040804cbfd6
     id: w3-t4
     kind: task
@@ -89,6 +116,15 @@ blocks:
         title: "Edenhofer source definition and release wiring"
         detail: "sources/edenhofer-2024-dust.yaml"
         state: open
+      - key: 01a1c44f-e681-713b-bdb5-a94150472270
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer source definition and release wiring"
+        detail: "sources/edenhofer-2024-dust.yaml; Zenodo, CC BY 4.0; release grid reading"
+        state: active
   - key: 01a1c440-c1ed-745b-a8c9-b0413099e9be
     id: w3-t5
     kind: task
