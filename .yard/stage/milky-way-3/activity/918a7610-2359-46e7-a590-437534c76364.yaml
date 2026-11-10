@@ -1,0 +1,28 @@
+session: 918a7610-2359-46e7-a590-437534c76364
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-10T06:59:00Z
+turns:
+  - started: 2026-11-10T06:59:00Z

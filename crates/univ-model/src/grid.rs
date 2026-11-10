@@ -290,6 +290,14 @@ pub struct Grid {
     pub source: String,
     pub geometry: GridGeometry,
     pub fields: Vec<Field>,
+    /// How the grid was resampled from its source's own cells, where it was: none for a grid
+    /// published on its source's cells.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resampling: Option<String>,
+    /// What a sample that marks no data is, and why a cell holds one: none where every cell
+    /// holds data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub no_data: Option<String>,
 }
 
 /// A grid as read, before its checks.
@@ -298,12 +306,21 @@ struct RawGrid {
     source: String,
     geometry: GridGeometry,
     fields: Vec<Field>,
+    #[serde(default)]
+    resampling: Option<String>,
+    #[serde(default)]
+    no_data: Option<String>,
 }
 
 impl TryFrom<RawGrid> for Grid {
     type Error = GridError;
     fn try_from(raw: RawGrid) -> Result<Self, GridError> {
-        Self::new(raw.source, raw.geometry, raw.fields)
+        let grid = Self::new(raw.source, raw.geometry, raw.fields)?;
+        Ok(Self {
+            resampling: raw.resampling,
+            no_data: raw.no_data,
+            ..grid
+        })
     }
 }
 
@@ -342,7 +359,20 @@ impl Grid {
             source,
             geometry,
             fields,
+            resampling: None,
+            no_data: None,
         })
+    }
+
+    /// The grid, noting how it was resampled from its source's cells and what marks a cell of
+    /// no data.
+    #[must_use]
+    pub fn resampled(self, resampling: impl Into<String>, no_data: impl Into<String>) -> Self {
+        Self {
+            resampling: Some(resampling.into()),
+            no_data: Some(no_data.into()),
+            ..self
+        }
     }
 
     /// The field read from a column.

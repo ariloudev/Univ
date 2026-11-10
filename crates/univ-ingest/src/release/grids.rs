@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::json;
 use univ_model::cosmology::AssumedCosmology;
-use univ_model::derive::Release;
+use univ_model::derive::{Release, Rescaled};
 use univ_model::grid::{CellUncertainty, Grid, Samples};
 use univ_model::release::keys;
 use univ_model::release::rows::GridRow;
@@ -83,6 +83,22 @@ fn floats(values: impl Iterator<Item = f64>) -> Vec<u8> {
     values.flat_map(|v| (v as f32).to_le_bytes()).collect()
 }
 
+/// The cell of `grid` in h^-1 Mpc, rescaled by the release's Hubble constant, as the spec asks;
+/// none for a grid in another unit.
+fn cell_rescaled(grid: &Grid, cosmology: &Release) -> Result<Option<Rescaled>, String> {
+    let g = &grid.geometry;
+    if g.unit != Unit::MegaparsecOverH {
+        return Ok(None);
+    }
+    let cell = Quantity::new(g.cell, g.unit, univ_model::value::Uncertainty::NoneReported)
+        .map_err(|e| e.to_string())?;
+    cosmology
+        .hubble_rescaling(AssumedCosmology::HUBBLE_SCALED)
+        .and_then(|r| r.apply(&cell))
+        .map(Some)
+        .map_err(|e| format!("{}: the cell cannot be rescaled: {e}", grid.source))
+}
+
 /// The files and row of `grid`, from `definition`, in release `release` under `cosmology`.
 ///
 /// # Errors
@@ -138,18 +154,7 @@ pub fn grid_files(
             "labels": field.labels,
         }));
     }
-    // The cell in h^-1 Mpc, rescaled by the release's Hubble constant, as the spec asks.
-    let cell_rescaled = if g.unit == Unit::MegaparsecOverH {
-        let cell = Quantity::new(g.cell, g.unit, univ_model::value::Uncertainty::NoneReported)
-            .map_err(|e| e.to_string())?;
-        let rescaled = cosmology
-            .hubble_rescaling(AssumedCosmology::HUBBLE_SCALED)
-            .and_then(|r| r.apply(&cell))
-            .map_err(|e| format!("{id}: the cell cannot be rescaled: {e}"))?;
-        Some(rescaled)
-    } else {
-        None
-    };
+    let cell_rescaled = cell_rescaled(grid, cosmology)?;
     let header = json!({
         "format": "univ-volume-grid",
         "header_version": HEADER_VERSION,
@@ -172,6 +177,13 @@ pub fn grid_files(
                     vector field's component is the slowest index",
         "fields": fields,
     });
+    // Only a resampled grid says how, so the headers of the others keep their bytes.
+    let mut header = header;
+    for (key, note) in [("resampling", &grid.resampling), ("no_data", &grid.no_data)] {
+        if let (Some(note), Some(map)) = (note, header.as_object_mut()) {
+            map.insert(key.to_owned(), json!(note));
+        }
+    }
     let header_path = keys::grid_header(id);
     let header_bytes = serde_json::to_vec_pretty(&header).map_err(|e| e.to_string())?;
     let header_key = keys::file(&sha256(&header_bytes));

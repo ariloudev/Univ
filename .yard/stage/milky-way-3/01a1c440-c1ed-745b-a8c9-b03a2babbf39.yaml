@@ -1,0 +1,118 @@
+key: 01a1c440-c1ed-745b-a8c9-b03a2babbf39
+id: w3-build
+versions:
+  - key: 01a1c440-c1ed-745b-a8c9-b0449143d924
+    at: 2026-11-10T06:59:00Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 3"
+    goal: "The Edenhofer 2024 dust map is defined, read from its HEALPix file and resampled into mean and standard-deviation grids of 10 pc cells about the Sun, published with the release, each criterion verified by its focused test"
+    status: active
+blocks:
+  - key: 01a1c440-c1ed-745b-a8c9-b03cf1a2e579
+    id: w3-plan
+    kind: note
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b046444526f1
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 3 plan (pre-approved by the owner)"
+        markdown: |-
+          The source, read on 2026-11-10: Zenodo 10.5281/zenodo.8187943 v1.0, **CC BY 4.0**. `mean_and_std_healpix.fits` (3.25 GB) holds:
+          - the MEAN and STD images, each 516 radial bins × 786,432 HEALPix pixels (NSIDE 256, NESTED ordering), float32, unit "E of Zhang, Green, and Rix (2023)";
+          - the RADIAL PIXEL CENTERS (516) and BOUNDARIES (517), in pc.
+
+          The ready-made Cartesian file has 2 pc voxels and is 15.7 GB; the spec resamples from the HEALPix voxels.
+
+          | Task | Change | Criteria | Done when |
+          |---|---|---|---|
+          | t1 HEALPix | NESTED `pix2vec` and `vec2pix` for any NSIDE, in univ-model | (a means to the rest) | round trip of all 786,432 pixels at NSIDE 256; the 12 base pixels' centres match their analytic values |
+          | t2 model | a unit for the dust density, and a grid's resampling note and no-data marker kept in its header | the unit, kind and std-names-mean criteria | model and header tests |
+          | t3 reader | `grids/edenhofer.rs`: streams both images bin by bin into a 250³ galactic cube of 10 pc; each cell takes the mean of the voxel centres in it, else the voxel at its centre; cells nearer than 69 pc or beyond 1,250 pc are NaN | the cube, resampling, no-data and same-SHA criteria | tests on a SIMULATED small-NSIDE file written by the test |
+          | t4 source | `sources/edenhofer-2024-dust.yaml` (Zenodo, galaxy tracers? no: stars domain's grid), wired into the release's grid reading | the dust-source criterion | definition and release-grid tests |
+          | t5 measure | fetch the real file in the background, resample it once in an `#[ignore]` test, and note the time, memory, sizes and a sanity value | none | a note with the numbers |
+          | t6 review | `/simplify`, `/code-review`, the gate and integration once, the trace, close and merge | | green |
+  - key: 01a1c440-c1ed-745b-a8c9-b03d8ab637cb
+    id: w3-t1
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b047d9267efa
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "HEALPix NESTED pixel centres and lookup"
+        detail: "univ-model, any NSIDE"
+        state: active
+  - key: 01a1c440-c1ed-745b-a8c9-b03e84cb4897
+    id: w3-t2
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b048ad5ac75e
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust unit, resampling note and no-data marker"
+        detail: "model and grid header"
+        state: open
+  - key: 01a1c440-c1ed-745b-a8c9-b03fbc3e82e1
+    id: w3-t3
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b0496165b717
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer reader and resampler"
+        detail: "grids/edenhofer.rs"
+        state: open
+  - key: 01a1c440-c1ed-745b-a8c9-b040804cbfd6
+    id: w3-t4
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b04ae65ff38e
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer source definition and release wiring"
+        detail: "sources/edenhofer-2024-dust.yaml"
+        state: open
+  - key: 01a1c440-c1ed-745b-a8c9-b0413099e9be
+    id: w3-t5
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b04b42d789a9
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Fetch and resample the real map once"
+        detail: "measure time, memory and sizes"
+        state: open
+  - key: 01a1c440-c1ed-745b-a8c9-b043c15391d1
+    id: w3-build-issues
+    kind: note
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b04d44aa4d15
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|

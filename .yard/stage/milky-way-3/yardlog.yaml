@@ -1,0 +1,23 @@
+format: yardlog/1
+key: 01a1c440-c1ed-745b-a8c9-b039691d8b2a
+branch: "stage/milky-way-3"
+base: "develop"
+title: "stage/milky-way-3"
+revision: 1
+opened:
+  at: 2026-11-10T06:59:00Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "918a7610-2359-46e7-a590-437534c76364"
+stages:
+  - key: 01a1c440-c1ed-745b-a8c9-b03a2babbf39
+    id: w3-build
+  - key: 01a1c440-c1ed-745b-a8c9-b03b45cdcebf
+    id: w3-review
+acts:
+  - at: 2026-11-10T06:59:00Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"

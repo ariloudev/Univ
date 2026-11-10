@@ -32,6 +32,10 @@ pub enum Unit {
     Magnitude,
     /// A pure number, such as a redshift.
     Dimensionless,
+    /// Dust extinction per parsec along a line of sight, the extinction in the units of Zhang,
+    /// Green & Rix 2023, as the Edenhofer et al. 2024 dust map gives its
+    /// density: its line integral is that extinction, which no other unit measures.
+    ExtinctionZgr23PerParsec,
 }
 
 /// What a unit measures; units convert only within one dimension.
@@ -46,6 +50,8 @@ pub enum Dimension {
     HubbleScaledLength,
     Magnitude,
     Dimensionless,
+    /// Extinction per unit length, in its source's extinction scale.
+    ExtinctionDensity,
 }
 
 /// A conversion that cannot be made.
@@ -73,6 +79,7 @@ impl Unit {
             Self::MegaparsecOverH => Dimension::HubbleScaledLength,
             Self::Magnitude => Dimension::Magnitude,
             Self::Dimensionless => Dimension::Dimensionless,
+            Self::ExtinctionZgr23PerParsec => Dimension::ExtinctionDensity,
         }
     }
 
@@ -93,7 +100,8 @@ impl Unit {
             | Self::Parsec
             | Self::MegaparsecOverH
             | Self::Magnitude
-            | Self::Dimensionless => 1.0,
+            | Self::Dimensionless
+            | Self::ExtinctionZgr23PerParsec => 1.0,
         }
     }
 
