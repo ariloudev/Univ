@@ -4,6 +4,7 @@
 //! one candidate from one source is kept apart, linked to each as a candidate match.
 
 mod assemble;
+mod check;
 mod cross_id;
 pub mod extent;
 mod fibres;

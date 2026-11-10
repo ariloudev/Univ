@@ -42,3 +42,32 @@ blocks:
         title: "Review, gate, trace and merge wave 2"
         detail: "/simplify and /code-review in parallel."
         state: active
+  - key: 01a1c42a-da05-71a1-873d-b033e576aefc
+    id: w2-review-issues
+    kind: note
+    versions:
+      - key: 01a1c42a-da05-71a1-873d-b0344dbd5861
+        at: 2026-11-10T06:35:05Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review findings and what became of them"
+        markdown: |-
+          **`/code-review` (medium) and `/simplify` (4 reviewers)**, fixed in `5862874`, `a74c9d7` and the trace commit:
+
+          | # | Finding | Found by | Outcome |
+          |---|---|---|---|
+          | 1 | Tracer distances were normalized in Mpc: `normalize/plan.rs` gave parsecs to stars only | code review, altitude | fixed: the domain's unit (`unit_of`); `normalize_tracers` asserts parsecs |
+          | 2 | A tracer's position record read back in Mpc: `read/placed.rs` compared with `"stars"` | code review | fixed: `scale_domain_unit`; the record round trip now covers tracers in parsecs |
+          | 3 | The tracer kind was set only when the D1 row was written; in memory every tracer stayed `body` | code review, altitude, reuse | fixed: matching sets it beside the galaxy group's, from `MatchingRules::with_object_kinds` |
+          | 4 | Two tracer kinds on one object: the first won silently | code review | fixed: `MatchReport.conflicting_kinds` counts them; tested |
+          | 5 | The "has a tracer entry" rule was written three times, and `domain_of` had a dead arm | all | fixed: one `domain_of(kind, source_domain, mpc)` |
+          | 6 | Clusters OpenNGC lists became two objects | code review | globulars fixed: an OpenNGC pair at 60″, measured (107 same-name pairs, all within 40″). Open clusters left: their positions differ by up to degrees, and a join by name needs a matching feature (open item) |
+          | 7 | The tracer science checks ran tens of millions of correlated lookups, and a missing kind term passed | efficiency, code review | fixed: driven by the tracer sources; each shown to fail on a broken tracer |
+          | 8 | Wave 2's criteria were not linked, and AC-91/92/166 were still unverified | code review | fixed: 13 links accepted; 22 left are waves 3–4 |
+          | 9 | The parsec rule was repeated by hand; `is_tracer` was defined by exclusion | simplification, altitude | fixed: `unit_symbol` and `CellSpace::unit` derive from the unit rule; `is_tracer` lists the five |
+          | 10 | Test duplication: a stand-in tracer source, a copied `VALID`, a private `terms`, a 6-tuple helper | reuse, simplification | fixed |
+          | 11 | The prepare script copies OpenNGC's skeleton | reuse | kept: the scripts run with `python3 -I`, which blocks a shared module |
+          | 12 | The test helper branches on `Prepared` access | altitude | kept: test-only, and the general path would change how every recorded answer is read |
+          | 13 | `ObjectWriter` could take the domain from the tiles' cell rather than recompute it | reuse | kept: both now call the one `domain_of`, so they cannot drift |

@@ -353,7 +353,7 @@ test("turns a scale domain off, counts none of its points in the key, and keeps 
   await page.getByRole("button", { name: "Show", exact: true }).click();
   await page.getByLabel("Stars", { exact: true }).uncheck();
   await expect(page).toHaveURL(/hide=domain%3Astars/);
-  await expect(page.getByTestId("show-summary")).toContainText("Points: 2 of 3 domains");
+  await expect(page.getByTestId("show-summary")).toContainText("Points: 3 of 4 domains");
   await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
   await page.reload();
   // The Show drawer is kept open across the reload.
