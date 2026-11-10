@@ -413,6 +413,7 @@ INSERT INTO source_reading VALUES (2, 0, 'HIP {identifier}',
 pub const STRUCTURES: &str = r#"
 INSERT INTO scale_domains VALUES (2, 'cosmic_web', 'Mpc', 168.0, 6, 1, 'files/c05a1c', NULL);
 INSERT INTO scale_domains VALUES (2, 'stars', 'pc', 48.0, 1, 1, 'files/57a125', NULL);
+INSERT INTO scale_domains VALUES (2, 'galaxy_tracers', 'pc', 2048.0, 1, 1, 'files/9b31e0', NULL);
 INSERT INTO structures VALUES (2, 'bootes-void', 'Bootes Void', 'void', 'observed', 'cosmic_web',
   -115.49, -107.35, 162.22, 'primitive',
   '{"papers":[{"id":"kirshner-1987","bibcode":"1987ApJ...314..493K","doi":"10.1086/165080"}],"values":{"radius":{"quantity":{"value":63.0,"unit":"megaparsec","uncertainty":{"form":"none_reported"}},"kind":"inferred","cite":{"paper":"kirshner-1987","locator":{"form":"sentence","quote":"a radius of 63 Mpc (assuming H0 = 50 km s-1 Mpc-1)","page":501}},"assumes":{"cosmology":{"hubble_constant":50.0}}}}}',

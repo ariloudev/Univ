@@ -31,10 +31,13 @@ fn the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit() {
     assert_eq!(response.status, 200);
     let domains = listing["domains"].as_array().unwrap();
     let names: Vec<&Value> = domains.iter().map(|d| &d["name"]).collect();
-    assert_eq!(names, ["cosmic_web", "stars"]);
+    assert_eq!(names, ["cosmic_web", "galaxy_tracers", "stars"]);
     assert_eq!(domains[0]["unit"], "megaparsec");
     assert_eq!(domains[0]["radius"], 168.0);
+    // The Galaxy tracers, like the stars, are in parsecs.
     assert_eq!(domains[1]["unit"], "parsec");
+    assert_eq!(domains[1]["radius"], 2048.0);
+    assert_eq!(domains[2]["unit"], "parsec");
     assert_eq!(
         domains[0]["manifest"],
         "/v1/scale-domains/cosmic_web/manifest?release=2"
@@ -63,7 +66,7 @@ fn an_unknown_scale_domain_answers_404_listing_the_domains_the_release_has() {
     assert_eq!(problem["type"], "urn:univ:problem:scale-domain-not-found");
     assert_eq!(
         problem["scale_domains"],
-        serde_json::json!(["cosmic_web", "stars"])
+        serde_json::json!(["cosmic_web", "galaxy_tracers", "stars"])
     );
 }
 
@@ -177,10 +180,11 @@ fn an_unknown_grid_or_field_answers_404_naming_it() {
 fn the_tile_format_gives_the_byte_layout_of_each_encoding_the_release_uses() {
     let db = db();
     db.put("files/57a125", r#"{"encoding":{"version":1},"nodes":[]}"#);
+    db.put("files/9b31e0", r#"{"encoding":{"version":1},"nodes":[]}"#);
     let (response, format) = db.get_json("/v1/tile-format", "");
     assert_eq!(response.status, 200, "{format}");
     let encodings = format["encodings"].as_array().unwrap();
-    assert_eq!(encodings.len(), 1, "both domains use version 1");
+    assert_eq!(encodings.len(), 1, "every domain uses version 1");
     assert_eq!(encodings[0]["version"], 1);
     assert!(encodings[0]["header_bytes"].as_u64().unwrap() > 0);
     assert!(
