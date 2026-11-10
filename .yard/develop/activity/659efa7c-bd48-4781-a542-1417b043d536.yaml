@@ -23,7 +23,7 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-10T00:58:19Z
+lastEnded: 2026-11-10T01:13:27Z
 turns:
   - started: 2026-11-09T22:08:27Z
     ended: 2026-11-09T22:08:57Z
@@ -58,4 +58,11 @@ loft:
     agent: main
     started: 2026-11-10T00:58:18Z
     ended: 2026-11-10T00:58:19Z
+    failed: false
+  - commands:
+      - status
+      - check
+    agent: main
+    started: 2026-11-10T01:13:26Z
+    ended: 2026-11-10T01:13:27Z
     failed: false

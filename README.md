@@ -8,6 +8,40 @@ Every value comes from a published catalogue or paper, with its citation. What w
 kept apart from what was estimated or reconstructed, and uncertainties are kept rather than
 dropped.
 
+![The cosmic web around Earth in Univ Explorer, out to 400 Mpc](docs/screenshots/cosmic-web.jpg)
+
+*The cosmic web out to 400 Mpc (1.3 billion light years) around Earth: about six million galaxies,
+quasars and clusters from the surveys, with the names of the large-scale structures. The dark band across the
+middle is the zone of avoidance, where the Milky Way's own disc hides the sky behind it.*
+
+## Built specification-first with Loft
+
+This repository is built with [Loft](https://github.com/Ask-Loft/loft). The specification comes
+first, and the code is held to it.
+
+- **The specification is the contract.** `spec/` describes the three products, with their
+  requirements, acceptance criteria, components and architecture decisions. It is published from
+  `develop` and pinned by `loft.lock.json`; the current publish is sequence 8.
+- **Behaviour changes in the specification first.** A change to `spec/` is checked and approved
+  before any code is written for it. Then the code is built against it, and the tests prove it.
+- **Every criterion is traced to tests.** `loft.trace.yaml` links each of the 671 acceptance
+  criteria to the tests that verify it. A test that changes after its link was accepted fails the
+  gate until the link is reviewed again.
+- **Every branch keeps a record.** `.yard/` holds each branch's Yard Log: its stages and tasks,
+  the questions asked and the answers given, the decisions, review findings and gate results.
+  It is committed with the work.
+- **One gate.** `cargo xtask check` runs:
+  - `fmt` and clippy (pedantic, with no `unwrap`, `panic` or `unsafe`);
+  - a limit of 500 lines per Rust file;
+  - the Rust tests and `cargo deny`;
+  - `loft check`, `loft reconcile` and, on `develop`, `loft verify`;
+  - the explorer's typecheck, tests and build.
+- **End-to-end.** `cargo xtask integration` starts the Worker on fixture releases, then runs its
+  end-to-end tests and the explorer's Playwright tests, which include accessibility checks.
+- **No network in tests.** Tests read recorded provider answers.
+
+`AGENTS.md` has the full list of commands and conventions.
+
 ## The three products
 
 | Product | What it is | Where |
@@ -18,6 +52,17 @@ dropped.
 
 `crates/univ-model` holds the domain model the three share. `clients/tile-decoder` is the
 reference TypeScript decoder of the tile format.
+
+![The Boötes Void chosen from the depth index of structures, with its record](docs/screenshots/bootes-void.jpg)
+
+*The Boötes Void, chosen from the depth index. The index lists the structures outward from Earth
+on one distance axis, each marked as observed, a statistical claim or reconstructed. The record
+gives the void's position, velocity and size as Kirshner et al. published them, with their frame.*
+
+![Betelgeuse's record in Univ Explorer, with its distances and their sources](docs/screenshots/betelgeuse.jpg)
+
+*Betelgeuse's record: the Hipparcos parallax distance beside the researched distances, with their
+uncertainties and the rule that chose between them. Every value names its source.*
 
 ## The data
 
@@ -97,26 +142,6 @@ This starts Univ Server and the explorer together. Open http://127.0.0.1:5317/. 
 own [README](clients/explorer/README.md) covers its controls and how to point it at another
 server.
 
-## How it is built
-
-- **Specification first.** `spec/` is a Loft specification of the
-  three products: requirements, acceptance criteria, components and decisions. It is the
-  contract, published from `develop`. Behaviour changes in the specification first, then in the
-  code.
-- **Traced tests.** `loft.trace.yaml` links every acceptance criterion to the tests that verify
-  it.
-- **One gate.** `cargo xtask check` runs:
-  - `fmt` and clippy (pedantic, with no `unwrap`, `panic` or `unsafe`);
-  - a limit of 500 lines per Rust file;
-  - the Rust tests and `cargo deny`;
-  - the specification checks;
-  - the explorer's typecheck, tests and build.
-- **End-to-end.** `cargo xtask integration` starts the Worker on fixture releases, then runs its
-  end-to-end tests and the explorer's Playwright tests, which include accessibility checks.
-- **No network in tests.** Tests read recorded provider answers.
-
-`AGENTS.md` has the full list of commands and conventions.
-
 ## Layout
 
 | Path | What it holds |
@@ -127,4 +152,5 @@ server.
 | `crates/` | `univ-model`, `univ-ingest`, `univ-api` and `univ-server` |
 | `clients/` | `explorer` and `tile-decoder` |
 | `xtask/` | The gate, integration runs, science checks, benchmarks and `explore` |
-| `.yard/` | Each branch's record of how its work was planned, decided and done |
+| `docs/screenshots/` | The screenshots above |
+| `.yard/` | Each branch's Yard Log |
