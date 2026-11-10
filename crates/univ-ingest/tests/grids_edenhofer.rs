@@ -331,6 +331,8 @@ fn the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_t
     let path = Simulated::new().write(dir.path(), "NEST");
     let definition = common::definition_of("edenhofer-2024-dust");
     assert!(is_grid(&definition));
+    // A grid, though its file is FITS: no table of rows to normalize.
+    assert!(!univ_ingest::normalize::reads_rows(&definition));
     // The whole grid is read from the file the fetch gives, by its name.
     let missing = read_grid(&definition, &[]).unwrap_err();
     assert!(missing.contains("mean_and_std_healpix.fits"), "{missing}");

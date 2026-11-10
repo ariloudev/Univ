@@ -128,9 +128,12 @@ fn file_tables(files: &[RemoteFile]) -> Option<FileTables> {
 
 /// Whether normalization gives `definition` entries: a provider's answers, files that are all
 /// FITS tables or all gzipped CSV tables, a prepared file, or the researched star distances, but
-/// not grids nor the researched structures.
+/// not grids, though their files be FITS, nor the researched structures.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
+    if crate::release::is_grid(definition) {
+        return false;
+    }
     match &definition.access {
         Access::Files { files } => file_tables(files).is_some(),
         Access::Repository { holds, .. } => {
