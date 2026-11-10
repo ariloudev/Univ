@@ -4,9 +4,9 @@
 
 mod common;
 
-use std::path::PathBuf;
-
-use common::{definition_of, entry, normalize_body, normalized_file, normalized_fixture};
+use common::{
+    definition_of, entry, normalize_body, normalized_file, normalized_fixture, workspace,
+};
 use univ_ingest::ranking::RankingRules;
 use univ_model::value::KindOfValue;
 use univ_model::value::KindOfValue::{Estimated, Inferred};
@@ -71,8 +71,7 @@ fn exactly_five_is_estimated_and_a_blank_ratio_is_inferred() {
 
 #[test]
 fn the_definition_s_bound_is_the_ranking_rule_s_prior_led_ratio() {
-    let file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../rules/ranking.yaml");
-    let rules = RankingRules::read(&file).unwrap();
+    let rules = RankingRules::read(&workspace().join("rules/ranking.yaml")).unwrap();
     let definition = definition_of(SOURCE);
     let bounds: Vec<f64> = definition
         .normalization

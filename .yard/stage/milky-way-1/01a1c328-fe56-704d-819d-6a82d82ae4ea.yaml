@@ -10,6 +10,15 @@ versions:
     title: "Review and gate wave 1"
     goal: "/simplify and /code-review findings are fixed, and cargo xtask check and integration pass once"
     status: planned
+  - key: 01a1c34c-cd95-77c1-864f-4f57241d5927
+    at: 2026-11-10T02:32:32Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 1"
+    goal: "/simplify and /code-review findings are fixed, and cargo xtask check and integration pass once"
+    status: active
 blocks:
   - key: 01a1c32a-9ac8-73c6-af9b-d55962515aad
     id: t8-review
@@ -24,3 +33,12 @@ blocks:
         title: "Review, gate and trace wave 1"
         detail: "/simplify and /code-review, the full gate, integration and the trace view."
         state: open
+      - key: 01a1c34c-cd95-77c1-864f-4f586542921a
+        at: 2026-11-10T02:32:32Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate and trace wave 1"
+        detail: "/simplify and /code-review, the full gate, integration and the trace view."
+        state: active

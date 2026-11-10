@@ -12,23 +12,24 @@ use univ_model::release::{Scope, TABLES, valid_in};
 
 use crate::memory_store::MemoryStore;
 
+/// Whether `db` holds the table `name`: a shard bound but never loaded holds none.
+pub fn holds(db: &Connection, name: &str) -> bool {
+    db.query_row(
+        "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
+        [name],
+        |r| r.get::<_, i64>(0),
+    )
+    .unwrap()
+        > 0
+}
+
 /// Every row of every table of [`Scope::PerRelease`] valid in release `n` in `db`, without its
 /// `release` and `retired`, as text, by table.
 pub fn valid_rows(db: &Connection, n: u32) -> BTreeMap<&'static str, Vec<String>> {
     let mut out = BTreeMap::new();
-    // A shard bound but never loaded holds no table.
-    let held = |name: &str| {
-        db.query_row(
-            "SELECT COUNT(*) FROM sqlite_master WHERE name = ?1",
-            [name],
-            |r| r.get::<_, i64>(0),
-        )
-        .unwrap()
-            > 0
-    };
     for table in TABLES
         .iter()
-        .filter(|t| t.scope == Scope::PerRelease && held(t.name))
+        .filter(|t| t.scope == Scope::PerRelease && holds(db, t.name))
     {
         let columns: Vec<&str> = table
             .columns

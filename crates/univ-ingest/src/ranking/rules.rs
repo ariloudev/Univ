@@ -6,6 +6,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use univ_model::ids::SourceId;
 use univ_model::object::{MethodRank, PositionClass};
+use univ_model::value::positive;
 
 use crate::yaml::{FileError, read_checked};
 
@@ -105,8 +106,7 @@ impl RankingRules {
         if !(u.is_finite() && u > 0.0) {
             return bad("too_uncertain_above", "is not a positive number");
         }
-        let ratio = self.prior_led_parallax_ratio;
-        if !(ratio.is_finite() && ratio > 0.0) {
+        if !positive(self.prior_led_parallax_ratio) {
             return bad("prior_led_parallax_ratio", "is not a positive number");
         }
         let mut seen = std::collections::HashSet::new();

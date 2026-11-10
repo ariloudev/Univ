@@ -157,9 +157,7 @@ pub fn built(
 
 /// Cross-matches, lays out the tiles and builds the fixture's next release.
 pub fn build_next(f: &Fixture) -> BuiltRelease {
-    let crossed = cross(f);
-    let tiles = tiles(f, &crossed);
-    built(f, &crossed, &tiles, &f.definitions, &f.structures).unwrap()
+    build_next_within(f, SHARD_BUDGET)
 }
 
 /// [`build_next`] with object shards of `budget` estimated D1 bytes in place of

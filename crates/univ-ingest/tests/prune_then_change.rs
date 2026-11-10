@@ -16,10 +16,10 @@ mod valid_rows;
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use memory_store::{Clock, MemoryStore, pruning, publishing};
+use memory_store::{Clock, MemoryStore, int, pruning, publishing};
 use release_fixture::{Fixture, SHARD_BUDGET, build_next, build_next_within, fixture};
 use univ_model::release::{Scope, TABLES, valid_in};
-use valid_rows::everything_valid;
+use valid_rows::{everything_valid, holds};
 
 const SOURCE: &str = "mcconnachie-2012";
 
@@ -145,20 +145,11 @@ fn shards_of(store: &MemoryStore, n: u32) -> BTreeMap<i64, i64> {
 /// The rows of object `id` that the object shard `db` holds; none in a shard bound but never
 /// loaded, which holds no table.
 fn held_in(db: &rusqlite::Connection, id: i64) -> i64 {
-    let loaded: i64 = db
-        .query_row(
-            "SELECT COUNT(*) FROM sqlite_master WHERE name = 'objects'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
-    if loaded == 0 {
-        return 0;
+    if holds(db, "objects") {
+        int(db, &format!("SELECT COUNT(*) FROM objects WHERE id = {id}"))
+    } else {
+        0
     }
-    db.query_row("SELECT COUNT(*) FROM objects WHERE id = ?1", [id], |r| {
-        r.get(0)
-    })
-    .unwrap()
 }
 
 #[test]
