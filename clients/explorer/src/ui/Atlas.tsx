@@ -37,6 +37,7 @@ export interface Selection {
   structureById: (id: string) => void;
   /** Chooses structure `id` from the list of structures, or lets it go where it is chosen. */
   structureFromList: (id: string) => void;
+  /** Lets go of what is chosen, closing its record, and makes Earth the focus again. */
   close: () => void;
 }
 

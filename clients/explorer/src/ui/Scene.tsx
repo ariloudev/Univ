@@ -70,7 +70,7 @@ export function Scene({
     structure: (id) => selection.structureById(id),
     letGo: (found) => {
       const chosenAlready = isChosen(found, { object: chosenId, structure: structureId });
-      if (chosenAlready) letGo(selection.close, world?.controller);
+      if (chosenAlready) selection.close();
       return chosenAlready;
     },
   });
@@ -109,12 +109,14 @@ export function Scene({
       if (world !== undefined) flyToStructure(world, structures, id);
     },
     structureFromList: (id) => {
-      if (id === structureId) letGo(selection.close, world?.controller);
+      if (id === structureId) selection.close();
       else selection.structureById(id);
     },
     close: () => {
-      choose(undefined);
-      structureChoice.close();
+      letGo(() => {
+        choose(undefined);
+        structureChoice.close();
+      }, world?.controller);
     },
   };
   return (

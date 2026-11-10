@@ -167,6 +167,30 @@ test("lets the chosen object go by a click on its point, making Earth the focus 
   await expect(distance).toHaveText(before);
 });
 
+test("closing a record with its close button lets go, making Earth the focus again", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const distance = page.getByTestId("distance");
+  // An object found is flown to; closing its record brings the focus home.
+  await find(page, "canis MAJOR");
+  await expect.poll(() => earthFromCentre(page)).toBeGreaterThan(3);
+  let before = (await distance.textContent()) ?? "";
+  await page.getByRole("button", { name: "Close the object's panel" }).click();
+  await expect(page.getByRole("region", { name: "The chosen object" })).toHaveCount(0);
+  await expect(page).not.toHaveURL(/object=/);
+  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
+  await expect(distance).toHaveText(before);
+  // A structure chosen from the list is flown to; closing its record brings the focus home.
+  await page.getByRole("navigation", { name: "Panels" }).getByRole("button", { name: "Structures" }).click();
+  await page.getByTestId("structures").getByRole("button", { name: /^Bootes Void/ }).click();
+  await expect(page.getByRole("region", { name: "The chosen structure" })).toBeVisible();
+  await expect.poll(() => earthFromCentre(page)).toBeGreaterThan(3);
+  before = (await distance.textContent()) ?? "";
+  await page.getByRole("button", { name: "Close the structure's panel" }).click();
+  await expect(page.getByRole("region", { name: "The chosen structure" })).toHaveCount(0);
+  await expect.poll(() => earthFromCentre(page)).toBeLessThan(3);
+  await expect(distance).toHaveText(before);
+});
+
 test("finds an object by designation, and says when nothing is found", async ({ page }) => {
   const search = page.getByRole("textbox", { name: /Find an object/ });
   await search.fill("mcconnachie-2012:Sagittarius dSph");

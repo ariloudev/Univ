@@ -327,3 +327,127 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1c2a9-560b-750a-8133-9a37486663a5
+    id: plan-25-plan-fuzzy-growing-beacon-01a1c2a8-e07e-7277-9581-532295e648db
+    kind: plan
+    versions:
+      - key: 01a1c2a9-560b-750a-8133-9a382e7aa790
+        at: 2026-11-09T23:33:59Z
+        revision: 32
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Plan: closing a record returns to Earth; the depth index remembered (`chore/ux-1`)"
+        markdown: |
+          # Plan: closing a record returns to Earth; the depth index remembered (`chore/ux-1`)
+
+          ## Context
+
+          The owner answered "yes x2" to the two open questions. The spec change is committed at `09c67a8` (minor, following their answers):
+
+          - **read-an-object and see-the-structures:** the let-go statements now also cover closing the record. Each gains a criterion: "Closing the … record with its close button lets the … go as a click on its point/name does". So Earth becomes the focus again at the current distance, the record closes, and the address and the chosen marks clear.
+          - **The depth index:** three new criteria. The order and the find text are kept in localStorage each time they change, restored when the explorer opens, and fall back to nearest first with an empty box where nothing is kept or storage is refused.
+
+          Only these steps are planned; everything else stands. Nothing is merged until the owner asks.
+
+          ## 1. Closing lets go (`f-close`)
+
+          - **`Scene.tsx`:** `selection.close` becomes the let-go itself: `letGo(clear, world?.controller)`, where `clear` is today's body (`choose(undefined); structureChoice.close()`).
+            - `OnChoose.letGo` and `structureFromList` then call `selection.close()`.
+            - Both panels' close buttons (`Atlas.tsx`, `onClose={selection.close}`) return to Earth with no change there.
+            - The `Selection.close` doc comment in `Atlas.tsx` says so.
+          - **Unit test:** `letGo.test.ts` already covers `letGo`.
+          - **`e2e/explorer.spec.ts`:** a new test, "closing a record with its close button makes Earth the focus again". Under reduced motion, it finds an object, then closes its panel and polls `earthFromCentre` < 3 with the distance unchanged. It then chooses Bootes Void from the list (flown to), closes the structure's panel, and checks the same.
+
+          ## 2. The depth index remembered (`f-kept`)
+
+          - **New `ui/localState.ts`:** `readLocal(key, storage)`, `writeLocal(key, value | undefined, storage)` and `useLocalState(key, parse, fallback)`.
+            - Every access is in try/catch.
+            - The hook reads once and writes on each set (removing the key for the fallback).
+          - **`storedDrawer.ts`:** becomes a thin use of these, keeping its exports, behaviour and tests (and so its trace links).
+          - **`DepthIndex.tsx`:** the order uses `useLocalState("univ-explorer.structures-order", isOrder, "distance")`, and the find text uses `useLocalState("univ-explorer.structures-find", asText, "")`.
+          - **Tests:**
+            - `localState.test.ts`: read, write, removal, refused storage.
+            - `DepthIndex.test.tsx`: an `afterEach(localStorage.clear)`, plus "keeps the order and the find text across visits" (change, unmount, render again, restored) and "opens nearest first with an empty find box where nothing is kept, or local storage is refused".
+            - The e2e depth index test: after A to Z and typing "void", a reload keeps both.
+
+          ## 3. Trace (`f-trace`)
+
+          Link the 5 new criteria:
+          - the 2 close-button criteria → the new e2e test and `letGo` "closes its record, and then makes Earth the focus again";
+          - the 3 kept-list criteria → `DepthIndex.test.tsx`, `localState.test.ts` and the e2e test.
+
+          Accept after review, and record a `trace` view.
+
+          ## Verification
+
+          - `pnpm check` before each commit.
+          - `cargo xtask integration` once both are in.
+          - Then the review stage as approved:
+            - `/simplify` and `/code-review`;
+            - `cargo xtask check` and `cargo xtask integration`;
+            - close the Yard Log, leaving the branch unmerged.
+        planMode: true
+    responses:
+      - key: 01a1c2c3-1ba6-7445-9fee-c9c932563d9e
+        at: 2026-11-10T00:02:08Z
+        revision: 33
+        by:
+          name: "ariloudev"
+          email: "ariloudev@local"
+        channel: terminal
+        verdict: approved
+  - key: 01a1c2c3-32d0-72af-82d4-535bc737499b
+    id: f-close
+    kind: task
+    versions:
+      - key: 01a1c2c3-32d0-72af-82d4-535f7d6459dc
+        at: 2026-11-10T00:02:14Z
+        revision: 34
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Closing a record lets go and returns to Earth"
+        detail: "`selection.close` becomes the let-go itself (`letGo(clear, world?.controller)`), used by both panels' close buttons, a second click and the list, with a new e2e test for the close buttons. Done when `pnpm check` is green; the e2e test runs in integration."
+        state: active
+  - key: 01a1c2c3-32d0-72af-82d4-535c224f96b0
+    id: f-kept
+    kind: task
+    versions:
+      - key: 01a1c2c3-32d0-72af-82d4-53605ecb13cd
+        at: 2026-11-10T00:02:14Z
+        revision: 34
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "The depth index keeps its order and find text"
+        detail: "localState.ts (`readLocal`, `writeLocal`, `useLocalState`); storedDrawer.ts built on it, keeping its exports; DepthIndex's order and find text kept; unit tests, and the e2e test reloads. Done when `pnpm check` is green."
+        state: open
+  - key: 01a1c2c3-32d0-72af-82d4-535de982b151
+    id: f-trace
+    kind: task
+    versions:
+      - key: 01a1c2c3-32d0-72af-82d4-5361036d55b6
+        at: 2026-11-10T00:02:14Z
+        revision: 34
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Trace the 5 new criteria; integration"
+        detail: "Done when the links are written and accepted, `loft reconcile` reports no TR-001 to TR-006, and `cargo xtask integration` passes."
+        state: open
+  - key: 01a1c2c3-32d0-72af-82d4-535e025a94bf
+    id: followups-issues
+    kind: note
+    versions:
+      - key: 01a1c2c3-32d0-72af-82d4-5362b2e7cbda
+        at: 2026-11-10T00:02:14Z
+        revision: 34
+        by:
+          host: claude-code
+          session: "659efa7c-bd48-4781-a542-1417b043d536"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | How found | Fix | State |
+          |---|---|---|---|---|
+          | | None yet | | | |
