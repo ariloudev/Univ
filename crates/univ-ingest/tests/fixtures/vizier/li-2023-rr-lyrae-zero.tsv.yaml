@@ -1,0 +1,5 @@
+source: li-2023-rr-lyrae
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F88%2Ftable5&-out=GaiaDR3%2CRA_ICRS%2CDE_ICRS%2CDist-Phot%2Ce_Dist-Phot%2CType%2Cr_EBV&-out.max=5&Dist-Phot=0.00
+retrieved: 2026-11-10T03:47:06Z
+sha256: 6167b2d520983b2f616e9125c5abe15d3c592189b66073e9f7e554b43da64a31
+note: the rows whose distance is 0.00, cut to 5

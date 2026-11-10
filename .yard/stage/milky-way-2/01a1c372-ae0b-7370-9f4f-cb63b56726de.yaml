@@ -166,3 +166,33 @@ blocks:
           | 1 | `tiles_cli` expected three domains in the tiles log | its test | The log lists an empty Galaxy tracers domain until a fixture source names it; expectations updated | fixed |
           | 2 | The volume query read a manifest for every listed domain, and the API fixture's bucket had none for Galaxy tracers | `univ-api` query tests (500) | The fixtures put an empty tracers manifest beside the others | fixed |
           | 3 | My task 1 commit ran after a failing `cargo fmt --check`, because a `;` came before `git commit` | review of the command's output | Formatted, linted and amended only on success; commands now chain with `&&` up to the commit | fixed |
+  - key: 01a1c38b-d8b8-7149-a3d2-96b585618f2b
+    id: q-globulars
+    kind: question
+    versions:
+      - key: 01a1c38b-d8b8-7149-a3d2-96b6ff2a3785
+        at: 2026-11-10T03:41:24Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "Baumgardt & Vasiliev 2021's globular cluster distances are not on VizieR. Which source should the globular clusters come from?"
+        header: "Globulars"
+        context: |-
+          The spec names *Baumgardt & Vasiliev 2021 (MNRAS 505, 5957; VizieR J/MNRAS/505/5957)*. That VizieR id answers nothing on the CDS mirrors that respond (IDIA, China-VO), though IDIA already holds Skowron 2025, added in May 2026. CDS in Strasbourg itself times out from here today.
+
+          What exists, checked 2026-11-10:
+
+          | Source | Where | Distances | Terms |
+          |---|---|---|---|
+          | Baumgardt's database, `orbits_table.txt` | people.smp.uq.edu.au/HolgerBaumgardt/globular | Rsun and its error for each of about 165 clusters: the Baumgardt & Vasiliev 2021 distances, 1–3% for most | "(C) Holger Baumgardt, … March 2023" and no licence: no grant |
+          | Vasiliev & Baumgardt 2021, J/MNRAS/505/5978 | VizieR | Mean Gaia EDR3 parallax per cluster, measured, with systematics. Under the ranking rule's 10% parallax limit, **64 of 170** place; 115 within 20% | VizieR's, as every VizieR source |
+          | Harris (1996, edition of 1999), VII/202 | VizieR | Rsun for about 150 clusters, **no uncertainties** | VizieR's |
+        options:
+          - label: "Baumgardt, pending"
+            detail: "The catalogue you chose, with every cluster placed at its published distance and error. Its redistribution is `permission_pending` until Holger Baumgardt grants it, built and published beside the request like the other pending sources; you'd send the request. The spec's VizieR id is corrected to the database URL."
+            recommended: true
+          - label: "Gaia parallaxes"
+            detail: "Vasiliev & Baumgardt 2021 from VizieR: each cluster's parallax kept as measured, and placed only under the parallax rule, as the masers are. Clean terms, but 106 of 170 clusters (mostly the far halo ones) stay unplaced."
+          - label: "Parallaxes + Harris"
+            detail: "Both VizieR sources joined by cluster name: the Gaia parallax where it is within 10%, else Harris's Rsun as an estimated distance with none reported. Every cluster placed, but from a 25-year-old compilation without errors for the far ones."

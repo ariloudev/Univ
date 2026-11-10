@@ -72,12 +72,18 @@ cross_identifications:
       Gaia DR3 keeps the EDR3 source_id of every source (Gaia Collaboration, Vallenari et al.
       2023, A&A 674, A1), so the EDR3 ids of Bailer-Jones et al. 2021 (AJ 161, 147) and GCNS
       (Gaia Collaboration, Smart et al. 2021, A&A 649, A6) name the same sources as Gaia DR3.
-      The Gaia DR3 to Hipparcos-2 table gives the Gaia source_id of each pair.
+      The Gaia DR3 to Hipparcos-2 table gives the Gaia source_id of each pair. Skowron et al.
+      2025 (ApJS 278, 57; ReadMe, GaiaDR3, "Gaia source ID") and Li et al. 2023 (ApJ 944, 88;
+      ReadMe, GaiaDR3, "Unique source identifier for Gaia DR3") name each Cepheid and RR Lyrae
+      star by its Gaia DR3 source_id, so each joins the Gaia DR3 star it is, where that star is
+      below G = 14 (normalize-records).
     members:
       - { source: gaia-dr3-bright, field: identifier }
       - { source: gcns, field: identifier }
       - { source: bailer-jones-2021, field: identifier }
       - { source: gaia-dr3-hipparcos2, field: identifier }
+      - { source: skowron-2025-cepheids, field: identifier }
+      - { source: li-2023-rr-lyrae, field: identifier }
   - scheme: hip
     basis: >-
       The HIP number of Hipparcos-2 (van Leeuwen 2007, A&A 474, 653), given in the Gaia DR3

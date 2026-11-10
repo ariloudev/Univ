@@ -1,0 +1,89 @@
+id: li-2023-rr-lyrae
+title: "Li 2023 RR Lyrae"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJ/944/88/table5"
+  constraints: []
+  # GaiaDR3 (I19, never blank) in 12 slices, one per level-0 HEALPix pixel, as gcns is sliced:
+  # source_id / 34359738368 is the level-12 HEALPix index (Gaia documentation).
+  slices: { column: GaiaDR3, from: 0, to: 6917529027641081855, step: 576460752303423488 }
+  rows: 135873
+cuts:
+  - "No server-side cut: every RR Lyrae star of table5 (the final sample), 135,873 by the ReadMe and as served by IDIA on 2026-11-10."
+  - >-
+    The sample holds the RR Lyrae stars of the Large and Small Magellanic Clouds, whose
+    distances Li et al. derive from it: 28,754 rows lie beyond 40 kpc. They are kept, as
+    published, and drawn with the Galaxy's tracers.
+  - "Dist-Phot and e_Dist-Phot are in kpc (ReadMe). 18 rows give a distance of 0.00, left out as unusable."
+columns:
+  - { column: GaiaDR3, field: identifier, unit: dimensionless }
+  - { column: RA_ICRS, field: right_ascension, unit: degree }
+  - { column: DE_ICRS, field: declination, unit: degree }
+  - { column: Dist-Phot, field: distance, unit: kiloparsec }
+  - { column: e_Dist-Phot, field: distance_error, unit: kiloparsec }
+  - { column: Type, field: quality, unit: dimensionless }
+  - { column: r_EBV, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 2016.0
+citation: >-
+  Li X.-Y., Huang Y., Liu G.-C., Beers T.C., Zhang H.-W. 2023, "Photometric metallicity and
+  distance for the RR Lyrae stars of Gaia DR3", ApJ 944, 88. 2023ApJ...944...88L. VizieR
+  catalogue J/ApJ/944/88, doi:10.26093/cds/vizier.19440088.
+reference: { bibcode: "2023ApJ...944...88L" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Li et al. 2023, ApJ 944, 88.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The AAS
+    terms were not checked, and "scientific context" is not defined for a public hobby release.
+    Provisional: judged again before any public deployment.
+scale_domain: galaxy_tracers
+object_kind: rr_lyrae_star
+# VizieR's mirrors, checked 2026-11-10: IDIA holds the table and answered first; CDS timed out
+# from here that day; China-VO and NAO lag behind the newest catalogues.
+mirrors:
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+flags:
+  r_EBV:
+    cite: "ReadMe of J/ApJ/944/88 (VizieR), Byte-by-byte Description of file table5.dat, r_EBV, Note (1)"
+    values:
+      sfd98: "E(B-V) from Schlegel et al. 1998."
+      c22: "E(B-V) from Clementini et al. 2023."
+      s21: "E(B-V) from Skowron et al. 2021."
+      h10: "E(B-V) from Harris 2010."
+normalization:
+  distances:
+    - value: Dist-Phot
+      error: { symmetric: e_Dist-Phot }
+      kind: primary_indicator
+      method: rr_lyrae
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        J/ApJ/944/88 ReadMe: Dist-Phot is the "Photometric distance" and e_Dist-Phot its
+        uncertainty, from the G-band absolute magnitude GMag that the paper derives through a
+        G-band absolute magnitude-metallicity relation, the metallicity from the
+        P-R21-[Fe/H] and P-Phi31-R21-[Fe/H] relations of the abstract.
+  rules:
+    - when: { column: Dist-Phot, is: ["0"] }
+      leave_out: unusable_value
+      basis: >-
+        A distance of 0.00 kpc, on 18 rows as served on 2026-11-10, cannot stand for a star:
+        the ReadMe's range [0/146] admits it but gives no meaning to it.
