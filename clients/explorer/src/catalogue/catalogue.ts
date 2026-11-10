@@ -22,8 +22,10 @@ import {
   rankOf,
   treeOf,
 } from "./lod.ts";
-import { KINDS } from "../scene/kinds.ts";
+import type { Rgba } from "../scene/drawing.ts";
+import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
+import { TRACERS_DOMAIN, tracerColour } from "../scene/tracers.ts";
 import { type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
@@ -57,6 +59,14 @@ export type Credit = ManifestSource & { domain: string };
 
 /** The sources `domain`'s points may name: one more than its manifest's highest index. */
 const sourcesOf = (domain: Domain): number => Math.max(0, ...domain.manifest.sources.map((s) => s.index)) + 1;
+
+/** A source of the Galaxy's tracers in the key: its colour and its points drawn. */
+export interface TracerLine {
+  id: string;
+  title: string;
+  colour: Rgba;
+  points: number;
+}
 
 /** A batch's points counted by kind of value, source and whether coloured, so that what is
  * turned off is counted out by cell rather than point by point; and, where the view is culled
@@ -117,8 +127,13 @@ export class Catalogue implements DrawnDetail {
   private viewedFocal = 0;
   /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
-  /** Stars drawn in the colour of their colour index, and in grey for want of one. */
-  readonly stars = { coloured: 0, grey: 0 };
+  /** Stars drawn in the colour of their colour index, and in grey for want of one; and of them,
+   * those whose preferred distance is inferred, drawn half as opaque. */
+  readonly stars = { coloured: 0, grey: 0, inferred: 0 };
+  /** The Galaxy's tracers drawn, by their source's index in the domain's manifest. */
+  private readonly tracerPoints: number[] = [];
+  /** The Galaxy's tracers drawn of each kind of value, by its index in `KINDS`. */
+  readonly tracerKinds = [0, 0, 0, 0];
   /** The points counted of each domain. */
   private readonly domainPoints = new Map<string, number>();
   /** Each drawn tile's points by cell, and which lie inside the volume the view is culled to, by
@@ -357,17 +372,35 @@ export class Catalogue implements DrawnDetail {
     const { sources, cells } = histogram;
     cells.forEach((n, at) => {
       const kind = Math.floor(at / 2 / sources);
-      if (n === 0 || !isPointShown(this.masks, domain, Math.floor(at / 2) % sources, kind)) return;
-      this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
+      const source = Math.floor(at / 2) % sources;
+      if (n === 0 || !isPointShown(this.masks, domain, source, kind)) return;
+      if (domain === TRACERS_DOMAIN) this.countTracer(source, kind, by * n);
+      else this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
       this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * n);
     });
   }
 
   /** Counts `n` points into the stars' colours, or into their kind of value. */
   private count(star: boolean, kind: number, coloured: boolean, n: number): void {
-    if (!star) this.kinds[kind] = (this.kinds[kind] ?? 0) + n;
-    else if (coloured) this.stars.coloured += n;
+    if (!star) {
+      this.kinds[kind] = (this.kinds[kind] ?? 0) + n;
+      return;
+    }
+    if (coloured) this.stars.coloured += n;
     else this.stars.grey += n;
+    if (kind === KIND_INDEX.inferred) this.stars.inferred += n;
+  }
+
+  /** Counts `n` tracers of `source` and `kind` (their indices). */
+  private countTracer(source: number, kind: number, n: number): void {
+    this.tracerPoints[source] = (this.tracerPoints[source] ?? 0) + n;
+    this.tracerKinds[kind] = (this.tracerKinds[kind] ?? 0) + n;
+  }
+
+  /** Each source of the Galaxy's tracers, its colour and its points drawn. */
+  tracers(): TracerLine[] {
+    const sources = this.domains.get(TRACERS_DOMAIN)?.manifest.sources ?? [];
+    return sources.map((s) => ({ id: s.id, title: s.title, colour: tracerColour(s.index), points: this.tracerPoints[s.index] ?? 0 }));
   }
 
   /** Counts again, once, every drawn point that `masks` leaves on (choose-what-is-drawn). */
@@ -381,6 +414,9 @@ export class Catalogue implements DrawnDetail {
     this.kinds.fill(0);
     this.stars.coloured = 0;
     this.stars.grey = 0;
+    this.stars.inferred = 0;
+    this.tracerPoints.length = 0;
+    this.tracerKinds.fill(0);
     this.domainPoints.clear();
     for (const batch of [...this.drawn.values(), ...this.kept.values()]) this.tally(batch, 1);
     this.events.onChange();

@@ -137,7 +137,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
         {world === undefined ? null : (
           <>
             <ScaleBar world={world} />
-            <KeyBar catalogue={() => world.catalogue} frame={world.frame} release={release} />
+            <KeyBar catalogue={() => world.catalogue} frame={world.frame} release={release} dust={show.dust?.map} />
           </>
         )}
         {structures.problem === undefined ? null : (

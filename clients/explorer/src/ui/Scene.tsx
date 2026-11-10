@@ -7,8 +7,9 @@ import type { Domain } from "../catalogue/tiles.ts";
 import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
 import { choicesOf } from "./show/choices.ts";
 import { Atlas, type AtlasPlace, type Selection } from "./Atlas.tsx";
-import { useHidden } from "./hidden.ts";
+import { type Hidden, useHidden } from "./hidden.ts";
 import { useOutlines } from "./outlinesSwitch.ts";
+import { useDustMap } from "./useDustMap.ts";
 import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
@@ -48,6 +49,19 @@ function useCulledStructure(
   return { detail, inside: volume === undefined ? undefined : { on: inside, approximate: volume.approximate, set: setInside } };
 }
 
+/** Applies what is hidden of the points and the level of detail to `world`'s catalogue. */
+function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, levelOfDetail: boolean): void {
+  // Only on a change of what points belong to: a kind of structure turned off counts no point.
+  const { domain, source, kind } = hidden;
+  useEffect(() => {
+    if (world !== undefined) hide(world, { domain, source, kind }, domains);
+  }, [world, domains, domain, source, kind]);
+  // `domains` is read once the catalogue is made, so that it starts as the switch stands.
+  useEffect(() => {
+    world?.catalogue?.setLevelOfDetail(levelOfDetail);
+  }, [world, domains, levelOfDetail]);
+}
+
 /** The view of `release`: the canvas, its overlay, and the rail, margins and bottom bar about it,
  * with its parts of the top bar, all in `place`; its tiles at the detail the view needs, or every one where `levelOfDetail` is
  * off. */
@@ -75,16 +89,9 @@ export function Scene({
   /** Whether `target` is what is chosen, though its record is still being read. */
   const chosenAlready = (target: Target) => isChosen(target, { object: chosenId, structure: structureId });
   const [hidden, apply] = useHidden();
-  // Only on a change of what points belong to: a kind of structure turned off counts no point.
-  const { domain, source, kind } = hidden;
-  useEffect(() => {
-    if (world !== undefined) hide(world, { domain, source, kind }, domains);
-  }, [world, domains, domain, source, kind]);
-  // `domains` is read once the catalogue is made, so that it starts as the switch stands.
-  useEffect(() => {
-    world?.catalogue?.setLevelOfDetail(levelOfDetail);
-  }, [world, domains, levelOfDetail]);
+  usePointSettings(world, domains, hidden, levelOfDetail);
   const outlines = useOutlines();
+  const dust = useDustMap(release, world, rotations);
   const structures = useStructures(release, world, rotations, structureId, hidden.structure, outlines[0]);
   const { detail, inside } = useCulledStructure(world, domains, rotations, structures, structureChoice);
   const choices = useMemo(() => choicesOf(domains, structures.list), [domains, structures.list]);
@@ -127,7 +134,7 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onApply: apply }}
+      show={{ choices, hidden, onApply: apply, dust }}
       outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">

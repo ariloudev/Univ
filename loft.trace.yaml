@@ -230,7 +230,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
       - file: "crates/univ-ingest/tests/definitions.rs"
         name: "every_source_has_a_valid_definition"
         body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
@@ -1085,7 +1085,7 @@ links:
         body: 659553873f6376074d7f92ce3906814d824bac5c8611b736f669347867d973d1
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
   - node: 01a1c319-7860-76e8-92ac-c614a12c8ab8
     reviewed: fa2dacdbdbb0faaca7cc4ef6ece519185d1bbea62dfbbec9b8378cef1e0f3141
     tests:
@@ -1094,7 +1094,7 @@ links:
         body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
   - node: 01a1c319-7860-76e8-92ac-c6153bd22a56
     reviewed: 2b5b206161c6ed2e136e5a75b11ff860af61422e8231fe559749d287737335c0
     tests:
@@ -1103,19 +1103,19 @@ links:
         body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
   - node: 01a1c319-7860-76e8-92ac-c6161d503573
     reviewed: 2348a54d971060421fd926e83b5072198156348b1b0d89d7f95ddfae16d9a1f5
     tests:
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
   - node: 01a1c319-7860-76e8-92ac-c617cbb3fe81
     reviewed: 1e4287d290f4ff120e1ceec9f92cd92caf52a0ac32216e4a4a23f1b8465c18f1
     tests:
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_mean_and_its_standard_deviation_are_reconstructed_in_the_source_s_unit_and_say_how"
         body: 0d41529d9e99c6cb8b9728efbfe345d982df2ea74ce43d4089c5a5fb26814b42
@@ -2948,7 +2948,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/grids_edenhofer.rs"
         name: "the_release_writes_the_mean_and_its_deviation_named_beside_it_the_same_from_the_same_file"
-        body: 384525508517e813960a511168c46e76d801e9870e5cf74276b60e49c29c6210
+        body: f14dd2d1ec0cfb4d429e6af1679b59d84d1a9f7bcca06395611a3197ac204ecf
       - file: "crates/univ-ingest/tests/release_grids.rs"
         name: "a_grid_is_written_as_its_header_and_float_samples_in_its_own_layout"
         body: ca5253bf3506efa2476d4b6b5a68d58c2b9520c6ddc867a1de8c11d3d13e31ac
@@ -4263,6 +4263,45 @@ links:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "name the frame of the axes, the origin, the units and the cosmology"
         body: 963fe1464b95e0bc2280138c5fea671fb3ec5df7bf46beb53f94c0e23cd5d28b
+  - node: 01a1c319-7860-76e8-92ac-c5e61e66e5d3
+    reviewed: 40c240fc5b3e6d5a0dc9dc7e76bb647c559a4e58ffe51e5bc666ae0de1e18c24
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "gives each source a colour apart from every star temperature's, the stars' grey, the galaxies' blue and each other"
+        body: 07f004f5819d80842c3d3b6cb37982bd5160c8f82bbc51612ff0fd23bb0c84d7
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "has a colour for each of the seven sources the domain's manifest lists"
+        body: ae3eadf471da428e285f30816eb1d019c89e66a3c8500a28932dba8717ccd69d
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "gives each point of the Galaxy's tracers its source's colour"
+        body: 1801f9ad3f32269177db125484b685c68b04d64277469a9fa263f909d1948c85
+  - node: 01a1c319-7860-76e8-92ac-c5e7f392df4f
+    reviewed: 574d124453d02e4eb3a82439c7e33e0212fb6d7c71020599b581f225ba5b38de
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "name each source of the Galaxy's tracers in its colour, with its points drawn"
+        body: f05af11a072f958d00813fbf70be3ecbaff1146b58203c53d3df1480c226d606
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "counts the Galaxy's tracers by source, each in its source's colour, and their kinds of value apart from the other points"
+        body: 8da4da8874ccdbb56894d5a52a0b717c887381e937a8e952417ee3860427af7a
+  - node: 01a1c319-7860-76e8-92ac-c5e864b8c262
+    reviewed: 723a83a1ebcef88b8b08b9a8aaefe4d9e812fa0cc9e82a42cc1ccd2e1f657833
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "draws a tracer twice the size of a star, and every other point a star's size"
+        body: 8aee334875665f2c25af9cfd4b83351420ca394b3d4c88dad357a239964693d4
+  - node: 01a1c319-7860-76e8-92ac-c5ea87f31404
+    reviewed: fa4f6dd35922db3353b711362c799c17215a793feeb2cca68ee49e98b11ac941
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "draws a star whose preferred distance is inferred half as opaque as one of the same colour"
+        body: 08b8e84edbd40b7f863a835e79e7360a8ff739ccca7c4c2e1501eadb872c4f58
+  - node: 01a1c319-7860-76e8-92ac-c5ebab7e87a4
+    reviewed: afcaff8bd2735fd0b8bee1edff3cae32e0f73e3ee01f14100cfdc5aeb1717b40
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "say that fainter stars have inferred distances, and how many"
+        body: 0a30f74d64535c370c3ef1a2cd0990fbc82c6c310fd5ec3a4e75229d83273fca
   - node: 01a1a497-e843-728a-bce8-40155a522828
     reviewed: 66744c39f5557baae7d2c96f2896819a4b59b904b78a2c2e075e5f05e28f7799
     tests:
@@ -5057,7 +5096,7 @@ links:
         body: de6d5943d12c28517b35f2e813b9cecba013105585e76097b3977e16e708b296
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the key and the credits in its bottom bar once the catalogue is read"
-        body: 1cafa2982cca254faa4f029765cac523300a1038a98f37ef054de5cfa78186f6
+        body: 152916563d1a2f6f64c90c2b46c841f859c5a216abf75b6b1c15a59db9976c46
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
         body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
@@ -5130,6 +5169,69 @@ links:
       - file: "clients/explorer/src/ui/names.test.tsx"
         name: "names a structure in italic in the hover label, and an object in upright type there and in its panel"
         body: c9a83f1a0d1480992ae15245ce2faf1fca5b8477dfeada6318331e0ae8a69644
+  - node: 01a1c319-7860-76e8-92ac-c5ee13abaee8
+    reviewed: 804fbc945aab820fa6c45ce54254812458b811a8955151d52c4043e4b8f8b611
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "holds a switch for the dust map, off as the view opens, that turns it on"
+        body: ce2b0f9038a0eafef901e52c6707633f674b875784e664d047afd2fe51bda3ea
+      - file: "clients/explorer/src/ui/useDustMap.test.ts"
+        name: "is off unless the address turns it on, and reads nothing while off"
+        body: 80fd9a651fccc6dae90cdc97a1f51d5de8fd01dc9418ae6b3223093d7ee0340a
+  - node: 01a1c319-7860-76e8-92ac-c5efac2d49c1
+    reviewed: efc5637ed7f808c8943c0382adea84790947270f0a3a7fe276d005ee4f7ccfad
+    tests:
+      - file: "clients/explorer/src/ui/useDustMap.test.ts"
+        name: "turned on, reads the release's map, draws it placed by the galactic rotation, and is kept on in the address"
+        body: dc0d76ce77828aaa6bde093eaf9ec52755f85074b71494a57b8393d0910a1ee4
+      - file: "clients/explorer/src/ui/useDustMap.test.ts"
+        name: "starts on where the address turns it on, as after a reload"
+        body: f9297ccb2a04888f4c9ad367b1c2962585717e4c1e054c5b715c5db134cdf66d
+  - node: 01a1c319-7860-76e8-92ac-c5f0e43e42f5
+    reviewed: 19b39fe462ac94e1c35d366bf255c4119fc8bfba2bfe51d0785c4290578412ce
+    tests:
+      - file: "clients/explorer/src/scene/dustGrid.test.ts"
+        name: "lies at the galactic position of each place in the view, however the eye is turned"
+        body: c1a94c015072c55b2228a1eb778872635107a2f2eac4dd3b3c3c0237b942bb7b
+  - node: 01a1c319-7860-76e8-92ac-c5f17f0c7842
+    reviewed: 5d967a4bdb72b5c8eb5e890f564ecb3b44a3ecfd7b0b4f97d9400d2ddf0a7316
+    tests:
+      - file: "clients/explorer/src/scene/dustGrid.test.ts"
+        name: "averages blocks of 2 × 2 × 2 cells, X fastest, a cell of no data counting as no dust"
+        body: 87ff10ae0f725b1ddd3ff9e26049693ebc460af971e08738b2b9dbe4fb440ef1
+  - node: 01a1c319-7860-76e8-92ac-c5f2b6cadee8
+    reviewed: 28d8e1ad6ac8df66e6329f5e126d2351695e25b2d8019ed369b00c205c54663a
+    tests:
+      - file: "clients/explorer/src/scene/dustGrid.test.ts"
+        name: "dims a star behind a cloud by the dust between it and the eye, and not one in front of it"
+        body: c0df01579ab347b17a859d2b69c21e4e437650c65822f1eda1121dbd1409e548
+  - node: 01a1c319-7860-76e8-92ac-c5f307a24b13
+    reviewed: 3a587f950e500b6762dccfb04c514392c0344889089d6b0209c18ebe10ea60ef
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "name the dust map's source and unit and say its values are reconstructed, while it is drawn"
+        body: d364dd07a9aa8139023b10f999db5c408f27f00a24f07a18a7b5e3d12f1782a6
+  - node: 01a1c319-7860-76e8-92ac-c5f48c67d88a
+    reviewed: b624a28070b921e0a43f5bf6deef2a45363cc16222513195151418f8b936a21a
+    tests:
+      - file: "clients/explorer/src/api/dust.test.ts"
+        name: "is fetched once a release, its header and its mean density, and kept"
+        body: 21c5f24e3d09604e4745fbd4cf56ed5a557b9bc1b236c9df5076fcb67713ea3a
+  - node: 01a1c319-7860-76e8-92ac-c5f62e251c2d
+    reviewed: 61da43ca2cc84f2c7def732527be829541723607619f6cbc857facf9127102ba
+    tests:
+      - file: "clients/explorer/src/ui/useDustMap.test.ts"
+        name: "turns itself off where the map cannot be read, naming the grid and the error, and draws no dust"
+        body: 6b19d78e9998e77cb532f28b1c1c2392306209c6493c964bd697da001e946512
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens on an address that turns the dust map on, and says why it cannot be drawn"
+        body: d1f6312a3a1d6b0a5dbcb10ad1111b63f73c3537412a8d8d60a5bee6519016db
+  - node: 01a1c319-7860-76e8-92ac-c5f7fb8144d4
+    reviewed: a1d8fb1008a504451fce48c4fbf6969f665c54a06538f89c1f406008bc1de972
+    tests:
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "turns the dust map on from the Show drawer, and, the release holding no dust grid, turns it off again saying why, the points still drawn, without a WebGL error"
+        body: 757d5c40dd9831886cdba792e8697582671a5d05b155bf31b589a4860cc1c848
   - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
     reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
     tests:

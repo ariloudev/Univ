@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ExplorerManifest } from "../api/schemas.ts";
 import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures.ts";
 import { starBytes } from "../scene/starColour.ts";
+import { tracerBytes } from "../scene/tracers.ts";
 import { shuffled } from "./shuffle.ts";
 import { MPC_PER, TileFailed, batchOf, tilesOf } from "./tiles.ts";
 
@@ -93,6 +94,40 @@ describe("a tile", () => {
         expect([...stars.bytes.slice(i * 4, i * 4 + 4)]).toEqual([...starBytes({ index: (stars.hundredths[i] ?? 0) / 100, bands })]);
       });
     }
+  });
+
+  it("draws a star whose preferred distance is inferred half as opaque as one of the same colour", async () => {
+    const domain = domainOf("stars");
+    const raw = fixtureTiles("stars")[0];
+    const tile = domain.tiles.find((t) => t.address === raw?.address);
+    if (raw === undefined || tile === undefined) throw new Error("no fixture tile");
+    // The same tile with its first point's kind of value, the byte at 48 + 16n, made inferred.
+    const bytes = bytesOf(raw.hex);
+    const n = raw.points.length;
+    bytes[48 + 16 * n] = domain.manifest.encoding.kinds.indexOf("inferred");
+    const sha256 = Buffer.from(await crypto.subtle.digest("SHA-256", bytes)).toString("hex");
+    const changed = { ...tile, node: { ...tile.node, sha256 } };
+    const [before, after] = [await batchOf(domain, tile, bytesOf(raw.hex)), await batchOf(domain, changed, bytes)];
+    const first = raw.points[0]?.id ?? -1;
+    const [i, j] = [indexById(before)(first), indexById(after)(first)];
+    const rgba = (batch: typeof before, k: number) => [...(batch.colours ?? []).slice(k * 4, k * 4 + 4)];
+    const [kept, halved] = [rgba(before, i), rgba(after, j)];
+    expect(halved.slice(0, 3)).toEqual(kept.slice(0, 3));
+    expect(halved[3]).toBe(Math.round((kept[3] ?? 0) / 2));
+    expect(before.kinds[i]).not.toBe(after.kinds[j]);
+  });
+
+  it("gives each point of the Galaxy's tracers its source's colour", async () => {
+    // A tile of another domain read as the tracers': its points coloured by their sources.
+    const domain = domainOf("cosmic_web");
+    const tracers = { ...domain, name: "galaxy_tracers" };
+    const raw = fixtureTiles("cosmic_web")[0];
+    const tile = domain.tiles.find((t) => t.address === raw?.address);
+    if (raw === undefined || tile === undefined) throw new Error("no fixture tile");
+    const batch = await batchOf(tracers, tile, bytesOf(raw.hex));
+    expect(batch.stars).toBeUndefined();
+    expect([...(batch.colours ?? [])]).toEqual([...tracerBytes(batch.sources)]);
+    expect((await batchOf(domain, tile, bytesOf(raw.hex))).colours).toBeUndefined();
   });
 
   it("keeps its stars' kinds of value where its manifest lists no colour bands", async () => {

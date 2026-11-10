@@ -1,0 +1,25 @@
+key: 01a1c470-d177-779b-baac-540a6646d3b8
+id: w4-review
+versions:
+  - key: 01a1c470-d177-779b-baac-5417753e59ae
+    at: 2026-11-10T07:51:30Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 4"
+    goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
+    status: planned
+blocks:
+  - key: 01a1c470-d177-779b-baac-541412f8af93
+    id: w4-t9
+    kind: task
+    versions:
+      - key: 01a1c470-d177-779b-baac-54212a87de4e
+        at: 2026-11-10T07:51:30Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate, trace and merge wave 4"
+        state: open

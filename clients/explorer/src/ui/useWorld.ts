@@ -132,7 +132,7 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.stars?.bytes, slice: batch.tile.slice });
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours: batch.colours, slice: batch.tile.slice });
       // Picking tests a sphere about the tile's centre: the one holding the points' own.
       const radius = norm(sub(extent.centre, centre)) + extent.radius;
       world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
