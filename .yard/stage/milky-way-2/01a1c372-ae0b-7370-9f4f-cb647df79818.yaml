@@ -19,6 +19,15 @@ versions:
     title: "Review and gate wave 2"
     goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
     status: active
+  - key: 01a1c43e-7689-722f-8220-e0729a94c2b1
+    at: 2026-11-10T06:56:30Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 2"
+    goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
+    status: done
 blocks:
   - key: 01a1c372-ae0b-7370-9f4f-cb6c342c741e
     id: w2-t7
@@ -42,6 +51,15 @@ blocks:
         title: "Review, gate, trace and merge wave 2"
         detail: "/simplify and /code-review in parallel."
         state: active
+      - key: 01a1c43e-7689-722f-8220-e071c5406ba2
+        at: 2026-11-10T06:56:30Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate, trace and merge wave 2"
+        detail: "Review findings fixed in 5862874 and a74c9d7. Integration passed on 22cc4e7. cargo xtask check passed 13 gates on 31995aa, loft verify skipped off develop. Trace recorded."
+        state: done
   - key: 01a1c42a-da05-71a1-873d-b033e576aefc
     id: w2-review-issues
     kind: note
@@ -90,3 +108,58 @@ blocks:
 
           The gate and integration run again on `22cc4e7`.
         tone: warning
+      - key: 01a1c43c-7459-7012-ae01-eee2f0d1f3f2
+        at: 2026-11-10T06:54:18Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Gate and integration runs"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | `matching/rules.rs` reached 511 lines, over the 500-line rule | gate run 1, `lines` | The rules' checks moved to `matching/check.rs`, in `22cc4e7` | fixed |
+          | 2 | The explorer's e2e test expected "2 of 3 domains" | integration run 1 | Expects "3 of 4 domains". Integration run 2 passed on `22cc4e7`: 21 explorer tests and the Worker's tests | fixed |
+          | 3 | The changed e2e test's three links needed accepting again | gate run 2, `loft reconcile` | Accepted, in `52aeec8` | fixed |
+          | 4 | `normalize.rs` still expected Mpc for every non-star source, the rule the review fixed | gate run 3, `test` | Expects pc for stars and the Galaxy's tracers | fixed |
+          | 5 | `release_cli` counted 3 tiling items, 3 manifests and 36 files | `cargo test --workspace --no-fail-fast`, run once to find every failure behind #4 | 4, 4 and 37 | fixed |
+
+          I should have run the test targets that read every domain (`normalize`, `release_cli`) when I added the fourth domain. Gate run 4 is on `31995aa`. Integration needs no rerun: since run 2 only tests and trace links changed.
+        tone: warning
+  - key: 01a1c43e-7689-722f-8220-e06fbc92bbb3
+    id: w2-trace
+    kind: loft
+    versions:
+      - key: 01a1c43e-7689-722f-8220-e070e80321b6
+        at: 2026-11-10T06:56:30Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: trace
+        note: "Wave 2 links its ten criteria: the five tracer sources, the tracer domain they name, the kind of object, pulsation types, the Cepheid/RR Lyrae and cluster distances, maser parallaxes and the Gaia join. It restores AC-91, AC-92 and AC-166, which wave 1 left unverified. The 22 still unlinked are waves 3 (dust map) and 4 (drawing)."
+        base: "product/milky-way"
+        recorded:
+          commit: "31995aa53687ec25a45905b7e587c6b22405eff7"
+          branch: "stage/milky-way-2"
+          loft: 2.3.0
+          at: 2026-11-10T06:56:30Z
+        report: |
+          {
+            "base": "product/milky-way",
+            "commit": "8a5b69c90ffa793291c729284254bda3b510693a",
+            "counts": {
+              "features": 0
+            },
+            "features": [],
+            "leftOut": {},
+            "reconcile": {
+              "accepted": [],
+              "errors": [],
+              "inScope": 712,
+              "linked": 690,
+              "outcome": "passed",
+              "recorded": 0,
+              "schema": "loft-reconcile/3"
+            }
+          }
