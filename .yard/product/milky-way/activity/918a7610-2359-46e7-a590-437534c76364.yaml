@@ -23,13 +23,24 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-10T01:36:36Z
+lastEnded: 2026-11-10T01:52:59Z
 turns:
   - started: 2026-11-10T01:25:34Z
+    ended: 2026-11-10T01:37:44Z
+  - started: 2026-11-10T01:41:22Z
+subagents:
+  - agent: aa5d20add36905b30
+    type: Explore
+    started: 2026-11-10T01:37:39Z
+    ended: 2026-11-10T01:41:22Z
+plan:
+  - started: 2026-11-10T01:37:42Z
+    ended: 2026-11-10T01:52:59Z
 spec:
   - started: 2026-11-10T01:33:55Z
     ended: 2026-11-10T01:35:18Z
   - started: 2026-11-10T01:35:46Z
+    ended: 2026-11-10T01:37:42Z
 loft:
   - commands:
       - render

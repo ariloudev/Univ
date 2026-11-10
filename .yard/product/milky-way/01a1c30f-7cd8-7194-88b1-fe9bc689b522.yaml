@@ -19,3 +19,12 @@ versions:
     title: "Wave: Galaxy tracer catalogues"
     goal: "A release holds Hunt & Reffert open clusters, Gaia DR3 Cepheids and RR Lyrae, Baumgardt & Vasiliev globulars and Reid 2019 masers, each with its distance kind, and the explorer shows them"
     status: planned
+  - key: 01a1c328-d208-77b0-8e1b-6a9499b3a8da
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 2: Galaxy tracers domain and sources"
+    goal: "A fourth scale domain, Galaxy tracers, holds Hunt & Reffert, Baumgardt & Vasiliev, Skowron, Li and Reid objects, tiled, served and listed, merged into product/milky-way"
+    status: planned

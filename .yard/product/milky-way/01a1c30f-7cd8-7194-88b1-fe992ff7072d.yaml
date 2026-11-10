@@ -19,6 +19,15 @@ versions:
     title: "Specify the deeper Milky Way"
     goal: "spec/ supersedes the bright-stars decision with G < 14, flagged prior-dominated distances and the four tracer families, approved and committed"
     status: active
+  - key: 01a1c31a-3cab-7242-bbe3-d671df31588e
+    at: 2026-11-10T01:37:19Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Specify the deeper Milky Way"
+    goal: "spec/ supersedes the bright-stars decision with G < 14, flagged prior-dominated distances and the four tracer families, approved and committed"
+    status: done
 blocks:
   - key: 01a1c315-58d0-7641-ab12-9ec9f84d6117
     id: sources-checked
@@ -2322,3 +2331,21 @@ blocks:
           email: "contact@askloft.ai"
         channel: terminal
         verdict: approved
+  - key: 01a1c31a-3caa-75b8-a227-4097b8592d33
+    id: spec-produced
+    kind: note
+    versions:
+      - key: 01a1c31a-3cab-7242-bbe3-d670eddd0dc0
+        at: 2026-11-10T01:37:19Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "What the specification change produced"
+        markdown: |-
+          Committed as `85b25e9` on `product/milky-way`: four accepted decisions, with ADR-23 superseded, 58 nodes added and 6 changed. `loft check --baseline develop` reports no findings the branch introduced.
+
+          **Next:** plan the build in plan mode. It is large: ingest, univ-model, server and explorer, well over eight tasks. So the plan splits into waves cut from `product/milky-way`. The full Gaia fetch and ingest wait for the owner's approval before they run.
+
+          **Open:** the Edenhofer 2024 Zenodo licence must be read and recorded in its source definition, and the Baumgardt & Vasiliev table checked for its VizieR availability.
+        tone: success

@@ -10,3 +10,12 @@ versions:
     title: "Wave: deeper Gaia stars"
     goal: "A release holds Gaia DR3 stars to the chosen G cut with Bailer-Jones distances, tiled and checked"
     status: planned
+  - key: 01a1c328-d208-77b0-8e1b-6a931c4b4128
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 1: deeper Gaia stars"
+    goal: "Gaia DR3 stars to G < 14 with Bailer-Jones distances inferred below ϖ/σ = 5 and set aside in ranking, four more object shards bound, and pruning followed by a change build proven by tests, merged into product/milky-way"
+    status: active

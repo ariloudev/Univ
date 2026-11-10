@@ -1,0 +1,271 @@
+key: 01a1c320-76de-7313-8b30-e8af51ed1a31
+id: asked-toolu-016wclejnnnhuzftyqvg8d8m
+versions:
+  - key: 01a1c320-76de-7313-8b30-e8b126efefed
+    at: 2026-11-10T01:44:07Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Asked in the session"
+    status: active
+  - key: 01a1c326-9fb1-74c5-bf75-4dad286bac22
+    at: 2026-11-10T01:50:50Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Asked in the session"
+    status: done
+blocks:
+  - key: 01a1c320-76de-7313-8b30-e8b0bc1c5447
+    id: plan-29-plan-crystalline-hopping-yeti-asked-toolu-016wclejnnnhuzftyqvg8d8m
+    kind: plan
+    versions:
+      - key: 01a1c320-76de-7313-8b30-e8b222b2431f
+        at: 2026-11-10T01:44:07Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build plan: a deeper Milky Way (release 13)"
+        markdown: |
+          # Build plan: a deeper Milky Way (release 13)
+
+          ## Context
+
+          The owner asked how many more Milky Way stars a release can hold and for a much more detailed
+          Milky Way. Spec commit `85b25e9` on `product/milky-way` settles what gets built:
+          - Gaia DR3 stars to G < 14, about 16.8M sources with their Bailer-Jones distances.
+          - A Bailer-Jones distance whose parallax is below 5× its error becomes **inferred**. The star is
+            still placed, and the explorer draws it at half opacity.
+          - Five tracer catalogues in a fourth scale domain, **Galaxy tracers**: Hunt & Reffert open
+            clusters, Baumgardt & Vasiliev globulars, Skowron Cepheids, Li RR Lyrae and Reid masers.
+          - The Edenhofer 2024 dust map, resampled to a 250³ grid of 10 pc cells and drawn as a
+            ray-marched volume.
+
+          This work spans ingest, univ-model, the server and the explorer, and has more than eight tasks.
+          So it runs as **four waves**: `stage/milky-way-1` … `-4`, each cut from `product/milky-way`, then
+          a release stage. Each wave plans its own branch in its own Yard Log, ends with `/simplify` and
+          `/code-review` (findings fixed), then one `cargo xtask check` and `cargo xtask integration`, and
+          waits for the owner's word to merge.
+
+          **Capacity finding.** Release 12's estimates per object shard are 4.50 GB × 7 and 0.77 GB, all
+          against the 4.5 GB per-release budget (`RELEASE_BUDGET_BYTES`, science check `d1-budget`). The
+          stars will add about 15 GB, so wave 1 binds four more object shards (12 × 4.5 = 54 GB).
+
+          ## Wave 1: deeper Gaia stars and inferred distances (`stage/milky-way-1`)
+
+          Criteria met: the G < 14 and parallax-carrying criteria of the release 13 sources Requirement,
+          the whole Bailer-Jones inferred Requirement in `normalize-records`, and the inferred set-aside
+          criterion in `choose-the-preferred-measurement`.
+
+          1. **Ratio in the ranking rule.**
+             - Add `prior_led_parallax_ratio: 5` with its basis to `rules/ranking.yaml`, and a field for it
+               in `RankingRules` (`crates/univ-ingest/src/ranking/rules.rs:15`), checked > 0.
+             - Test: `ranking_rules` refuses a missing or non-positive ratio.
+          2. **Bailer-Jones rows marked inferred.**
+             - `sources/bailer-jones-2021.yaml` selects `g.parallax` and `g.parallax_error`.
+             - Extend `source/rules.rs` `Condition` so a rule tests whether `parallax` is below a ratio
+               times `parallax_error`, the ratio taken from the ranking rule at plan time
+               (`normalize/plan.rs:332`). A blank or non-positive parallax also matches.
+             - The existing `KindOverride` applies `inferred` to both distance readings.
+             - Tests: a new `normalize_bailer_jones_kind.rs` covers ϖ/σ = 4.9, 5.0 and 7, ϖ ≤ 0 and a
+               blank parallax, against a recorded `gaia-archive` fixture row set.
+          3. **Ranking set-aside.**
+             - In `ranking/distance.rs` `remaining()` (:199), drop inferred geometric or indicator
+               candidates when a measured or estimated geometric, primary or secondary candidate exists.
+             - Record the comparison in `Decided` (`univ-model/src/object/preferred.rs:103`).
+             - Tests: added to `ranking_parallax.rs`, including that an inferred Bailer-Jones distance still
+               wins when it is the only candidate.
+          4. **G < 14 queries.**
+             - `sources/gaia-dr3-bright.yaml` and the Bailer-Jones query cut at G < 14, in 768 chunks of
+               about 22,000 rows, under the 50k anonymous cap.
+             - Measure `count:` live once, in the background, and record it in `cuts`.
+             - Rename the source title to "Gaia DR3 stars (G < 14)". The id stays, so object ids hold.
+          5. **Four more object shards.**
+             - Add `OBJECTS_8` … `OBJECTS_11` in `wrangler.toml` and `crates/univ-server/wrangler.toml`.
+             - Wherever the shard count is fixed in code (`univ-api/src/shards.rs`, the Release publisher),
+               the build plan names it.
+             - Test: an e2e routing test reads an object from shard 11 in the fixture state.
+          6. **Measure before the full ingest.**
+             - Build one chunk (about 22k stars) into a scratch release and read its `d1_estimate`, to
+               confirm the bytes per star behind the 15 GB estimate.
+             - Add a science check `inferred-share-of-gaia-stars`: the inferred share of Bailer-Jones
+               distances below G < 14 lies within 3–8%, citing the 2026-11-10 sample (4.6%).
+
+          ## Wave 2: Galaxy tracers domain and tracer sources (`stage/milky-way-2`)
+
+          Criteria met: the tracer criteria of the sources Requirement, the tracer Requirement in
+          `normalize-records`, the scale-domain criteria in `build-octree-tiles`, and the listing
+          criterion in `fetch-a-tile-manifest`.
+
+          1. **The domain itself.**
+             - Add `GalaxyTracers` to `ScaleDomain` (`univ-ingest/src/source/mod.rs:258`) and to
+               `CellSpace`/`SPACES` (`univ-model/src/release/cells.rs:38`), with a 100 pc edge.
+             - Append it to `DOMAINS` (`tiles/domain.rs:22`) as RNG stream 3. Appending leaves the existing
+               domains' tiles byte-identical; a test asserts the stars tiles' SHA-256 is unchanged.
+             - Make `scale_domain_unit` (`univ-model/src/units.rs:117`) give pc, add arms to `unit_symbol`
+               and `name_of`, and handle the new domain in the unit test in `normalize/plan.rs:460`.
+          2. **Membership.**
+             - `domain_of` (`tiles/domain.rs:37`) and `release/objects.rs:199` put an object in Galaxy
+               tracers when any of its entries comes from a source of that domain. This needs the object's
+               entry sources passed to `assign()` (:176).
+             - Tests: added to `tiles*.rs`: a Cepheid joined to a Gaia star lands in tracers, and a plain
+               star stays in stars.
+          3. **Five source definitions** (`Access::VizierTsv`), each with recorded fixtures under
+             `tests/fixtures/vizier/` and its terms judged in the definition:
+             - `hunt-reffert-2023`, `baumgardt-vasiliev-2021`, `skowron-2025-cepheids`, `li-2023-rr-lyrae`
+               and `reid-2019-masers`.
+             - The kind of object is a constant flag `tracer` from the definition. The pulsation type is a
+               column flag with cited meanings.
+             - Distances carry kind, method and kind of value as the criteria say. A maser parallax is
+               measured, and becomes a distance through the existing parallax rule.
+             - Skowron and Li join `gaia-source-id` in `rules/matching.yaml:70`.
+             - Check that Baumgardt & Vasiliev is on VizieR first; if not, use `Access::Files` from the
+               author's site.
+          4. **Server and decoder.**
+             - `univ-api` `query/objects.rs:86` covers the new space.
+             - The `/v1/scale-domains` test holds four domains.
+             - Regenerate the tile-decoder fixtures (`UPDATE_FIXTURES=1`, `tile_decoder_fixtures.rs`) with a
+               tracers manifest.
+          5. **Explorer plumbing.** Only enough to show the new domain: `api/schemas.ts`, `Points.tsx`
+             `COLUMN_NAMES`, `choices.ts` and `test/fixtures.ts`. Drawing comes in wave 4.
+          6. **Science checks.**
+             - `counts-by-scale-domain` lists the tracers.
+             - New `tracers-in-tracer-domain`: every object with a tracer entry is in the domain.
+             - New `cepheids-joined-to-gaia`: the share of Skowron Cepheids joined by source id.
+
+          ## Wave 3: dust map grids (`stage/milky-way-3`)
+
+          Criteria met: the dust source criterion and every criterion of *Resample the dust map*. Univ
+          Server serves the grids through the existing volume grid routes.
+
+          1. **Source definition.**
+             - `sources/edenhofer-2024.yaml` with `Access::Files` from Zenodo record 10658339, the mean
+               and standard deviation files of the 1.25 kpc map only (not the 122 GB record).
+             - Read and quote the licence there, and record the digests.
+             - Confirm the file layout (FITS or HDF5, ring or nested ordering) at the start of the task. Use
+               `fits.rs` if it is FITS; otherwise add a minimal reader.
+          2. **HEALPix ring and nested helpers.** Extend `univ-model/src/healpix.rs` with `ang2pix` for
+             Nside 256 in the file's ordering. Tests: known pixel centres.
+          3. **Resampler** (`grids/edenhofer.rs`).
+             - Galactic Cartesian cube of 250³ cells of 10 pc. Each cell takes the mean of the voxel centres
+               it holds, else the value at its centre.
+             - The distance bins are 516, logarithmic from 69 to 1,250 pc.
+             - Cells outside 69–1,250 pc are NaN.
+             - Tests: a cropped fixture of a few pixels and bins; cells under 69 pc are NaN; two runs give
+               an identical SHA-256.
+          4. **No-data marker.**
+             - Add `no_data: NaN` to `GridGeometry` or `Field` (`univ-model/src/grid.rs`) and to the header
+               JSON (`HEADER_VERSION` 2; version 1 is still read), and serve it in `univ-api/src/grids.rs`
+               `header`.
+             - Add the dust ids to `release/grids.rs` `is_grid` and `read`. Make `outlines_on` skip grids
+               with no structures to outline.
+          5. **Tests.** Added to `release_grids.rs`, plus an e2e test on `/v1/grids/{dust}` and its
+             header.
+
+          ## Wave 4: explorer drawing (`stage/milky-way-4`)
+
+          Criteria met: the tracer colour and size Requirement and the inferred-opacity Requirement in
+          *Draw the catalogues*, every criterion of *Draw the dust map*, and the single-colour change for
+          the galaxy domains.
+
+          1. **Tracer colours and size.**
+             - Give each tracer source a colour in `scene/kinds.ts`, distinct from the star temperatures and
+               `POINT_COLOUR`, through `u_colours` keyed by source.
+             - Draw tracer points at twice `POINT_SIZE` (a per-domain `u_size` in `renderer.ts` `draw()`).
+             - The key (`ui/Panels.tsx` `Key`) lists each tracer source with its colour and count.
+             - Tests: Vitest on the colour table and the key, and a fixture world with a tracers domain.
+          2. **Inferred stars at half opacity.**
+             - In `scene/shaders.ts`, halve alpha when `a_kind` is inferred in the stars domain.
+             - The key says that fainter stars have inferred distances.
+             - Tests: a shader-uniform unit test and a key text test.
+          3. **Dust volume.**
+             - A new `scene/dust.ts` fetches `/v1/grids`, finds the Edenhofer mean grid, decodes it and
+               uploads it as an R16F `TEXTURE_3D` (about 31 MB). It is fetched once per release, on first
+               turn-on.
+             - The galactic-to-ICRS rotation comes from the manifest.
+             - Two parts:
+               - A volume pass in `draw()` before the points: front-to-back ray-march over the cube, adding a
+                 faint dust colour with opacity rising with density; NaN cells add nothing.
+               - A per-point attenuation in the point vertex shader: march from the eye to the star through
+                 the texture and dim the star by the dust crossed. A star in front of the dust is
+                 untouched; the march is skipped when the ray misses the cube.
+             - The key entry gives source, unit and "reconstructed".
+             - Tests:
+               - Vitest on the grid decode (NaN kept) and on the cube's placement and rotation.
+               - A Playwright test: the switch draws it, the address keeps `dust=1`, and a failed fetch
+                 turns it off with the message.
+               - Frame time is checked by hand with the dust on.
+          4. **Switch.** `ui/show/ShowPanel.tsx` gets a dust switch through `useAddressSwitch`, like
+             `gridSwitch.ts`, off by default, with the error shown beside it.
+
+          ## Pruning
+
+          Release 13 is published beside release 12, which is what the 4.5 GB per-release budget is for.
+          **Today's state** (read from the local D1 `releases` table): releases 10, 11 and 12 are
+          published and none is pruned, and `latest` → 12. The build output holds 38 GB for release 10,
+          2.7 GB for 11, 1.1 GB for 12, and old builds of releases 5 (3.3 GB) and 9 (3.5 GB) that the
+          release list no longer names.
+
+          **Before release 13 is built** (in the same ask as the full ingest):
+          1. Run `univ-ingest prune 10`, then `univ-ingest prune 11`. This deletes their R2 files and the D1
+             rows valid only in them, keeps the id ledger, and frees about 41 GB of local builds.
+          2. Afterwards:
+             - `releases` lists 10 and 11 with `pruned_at`.
+             - `latest` → 12.
+             - `cargo xtask science` on 12 with `--store` passes, since its chain's builds are gone.
+             - A lookup of an id retired in 10 still resolves.
+          3. For the builds of 5 and 9:
+             - If the state directory records them, prune them the same way.
+             - If not, report it to the owner, who decides whether to delete the folders by hand. They
+               are not mine to remove.
+
+          **After release 13 is published, checked and benched:**
+          1. Prune release 12, so that the store holds one release.
+          2. Re-read each shard's database size and `d1_estimate`, record them in the release stage's
+             note, and run `cargo xtask bench lookup` again on the pruned store.
+
+          **Shard-packing check (wave 1, task 5).**
+          - Release 12 places objects in shards by cell range (`shard_cells`).
+          - Read `release/packing.rs` and confirm that a change build puts the new star rows in the four new
+            shards without moving release 12's unchanged rows. Moving them would count them twice until 12
+            is pruned.
+          - If it would move them, the wave fixes the packer, and a test on a two-release fixture proves it.
+
+          ## Release 13 (after the waves are merged)
+
+          - Ask the owner before the full ingest (standing rule), together with pruning 10 and 11.
+          - Then fetch in the background:
+            - Gaia G < 14 and Bailer-Jones: about 1,500 chunk jobs, a few hours.
+            - The five VizieR tracers.
+            - The two Edenhofer files.
+          - Build, `cargo xtask science` (with the new checks), publish locally, then
+            `cargo xtask bench lookup` (QA-2) and `cargo xtask bench first-points` (3 s).
+          - Look at it through `cargo xtask explore` and send screenshots.
+
+          ## Verification
+
+          - Each wave runs focused tests between tasks (`cargo test -p <crate> <filter>`, clippy,
+            `pnpm check`), links each new test to its criterion in `loft.trace.yaml`
+            (`loft reconcile --accept`), and records a `trace` view.
+          - Each wave ends with the full gate and integration.
+          - Release 13 end to end:
+            - Science checks green, including `d1-budget` on 12 shards.
+            - After pruning, each shard's database is under its 10 GB cap and `releases` lists 10, 11
+              and 12 as pruned.
+            - Lookup p95 under 200 ms and first points under 3 s.
+            - In the explorer: tracers visible from 30 kpc, inferred stars fainter and hideable by ○, and
+              the dust volume dimming the stars behind the Orion clouds.
+        planMode: true
+    responses:
+      - key: 01a1c324-7c0d-74c6-b484-423e1220421c
+        at: 2026-11-10T01:48:30Z
+        revision: 12
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: rejected
+        reason: "Let's make sure pruning does not fuck up our additive releases first. Look into this, write a Yard note, then present the plan again."

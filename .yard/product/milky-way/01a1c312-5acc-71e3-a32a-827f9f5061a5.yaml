@@ -10,3 +10,12 @@ versions:
     title: "Wave: 3D dust map"
     goal: "A release holds the Edenhofer 2024 dust density as a grid, and the explorer draws it"
     status: planned
+  - key: 01a1c328-d208-77b0-8e1b-6a95ebabb483
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 3: dust map grids"
+    goal: "The Edenhofer 2024 dust map is resampled into mean and standard deviation volume grids with a no-data marker, served by Univ Server, merged into product/milky-way"
+    status: planned

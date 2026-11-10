@@ -1,0 +1,12 @@
+key: 01a1c328-d208-77b0-8e1b-6a8fb68ad9c1
+id: wave-explorer
+versions:
+  - key: 01a1c328-d208-77b0-8e1b-6a96cd4999cc
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 4: explorer drawing"
+    goal: "The explorer draws tracers by source colour at twice size, inferred stars at half opacity and the dust map as a ray-marched volume, merged into product/milky-way"
+    status: planned
