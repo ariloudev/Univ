@@ -13,7 +13,7 @@ use univ_model::cosmology::Cosmology;
 use univ_model::derive::DerivedPosition;
 use univ_model::ids::{Designation, SourceId};
 use univ_model::ledger::Ledger;
-use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, ObjectKind, Placement};
+use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, Placement};
 use univ_model::position::Frame;
 use univ_model::release::chains::{expand, template};
 use univ_model::release::rows::{
@@ -74,8 +74,6 @@ pub struct ObjectWriter<'a> {
     pub counts: ObjectCounts,
     cosmology: &'a Cosmology,
     domains: HashMap<&'a SourceId, ScaleDomain>,
-    /// The kind of object each tracer source's rows are, by source.
-    tracer_kinds: HashMap<&'a SourceId, ObjectKind>,
 }
 
 /// A preferred measurement as (entry, quantity, n).
@@ -137,10 +135,6 @@ impl<'a> ObjectWriter<'a> {
                 .iter()
                 .map(|d| (&d.id, d.scale_domain))
                 .collect(),
-            tracer_kinds: definitions
-                .iter()
-                .filter_map(|d| Some((&d.id, d.object_kind?)))
-                .collect(),
         }
     }
 
@@ -201,37 +195,18 @@ impl<'a> ObjectWriter<'a> {
         Ok(())
     }
 
-    /// What an object is: the kind of object its first tracer source names, where one of its
-    /// entries is a tracer's, as a Cepheid joined to its Gaia star is a classical Cepheid; else
-    /// what its sources list it as.
-    fn kind(&self, object: &Object) -> ObjectKind {
-        object
-            .entries
-            .iter()
-            .find_map(|e| self.tracer_kinds.get(&e.entry.designation.source).copied())
-            .unwrap_or(object.kind)
-    }
-
-    /// The scale domain of a placed object: Galaxy tracers for one with a tracer source's entry;
-    /// else its preferred distance's source's, or, for any source but a star source, the one its
-    /// placed distance falls in.
+    /// The scale domain of a placed object, as its tiles give it ([`domain_of`]).
     fn domain(&self, o: &ReleaseObject) -> Option<ScaleDomain> {
+        let placed = o.position.as_ref()?.distance().value;
         let preferred = o.object.preferred_distance.as_ref()?;
         let source = self.domains.get(&preferred.measurement.entry().source)?;
-        let tracer = o.object.entries.iter().any(|e| {
-            self.domains.get(&e.entry.designation.source) == Some(&ScaleDomain::GalaxyTracers)
-        });
-        Some(domain_of(
-            *source,
-            tracer,
-            o.position.as_ref()?.distance().value,
-        ))
+        Some(domain_of(o.object.kind, *source, placed))
     }
 
     /// The object's own row, its chain numbered, its derived position checked against it.
     fn object_row(&mut self, o: &ReleaseObject) -> Result<ObjectRow, String> {
         let object = &o.object;
-        let (domain, kind) = (self.domain(o), self.kind(object));
+        let domain = self.domain(o);
         let terms = &mut self.numbering.terms;
         let preferred_position = object.preferred_position.as_ref();
         let sky = preferred_position
@@ -250,7 +225,7 @@ impl<'a> ObjectWriter<'a> {
         let mut row = ObjectRow {
             release: self.numbering.release,
             id: o.id.get(),
-            kind: terms.of(&kind)?,
+            kind: terms.of(&object.kind)?,
             ra: sky.map(|s| s.ra),
             dec: sky.map(|s| s.dec),
             epoch: sky.map(|s| s.epoch.0),

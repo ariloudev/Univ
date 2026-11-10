@@ -111,11 +111,12 @@ impl CellSpace {
         }
     }
 
-    /// The symbol of its unit: `pc` for stars and Galaxy tracers, `Mpc` otherwise.
+    /// The symbol of its unit, the scale domain's ([`crate::units::scale_domain_unit`]): `pc`
+    /// for stars and Galaxy tracers, `Mpc` otherwise.
     #[must_use]
     pub fn unit(self) -> &'static str {
-        match self {
-            Self::Stars | Self::GalaxyTracers => "pc",
+        match crate::units::scale_domain_unit(self.name()) {
+            crate::units::Unit::Parsec => "pc",
             _ => "Mpc",
         }
     }

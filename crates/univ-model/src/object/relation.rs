@@ -34,7 +34,14 @@ impl ObjectKind {
     /// Whether it is one of the Galaxy's tracers.
     #[must_use]
     pub fn is_tracer(self) -> bool {
-        !matches!(self, Self::Body | Self::GalaxyGroup)
+        matches!(
+            self,
+            Self::OpenCluster
+                | Self::GlobularCluster
+                | Self::ClassicalCepheid
+                | Self::RrLyraeStar
+                | Self::StarFormingRegion
+        )
     }
 }
 

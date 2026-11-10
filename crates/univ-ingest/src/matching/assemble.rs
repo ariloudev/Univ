@@ -133,6 +133,17 @@ pub(super) fn build(
         if object.sources().any(|s| rules.galaxy_group(s).is_some()) {
             object.kind = ObjectKind::GalaxyGroup;
         }
+        // A tracer is what its source names it, as a Cepheid joined to its Gaia star is one.
+        let kinds: Vec<ObjectKind> = object
+            .sources()
+            .filter_map(|s| rules.object_kinds.get(s).copied())
+            .collect();
+        if let Some(&kind) = kinds.first() {
+            object.kind = kind;
+            if kinds.iter().any(|&k| k != kind) {
+                report.conflicting_kinds += 1;
+            }
+        }
         attach_names(rules, &mut object);
         objects.push(object);
     }

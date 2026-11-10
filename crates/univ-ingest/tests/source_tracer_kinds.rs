@@ -1,55 +1,11 @@
 //! A source of the Galaxy's tracers names the Galaxy tracers scale domain and the kind of object
 //! its rows are; no other source names a kind (define-a-source, normalize-records).
 
-#![expect(
-    clippy::unwrap_used,
-    reason = "test helpers unwrap: a failure there is the test failing"
-)]
+mod common;
 
-use univ_ingest::source::{DefinitionError, ScaleDomain, SourceDefinition};
+use common::{VALID_DEFINITION as VALID, read_definition as read};
+use univ_ingest::source::ScaleDomain;
 use univ_model::object::ObjectKind;
-
-const VALID: &str = r#"
-id: test-galaxies
-title: "Test galaxies"
-provider: vizier
-access:
-  method: vizier_tsv
-  table: "VII/259/spectra"
-  constraints: ["z_helio=0.005..0.35"]
-  rows: 125071
-cuts: ["0.005 < z < 0.35"]
-columns:
-  - { column: _RAJ2000, field: right_ascension, unit: degree }
-  - { column: _DEJ2000, field: declination, unit: degree }
-  - { column: z_helio, field: redshift, unit: dimensionless }
-frame: icrs
-epoch: 2000.0
-citation: "Jones et al. 2009, MNRAS 399, 683"
-reference: { bibcode: "2009MNRAS.399..683J", doi: "10.1111/j.1365-2966.2009.15338.x" }
-terms:
-  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
-  quote: "The data are free to use."
-  credit: "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg."
-redistribution:
-  status: permitted_with_credit
-  review: provisional
-  reasoning: "The terms permit use with the credit above."
-scale_domain: cosmic_web
-mirrors:
-  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
-  - "http://vizieridia.saao.ac.za/viz-bin/asu-tsv"
-normalization:
-  redshifts:
-    - { column: z_helio, frame: heliocentric, kind: spectroscopic, basis: "z_helio is heliocentric" }
-"#;
-
-fn read(text: &str) -> Result<SourceDefinition, DefinitionError> {
-    let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("test-galaxies.yaml");
-    std::fs::write(&path, text).unwrap();
-    SourceDefinition::read(&path)
-}
 
 /// `VALID` as a source of the Galaxy's tracers, with `kind` as its kind of object, if any.
 fn tracers(kind: Option<&str>) -> String {

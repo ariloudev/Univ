@@ -745,10 +745,12 @@ checks:
       kind: query
       sql: >-
         SELECT o.id FROM objects o WHERE o.release = :release AND o.placed = 1
-        AND coalesce((SELECT t.term = 'galaxy_tracers' FROM terms t WHERE t.release = o.release
-        AND t.id = o.scale_domain), 0) <> EXISTS (SELECT 1 FROM entries e
-        JOIN sources s ON s.release = e.release AND s.n = e.source
-        WHERE e.release = o.release AND e.object_id = o.id AND s.scale_domain = 'galaxy_tracers')
+        AND o.scale_domain IN (SELECT id FROM terms WHERE release = :release AND term = 'galaxy_tracers')
+        AND NOT EXISTS (SELECT 1 FROM entries e WHERE e.release = o.release AND e.object_id = o.id
+        AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers'))
+        UNION SELECT o.id FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
+        WHERE e.release = :release AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers') AND o.placed = 1
+        AND o.scale_domain NOT IN (SELECT id FROM terms WHERE release = :release AND term = 'galaxy_tracers')
     expect: { equals: 0 }
     cite: *domains
 
@@ -758,12 +760,10 @@ checks:
     select:
       kind: query
       sql: >-
-        SELECT o.id FROM objects o WHERE o.release = :release
-        AND EXISTS (SELECT 1 FROM entries e JOIN sources s ON s.release = e.release AND s.n = e.source
-        WHERE e.release = o.release AND e.object_id = o.id AND s.scale_domain = 'galaxy_tracers')
-        AND (SELECT t.term FROM terms t WHERE t.release = o.release AND t.id = o.kind) NOT IN
-        ('open_cluster', 'globular_cluster', 'classical_cepheid', 'rr_lyrae_star',
-        'star_forming_region')
+        SELECT DISTINCT o.id FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
+        WHERE e.release = :release AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers')
+        AND o.kind NOT IN (SELECT id FROM terms WHERE release = :release AND term IN ('open_cluster',
+        'globular_cluster', 'classical_cepheid', 'rr_lyrae_star', 'star_forming_region'))
     expect: { equals: 0 }
     cite:
       - paper: "univ-server specification, Normalize records"
@@ -917,13 +917,13 @@ checks:
     select:
       kind: report
       sql: >-
-        SELECT s.id AS source, count(*) AS stars, sum(EXISTS (SELECT 1 FROM entries g
-        JOIN sources gs ON gs.release = g.release AND gs.n = g.source
-        WHERE g.release = e.release AND g.object_id = e.object_id
-        AND gs.id = 'gaia-dr3-bright')) AS joined_to_gaia
-        FROM entries e JOIN sources s ON s.release = e.release AND s.n = e.source
-        WHERE e.release = :release AND s.id IN ('skowron-2025-cepheids', 'li-2023-rr-lyrae')
-        GROUP BY s.id ORDER BY s.id
+        SELECT (SELECT id FROM sources s WHERE s.release = :release AND s.n = e.source) AS source,
+        count(*) AS stars, sum(EXISTS (SELECT 1 FROM entries g WHERE g.release = e.release
+        AND g.object_id = e.object_id AND g.source IN (SELECT n FROM sources WHERE release = :release
+        AND id = 'gaia-dr3-bright'))) AS joined_to_gaia
+        FROM entries e WHERE e.release = :release AND e.source IN (SELECT n FROM sources
+        WHERE release = :release AND id IN ('skowron-2025-cepheids', 'li-2023-rr-lyrae'))
+        GROUP BY e.source ORDER BY 1
     cite:
       - paper: "univ-server specification, Normalize records"
         locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"

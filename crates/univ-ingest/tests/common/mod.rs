@@ -316,3 +316,50 @@ pub fn run(subcommand: &str, extra_args: &[(&str, &Path)]) -> Output {
     }
     command.output().expect("the binary runs")
 }
+
+/// A valid `VizieR` source definition, `test-galaxies`, that a definition test changes one field
+/// of at a time.
+pub const VALID_DEFINITION: &str = r#"
+id: test-galaxies
+title: "Test galaxies"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "VII/259/spectra"
+  constraints: ["z_helio=0.005..0.35"]
+  rows: 125071
+cuts: ["0.005 < z < 0.35"]
+columns:
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: z_helio, field: redshift, unit: dimensionless }
+frame: icrs
+epoch: 2000.0
+citation: "Jones et al. 2009, MNRAS 399, 683"
+reference: { bibcode: "2009MNRAS.399..683J", doi: "10.1111/j.1365-2966.2009.15338.x" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: "The data are free to use."
+  credit: "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: "The terms permit use with the credit above."
+scale_domain: cosmic_web
+mirrors:
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizieridia.saao.ac.za/viz-bin/asu-tsv"
+normalization:
+  redshifts:
+    - { column: z_helio, frame: heliocentric, kind: spectroscopic, basis: "z_helio is heliocentric" }
+"#;
+
+/// `text` written as `test-galaxies.yaml` and read as a run reads a definition.
+pub fn read_definition(
+    text: &str,
+) -> Result<SourceDefinition, univ_ingest::source::DefinitionError> {
+    let dir = tempfile::tempdir().expect("a temporary directory");
+    let path = dir.path().join("test-galaxies.yaml");
+    std::fs::write(&path, text).expect("the definition written");
+    SourceDefinition::read(&path)
+}

@@ -7,7 +7,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use univ_model::entry::CatalogueEntry;
 use univ_model::ids::SourceId;
-use univ_model::object::{LineOfSight, MatchMethod};
+use univ_model::object::{LineOfSight, MatchMethod, ObjectKind};
 use univ_model::position::separation_degrees;
 
 use crate::yaml::{FileError, read_checked};
@@ -30,6 +30,23 @@ pub struct MatchingRules {
     /// Where given, the pieces of a nearby galaxy within its published extent join it.
     #[serde(default)]
     pub extents: Option<ExtentRule>,
+    /// The kind of object each tracer source's rows are, as its definition names it: not part
+    /// of the rules file, but given by the run from the source definitions
+    /// ([`MatchingRules::with_object_kinds`]).
+    #[serde(skip)]
+    pub object_kinds: BTreeMap<SourceId, ObjectKind>,
+}
+
+impl MatchingRules {
+    /// The rules with the kind of object of each source of `definitions` that names one.
+    #[must_use]
+    pub fn with_object_kinds(mut self, definitions: &[crate::source::SourceDefinition]) -> Self {
+        self.object_kinds = definitions
+            .iter()
+            .filter_map(|d| Some((d.id.clone(), d.object_kind?)))
+            .collect();
+        self
+    }
 }
 
 /// A galaxy source whose field names, by the group rule's scheme, the group each galaxy

@@ -10,6 +10,15 @@ versions:
     title: "Build wave 2"
     goal: "A fourth scale domain, Galaxy tracers, is built, tiled, served and listed, and five tracer sources normalize into it with their kinds and distances, each verified by its focused test"
     status: active
+  - key: 01a1c417-e6c3-7150-9f67-8c9c57df010f
+    at: 2026-11-10T06:14:23Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 2"
+    goal: "A fourth scale domain, Galaxy tracers, is built, tiled, served and listed, and five tracer sources normalize into it with their kinds and distances, each verified by its focused test"
+    status: done
 blocks:
   - key: 01a1c372-ae0b-7370-9f4f-cb6528aae295
     id: w2-plan
@@ -131,6 +140,15 @@ blocks:
         title: "Five tracer source definitions with fixtures"
         detail: "5bb7ccb: Hunt & Reffert (6,818 open clusters), Skowron (3,424 Cepheids), Li (135,873 RR Lyrae in 12 slices) and Reid (199 masers) are defined and recorded from IDIA, and tested by normalize_tracers and release_tracers. Skowron and Li join gaia-source-id. The globular clusters wait on the owner's answer to q-globulars."
         state: active
+      - key: 01a1c417-e6c3-7150-9f67-8c9bcab1373f
+        at: 2026-11-10T06:14:23Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Five tracer source definitions with fixtures"
+        detail: "5bb7ccb: Hunt & Reffert, Skowron, Li and Reid. Then, on the owner's answer, the Baumgardt & Vasiliev 2021 globular clusters (165) from Baumgardt's database: scripts/prepare-baumgardt-globulars.py turns its orbits table into CSV, and the source is permission_pending, asked of Holger Baumgardt. normalize_tracers and release_tracers cover all five sources."
+        state: done
   - key: 01a1c372-ae0b-7370-9f4f-cb6ab7d17e72
     id: w2-t5
     kind: task
@@ -415,3 +433,31 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1c417-e6c3-7150-9f67-8c9a6dafdb6f
+    id: w2-produced
+    kind: note
+    versions:
+      - key: 01a1c417-e6c3-7150-9f67-8c9d8251d220
+        at: 2026-11-10T06:14:23Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "What the build of wave 2 produced"
+        markdown: |-
+          | Source | Rows | Kind of object | Distance | Joins |
+          |---|---|---|---|---|
+          | Hunt & Reffert 2023 | 6,818 open clusters | open_cluster | members' parallax ML distance, 16th–84th percentiles, estimated | none |
+          | Baumgardt & Vasiliev 2021 | 165 | globular_cluster | combined distance ± error, estimated, mixed method | none |
+          | Skowron 2025 | 3,424 | classical_cepheid | WISE W1 period–luminosity, estimated primary indicator | Gaia DR3 by source_id |
+          | Li 2023 | 135,873 (18 left out at 0 kpc) | rr_lyrae_star | G-band absolute magnitude–metallicity, estimated primary indicator | Gaia DR3 by source_id |
+          | Reid 2019 | 199 | star_forming_region | none: the parallax is kept as measured and places the region under the 10% rule | none |
+
+          - **The Galaxy tracers domain** is in parsecs with 100 pc cells, appended last, so the existing domains' tiles are byte-for-byte unchanged. The API lists and queries it, and the explorer names its kinds.
+          - **Science checks:** `tracers-in-tracer-domain`, `tracers-name-their-kind` and `pulsating-stars-joined-to-gaia`.
+
+          **Left open:**
+          - The permission request to Holger Baumgardt is the owner's to send.
+          - Li's sample includes 28,754 Magellanic Cloud RR Lyrae stars beyond 40 kpc, kept as published.
+          - The Edenhofer dust map is wave 3.
+        tone: success

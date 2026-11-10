@@ -22,7 +22,7 @@ pub(super) use fixes::{FixEffect, FixPlan};
 use super::NormalizeError;
 use crate::source::{
     Coded, ComovingVelocity, Condition, DistanceReading, ErrorColumns, Field, FixAction,
-    LeftOutReason, MAX_FIXES, RedshiftReading, Rule, ScaleDomain, SourceDefinition,
+    LeftOutReason, MAX_FIXES, RedshiftReading, Rule, SourceDefinition,
 };
 
 /// The fixes, by index, that changed a row: a bit each, so a definition has at most
@@ -457,11 +457,8 @@ impl Plan {
                 .collect::<Result<_, _>>()?,
             fixes,
             leaving,
-            distance_unit: if definition.scale_domain == ScaleDomain::Stars {
-                Unit::Parsec
-            } else {
-                Unit::Megaparsec
-            },
+            // The unit of the source's scale domain: parsecs for stars and the Galaxy's tracers.
+            distance_unit: crate::tiles::unit_of(definition.scale_domain),
         })
     }
 }

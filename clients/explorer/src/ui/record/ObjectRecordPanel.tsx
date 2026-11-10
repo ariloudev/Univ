@@ -77,7 +77,7 @@ function subtitleOf(record: ObjectRecord, heading: string): string {
     for (const k of keys) shown.add(k);
     others.push(d.designation ?? `${d.identifier} (${d.source})`);
   }
-  return [...others.slice(0, 2), ...(KIND_NOUNS[record.kind] === undefined ? [] : [KIND_NOUNS[record.kind]]), `object ${record.id}`].join(" · ");
+  return [...others.slice(0, 2), ...[KIND_NOUNS[record.kind]].filter((noun) => noun !== undefined), `object ${record.id}`].join(" · ");
 }
 
 /** The preferred distance large, every distance on one axis, and what preferred it. */

@@ -95,8 +95,8 @@ export const KIND_NOUNS: Readonly<Record<string, string>> = {
 /** What the panel says an object is: its kind where it is not a body, and its scale domain. */
 export function natureOf(record: ObjectRecord): string {
   const noun = KIND_NOUNS[record.kind];
-  const group = noun === undefined ? undefined : sentence(withArticle(noun));
+  const kindText = noun === undefined ? undefined : sentence(withArticle(noun));
   const domain = record.position === null ? undefined : `the ${words(record.position.scale_domain)} domain`;
-  if (domain === undefined) return group === undefined ? "Not placed, so in no scale domain" : `${group}, not placed`;
-  return group === undefined ? `In ${domain}` : `${group}, in ${domain}`;
+  if (domain === undefined) return kindText === undefined ? "Not placed, so in no scale domain" : `${kindText}, not placed`;
+  return kindText === undefined ? `In ${domain}` : `${kindText}, in ${domain}`;
 }

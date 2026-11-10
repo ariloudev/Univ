@@ -11,9 +11,10 @@ mod common;
 mod release_fixture;
 mod simulated;
 
-use release_fixture::{build_next, cross, fixture_with, loaded};
+use release_fixture::{build_next, cross, fixture_with, loaded, terms};
 use simulated::{bare, designation, entry, matching_rules};
 use univ_ingest::matching::match_entries;
+use univ_model::object::ObjectKind;
 
 /// The recorded tracer sources and the kind of object each names.
 const TRACERS: [(&str, &str); 5] = [
@@ -30,16 +31,8 @@ fn each_tracer_is_an_object_of_its_kind_in_the_galaxy_tracers_domain_once_placed
     let crossed = cross(&fixture);
     let release = build_next(&fixture);
     let db = loaded(&release.dir, &release.manifest);
-    let term = |id: Option<i64>| -> Option<String> {
-        id.map(|id| {
-            db.query_row(
-                "SELECT term FROM terms WHERE release = 1 AND id = ?1",
-                [id],
-                |r| r.get(0),
-            )
-            .unwrap()
-        })
-    };
+    let terms = terms(&db);
+    let term = |id: Option<i64>| id.map(|id| terms[&id].clone());
     for (source, kind) in TRACERS {
         let mut placed = 0;
         for o in crossed
@@ -83,13 +76,42 @@ fn a_cepheid_and_an_rr_lyrae_star_join_the_gaia_star_their_source_names() {
         entry("gaia-dr3-bright", rr, 44.6653, 1.7894),
         entry("li-2023-rr-lyrae", rr, 44.6653, 1.7894),
     ];
-    let m = match_entries(&matching_rules(), entries);
+    let rules = matching_rules().with_object_kinds(&common::read_sources());
+    let m = match_entries(&rules, entries);
     assert_eq!(m.objects.len(), 2);
-    for (tracer, id) in [("skowron-2025-cepheids", cg_cas), ("li-2023-rr-lyrae", rr)] {
+    for (tracer, id, kind) in [
+        (
+            "skowron-2025-cepheids",
+            cg_cas,
+            ObjectKind::ClassicalCepheid,
+        ),
+        ("li-2023-rr-lyrae", rr, ObjectKind::RrLyraeStar),
+    ] {
+        let at = m.position_of(&designation(tracer, id)).unwrap();
         assert_eq!(
-            m.position_of(&designation(tracer, id)),
+            Some(at),
             m.position_of(&designation("gaia-dr3-bright", id)),
             "{tracer}"
         );
+        // Matching makes the joined object the kind its tracer source names.
+        assert_eq!(m.objects[at].kind, kind, "{tracer}");
     }
+    assert_eq!(m.report.conflicting_kinds, 0);
+}
+
+#[test]
+fn a_star_two_tracer_sources_name_differently_is_counted_as_a_conflict() {
+    // SIMULATED: one Gaia DR3 source_id listed as a Cepheid by Skowron et al. and as an RR
+    // Lyrae star by Li et al.: one object, of its first tracer entry's kind, counted.
+    let id = "429385923752386944";
+    let entries = vec![
+        entry("gaia-dr3-bright", id, 0.2468, 60.959),
+        bare("skowron-2025-cepheids", id),
+        bare("li-2023-rr-lyrae", id),
+    ];
+    let rules = matching_rules().with_object_kinds(&common::read_sources());
+    let m = match_entries(&rules, entries);
+    assert_eq!(m.objects.len(), 1);
+    assert!(m.objects[0].kind.is_tracer());
+    assert_eq!(m.report.conflicting_kinds, 1);
 }

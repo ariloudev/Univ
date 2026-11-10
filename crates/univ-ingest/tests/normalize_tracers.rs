@@ -6,28 +6,19 @@ mod common;
 
 use common::{entry, normalized_file, normalized_fixture};
 use univ_ingest::source::LeftOutReason;
-use univ_model::distance::{DistanceKind, Measure, Method};
+use univ_model::distance::{Distance, DistanceKind, Measure, Method};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Uncertainty};
 
-/// The value, the unit and the kind, method and kind of value of the entry `id`'s one distance,
-/// as published.
-fn distance(
-    n: &univ_ingest::normalize::Normalized,
-    id: &str,
-) -> (f64, Unit, DistanceKind, Method, KindOfValue, Uncertainty) {
+/// The entry `id`'s one distance, Euclidean and normalized in parsecs, the Galaxy tracers
+/// domain's unit.
+fn distance<'n>(n: &'n univ_ingest::normalize::Normalized, id: &str) -> &'n Distance {
     let e = entry(n, id);
     assert_eq!(e.distances.len(), 1, "{id}");
     let d = &e.distances[0];
     assert_eq!(d.measure, Measure::Euclidean, "{id}");
-    (
-        d.native.value,
-        d.native.unit,
-        d.kind,
-        d.method.clone(),
-        d.kind_of_value,
-        d.native.uncertainty,
-    )
+    assert_eq!(d.normalized.unit, Unit::Parsec, "{id}");
+    d
 }
 
 #[test]
@@ -35,23 +26,23 @@ fn an_open_cluster_keeps_its_members_parallax_distance_and_percentiles_as_an_est
     // Recorded 2026-11-10: the first five open clusters of Hunt & Reffert 2023.
     let n = normalized_fixture("hunt-reffert-2023");
     assert_eq!(n.report.published, 5);
-    let (value, unit, kind, method, of, uncertainty) = distance(&n, "ASCC_5");
-    assert!((value - 1_740.983_206_90).abs() < 1e-6);
-    assert_eq!(unit, Unit::Parsec);
-    assert_eq!(kind, DistanceKind::Geometric);
-    assert_eq!(method, Method::TrigonometricParallax);
-    assert_eq!(of, KindOfValue::Estimated);
+    let d = distance(&n, "ASCC_5");
+    assert!((d.native.value - 1_740.983_206_90).abs() < 1e-6);
+    assert_eq!(d.native.unit, Unit::Parsec);
+    assert_eq!(d.kind, DistanceKind::Geometric);
+    assert_eq!(d.method, Method::TrigonometricParallax);
+    assert_eq!(d.kind_of_value, KindOfValue::Estimated);
     // The 16th and 84th percentiles, kept as the 68% interval they bound.
     let Uncertainty::CredibleInterval {
         minus,
         plus,
         probability,
-    } = uncertainty
+    } = d.native.uncertainty
     else {
-        panic!("{uncertainty:?}")
+        panic!("{:?}", d.native.uncertainty)
     };
-    assert!((value - minus - 1_721.687_506_05).abs() < 1e-6);
-    assert!((value + plus - 1_760.716_320_64).abs() < 1e-6);
+    assert!((d.native.value - minus - 1_721.687_506_05).abs() < 1e-6);
+    assert!((d.native.value + plus - 1_760.716_320_64).abs() < 1e-6);
     assert!((probability - 0.68).abs() < 1e-12);
     assert_eq!(entry(&n, "ASCC_5").flags.get("globalPlx").unwrap(), "0");
 }
@@ -62,21 +53,21 @@ fn a_globular_cluster_keeps_its_combined_distance_and_error_as_an_estimate() {
     // 4.52 ± 0.03 kpc.
     let n = normalized_fixture("baumgardt-vasiliev-2021");
     assert_eq!(n.report.published, 5);
-    let (value, unit, kind, method, of, uncertainty) = distance(&n, "NGC_104");
-    assert_eq!((value, unit), (4.52, Unit::Kiloparsec));
-    assert_eq!(kind, DistanceKind::PrimaryIndicator);
+    let d = distance(&n, "NGC_104");
+    assert_eq!((d.native.value, d.native.unit), (4.52, Unit::Kiloparsec));
+    assert_eq!(d.kind, DistanceKind::PrimaryIndicator);
     assert_eq!(
-        method,
+        d.method,
         Method::Mixed(vec![
             Method::TrigonometricParallax,
             Method::Other("kinematic distance".to_owned()),
             Method::Other("literature distances".to_owned()),
         ])
     );
-    assert_eq!(of, KindOfValue::Estimated);
-    assert_eq!(uncertainty, Uncertainty::Symmetric { sigma: 0.03 });
+    assert_eq!(d.kind_of_value, KindOfValue::Estimated);
+    assert_eq!(d.native.uncertainty, Uncertainty::Symmetric { sigma: 0.03 });
     // Pal 4, in the far halo at 101 kpc, is kept as published.
-    assert_eq!(distance(&n, "Pal_4").0, 101.39);
+    assert_eq!(distance(&n, "Pal_4").native.value, 101.39);
 }
 
 #[test]
@@ -86,12 +77,15 @@ fn a_cepheid_keeps_its_mid_infrared_distance_its_pulsation_mode_and_its_gaia_sou
     let n = normalized_fixture("skowron-2025-cepheids");
     assert_eq!(n.report.published, 5);
     let cg_cas = "429385923752386944";
-    let (value, unit, kind, method, of, uncertainty) = distance(&n, cg_cas);
-    assert_eq!((value, unit), (3_174.0, Unit::Parsec));
-    assert_eq!(kind, DistanceKind::PrimaryIndicator);
-    assert_eq!(method, Method::Cepheids);
-    assert_eq!(of, KindOfValue::Estimated);
-    assert_eq!(uncertainty, Uncertainty::Symmetric { sigma: 131.0 });
+    let d = distance(&n, cg_cas);
+    assert_eq!((d.native.value, d.native.unit), (3_174.0, Unit::Parsec));
+    assert_eq!(d.kind, DistanceKind::PrimaryIndicator);
+    assert_eq!(d.method, Method::Cepheids);
+    assert_eq!(d.kind_of_value, KindOfValue::Estimated);
+    assert_eq!(
+        d.native.uncertainty,
+        Uncertainty::Symmetric { sigma: 131.0 }
+    );
     let e = entry(&n, cg_cas);
     assert_eq!(e.flags.get("Mode").unwrap(), "F");
     assert_eq!(e.name.as_deref(), Some("CG_Cas"));
@@ -102,12 +96,12 @@ fn an_rr_lyrae_star_keeps_its_photometric_distance_and_its_type_and_a_zero_dista
     // Recorded 2026-11-10: the first five stars of Li et al. 2023's first slice.
     let n = normalized_fixture("li-2023-rr-lyrae");
     assert_eq!(n.report.published, 5);
-    let (value, unit, kind, method, of, uncertainty) = distance(&n, "507222753405440");
-    assert_eq!((value, unit), (6.34, Unit::Kiloparsec));
-    assert_eq!(kind, DistanceKind::PrimaryIndicator);
-    assert_eq!(method, Method::RrLyrae);
-    assert_eq!(of, KindOfValue::Estimated);
-    assert_eq!(uncertainty, Uncertainty::Symmetric { sigma: 0.67 });
+    let d = distance(&n, "507222753405440");
+    assert_eq!((d.native.value, d.native.unit), (6.34, Unit::Kiloparsec));
+    assert_eq!(d.kind, DistanceKind::PrimaryIndicator);
+    assert_eq!(d.method, Method::RrLyrae);
+    assert_eq!(d.kind_of_value, KindOfValue::Estimated);
+    assert_eq!(d.native.uncertainty, Uncertainty::Symmetric { sigma: 0.67 });
     assert_eq!(
         entry(&n, "507222753405440").flags.get("Type").unwrap(),
         "RRab"

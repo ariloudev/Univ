@@ -10,6 +10,15 @@ versions:
     title: "Review and gate wave 2"
     goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
     status: planned
+  - key: 01a1c417-e6c3-7150-9f67-8c9e891b7782
+    at: 2026-11-10T06:14:23Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Review and gate wave 2"
+    goal: "/simplify and /code-review findings are fixed, the gate and integration pass once, the trace is recorded, and the wave is merged"
+    status: active
 blocks:
   - key: 01a1c372-ae0b-7370-9f4f-cb6c342c741e
     id: w2-t7
@@ -24,3 +33,12 @@ blocks:
         title: "Review, gate, trace and merge wave 2"
         detail: "/simplify, /code-review, the gate and integration once."
         state: open
+      - key: 01a1c417-e6c3-7150-9f67-8c9fd10d6931
+        at: 2026-11-10T06:14:23Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate, trace and merge wave 2"
+        detail: "/simplify and /code-review in parallel."
+        state: active
