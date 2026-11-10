@@ -17,6 +17,25 @@ pub enum ObjectKind {
     /// A group of galaxies, listed by a source of group rows whose values are the group's,
     /// such as a group-mean velocity or a group distance.
     GalaxyGroup,
+    /// A tracer of the Galaxy's structure, as the definition of its source names its rows
+    /// (normalize-records): an open cluster.
+    OpenCluster,
+    /// A globular cluster of the Galaxy.
+    GlobularCluster,
+    /// A classical Cepheid.
+    ClassicalCepheid,
+    /// An RR Lyrae star.
+    RrLyraeStar,
+    /// A high-mass star-forming region, traced by its masers.
+    StarFormingRegion,
+}
+
+impl ObjectKind {
+    /// Whether it is one of the Galaxy's tracers.
+    #[must_use]
+    pub fn is_tracer(self) -> bool {
+        !matches!(self, Self::Body | Self::GalaxyGroup)
+    }
 }
 
 /// How one object stands to another.

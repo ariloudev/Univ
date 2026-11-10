@@ -3033,7 +3033,12 @@
         "description": "What an object's sources list it as.",
         "enum": [
           "body",
-          "galaxy_group"
+          "galaxy_group",
+          "open_cluster",
+          "globular_cluster",
+          "classical_cepheid",
+          "rr_lyrae_star",
+          "star_forming_region"
         ],
         "type": "string"
       },

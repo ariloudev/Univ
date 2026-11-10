@@ -53,6 +53,7 @@ fn definitions_with_tracers() -> Vec<SourceDefinition> {
         .clone();
     tracers.id = SourceId::new("simulated-tracers").unwrap();
     tracers.scale_domain = ScaleDomain::GalaxyTracers;
+    tracers.object_kind = Some(univ_model::object::ObjectKind::ClassicalCepheid);
     definitions.push(tracers);
     definitions
 }

@@ -47,6 +47,15 @@ blocks:
         title: "Galaxy tracers scale domain"
         detail: "Both enums, units, membership, tests; restore AC-91 and AC-92."
         state: active
+      - key: 01a1c37c-443f-7584-9e3f-c63c58083796
+        at: 2026-11-10T03:24:23Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Galaxy tracers scale domain"
+        detail: "07d89f5: ScaleDomain and CellSpace GalaxyTracers appended last (100 pc cells, parsecs); any object with a tracer source's entry is in it, in tiles and in the object rows alike. tiles, tiles_cli, release_reads, release and cell tests pass; the OpenAPI snapshot's descriptions name the new domain."
+        state: done
   - key: 01a1c372-ae0b-7370-9f4f-cb676c06876c
     id: w2-t2
     kind: task
@@ -60,6 +69,15 @@ blocks:
         title: "Server lists and queries the fourth domain"
         detail: "Restore AC-166."
         state: open
+      - key: 01a1c37c-443f-7584-9e3f-c63d83e74352
+        at: 2026-11-10T03:24:23Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Server lists and queries the fourth domain"
+        detail: "44f3801: no routing change was needed, the server reads domains from the release; its fixtures gain a galaxy_tracers domain and manifest, and the listing, 404 and volume-query tests expect it. 210 univ-api tests pass."
+        state: done
   - key: 01a1c372-ae0b-7370-9f4f-cb68ace47843
     id: w2-t3
     kind: task
@@ -73,6 +91,15 @@ blocks:
         title: "A definition's kind of object kept on its entries"
         detail: "normalization.object_kind kept as an object_kind flag."
         state: open
+      - key: 01a1c37c-443f-7584-9e3f-c63ee639de95
+        at: 2026-11-10T03:24:23Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "A definition's kind of object kept on its entries"
+        detail: "normalization.object_kind kept as an object_kind flag."
+        state: active
   - key: 01a1c372-ae0b-7370-9f4f-cb69aba04094
     id: w2-t4
     kind: task
@@ -126,3 +153,16 @@ blocks:
         markdown: |-
           | # | Issue | Found by | Fix | State |
           |---|---|---|---|---|
+      - key: 01a1c37c-443f-7584-9e3f-c63f3c7931cc
+        at: 2026-11-10T03:24:23Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | `tiles_cli` expected three domains in the tiles log | its test | The log lists an empty Galaxy tracers domain until a fixture source names it; expectations updated | fixed |
+          | 2 | The volume query read a manifest for every listed domain, and the API fixture's bucket had none for Galaxy tracers | `univ-api` query tests (500) | The fixtures put an empty tracers manifest beside the others | fixed |
+          | 3 | My task 1 commit ran after a failing `cargo fmt --check`, because a `;` came before `git commit` | review of the command's output | Formatted, linted and amended only on success; commands now chain with `&&` up to the commit | fixed |
