@@ -1,0 +1,12 @@
+key: 01a1c7c2-81d2-7618-90a9-a449736ba9d7
+id: wave-5
+versions:
+  - key: 01a1c7c2-81d2-7618-90a9-a44c42d25883
+    at: 2026-11-10T23:19:35Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 5: young clusters by age"
+    goal: "Open clusters carry Hunt & Reffert's estimated ages, and the explorer can show only the young ones, so the Local, Sagittarius–Carina and Perseus arm segments are visible; merged into product/milky-way"
+    status: planned
