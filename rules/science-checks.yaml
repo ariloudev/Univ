@@ -977,8 +977,9 @@ checks:
         locator: "VizieR J/A+A/673/A114/clusters, columns logAge16, logAge50 and logAge84"
         quote: >-
           Of the 6,818 open clusters (Type = o), every row gives logAge50; 2,794 lie below
-          10^8 yr, 1,225 below 3 x 10^7 yr and 405 below 10^7 yr (counted from logAge50).
-        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10"
+          10^8 yr, 1,169 below 3 x 10^7 yr and 405 below 10^7 yr (counted from logAge50,
+          against log10 of each age: 7.4771 for 30 Myr; 1,225 lie below logAge50 = 7.5, 31.6 Myr).
+        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10; recounted 2026-11-11"
 
   - id: unplaced-by-reason
     title: Unplaced objects by reason
