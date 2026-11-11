@@ -4471,26 +4471,47 @@ links:
         name: "name the frame of the axes, the origin, the units and the cosmology"
         body: 963fe1464b95e0bc2280138c5fea671fb3ec5df7bf46beb53f94c0e23cd5d28b
   - node: 01a1c319-7860-76e8-92ac-c5e61e66e5d3
-    reviewed: 40c240fc5b3e6d5a0dc9dc7e76bb647c559a4e58ffe51e5bc666ae0de1e18c24
+    reviewed: 68c0223a3e1688acfd9de1d3feecd8789f00c1c7882a13f3f179f25ebbda57cb
     tests:
       - file: "clients/explorer/src/scene/tracers.test.ts"
-        name: "gives each source a colour apart from every star temperature's, the stars' grey, the galaxies' blue and each other"
-        body: 07f004f5819d80842c3d3b6cb37982bd5160c8f82bbc51612ff0fd23bb0c84d7
+        name: "gives each kind of object a colour apart from every star temperature's, the stars' grey, the galaxies' blue and each other"
+        body: d15d806c03df019fa28a89ed7a1c20ffad995d045f51254e08e1bc3f2f6f8d50
       - file: "clients/explorer/src/scene/tracers.test.ts"
-        name: "has a colour for each of the seven sources the domain's manifest lists"
-        body: ae3eadf471da428e285f30816eb1d019c89e66a3c8500a28932dba8717ccd69d
+        name: "has a colour for each kind of object of the tracers, and one for a tracer of unknown kind"
+        body: 63131cc018842a29e7c6884f1f8181f41a4547f9f2251eebe708ef069cd8555f
       - file: "clients/explorer/src/catalogue/tiles.test.ts"
-        name: "gives each point of the Galaxy's tracers its source's colour"
-        body: 1801f9ad3f32269177db125484b685c68b04d64277469a9fa263f909d1948c85
+        name: "gives each point of the Galaxy's tracers its kind of object's colour, whichever source placed it"
+        body: 6080f22769f962214945d518fd4780795d64fc8a6beaf3bfd6c9cfe8b9fac583
   - node: 01a1c319-7860-76e8-92ac-c5e7f392df4f
-    reviewed: 574d124453d02e4eb3a82439c7e33e0212fb6d7c71020599b581f225ba5b38de
+    reviewed: b6ba3597932985c155454b3c7768e50fbcbc485bb0c423e5a89e73641c458c6d
     tests:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
-        name: "name each source of the Galaxy's tracers in its colour, with its points drawn"
-        body: f05af11a072f958d00813fbf70be3ecbaff1146b58203c53d3df1480c226d606
+        name: "name each kind of object of the Galaxy's tracers in its colour, with its points drawn, and those of unknown kind"
+        body: ee8eec318d8d960b10f30d6699ac100b9da4023ae02cf591405964164b80d1f8
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
-        name: "counts the Galaxy's tracers by source, each in its source's colour, and their kinds of value apart from the other points"
-        body: 8da4da8874ccdbb56894d5a52a0b717c887381e937a8e952417ee3860427af7a
+        name: "counts the Galaxy's tracers by kind of object, each in its kind's colour, and their kinds of value apart from the other points"
+        body: 59f9fe79ea446aa557c4c47fccc25eedba9ed4f9fc94926df10e6a2d60c7c72e
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8fb25546047
+    reviewed: c1f58618aeb2fa6c04d2063f04a5b582f3953bf7fc93898f2f75c4b239faa3d5
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "gives each point of the Galaxy's tracers its kind of object's colour, whichever source placed it"
+        body: 6080f22769f962214945d518fd4780795d64fc8a6beaf3bfd6c9cfe8b9fac583
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "colours each point by its kind of object, and a point of no kind or an unknown index as unknown"
+        body: 09af1cef6192abb712149b7817111613317fc261821aa36a65bee06b3ff94100
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8fc292cfa4a
+    reviewed: 23cc83b5672a6efc3ecdbed33a36f6dc1023b48d2472c5296eba1bcfaf7ddd81
+    tests:
+      - file: "clients/explorer/src/catalogue/tiles.test.ts"
+        name: "draws a tracer of a tile that gives no kind of object in the unknown kind's colour, and gives no other domain's points kinds"
+        body: c331256108295e59326a55a69c191b0b7eaaa1cfdedd3701862235c5d760c975
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "colours each point by its kind of object, and a point of no kind or an unknown index as unknown"
+        body: 09af1cef6192abb712149b7817111613317fc261821aa36a65bee06b3ff94100
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "name each kind of object of the Galaxy's tracers in its colour, with its points drawn, and those of unknown kind"
+        body: ee8eec318d8d960b10f30d6699ac100b9da4023ae02cf591405964164b80d1f8
   - node: 01a1c319-7860-76e8-92ac-c5e864b8c262
     reviewed: 723a83a1ebcef88b8b08b9a8aaefe4d9e812fa0cc9e82a42cc1ccd2e1f657833
     tests:
@@ -4699,11 +4720,23 @@ links:
         name: "takes Retry-After as seconds, zero included, or as a date, and the window otherwise"
         body: 768ac26ce29ceb3b685ad257aae80ab47868725463553c0dbeeb45ba2277b5d6
   - node: 01a1a8cc-3d02-7585-85fb-455a3c55e223
-    reviewed: 0d737e117717266b2b460cb0a5d169c9ac0571264cffa8d076943d3dde79985b
+    reviewed: 378bc5f47a9479dbbaad9815f1a47dc14c8de103cbcd6c1d0b484fea67e2e121
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers every scale domain, each source of its points, the four kinds of value and each kind of structure, all on"
         body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
+        body: 0c93e4084024a8af2c80a4cd8182a872c552aa0066ccf855c2920b81a1267326
+      - file: "clients/explorer/src/ui/show/choices.test.ts"
+        name: "offers the kinds of object of the Galaxy's tracers only where their tiles give each point's kind"
+        body: cb5b74b357787f42227d57da9d6502c2a9d571aba8354cfa3b620a34c4463347
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8f9900c685f
+    reviewed: efcaa6473a5666aa33dda925e60d749b0643c05aaef3efb13fddf78d35ce33d0
+    tests:
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
+        body: 0c93e4084024a8af2c80a4cd8182a872c552aa0066ccf855c2920b81a1267326
   - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
     reviewed: a305dafb5da2bdd558a29351e46dc2a71f745cf604150f5baad2a228784b2c65
     tests:
@@ -4728,6 +4761,15 @@ links:
       - file: "clients/explorer/src/scene/masks.test.ts"
         name: "set a kind's bit at its index among the kinds"
         body: d02a93b255b2c6e5e758b32170611b917b732eae6510359fefa23a6d16bbff53
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8faa69b54c2
+    reviewed: 0b61fd9057fdd8bb29079b17ca9983ce4de03da514acaf5e878305a27e2a8c60
+    tests:
+      - file: "clients/explorer/src/scene/masks.test.ts"
+        name: "set a kind of object's bit at its object index, and draw a tracer only while its kind is on"
+        body: a46d70fee1915bec8a4565900d13151778ace9caaf58b7146d937ac3004c4766
+      - file: "clients/explorer/src/ui/hidden.test.ts"
+        name: "turn off a kind of object of the Galaxy's tracers through the address, and leave out a name that is none"
+        body: 9a8165d3d3bf44e8d13d2c521628300048ccc0a40279db419cd7c40deb6e21c7
   - node: 01a1a8cc-3d02-7585-85fb-455ef6890107
     reviewed: ff270dd4f6447073ec040e061259f1eaf790691965d9492450a6ed2a673d1138
     tests:
@@ -4762,14 +4804,17 @@ links:
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
         body: 4d32ebe858fde3dd2e13b84e530f7a5b1ed900a655684e7e470b84e411e707d6
   - node: 01a1bcf9-343a-712a-a28c-7503bb8fdbb5
-    reviewed: 8ae59225422c44a47018aaa3dfdebdb7846d7284052dafc3b3f603ab9c48f092
+    reviewed: 2b26ae09388c4ec29a37b04fbd8845ae728d55c8e6f4ac7b0bd5b3593defa5f1
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "sums up what is on, and offers to show everything only while a group is off"
         body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
       - file: "clients/explorer/src/ui/show/choices.test.ts"
         name: "sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers"
-        body: 4fa21c607bd552de2fdf2f1cb5cfd22ac89ea90834d558126718839b64da9012
+        body: 29d0c1d6897963253f2352f38e364f7e2ceff303d1d602e901ae33a0917fcd35
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
+        body: 0c93e4084024a8af2c80a4cd8182a872c552aa0066ccf855c2920b81a1267326
   - node: 01a1bcf9-343a-712a-a28c-75049b84e0eb
     reviewed: 105c1bca89abcde5f6d38331efba9fd8b8a1bfd9a2097fb52e747d66610ffca0
     tests:
@@ -4778,7 +4823,7 @@ links:
         body: c8cdd3b21257f4b3c6073bc7dda6e8dcb59aad054e2f427a9880089ae4b40d70
       - file: "clients/explorer/src/ui/show/choices.test.ts"
         name: "sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers"
-        body: 4fa21c607bd552de2fdf2f1cb5cfd22ac89ea90834d558126718839b64da9012
+        body: 29d0c1d6897963253f2352f38e364f7e2ceff303d1d602e901ae33a0917fcd35
   - node: 01a1bcf9-343a-712a-a28c-7505bbe87412
     reviewed: 8705f66b5a2ca7ffa949646e94e17121efadb01af8eb91d73cee1b173dc7f75d
     tests:
@@ -4876,14 +4921,14 @@ links:
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
         body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
   - node: 01a1bcf9-343a-712a-a28c-7513e662d7d4
-    reviewed: 9eab7b797d6f86328b5c7b047c60a25651798e6b610a9cfdc5495be370f83ea7
+    reviewed: 960b065c3c556ee33d12a4f28c6c90f4b31199ea2ff0df7aef9aab97fe48ee83
     tests:
       - file: "clients/explorer/src/ui/show/choices.test.ts"
         name: "groups the kinds of structure by family, with their counts, any other kind under other"
         body: ae524dbfdc7901708b537c9a56d9dee41d2bc7c4dd2a880823525c7f65d2e6b5
       - file: "clients/explorer/src/ui/show/choices.test.ts"
         name: "keeps each kind of structure's family with its colour, every kind with a colour in one family"
-        body: 62c1b9d07ce018d7dac53075333800cc2c66f0906d9bf7739da7b044073d576e
+        body: 8b88e998c90e3f1a75b4bd7fc96fbe776bbd6f453b21948fa34ef5c4fccd0993
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
         body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
@@ -5481,6 +5526,156 @@ links:
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns the dust map on from the Show drawer, and, the release holding no dust grid, turns it off again saying why, the points still drawn, without a WebGL error"
         body: 757d5c40dd9831886cdba792e8697582671a5d05b155bf31b589a4860cc1c848
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8ff5f10db66
+    reviewed: 9845d822d46db4d92c47aa6a7c89f84a1c43b888b366baa98fd484a7fc1c2be0
+    tests:
+      - file: "clients/explorer/src/ui/Rail.test.tsx"
+        name: "offers the arms view beside the control that returns to Earth"
+        body: ee6aa406207c60a5224166d5387d0baaa520f4d71bbced22abf0b60b65dac9bb
+      - file: "clients/explorer/src/ui/Rail.test.tsx"
+        name: "offers no arms view where the view has none to open"
+        body: 7a5f201f396cd43601988ca8edef811a50b59b1d0c9906e7ebbdf4ac02f94495
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "is not offered for a release without the Galaxy's tracers"
+        body: 31d9ee634d7d3d536e60d3156ca2df9c45036f14c3ae552dd26e30d460165027
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c9001874842a
+    reviewed: ba9c48477acfc37d69d1a19a18780e0a67b8e37318428be24242e7794d7f339e
+    tests:
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "looks from the north Galactic pole toward the south one, the focus 4.075 kpc toward l = 0°, b = 0°"
+        body: 030a5cafb5dab234b488e308c107839099333dbebbd1d20bc34b32bfde9c4c56
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "is defined at the pole: every axis of the eye finite and of unit length"
+        body: 11695bbd1c9c5954073289d7f41733b5d21089832a2b077bbd00a878c5d0cf6f
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c9013e941971
+    reviewed: e1aa57bbb752c11cf38a2603943502371017744a9612f374d240d44f8b93aac0
+    tests:
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "looks from the north Galactic pole toward the south one, the focus 4.075 kpc toward l = 0°, b = 0°"
+        body: 030a5cafb5dab234b488e308c107839099333dbebbd1d20bc34b32bfde9c4c56
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c902b661dfcb
+    reviewed: d53d83e8a65ec32fe077b70988927be403b10cec56df11f2ea7f3ef49a5b218c
+    tests:
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "puts the Sun above the Galactic Centre and l = 90° to its right, so that the Galaxy turns clockwise"
+        body: 20b67c21f90ebed99e921fa96f20648a4805dc35f9e7b8c6cc571bfc52adfc83
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c903d2d3cf16
+    reviewed: 2e03f4a59b69fc8bebf88e6e146bcc1bc7657444513c095df0be586f11a61b72
+    tests:
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "holds every point within 16 kpc of the Galactic Centre in view, on a wide view and on a tall one"
+        body: 3a12f6844376593b3326e007cd6b191e86a2e94e7893cffc5df6e2231138ed7e
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "reaches as far as ingest lets an extrapolation run from the Galactic Centre"
+        body: 550f18b56dc4c017474ec92e3095755ffbd72ffde6ba82f7e844370dfd9d0362
+      - file: "clients/explorer/src/scene/armsView.test.ts"
+        name: "places the Galactic Centre at the R0 every arm file cites"
+        body: bc2c94735b5d4c6c985975d51abf7dcb471beeb962d5b6e677ed3f42bb06519c
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90484cdd721
+    reviewed: 4f15c31850be1ffe271f392234f04bc070c44d1946f87d8e49fc942e41c2571a
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
+        body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens on an address that asks for the arms view, in galactic axes, with what it draws"
+        body: e02c6c9f8870682e31711ba555ccde2f26ecebdb65046b41e93a5cd33918820d
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c9052bd62642
+    reviewed: d23a741ad6f178d95d2530e7b8e07b2c6a26792fc20f0173e2c344ae53e0c9a8
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
+        body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90774284032
+    reviewed: 2da4b1e64c024661ab951a30a096db94c20660f5de6bc6ce71c19d82999e7934
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the Galaxy tracers domain on and every other off"
+        body: 33af611cad84029444cd725f8776a948bf996df56071ca3d7d19e65c431845ac
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
+    reviewed: e966f8461372113a48646f7e4aab632e03cbc8bb315cf9349a518dd36745a608
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the luminous hot stars, open clusters and star-forming regions on, and the Cepheids, RR Lyrae stars and globular clusters off"
+        body: b3a5bf0df95212a78fce1b834193854c470a6d29eadf211e24aff1919b47bc09
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664
+    reviewed: 0c8a3730b93494da479eeab20e52b7fc4c73c8619903536b8cc5e58e2a0b7365
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the luminous hot stars, open clusters and star-forming regions on, and the Cepheids, RR Lyrae stars and globular clusters off"
+        body: b3a5bf0df95212a78fce1b834193854c470a6d29eadf211e24aff1919b47bc09
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1
+    reviewed: 921840aa20a9509b1ed8ae9dc4b355ff2419d5cfa412eb8e028aedd481756c89
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "sets what is drawn, the age and the view, and puts view=arms in the address; a turn takes it out and leaves what is drawn"
+        body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90a7548931b
+    reviewed: ba0bd538fbd04380fa6d9fc2dd2ec03a0984f3c9b65992853a190d121fda367a
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the spiral arms and their extrapolations on and every other kind of structure off, the release's own kinds too"
+        body: f76d879ed1aa8c4b9731764344c18f769033138251b4e7c6d0272885d16d01f1
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90b518949a5
+    reviewed: ed23df475120ca42634dceef36886d51bd583a5a98d1a6e78f215c479a144097
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns every source and every kind of value on"
+        body: 5f686a4073f4c918025bde747efe61adb1b18bd661725c8eb32faeca790919bf
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90df8380717
+    reviewed: b623c673c3be10d1bb6aa97a7298f21034c0d71e6f5e164c5a29c8f6c2493e03
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "sets what is drawn, the age and the view, and puts view=arms in the address; a turn takes it out and leaves what is drawn"
+        body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2
+    reviewed: 7444c82685e2d7179a096e0d043ee95b492563b6ec0e5631ee8a948339526ccc
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "opens from an address that asks for it once the release's domains are read, and not before"
+        body: 17779b17d633ff7ff6e621545315499e1fbf92d41b0ebbb958293c867b23a9b0
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens on an address that asks for the arms view, in galactic axes, with what it draws"
+        body: e02c6c9f8870682e31711ba555ccde2f26ecebdb65046b41e93a5cd33918820d
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c90f96e6d031
+    reviewed: 3617d7d35dace683ad59f53254f227499ddcb4c851cf64fab333308a6f0ebca0
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "sets what is drawn, the age and the view, and puts view=arms in the address; a turn takes it out and leaves what is drawn"
+        body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "takes view=arms out of the address on a zoom or a move of the focus as well"
+        body: 5dc9c8f4247b6fb6fd9edbcf37f6e5070bdb5aeda1d16631dd25a460db8f035d
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "ends, and leaves the address, on a change of axes or a flight elsewhere"
+        body: f2effe8ec4c89d4ceba39443e0aa3afe3a266d323aab3fb02d87955d270d4851
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8
+    reviewed: ad3e5881d1a178741689df2eb2d24fbb591bf62e9e85d546f8a4d978ce25dc41
+    tests:
+      - file: "clients/explorer/src/scene/controller.test.ts"
+        name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
+        body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
   - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
     reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
     tests:
@@ -5858,7 +6053,7 @@ links:
     tests:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
-        body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
+        body: 1ec3b839b0ac34141a9e5302087e6a1255cc75fdf353294a4e385f35b94e8996
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "shows each kind of structure with its colour and count in its family, hollow and not pressed while off"
         body: f439380ea7b0eee405d4f03acbc79a5f5faaa3e4e6d3ac510e1e078011d53abc
@@ -5871,6 +6066,15 @@ links:
       - file: "clients/explorer/src/ui/useStructures.test.ts"
         name: "draws its segments as lines and its markers as points, about its centre"
         body: a12bb678ea85f35c5f4cc76096372188dead636fe1c4f3eaf6f8b451087dbeb2
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8f611bfeacf
+    reviewed: 3a7d2d1a83c2f88a54fa1c96bd824522c45378c68f5b8ed29072554008d21224
+    tests:
+      - file: "clients/explorer/src/scene/kinds.test.ts"
+        name: "draws a model arm's extrapolation in its arm's colour, fainter, and beneath the other outlines"
+        body: 7e609b43c3383f5b38a96d9704f197b9b600eeb421783ab45b260db10cb98c7c
+      - file: "clients/explorer/src/ui/useStructures.test.ts"
+        name: "draws a model arm's extrapolation beneath the other outlines, fainter than its arm"
+        body: 220d5d2cc262ad0a2f7ac5392a17688dfb0ad2c2a4440daa7531463e95613b32
   - node: 01a1a4bd-9644-750a-a678-3906e3189ded
     reviewed: 72050876f6889ae2e65b35fc490ba971041de261255eebc90566409270edb988
     tests:
@@ -5900,7 +6104,7 @@ links:
         body: 2f35d77b9f15b30eba6b52b6b873f5a1272e8e89551643b801b5e22d6b90a01b
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's"
-        body: f6c747ae631f27dc00e680c0ce8c1edd9575b48190839a56cc5615739e0f31aa
+        body: 1ec3b839b0ac34141a9e5302087e6a1255cc75fdf353294a4e385f35b94e8996
   - node: 01a1a4bd-9644-750a-a678-390771cfa729
     reviewed: 61da897f88768aba57dcad866cc973f6c796402aed204ce1c1dca7f991dc669a
     tests:
@@ -6144,6 +6348,18 @@ links:
       - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
         name: "says a disputed structure is disputed, above its values, naming each paper that disputes it"
         body: d2560dfaa1cf2420cf8bba26da7bd0edbb59d0ffb11de003c7f12d6e65410994
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8f729ff5037
+    reviewed: 60990406a990ab0ecd6bfd6e106024444c5122a491059cd928275ddfb26095ad
+    tests:
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
+        name: "say above its values that a model arm is a model and whose, and of its extrapolation how little rests on the fit"
+        body: ce897eb8a3c5535ea35081aa78a8fad0f2b9c8bbea876f0ca6730cc0911d3dac
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c8f82fd5ffdc
+    reviewed: da2a9ed71f4d106df16f57eddac2f3abdbf6c42493d3b7e7e8c9d95d67a28528
+    tests:
+      - file: "clients/explorer/src/ui/StructureRecordPanel.test.tsx"
+        name: "say above its values that a model arm is a model and whose, and of its extrapolation how little rests on the fit"
+        body: ce897eb8a3c5535ea35081aa78a8fad0f2b9c8bbea876f0ca6730cc0911d3dac
   - node: 01a1bcba-dd8e-750a-886c-c230ee335b2d
     reviewed: 249757d102e11ae88bfd59cc1a97e6a5482d3487b17d0584fa206d1b070476c9
     tests:
@@ -6224,22 +6440,22 @@ links:
         body: 15b4fb1c4f936453db5dd514c911731a9754e51368609926ed7264114032ca54
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "lists the structures nearest first, under headings with their counts, those not placed last"
-        body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
+        body: 954a4e939f68cda6dfa4d7a00829d30fd4d4b2f1e6c165cd3b1afce82f4eee5f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e7859f3c18c9
-    reviewed: 10beb421cdcb9a3708301339d9da58c0bd236e44020e8081e079e4121a1c0359
+    reviewed: bc1c530c48f572a597a225c29f1b7f3f2bdee36447629b92dae4d3a2d9023dae
     tests:
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
-        name: "group the rows within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, nearest first under each"
-        body: c4f833d07f7f8ad5348153642c397a2e5fa41699bb5e68b57b49f765d3b06bcc
+        name: "group the rows within 30 kpc, from 30 kpc to 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, nearest first under each"
+        body: bb963b6bbb869df7cf7c76c712d680ef157275f1856f394b08ed7d66c2973165
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
         name: "leave out a heading that holds no row"
-        body: 2e49bf3b24f1913c3386bb92fba5decb4b0d5c42885b0a5213a6c84a83ab0100
+        body: 96ae132e5fbcf5a9d42ffa2dd2669a6de836980fd407c1dc58609e1ab0c34f4c
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "lists the structures nearest first, under headings with their counts, those not placed last"
-        body: f45e0020d2f940386f1d6aac41b1a8e9b1d3a85e9628f6e82c797d9af41d0815
+        body: 954a4e939f68cda6dfa4d7a00829d30fd4d4b2f1e6c165cd3b1afce82f4eee5f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
@@ -6253,41 +6469,41 @@ links:
         name: "name a structure as the view does, \"(at least)\" after a name whose shape is a lower limit"
         body: 371f86add15a1b2345ac806286ae1f6e0a644074756ed44b5900bffbbe857fb9
   - node: 01a1c278-094a-7307-be66-e787596ccbdd
-    reviewed: 11b5d15a7cc03590c88c98ee5d76c2ab862f6aae4c3907e16d484d17f4aad264
+    reviewed: b642b12d8a2e49f0094d331ae34ef2c2ad3c56feebb7900fbffd1a3196963677
     tests:
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
-        name: "is in whole megaparsecs below 1,000 Mpc, and in gigaparsecs to three figures from there"
-        body: 898ca9df373ba0a018ef4a328847b2423ffddfab0827a2393ab64cc25d41b2f8
+        name: "is in kiloparsecs to three figures below 1 Mpc, whole megaparsecs below 1,000 Mpc, and gigaparsecs to three figures from there"
+        body: 12705b31d93f0160f8e12e629e3cada92403361b3c554aa1652deedbeb70fdef
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
         name: "reads \"around us\" for a structure centred on Earth, and \"not placed\" for one with no placed shape"
-        body: 0c4138779713372ff2b88d3736c6b08e7cdff3ed42b11bbfcc0e40bba753e916
+        body: 6bb9790e9bbb5bde41545464490fff7cf4c66a6a599128e77ade86befba92dee
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "gives each structure's distance, and draws a dot on the shared axis for each one placed"
-        body: aa77d495d2231f752cf0744b1688afc520c09d96c9cbcc25a51c8977b39609cb
+        body: 0721b91ab52627c7975c3e52455b7be78220546b99d445d04e288fbfcc697336
   - node: 01a1c278-094a-7307-be66-e7880ad36d01
-    reviewed: eedff5c4fa92b5389289e0d005575c5dfd528fedce08d922d7ae6ba5d8600360
+    reviewed: 6d83b369bf2cd11c68f2e95049f5695e8bc28fae21d1db49b9f1b1e11405bfca
     tests:
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
-        name: "runs logarithmically from 10 Mpc to 10 Gpc"
-        body: 6adb21e59d91a996486e6471fe923e9d4a6be3c6a3da721776b4f738f5dcc8c2
+        name: "runs logarithmically from 1 kpc to 10 Gpc"
+        body: 97fc6a03cb0f35b0dac397642291517c66374d0c7ada57637b542d92b73a3ddb
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
         name: "holds a structure nearer or farther than its ends at its ends"
-        body: 0438eaf69c15573c9b4ef6ca131c4d691951a0318b9dda5e8f7eda00e1aada03
+        body: f1d8ece9fec8b939cf1320b427d182609ca4fd8e4a4c99273cdf49db8e0a2a23
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "gives each structure's distance, and draws a dot on the shared axis for each one placed"
-        body: aa77d495d2231f752cf0744b1688afc520c09d96c9cbcc25a51c8977b39609cb
+        body: 0721b91ab52627c7975c3e52455b7be78220546b99d445d04e288fbfcc697336
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
   - node: 01a1c278-094a-7307-be66-e789414bdf63
-    reviewed: d7cb7fd95a8f37850486ec19de9846f3d816706b3bedc9f4c75376212f1347bb
+    reviewed: 53abf7ccb55a05c17b6b190cf1d07fc127ba5b704dda3ab4371375e84e9d496c
     tests:
       - file: "clients/explorer/src/ui/structures/depth.test.ts"
         name: "read a reconstructed structure as such, and a structure whose record is not read, or whose status the explorer does not know, as known in no way"
         body: 2afdd61280fcb48c087a842a9f669fc0fedb869103423c7e5684a32d0652b6f7
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "marks how each structure is known on its dot, as the legend says"
-        body: 8efe60112df12c982442564fcdf5aaf654ce57b043b693b639bc72e8a726f518
+        body: 3153a0cc1ac5e48d5864dd03e061a9cc1091634cde4b587f5c23e4b0d25f3c29
   - node: 01a1c278-094a-7307-be66-e78af4b30484
     reviewed: 7488b533a712fb0542429c65ac54a112e7470683778df29d7947f6dff35072ff
     tests:
@@ -6296,7 +6512,7 @@ links:
         body: 843d68bad6532c0b8c349055184ca23d18c1cccff0e5ccc2bc5e611dcfab748a
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "orders the list by name instead from its switch, without headings, keeping each dot"
-        body: d96fd99f6e12f7ca0abd811baaed11eeac0ae270b62b7e406f236ab5509beed8
+        body: 44d55945e8abdb75ad9dad8a6ec1a5c93f8e7abe9c8095f669e121db937f92c1
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
@@ -6314,7 +6530,7 @@ links:
         body: 6332b58794e8b69d507334d0dfd7c4c128a69bed9dc4ea4b54066f47757bb1ff
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "narrows the list to the structures whose name or kind holds the text typed, counting them out of all"
-        body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
+        body: 48582bf5bc596f5f2e59da3dfa725f4607a13fe6e4fba2e3458699fbb5d5671c
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
@@ -6323,7 +6539,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "narrows the list to the structures whose name or kind holds the text typed, counting them out of all"
-        body: 7e07e643786966d5d99668f7d843ee4526d0e559a7bfb90dc7492391559a6034
+        body: 48582bf5bc596f5f2e59da3dfa725f4607a13fe6e4fba2e3458699fbb5d5671c
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
@@ -6332,7 +6548,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "says so where no structure's name or kind holds the text typed"
-        body: bdba5c71349e02b8ff37a3cf9ff00ca34f7916dd6d0dcdfb46085d04b28bb5f2
+        body: 630a55b5fd9447b0512c462e886b970c280b383b6c9453c0fcfecf425249574f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
         body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
@@ -6371,7 +6587,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/structures/DepthIndex.test.tsx"
         name: "opens nearest first with an empty find box where nothing is kept, or local storage is refused"
-        body: f41222011056a527b6872f03d792563daf91152b0cc10200144ac5c2fa2bbefb
+        body: 02ab92c2037bcf7fb2eb5a4dc8dc7b1ea837cdd8ff1c45e8abeb4f6805a292ff
       - file: "clients/explorer/src/ui/localState.test.ts"
         name: "is none, and writing it does not fail, where the browser refuses local storage"
         body: 5da3246ee64076c3270cbf390ccf7c04a029db83d763ef9e7e0b3f7e06c00489
