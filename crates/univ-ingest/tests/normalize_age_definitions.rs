@@ -1,11 +1,6 @@
 //! A definition reads a star cluster's age only as its `normalization.ages` names it: in years
 //! or log years, with its bounds in the same unit and a credible interval's probability in
 //! (0, 1]; Hunt & Reffert 2023's definition reads its ages so.
-#![expect(
-    clippy::unwrap_used,
-    reason = "test helpers unwrap: a failure there is the test failing"
-)]
-
 mod common;
 
 use std::path::Path;
@@ -62,7 +57,11 @@ fn an_age_reading_with_a_probability_outside_zero_to_one_is_refused() {
     for p in ["0", "1.5"] {
         let refused = read(&with_ages("log_year", &reading(p, "logAge50"))).unwrap_err();
         assert_eq!(refused.field, "normalization.ages[0]");
-        assert!(refused.problem.contains("probability"), "{}", refused.problem);
+        assert!(
+            refused.problem.contains("probability"),
+            "{}",
+            refused.problem
+        );
     }
 }
 

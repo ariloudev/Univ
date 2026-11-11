@@ -11,8 +11,9 @@ pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
-    AgeReading, CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns,
-    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
+    AgeReading, CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading,
+    ErrorColumns, MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading,
+    SpectralTypeReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,

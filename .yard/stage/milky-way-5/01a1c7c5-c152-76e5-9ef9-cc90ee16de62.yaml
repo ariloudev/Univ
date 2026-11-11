@@ -64,6 +64,15 @@ blocks:
         title: "Source definitions: normalization.ages"
         detail: "Field::Age/AgeLow/AgeHigh, AgeReading in source/normalization/age.rs. Done when tests/normalize_age_definitions.rs refuses an undeclared column, a bad probability and a wrong unit, and accepts Hunt & Reffert."
         state: active
+      - key: 01a1c7f0-ceed-7436-bcda-01911735ee86
+        at: 2026-11-11T00:10:10Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Source definitions: normalization.ages"
+        detail: "Field::Age/AgeLow/AgeHigh; AgeReading and its check in source/normalization/age.rs (the colour check moved to normalization/colour.rs to keep the file under 500 lines). Hunt & Reffert defines logAge16/50/84 and its ages reading, and its fixture is re-recorded with the age columns (same five clusters). tests/normalize_age_definitions.rs passes (6 tests)."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fef9192a74e8
     id: t3-normalize-ages
     kind: task
@@ -77,6 +86,15 @@ blocks:
         title: "Normalize ages"
         detail: "plan/age.rs and row/age.rs; native log, normalized years, a credible interval. Done when tests/normalize_ages.rs passes on the re-recorded fixture."
         state: open
+      - key: 01a1c7f0-ceed-7436-bcda-0192a4fc74dc
+        at: 2026-11-11T00:10:10Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Normalize ages"
+        detail: "plan/age.rs and row/age.rs; native log, normalized years, a credible interval. Done when tests/normalize_ages.rs passes on the re-recorded fixture."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-fefa3d22e53a
     id: t4-hr-release
     kind: task
