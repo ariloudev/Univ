@@ -15,7 +15,7 @@ requirements:
       - key: 01a1a8cc-3d02-7585-85fb-455a3c55e223
         name: "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value, the kinds of object of the Galaxy tracers and the kinds of the structures, each with a switch."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c8f9900c685f
-        name: "Each kind of object's switch carries the colour its points are drawn in and the number of its points the release holds."
+        name: "Each kind of object's switch carries the colour its points are drawn in and the number of its points drawn, as the key gives it."
       - key: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
         name: "Every switch is on when the view opens on an address that turns no group off."
   - key: 01a1a8cc-3d02-7585-85fb-455c402dc776
