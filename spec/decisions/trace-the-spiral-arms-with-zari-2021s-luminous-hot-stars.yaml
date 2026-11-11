@@ -87,7 +87,7 @@ consequences:
     statement: "Galaxy tracers gain the kind of object luminous hot star, named for what the sample holds rather than as OB stars."
   - key: 01a1cbb8-4b9d-727f-bb23-49849c5d0217
     kind: risk
-    statement: "Astro-kinematic distances rest on a model of the disc's rotation as well as on the parallax, so they are inferred, and a star joined to a Gaia DR3 star with a precise parallax is placed by that parallax instead."
+    statement: "Astro-kinematic distances rest on a model of young stars' velocities and density as well as on the parallax and proper motion, so they are inferred, and a star joined to a Gaia DR3 star with a precise parallax is placed by that parallax instead."
   - key: 01a1cbb8-4b9d-727f-bb23-49850b2dc364
     kind: cost
     statement: "Release 15 is a full build that adds about 417,000 Galaxy tracers, nearly three times the domain's points."

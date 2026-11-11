@@ -22,6 +22,7 @@ fn tile(n: u32) -> (NodeBox, Vec<u8>) {
                     index: 0.65,
                     bands: ColourBands::BpRp,
                 })),
+                object: None,
             }
         })
         .collect();
@@ -29,9 +30,9 @@ fn tile(n: u32) -> (NodeBox, Vec<u8>) {
     (node, bytes)
 }
 
-/// The layout of the version the encoder writes.
+/// The layout of the version [`encode`] writes.
 fn current() -> EncodingLayout {
-    layout(u32::from(VERSION)).unwrap()
+    layout(u32::from(BASE_VERSION)).unwrap()
 }
 
 fn field<'a>(layout: &'a EncodingLayout, name: &str) -> &'a HeaderField {
@@ -40,12 +41,12 @@ fn field<'a>(layout: &'a EncodingLayout, name: &str) -> &'a HeaderField {
 
 #[test]
 fn every_listed_version_has_a_layout_and_no_other_does() {
-    assert_eq!(VERSIONS, [1, 2, 3]);
+    assert_eq!(VERSIONS, [1, 2, 3, 4]);
     for v in VERSIONS.map(u32::from) {
         assert_eq!(layout(v).unwrap().version, v);
     }
     assert!(layout(0).is_none());
-    assert!(layout(4).is_none());
+    assert!(layout(5).is_none());
     // Version 1 is described as it was: 17 bytes a point and no colour.
     let one = layout(1).unwrap();
     assert_eq!(one.point_bytes, 17);
@@ -147,4 +148,27 @@ fn the_layout_serializes_its_types_as_clients_name_them() {
     assert_eq!(json["points"][1]["type"], "u64le");
     assert_eq!(json["kinds"][3], "reconstructed");
     assert!(json["header"][3].get("value").is_none());
+}
+
+#[test]
+fn version_4_describes_the_kind_of_object_column_after_version_3s() {
+    let four = layout(4).unwrap();
+    let three = layout(3).unwrap();
+    assert_eq!(four.point_bytes, V4_POINT_BYTES);
+    assert_eq!(four.max_points, 49_929);
+    assert_eq!(four.points[..three.points.len()], three.points[..]);
+    let last = four.points.last().unwrap();
+    assert_eq!(last.name, "object_kind");
+    assert_eq!(last.field_type, FieldType::U8);
+    assert_eq!(last.column_offset, POINT_BYTES);
+    assert_eq!(four.object_kinds, OBJECT_KINDS.to_vec());
+    assert_eq!(three.object_kinds, Vec::new());
+    let json = serde_json::to_value(&four).unwrap();
+    assert_eq!(json["object_kinds"][6], "luminous_hot_star");
+    assert!(
+        serde_json::to_value(&three)
+            .unwrap()
+            .get("object_kinds")
+            .is_none()
+    );
 }

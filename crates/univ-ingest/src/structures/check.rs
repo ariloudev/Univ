@@ -10,7 +10,9 @@ use super::cited::{Assumes, Cited};
 use super::geometry::is_length;
 use super::members::{ColumnName, MemberSource};
 use super::numbers::{has_magnitude, has_number, numbers, stated_numbers};
-use super::{Dispute, Paper, Structure, StructureGeometry};
+use super::spiral::Extent;
+use super::{Dispute, Paper, Status, Structure, StructureGeometry, StructureKind};
+use crate::source::ScaleDomain;
 use std::collections::HashSet;
 use univ_model::ids::is_slug;
 
@@ -272,6 +274,38 @@ impl Structure {
                     row.values[i] * factor,
                 )?;
             }
+        }
+        Ok(())
+    }
+
+    /// A log spiral is a model spiral arm of the Galaxy: its kind names its extent, a spiral arm
+    /// over its fitted range or that arm's extrapolation, its status is `model` and it is listed
+    /// among the Galaxy tracers; and a spiral arm kind takes a log spiral.
+    pub(super) fn check_spiral(&self) -> Result<(), Problem> {
+        let spiral = match &self.geometry {
+            Some(StructureGeometry::LogSpiral(l)) => Some(l.extent),
+            _ => None,
+        };
+        let kind = match self.kind {
+            StructureKind::SpiralArm => Some(Extent::Fitted),
+            StructureKind::SpiralArmExtrapolation => Some(Extent::Extrapolated),
+            _ => None,
+        };
+        if spiral != kind {
+            return problem(
+                "geometry",
+                "a spiral_arm takes a log spiral over its fitted range, a \
+                 spiral_arm_extrapolation one extrapolated, and no other kind takes one",
+            );
+        }
+        if spiral.is_some() && self.status != Status::Model {
+            return problem("status", "a log spiral is computed from a model: model");
+        }
+        if spiral.is_some() && self.scale_domain != ScaleDomain::GalaxyTracers {
+            return problem(
+                "scale_domain",
+                "a spiral arm of the Galaxy is listed among the Galaxy tracers",
+            );
         }
         Ok(())
     }

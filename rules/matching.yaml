@@ -76,7 +76,9 @@ cross_identifications:
       2025 (ApJS 278, 57; ReadMe, GaiaDR3, "Gaia source ID") and Li et al. 2023 (ApJ 944, 88;
       ReadMe, GaiaDR3, "Unique source identifier for Gaia DR3") name each Cepheid and RR Lyrae
       star by its Gaia DR3 source_id, so each joins the Gaia DR3 star it is, where that star is
-      below G = 14 (normalize-records).
+      below G = 14 (normalize-records). Zari et al. 2021 (A&A 650, A112; ReadMe, GaiaEDR3, "Gaia
+      EDR3 unique source_id") name each luminous hot star by its EDR3 source_id, which Gaia DR3
+      keeps, so each joins the Gaia DR3 star it is on the same terms.
     members:
       - { source: gaia-dr3-bright, field: identifier }
       - { source: gcns, field: identifier }
@@ -84,6 +86,7 @@ cross_identifications:
       - { source: gaia-dr3-hipparcos2, field: identifier }
       - { source: skowron-2025-cepheids, field: identifier }
       - { source: li-2023-rr-lyrae, field: identifier }
+      - { source: zari-2021-luminous-hot-stars, field: identifier }
   - scheme: hip
     basis: >-
       The HIP number of Hipparcos-2 (van Leeuwen 2007, A&A 474, 653), given in the Gaia DR3

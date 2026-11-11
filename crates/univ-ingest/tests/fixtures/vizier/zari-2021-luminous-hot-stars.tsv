@@ -1,0 +1,49 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-11T18:04:34 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-11T18:04:34	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F650%2FA112%2Ffiltered&-out=GaiaEDR3%2CRA_ICRS%2CDE_ICRS%2CPlx%2Cd50kin%2Cd16kin%2Cd84kin%2CZeroPoint%2CProbv1&-out.max=5&GaiaEDR3=0..144115188075855871	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_36500112
+#Name: J/A+A/650/A112
+#Title: Mapping hot luminous stars in the Galaxy (Zari+, 2021)
+#INFO	ivoid=ivo://cds.vizier/j/a+a/650/a112	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/a+a/650/a112	    IVOID of underlying data collection
+#INFO	creator=Zari E.	    First author or institution
+#INFO	cites=bibcode:2021A&A...650A.112Z	    Article or Data origin sources
+#INFO	journal=A&A	    Journal name
+#INFO	original_date=2021	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/A+A/650/A112	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.36500112	    Dataset identifier that can be used for citation
+#INFO	publication_date=2022-05-31	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Coosys	H_2016.000:	ICRS
+#Table	J_A_A_650_A112_filtered:
+#Name: J/A+A/650/A112/filtered
+#Title: Filtered sample
+#Column	GaiaEDR3	(I19)	Gaia EDR3 unique source_id (source_id)	[ucd=meta.id;meta.main]
+#Column	RA_ICRS	(F15.11)	Right ascension (ICRS) at Ep=2016.0 (ra)	[ucd=pos.eq.ra;meta.main]
+#Column	DE_ICRS	(F15.11)	Declination (ICRS) at Ep=2016.0 (dec)	[ucd=pos.eq.dec;meta.main]
+#Column	Plx	(F10.4)	Parallax (parallax)	[ucd=pos.parallax]
+#Column	d50kin	(F14.10)	? 50th percentile of the astro-kinematic distance posterior distribution (d_50_kin)	[ucd=pos.distance]
+#Column	d16kin	(F14.10)	? 16th percentile of the astro-kinematic distance posterior distribution (d_16_kin)	[ucd=pos.distance]
+#Column	d84kin	(F14.10)	? 84th percentile of the astro-kinematic distance posterior distribution (d_84_kin)	[ucd=pos.distance]
+#Column	ZeroPoint	(F14.10)	Parallax zero point - computed following Lindegren et al. (2020A&A...633A...1L) (zero_point)	[ucd=stat.fit;arith.zp]
+#Column	Probv1	(F14.10)	Predicted probability of being a good astrometric solution (Rybizki et al., 2021MNRAS.500..397R) (prob_v1)	[ucd=stat.fit.goodness]
+GaiaEDR3	RA_ICRS	DE_ICRS	Plx	d50kin	d16kin	d84kin	ZeroPoint	Probv1
+ 	deg	deg	mas	kpc	kpc	kpc	 	
+-------------------	---------------	---------------	----------	--------------	--------------	--------------	--------------	--------------
+  52418843193458688	063.79762120550	+21.54134755090	    1.3525	  0.7210674882	  0.7130674720	  0.7300674915	 -0.0318389982	  1.0000000000
+  52433033765297664	062.92209469500	+21.32567558710	    0.3318	  2.5768382549	  2.4418382645	  2.7278382778	 -0.0447489992	  1.0000000000
+  52581364756139392	063.80508542550	+22.09712104150	    1.4224	  0.6863499880	  0.6703499556	  0.7023499608	 -0.0335969999	  1.0000000000
+  52676231993977472	062.85623067140	+21.85253401770	    1.3696	  0.7112746835	  0.6862747073	  0.7382746935	 -0.0326130018	  1.0000000000
+  52676987908222080	062.78541490430	+21.88511468610	    1.4898	  0.6540969014	  0.6340969205	  0.6760969162	 -0.0337340012	  1.0000000000
+

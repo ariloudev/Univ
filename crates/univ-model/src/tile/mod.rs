@@ -63,10 +63,25 @@
 //! logarithm it was built from. A version 2 decoder refuses code 3, and a version 3 decoder
 //! refuses it in a version 2 tile.
 //!
+//! # Version 4
+//!
+//! Version 4 is version 3 with the version field 4 and one column more, after the value codes,
+//! so a tile of `n` points is `48 + 21 n` bytes:
+//!
+//! | Offset | Bytes | Field |
+//! |---|---|---|
+//! | 48 + 20 n | n | Each point's kind of object, `u8`: 0 for none, else 1 + its index in [`OBJECT_KINDS`] |
+//!
+//! Only the tiles of the Galaxy tracers domain take version 4 (build-octree-tiles); every other
+//! domain's tiles keep version 3, so that a release adding version 4 leaves their files as they
+//! were. A point whose object is one body, named by no kind of object, has code 0. A decoder
+//! refuses a code beyond [`OBJECT_KINDS`].
+//!
 //! A decoder refuses a tile with another magic, a version it does not know (naming it), a
 //! reserved field that is not zero, fewer or more bytes than its count gives, more than
 //! [`MAX_TILE_BYTES`], a node that cannot stand (see [`NodeBox::new`]), an object id outside 1
-//! to 2^53 − 1, or a kind of value it does not know; it never panics. It reads the magic and the
+//! to 2^53 − 1, a kind of value or, from version 4, a kind of object it does not know; it never
+//! panics. It reads the magic and the
 //! version before the size, so a tile of a version it does not know is named as such at any
 //! size.
 
@@ -76,6 +91,7 @@ pub mod format;
 #[cfg(test)]
 mod format_tests;
 pub mod manifest;
+mod object;
 mod read;
 #[cfg(test)]
 mod tests;
@@ -84,6 +100,7 @@ mod value;
 use serde::Serialize;
 use thiserror::Error;
 
+pub use object::{OBJECT_KINDS, has_object_kind, object_kind_code, object_kind_of_code};
 pub use read::decode;
 pub use value::{
     COLOUR_BANDS, ColourBands, LOG_AGE_CODE, NO_VALUE, PointColour, PointValue, has_age, has_colour,
@@ -92,13 +109,17 @@ pub use value::{
 use value::hundredths;
 
 use crate::ids::ObjectId;
+use crate::object::ObjectKind;
 use crate::position::Vec3;
 use crate::value::KindOfValue;
 
 /// The magic a tile starts with.
 pub const MAGIC: [u8; 4] = *b"UVTL";
-/// The version of the encoding this module writes. It reads this one and versions 1 and 2.
-pub const VERSION: u16 = 3;
+/// The newest version of the encoding this module writes: the Galaxy tracers' tiles take it.
+/// It also writes [`BASE_VERSION`], for every other domain, and reads versions 1 to 4.
+pub const VERSION: u16 = 4;
+/// The version every scale domain's tiles take but the Galaxy tracers'.
+pub const BASE_VERSION: u16 = 3;
 /// The bytes before the first point.
 pub const HEADER_BYTES: usize = 48;
 /// The bytes each point takes in version 1: 6 of position, 8 of object id, 2 of source, 1 of
@@ -107,20 +128,25 @@ pub const V1_POINT_BYTES: usize = 17;
 /// The bytes each point takes in versions 2 and 3: version 1's, then 2 of a colour index (or,
 /// in version 3, an age) and 1 of its code.
 pub const POINT_BYTES: usize = 20;
+/// The bytes each point takes in version 4: version 3's, then 1 of its kind of object.
+pub const V4_POINT_BYTES: usize = 21;
 /// The largest tile a release may hold: 1 MiB, the release's quality bound.
 pub const MAX_TILE_BYTES: usize = 1_048_576;
-/// The most points a version 2 or 3 tile may hold within [`MAX_TILE_BYTES`]: 52,426.
-pub const MAX_POINTS: usize = max_points(POINT_BYTES);
+/// The most points a tile of any version this module writes may hold within
+/// [`MAX_TILE_BYTES`]: 49,929, a version 4 tile's, the widest points.
+pub const MAX_POINTS: usize = max_points(V4_POINT_BYTES);
 
-/// The encoding versions this module reads, oldest first; it writes the last, [`VERSION`].
-pub const VERSIONS: [u16; 3] = [1, 2, VERSION];
+/// The encoding versions this module reads, oldest first; it writes the last two,
+/// [`BASE_VERSION`] and [`VERSION`].
+pub const VERSIONS: [u16; 4] = [1, 2, BASE_VERSION, VERSION];
 
 /// The bytes each point takes in tiles of `version`, if one of [`VERSIONS`].
 #[must_use]
 pub const fn point_bytes(version: u16) -> Option<usize> {
     match version {
         1 => Some(V1_POINT_BYTES),
-        2 | VERSION => Some(POINT_BYTES),
+        2 | BASE_VERSION => Some(POINT_BYTES),
+        VERSION => Some(V4_POINT_BYTES),
         _ => None,
     }
 }
@@ -134,10 +160,10 @@ pub const fn max_points(point_bytes: usize) -> usize {
 /// The quantization steps along each axis of a node's edge.
 pub const STEPS: u32 = 65_536;
 
-/// The size of a tile of `points` points, in bytes.
+/// The size in bytes of a tile of `points` points of `point_bytes` each.
 #[must_use]
-pub const fn tile_bytes(points: usize) -> usize {
-    HEADER_BYTES + POINT_BYTES * points
+pub const fn tile_bytes(point_bytes: usize, points: usize) -> usize {
+    HEADER_BYTES + point_bytes * points
 }
 
 /// The cube of one octree node: its minimum corner and its edge, in the manifest's frame and
@@ -233,6 +259,8 @@ pub struct TilePoint {
     pub kind: KindOfValue,
     /// The colour index chosen for its object, or the log of its age, if it carries one.
     pub value: Option<PointValue>,
+    /// Its object's kind, where a version 4 tile carries it; none for one body.
+    pub object: Option<ObjectKind>,
 }
 
 /// A decoded point: its position at the centre of its quantization step, the step it was
@@ -247,6 +275,8 @@ pub struct DecodedPoint {
     /// Its colour index, or from version 3 its log age, to the hundredth; none in a version 1
     /// tile.
     pub value: Option<PointValue>,
+    /// Its object's kind, from version 4; none for one body or in an older tile.
+    pub object: Option<ObjectKind>,
 }
 
 /// A decoded tile: its node and its points, in the order stored.
@@ -290,6 +320,10 @@ pub enum TileError {
     ObjectId { point: usize, id: u64 },
     #[error("point {point} has the kind of value {code}, which the encoding does not define")]
     Kind { point: usize, code: u8 },
+    #[error("point {point} has the kind of object code {code}, which the encoding does not define")]
+    ObjectKind { point: usize, code: u8 },
+    #[error("tiles are written in encoding versions {BASE_VERSION} and {VERSION}, not {0}")]
+    UnwrittenVersion(u16),
     #[error(
         "point {point} has the value code {code}, which the tile's version does not define or \
          its value contradicts"
@@ -339,33 +373,48 @@ fn quantize(p: f64, min: f64, step: f64) -> u16 {
     ((p - min) / step).floor().clamp(0.0, f64::from(u16::MAX)) as u16
 }
 
-/// Encodes `points` as a version 3 tile of `node`, in the order given.
+/// Encodes `points` as a version 3 tile of `node`, in the order given: [`encode_as`] with
+/// [`BASE_VERSION`].
 ///
 /// # Errors
 ///
-/// Fails on a node that cannot stand (a child cube may halve below a normal step), more points
-/// than [`MAX_POINTS`], a point outside the node or not finite, or a colour index or an age
-/// beyond what a tile holds.
+/// As [`encode_as`].
 pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
+    encode_as(BASE_VERSION, node, points)
+}
+
+/// Encodes `points` as a tile of `node` in encoding `version`, [`BASE_VERSION`] or
+/// [`VERSION`], in the order given. Version 3 leaves out each point's kind of object.
+///
+/// # Errors
+///
+/// Fails on another version, a node that cannot stand (a child cube may halve below a normal
+/// step), more points than the version's tile holds, a point outside the node or not finite, or
+/// a colour index or an age beyond what a tile holds.
+pub fn encode_as(version: u16, node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
+    let point_bytes = match version {
+        BASE_VERSION => POINT_BYTES,
+        VERSION => V4_POINT_BYTES,
+        other => return Err(TileError::UnwrittenVersion(other)),
+    };
     let node = NodeBox::new(node.min, node.edge)?;
     let n = points.len();
-    let count =
-        u32::try_from(n)
-            .ok()
-            .filter(|_| n <= MAX_POINTS)
-            .ok_or(TileError::TooManyPoints {
-                points: n,
-                point_bytes: POINT_BYTES,
-            })?;
+    let count = u32::try_from(n)
+        .ok()
+        .filter(|_| n <= max_points(point_bytes))
+        .ok_or(TileError::TooManyPoints {
+            points: n,
+            point_bytes,
+        })?;
     if let Some(p) = points.iter().find(|p| !node.contains(p.position)) {
         return Err(TileError::OutsideNode {
             id: p.id,
             position: p.position,
         });
     }
-    let mut bytes = Vec::with_capacity(tile_bytes(n));
+    let mut bytes = Vec::with_capacity(tile_bytes(point_bytes, n));
     bytes.extend_from_slice(&MAGIC);
-    bytes.extend_from_slice(&VERSION.to_le_bytes());
+    bytes.extend_from_slice(&version.to_le_bytes());
     bytes.extend_from_slice(&0u16.to_le_bytes());
     bytes.extend_from_slice(&count.to_le_bytes());
     bytes.extend_from_slice(&0u32.to_le_bytes());
@@ -406,5 +455,8 @@ pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError
         codes.push(code);
     }
     bytes.extend(codes);
+    if has_object_kind(version) {
+        bytes.extend(points.iter().map(|p| object_kind_code(p.object)));
+    }
     Ok(bytes)
 }

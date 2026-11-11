@@ -1,0 +1,91 @@
+id: zari-2021-luminous-hot-stars
+title: "Zari 2021 luminous hot stars"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/A+A/650/A112/filtered"
+  constraints: []
+  # GaiaEDR3 (I19, never blank) in 48 slices, a quarter of a level-0 HEALPix pixel each:
+  # source_id / 34359738368 is the level-12 HEALPix index (Gaia documentation).
+  slices: { column: GaiaEDR3, from: 0, to: 6917529027641081855, step: 144115188075855872 }
+  rows: 417535
+cuts:
+  - >-
+    No server-side cut: every star of the filtered sample, 417,535 as served by IDIA on
+    2026-11-11 and as the ReadMe counts filtered.dat. The ReadMe calls it the "filtered sample
+    used in this work", the abstract's "more stringently selected subsample" of the luminous
+    OBA-type stars (M_Ks <~ 0 mag, Teff >~ 8000 K) that the target sample holds, "designed to be
+    complete rather than very pure"; it holds late-B and A stars as well as OB stars.
+  - >-
+    d50kin, d16kin and d84kin are the median, 16th and 84th percentiles of the astro-kinematic
+    distance posterior, in kpc (ReadMe); the mode, dmaxpdfkin, and the Cartesian coordinates
+    computed from it are not taken. rpgeo and its bounds are Bailer-Jones et al. 2021's
+    photogeometric distances as published in I/352, which bailer-jones-2021 already gives for
+    the stars brighter than G = 14; they are not taken a second time.
+  - >-
+    Plx is the Gaia EDR3 parallax as published, with no error column: neither table of
+    J/A+A/650/A112 gives parallax_error. ZeroPoint is the parallax zero point Zari et al.
+    computed by the recipe of Lindegren et al. 2021, kept as published.
+  - "The position is RA_ICRS and DE_ICRS, ICRS at Gaia EDR3's epoch 2016.0."
+columns:
+  - { column: GaiaEDR3, field: identifier, unit: dimensionless }
+  - { column: RA_ICRS, field: right_ascension, unit: degree }
+  - { column: DE_ICRS, field: declination, unit: degree }
+  - { column: Plx, field: parallax, unit: milliarcsecond }
+  - { column: d50kin, field: distance, unit: kiloparsec }
+  - { column: d16kin, field: distance_low, unit: kiloparsec }
+  - { column: d84kin, field: distance_high, unit: kiloparsec }
+  - { column: ZeroPoint, field: quality, unit: dimensionless }
+  - { column: Probv1, field: quality, unit: dimensionless }
+frame: icrs
+epoch: 2016.0
+citation: >-
+  Zari E., Rix H.-W., Frankel N., Xiang M., Poggio E., Drimmel R., Tkachenko A. 2021,
+  "Mapping luminous hot stars in the Galaxy", A&A 650, A112. 2021A&A...650A.112Z. VizieR
+  catalogue J/A+A/650/A112, doi:10.26093/cds/vizier.36500112.
+reference: { bibcode: "2021A&A...650A.112Z" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Zari et al. 2021, A&A 650, A112. The parallaxes are from Gaia EDR3:
+    ESA/Gaia/DPAC.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The A&A
+    terms were not checked, and "scientific context" is not defined for a public hobby release.
+    Provisional: judged again before any public deployment.
+scale_domain: galaxy_tracers
+object_kind: luminous_hot_star
+# VizieR's mirrors, checked 2026-11-11: IDIA holds the table and answered first.
+mirrors:
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+normalization:
+  distances:
+    - value: d50kin
+      error: { credible_interval: { low: d16kin, high: d84kin, probability: 0.68 } }
+      kind: geometric
+      method: astro_kinematic
+      measure: euclidean
+      kind_of_value: inferred
+      basis: >-
+        J/A+A/650/A112 ReadMe: d50kin, d16kin and d84kin are the "50th", "16th" and "84th
+        percentile of the astro-kinematic distance posterior distribution". The abstract: "We
+        estimate `astro-kinematic' distances by combining parallaxes and proper motions with a
+        model for the expected velocity and density distribution of young stars". No parallax
+        error is published, so the posterior cannot be shown to rest on the parallax rather than
+        the prior: every such distance is inferred, as a Bailer-Jones distance whose parallax is
+        below five times its error is (normalize-records).

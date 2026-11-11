@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use univ_model::tile::{MAX_POINTS, tile_bytes};
+use univ_model::tile::{MAX_POINTS, V4_POINT_BYTES, tile_bytes};
 
 use crate::yaml::{FileError, read_checked};
 
@@ -59,7 +59,7 @@ impl TileRules {
             format!(
                 "must lie in 1 to {MAX_POINTS}, the most points a tile holds within 1 MiB ({n} \
                  points take {} bytes)",
-                tile_bytes(n)
+                tile_bytes(V4_POINT_BYTES, n)
             )
         };
         if !(1..=MAX_POINTS).contains(&self.split_threshold) {

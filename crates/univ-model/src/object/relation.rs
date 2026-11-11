@@ -28,6 +28,9 @@ pub enum ObjectKind {
     RrLyraeStar,
     /// A high-mass star-forming region, traced by its masers.
     StarFormingRegion,
+    /// A luminous hot star: an OB or late-B to A star brighter than `M_K` = 0, as Zari et al.
+    /// 2021 select them, young and massive enough to trace the spiral arms.
+    LuminousHotStar,
 }
 
 impl ObjectKind {
@@ -41,6 +44,7 @@ impl ObjectKind {
                 | Self::ClassicalCepheid
                 | Self::RrLyraeStar
                 | Self::StarFormingRegion
+                | Self::LuminousHotStar
         )
     }
 }

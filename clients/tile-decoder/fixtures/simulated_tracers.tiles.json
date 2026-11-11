@@ -1,0 +1,556 @@
+{
+  "about": "SIMULATED Galaxy tracers' tiles, version 4: made-up positions and kinds of object under the ids of real sources, built as the Rust encoder writes them, with each point's position before quantization. Checked against what ingest builds by univ-ingest's test tile_decoder_fixtures; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test tile_decoder_fixtures rewrites them.",
+  "scale_domain": "galaxy_tracers",
+  "tiles": [
+    {
+      "address": "r",
+      "hex": "5556544c040000000800000000000000000000000000c0c0000000000000c0c0000000000000c0c0000000000000d040e3310b9b099e6049785573572440b87fa43f3fb1ba70bcb0e49ef17c177964b2309b033f5590185b0177b736be61f057898d5b0000000000a7ba8c0100000000adc3c90100000000365125020000000042639f0200000000e314ef030000000066990d0400000000ef26690400000000010001000100000000000100000001000301030202010201008000800080b202c60200800203008000000003030003000407020002060703",
+      "points": [
+        {
+          "id": 6000009,
+          "position": [
+            -4999.144016765058,
+            1730.9702094644308,
+            1922.423094511032
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "classical_cepheid"
+        },
+        {
+          "id": 26000039,
+          "position": [
+            -3495.885622687638,
+            -2721.8502364121377,
+            -2595.155662856996
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "luminous_hot_star"
+        },
+        {
+          "id": 30000045,
+          "position": [
+            -4086.938281543553,
+            -17.998728435486555,
+            -4118.882224429399
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "open_cluster"
+        },
+        {
+          "id": 36000054,
+          "position": [
+            3151.8780323676765,
+            -977.4467581883073,
+            3119.209655560553
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 6.9
+        },
+        {
+          "id": 44000066,
+          "position": [
+            1977.1569198928773,
+            -195.53812453523278,
+            -442.2037140466273
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 7.1,
+          "object_kind": "open_cluster"
+        },
+        {
+          "id": 66000099,
+          "position": [
+            3225.1384225673974,
+            1740.2068804949522,
+            -4159.202021546662
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "star_forming_region"
+        },
+        {
+          "id": 68000102,
+          "position": [
+            1045.4456345178187,
+            -2361.8102120235562,
+            -575.6763275712729
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 7.7,
+          "object_kind": "luminous_hot_star"
+        },
+        {
+          "id": 74000111,
+          "position": [
+            -4690.115095581859,
+            -1936.4456902258098,
+            -2563.860579393804
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "globular_cluster"
+        }
+      ]
+    },
+    {
+      "address": "r0",
+      "hex": "5556544c040000000200000000000000000000000000c0c0000000000000c0c0000000000000c0c0000000000000c04074b5c8c2249b07dda4bfbe80547e560300000000d702750300000000000001000001e402008003000102",
+      "points": [
+        {
+          "id": 56000084,
+          "position": [
+            -2385.453807655722,
+            -1958.8818517513573,
+            -3227.4570502340794
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 7.4,
+          "object_kind": "galaxy_group"
+        },
+        {
+          "id": 58000087,
+          "position": [
+            -1119.026665110141,
+            -2059.421460144222,
+            -4072.1461293287575
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "open_cluster"
+        }
+      ]
+    },
+    {
+      "address": "r1",
+      "hex": "5556544c0400000001000000000000000000000000000000000000000000c0c0000000000000c0c0000000000000c040d14a7ca8cebd0c127a00000000000000006c020305",
+      "points": [
+        {
+          "id": 8000012,
+          "position": [
+            2394.1331123933196,
+            -2800.46371743083,
+            -2118.249291088432
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 6.2,
+          "object_kind": "rr_lyrae_star"
+        }
+      ]
+    },
+    {
+      "address": "r2",
+      "hex": "5556544c040000000400000000000000000000000000c0c00000000000000000000000000000c0c0000000000000c04077731f00d88cef6bfe9494b587f9aa564ac2186c8072f4881824f40000000000b9d54302000000004e751903000000006ca24a040000000000000100000000000003020080020080da020c030300030302060600",
+      "points": [
+        {
+          "id": 16000024,
+          "position": [
+            -4497.030780185014,
+            3.9948546327650547,
+            -3684.8751408979297
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 6.4,
+          "object_kind": "open_cluster"
+        },
+        {
+          "id": 38000057,
+          "position": [
+            -4738.094822969288,
+            4767.808713950217,
+            -2381.488662213087
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "star_forming_region"
+        },
+        {
+          "id": 52000078,
+          "position": [
+            -207.09925098344684,
+            2773.2879854738712,
+            -1974.7359212487936
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 7.3,
+          "object_kind": "star_forming_region"
+        },
+        {
+          "id": 72000108,
+          "position": [
+            -4732.92663693428,
+            3664.0472477301955,
+            -3809.3967479653656
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 7.8
+        }
+      ]
+    },
+    {
+      "address": "r3",
+      "hex": "5556544c04000000020000000000000000000000000000000000000000000000000000000000c0c0000000000000c040b8951a6fc3998a3e6507a19c06093d00000000001e2d31010000000000000000020262028a0203030304",
+      "points": [
+        {
+          "id": 4000006,
+          "position": [
+            4791.015002410859,
+            3555.3070716559887,
+            -3271.524291485548
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 6.1,
+          "object_kind": "globular_cluster"
+        },
+        {
+          "id": 20000030,
+          "position": [
+            2001.2741605751216,
+            236.69915040954947,
+            -3179.829593282193
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 6.5,
+          "object_kind": "classical_cepheid"
+        }
+      ]
+    },
+    {
+      "address": "r4",
+      "hex": "5556544c040000000a00000000000000000000000000c0c0000000000000c0c00000000000000000000000000000c040e1676ff9bc1d54af7b95ae388eb070e2773b5a73f0de76924e662edd701c2f697aaa7988fbd62fe1822df7977cec998bf4ce5a6f976539fb2078f43183841e00000000009ba81201000000002a3fab0100000000b3cc0602000000003c5a620200000000dd0bb203000000006090d00300000000e91d2c040000000072ab870400000000f52fa60400000000010001000000010000000100000001000000010001010201000300030203008000809e020080bc020080f8020080160300800000030003000300030002000104070405010405",
+      "points": [
+        {
+          "id": 2000003,
+          "position": [
+            -4867.7947744727135,
+            -210.01540357246995,
+            951.5296318568289
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "open_cluster"
+        },
+        {
+          "id": 18000027,
+          "position": [
+            -2581.470764707774,
+            -3408.5562522523105,
+            1813.8296087272465
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null
+        },
+        {
+          "id": 28000042,
+          "position": [
+            -2542.15138964355,
+            -945.8774677477777,
+            1902.8939306735992
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 6.7,
+          "object_kind": "galaxy_group"
+        },
+        {
+          "id": 34000051,
+          "position": [
+            -4500.6584958173335,
+            -1057.9072940163314,
+            4686.873622704297
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "classical_cepheid"
+        },
+        {
+          "id": 40000060,
+          "position": [
+            -4918.235423974693,
+            -1114.1562624834478,
+            910.0242098793387
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 7.0,
+          "object_kind": "luminous_hot_star"
+        },
+        {
+          "id": 62000093,
+          "position": [
+            -4826.067509129643,
+            -2736.716598737985,
+            4367.244658060372
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "classical_cepheid"
+        },
+        {
+          "id": 64000096,
+          "position": [
+            -1312.5562015920877,
+            -986.040139105171,
+            1456.3712268136442
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 7.6,
+          "object_kind": "rr_lyrae_star"
+        },
+        {
+          "id": 70000105,
+          "position": [
+            -3329.1216054931283,
+            -624.4080723263323,
+            4467.164466623217
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "galaxy_group"
+        },
+        {
+          "id": 76000114,
+          "position": [
+            -1569.4040060043335,
+            -4628.736719023436,
+            3250.916744582355
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 7.9,
+          "object_kind": "classical_cepheid"
+        },
+        {
+          "id": 78000117,
+          "position": [
+            -152.75810612365603,
+            -4347.9266739450395,
+            1598.597054835409
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "rr_lyrae_star"
+        }
+      ]
+    },
+    {
+      "address": "r5",
+      "hex": "5556544c0400000005000000000000000000000000000000000000000000c0c00000000000000000000000000000c040138e0f93db04997cb0f77243c48532ced53ed01f7493032e639082bfb9448f96980000000000121bb70000000000cbf0fa0200000000d1f937030000000078b4c404000000000100000001000100000001020103000080760200800080200300030000030607050006",
+      "points": [
+        {
+          "id": 10000015,
+          "position": [
+            4546.422511339188,
+            -3486.019833944738,
+            155.48018738627434
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "star_forming_region"
+        },
+        {
+          "id": 12000018,
+          "position": [
+            3987.2461860068142,
+            -265.9785421565175,
+            2158.2976821810007
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 6.3,
+          "object_kind": "luminous_hot_star"
+        },
+        {
+          "id": 50000075,
+          "position": [
+            4280.587220564485,
+            -1593.7106753699481,
+            2010.6532704085112
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "rr_lyrae_star"
+        },
+        {
+          "id": 54000081,
+          "position": [
+            1018.04219186306,
+            -3473.419090732932,
+            1472.448983695358
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null
+        },
+        {
+          "id": 80000120,
+          "position": [
+            4620.492954272777,
+            -2063.6914833448827,
+            2199.176393914968
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 8.0,
+          "object_kind": "star_forming_region"
+        }
+      ]
+    },
+    {
+      "address": "r6",
+      "hex": "5556544c040000000200000000000000000000000000c0c000000000000000000000000000000000000000000000c04096813811e26f26b9570c5b78a1b14f0100000000bfde8002000000000100010003010080008000000501",
+      "points": [
+        {
+          "id": 22000033,
+          "position": [
+            -4045.1391646638513,
+            551.068470813334,
+            3580.3315159864724
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "rr_lyrae_star"
+        },
+        {
+          "id": 42000063,
+          "position": [
+            -2267.1435051597655,
+            394.92414565756917,
+            3851.422790903598
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "estimated",
+          "colour": null,
+          "object_kind": "galaxy_group"
+        }
+      ]
+    },
+    {
+      "address": "r7",
+      "hex": "5556544c040000000600000000000000000000000000000000000000000000000000000000000000000000000000c040be2a2a2d20764a2e661980456330a0771377fa46d456f0761f0370724414f9281468bf0e959fd5000000000024366e01000000003048e80100000000c5e7bd0200000000486cdc02000000005a8793030000000001000000000001000000000003000003000200809402a8020080d002ee02000303000303010603030403",
+      "points": [
+        {
+          "id": 14000021,
+          "position": [
+            1367.8404735401273,
+            1445.3622372820973,
+            3780.0057511776686
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "galaxy_group"
+        },
+        {
+          "id": 24000036,
+          "position": [
+            1481.3329093158245,
+            812.8570765256882,
+            2224.028108175844
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 6.6,
+          "object_kind": "star_forming_region"
+        },
+        {
+          "id": 32000048,
+          "position": [
+            1548.48069883883,
+            3828.094208147377,
+            3810.378606431186
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 6.8,
+          "object_kind": "globular_cluster"
+        },
+        {
+          "id": 46000069,
+          "position": [
+            2271.339704748243,
+            2778.5897022113204,
+            3806.093172170222
+          ],
+          "source": "zari-2021-luminous-hot-stars",
+          "kind": "reconstructed",
+          "colour": null,
+          "object_kind": "globular_cluster"
+        },
+        {
+          "id": 48000072,
+          "position": [
+            99.96920358389616,
+            3662.0375351049006,
+            648.5016015358269
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "measured",
+          "colour": null,
+          "log_age": 7.2,
+          "object_kind": "classical_cepheid"
+        },
+        {
+          "id": 60000090,
+          "position": [
+            1311.1704587936401,
+            3330.5580588057637,
+            471.986613702029
+          ],
+          "source": "hunt-reffert-2023",
+          "kind": "inferred",
+          "colour": null,
+          "log_age": 7.5,
+          "object_kind": "globular_cluster"
+        }
+      ]
+    }
+  ]
+}

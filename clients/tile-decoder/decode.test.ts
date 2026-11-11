@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
 import { VERSIONS, decodeTile } from './decode.ts';
-import type { ColourBands, KindOfValue, ManifestNode, TileManifest, Vec3 } from './decode.ts';
+import type { ColourBands, KindOfValue, ManifestNode, ObjectKind, TileManifest, Vec3 } from './decode.ts';
 
 interface Expected {
   id: number;
@@ -18,6 +18,8 @@ interface Expected {
   colour?: [number, ColourBands] | null;
   /** The base-10 logarithm of its age in years before rounding, where it carries one. */
   log_age?: number;
+  /** Its object's kind, where its tile carries one: a Galaxy tracer's, from version 4. */
+  object_kind?: ObjectKind;
 }
 
 interface FixtureTile {
@@ -72,7 +74,7 @@ test('the fixtures hold every domain of the fixture release, a simulated one, an
   assert.deepEqual(
     fixtures.map((f) => f.name),
     // The fixture release holds no tracer source, so its Galaxy tracers domain has no node.
-    ['cosmic_web', 'galaxy_tracers', 'nearby_galaxies', 'simulated', 'stars'],
+    ['cosmic_web', 'galaxy_tracers', 'nearby_galaxies', 'simulated', 'simulated_tracers', 'stars'],
   );
   for (const f of fixtures) {
     assert.deepEqual(
@@ -119,9 +121,10 @@ test("AC-283: each decoded point gives its object id, its source and its kind of
   }
 });
 
-test('the decoder decodes tiles of encoding versions 1, 2 and 3', () => {
-  assert.deepEqual(VERSIONS, [1, 2, 3]);
-  assert.ok(fixtures.every((f) => f.manifest.encoding.version === 3));
+test('the decoder decodes tiles of encoding versions 1, 2, 3 and 4', () => {
+  assert.deepEqual(VERSIONS, [1, 2, 3, 4]);
+  // The current fixtures: the Galaxy tracers' tiles at version 4, every other domain's at 3.
+  assert.ok(fixtures.every((f) => [3, 4].includes(f.manifest.encoding.version)));
   assert.deepEqual(version1.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 1]]);
   assert.deepEqual(version2.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 2]]);
   let checked = 0;
@@ -253,3 +256,33 @@ test('a tile that is not what its manifest lists is refused', () => {
 function pointsOf(b: Uint8Array): number {
   return new DataView(b.buffer, b.byteOffset).getUint32(8, true);
 }
+
+test('each decoded point of a version 4 tile gives its kind of object, or that it has none', () => {
+  const tracers = everyTile.filter((t) => t.manifest.encoding.version === 4);
+  assert.ok(tracers.length > 0, 'a version 4 fixture');
+  const seen = new Set<string>();
+  let none = 0;
+  for (const { fixture, manifest, node, tile } of tracers) {
+    const decoded = decodeTile(bytesOf(tile.hex), node, manifest);
+    decoded.forEach((p, k) => {
+      const expected = tile.points[k];
+      assert.equal(p.objectKind, expected.object_kind, `${fixture} ${tile.address} point ${k}: kind of object`);
+      assert.equal(p.logAge === undefined, expected.log_age === undefined, `${fixture} ${tile.address} point ${k}: age`);
+      if (p.objectKind === undefined) none++;
+      else seen.add(p.objectKind);
+    });
+  }
+  assert.equal(seen.size, 7, 'every kind of object');
+  assert.ok(none > 0, 'a point with none');
+  // Only the tracers take version 4; the other domains keep version 3.
+  for (const f of fixtures) {
+    assert.equal(f.manifest.encoding.version, f.name.includes('tracers') ? 4 : 3, f.name);
+  }
+});
+
+test('a version 4 kind of object code beyond the manifest is refused', () => {
+  const { manifest, node, tile } = everyTile.find((t) => t.manifest.encoding.version === 4)!;
+  const bytes = bytesOf(tile.hex);
+  bytes[bytes.length - 1] = 8;
+  assert.throws(() => decodeTile(bytes, node, manifest), /kind of object code 8/);
+});

@@ -430,6 +430,17 @@
                 "type": "null"
               }
             ]
+          },
+          "kind_of_value": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/KindOfValue",
+                "description": "The kind of value of each number of the shape, where the shape is computed rather than\npublished: `reconstructed` for a path computed from a model, such as a spiral arm's\nlog-spiral fit. Absent where the shape's numbers are the published ones placed."
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -692,6 +703,18 @@
             "minimum": 0,
             "type": "integer"
           },
+          "object_kinds": {
+            "description": "The kinds of object, coded by their index plus one, 0 coding none; absent before\nversion 4.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectKind"
+            },
+            "maxItems": 7,
+            "minItems": 7,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "point_bytes": {
             "minimum": 0,
             "type": "integer"
@@ -774,6 +797,13 @@
           "max_tile_bytes": {
             "minimum": 0,
             "type": "integer"
+          },
+          "object_kinds": {
+            "description": "The kinds of object, coded by their index plus one, 0 coding none; none before version 4.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectKind"
+            },
+            "type": "array"
           },
           "point_bytes": {
             "description": "The bytes each point takes: the point fields' bytes together.",
@@ -2738,6 +2768,13 @@
             "type": "string"
           },
           {
+            "description": "Zari et al. 2021: the posterior of a star's parallax and proper motion with a prior from\na model of the disc's rotation, an astro-kinematic distance.",
+            "enum": [
+              "astro_kinematic"
+            ],
+            "type": "string"
+          },
+          {
             "enum": [
               "cepheids"
             ],
@@ -3057,7 +3094,8 @@
           "globular_cluster",
           "classical_cepheid",
           "rr_lyrae_star",
-          "star_forming_region"
+          "star_forming_region",
+          "luminous_hot_star"
         ],
         "type": "string"
       },
@@ -4967,7 +5005,7 @@
             ]
           },
           "status": {
-            "description": "`observed`, `reconstructed` or `statistical_claim`: how the structure is known.",
+            "description": "`observed`, `reconstructed`, `statistical_claim` or `model`: how the structure is known.",
             "type": "string"
           }
         },

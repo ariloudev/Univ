@@ -1,5 +1,5 @@
 //! A structure's geometry beyond a point: a primitive solid, a box along its frame's axes, a
-//! member list or a sky region, each one of univ-model's geometry kinds. Each is read through a raw struct rather than a tagged
+//! member list, a sky region or a log spiral, each one of univ-model's geometry kinds. Each is read through a raw struct rather than a tagged
 //! enum, so a refusal keeps the path to the field.
 
 use serde::{Deserialize, Serialize};
@@ -8,6 +8,7 @@ use super::citation::Citation;
 use super::cited::Cited;
 use super::geometry::{Coordinates, Radial, is_angle, is_length};
 use super::members::Members;
+use super::spiral::LogSpiral;
 use univ_model::position::Frame;
 use univ_model::units::Unit;
 
@@ -26,6 +27,9 @@ pub enum StructureGeometry {
     /// A box along the Cartesian axes of its frame, given by the published range along each;
     /// univ-model's `primitive`, an oriented box.
     AxisBox(Box<AxisBox>),
+    /// A spiral arm as its published log-spiral parameters; univ-model's `path`, computed at
+    /// each degree of azimuth in the galactic frame.
+    LogSpiral(Box<LogSpiral>),
 }
 
 /// The univ-model geometry kinds a structure file may give, beside the point of its position.
@@ -36,6 +40,7 @@ enum Kind {
     Members,
     SkyRegion,
     Box,
+    LogSpiral,
 }
 
 /// A geometry as written: its kind, and the one field that kind takes.
@@ -51,6 +56,8 @@ struct RawGeometry {
     sky_region: Option<SkyBox>,
     #[serde(default, rename = "box")]
     axis_box: Option<AxisBox>,
+    #[serde(default)]
+    log_spiral: Option<LogSpiral>,
 }
 
 impl TryFrom<RawGeometry> for StructureGeometry {
@@ -62,11 +69,13 @@ impl TryFrom<RawGeometry> for StructureGeometry {
             raw.members,
             raw.sky_region,
             raw.axis_box,
+            raw.log_spiral,
         ) {
-            (Kind::Primitive, Some(p), None, None, None) => Ok(Self::Primitive(Box::new(p))),
-            (Kind::Members, None, Some(m), None, None) => Ok(Self::Members(m)),
-            (Kind::SkyRegion, None, None, Some(s), None) => Ok(Self::SkyRegion(Box::new(s))),
-            (Kind::Box, None, None, None, Some(b)) => Ok(Self::AxisBox(Box::new(b))),
+            (Kind::Primitive, Some(p), None, None, None, None) => Ok(Self::Primitive(Box::new(p))),
+            (Kind::Members, None, Some(m), None, None, None) => Ok(Self::Members(m)),
+            (Kind::SkyRegion, None, None, Some(s), None, None) => Ok(Self::SkyRegion(Box::new(s))),
+            (Kind::Box, None, None, None, Some(b), None) => Ok(Self::AxisBox(Box::new(b))),
+            (Kind::LogSpiral, None, None, None, None, Some(l)) => Ok(Self::LogSpiral(Box::new(l))),
             (kind, ..) => Err(format!(
                 "a {kind:?} geometry takes exactly the field named after its kind"
             )),
@@ -82,6 +91,7 @@ impl StructureGeometry {
             Self::Primitive(_) | Self::AxisBox(_) => "primitive",
             Self::Members(_) => "members",
             Self::SkyRegion(_) => "sky_region",
+            Self::LogSpiral(_) => "path",
         }
     }
 
@@ -93,6 +103,7 @@ impl StructureGeometry {
             Self::Members(m) => Some(m.frame),
             Self::SkyRegion(s) => Some(s.frame),
             Self::AxisBox(b) => Some(b.frame),
+            Self::LogSpiral(_) => Some(Frame::Galactic),
         }
     }
 
@@ -118,6 +129,14 @@ impl StructureGeometry {
                 out
             }
             Self::AxisBox(b) => indexed("box", b.pairs()),
+            Self::LogSpiral(l) => {
+                let mut out = indexed("log_spiral", l.pairs());
+                out.extend(
+                    l.scalars()
+                        .map(|(name, c)| (format!("log_spiral.{name}"), c)),
+                );
+                out
+            }
         }
     }
 }

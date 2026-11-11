@@ -26,8 +26,11 @@ use univ_ingest::source::ScaleDomain;
 use univ_ingest::tiles::{BuiltDomain, DomainPoint, assign, build_domain, name_of};
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::ObjectId;
+use univ_model::object::ObjectKind;
 use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
-use univ_model::tile::{COLOUR_BANDS, ColourBands, KINDS, PointColour, PointValue, decode};
+use univ_model::tile::{
+    COLOUR_BANDS, ColourBands, KINDS, OBJECT_KINDS, PointColour, PointValue, decode,
+};
 use univ_model::value::KindOfValue;
 
 /// The variable that asks the test to rewrite the files.
@@ -72,6 +75,9 @@ struct Expected {
     /// The base-10 logarithm of its age in years before rounding, where it carries one.
     #[serde(skip_serializing_if = "Option::is_none")]
     log_age: Option<f64>,
+    /// Its object's kind, where its tile carries one: a Galaxy tracer's, from version 4.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    object_kind: Option<ObjectKind>,
 }
 
 /// A domain's built tiles, the points they were built from and the ids of their sources.
@@ -129,6 +135,7 @@ fn simulated() -> Domain {
             } else {
                 (n % 6 == 0).then(|| PointValue::LogAge(6.5 + f64::from(n) / 25.0))
             },
+            object: None,
         })
         .collect();
     let sources = [source_id("gaia-dr3-bright"), source_id("hipparcos-2007")];
@@ -150,10 +157,51 @@ fn simulated() -> Domain {
     }
 }
 
+/// SIMULATED: 40 Galaxy tracers at made-up positions under the ids of two real tracer sources,
+/// every kind of object among them and every ninth none, every other with a log age: version
+/// 4 tiles.
+fn simulated_tracers() -> Domain {
+    let mut lcg = Lcg(23);
+    let points: Vec<DomainPoint> = (1..=40u16)
+        .map(|n| DomainPoint {
+            id: ObjectId::new(u64::from(n) * 2_000_003).unwrap(),
+            place: u32::from(n),
+            position: [0, 1, 2].map(|_| (2.0 * lcg.next() - 1.0) * 5_000.0),
+            source: n % 2,
+            sky_source: n % 2,
+            kind: KINDS[usize::from(n) % KINDS.len()],
+            value: (n % 2 == 0).then(|| PointValue::LogAge(6.0 + f64::from(n) / 20.0)),
+            object: (n % 9 != 0).then(|| OBJECT_KINDS[usize::from(n) % OBJECT_KINDS.len()]),
+        })
+        .collect();
+    let sources = [
+        source_id("hunt-reffert-2023"),
+        source_id("zari-2021-luminous-hot-stars"),
+    ];
+    let (cosmology, definitions) = (Cosmology::planck_2018(), common::read_sources());
+    let rules = rules(12, 8, 3, 5);
+    let built = build_domain(
+        ScaleDomain::GalaxyTracers,
+        &points,
+        &sources,
+        &context(&rules, &cosmology, &definitions),
+    )
+    .unwrap();
+    Domain {
+        file: "simulated_tracers",
+        what: "SIMULATED Galaxy tracers' tiles, version 4: made-up positions and kinds of object \
+               under the ids of real sources, built",
+        built,
+        points,
+        sources: sources.iter().map(ToString::to_string).collect(),
+    }
+}
+
 /// Every domain the fixtures hold.
 fn domains() -> Vec<Domain> {
     let mut domains = release();
     domains.push(simulated());
+    domains.push(simulated_tracers());
     domains
 }
 
@@ -172,6 +220,7 @@ fn tiles_file(d: &Domain) -> String {
                 .and_then(PointValue::colour)
                 .map(|c| (c.index, c.bands)),
             log_age: built.value.and_then(PointValue::log_age),
+            object_kind: built.object,
         }
     };
     let tiles = d

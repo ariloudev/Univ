@@ -13,11 +13,11 @@ use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{MeasurementRef, Object, ObjectKind};
 use univ_model::position::{Frame, Vec3};
-use univ_model::tile::{ColourBands, PointColour, PointValue};
+use univ_model::tile::{ColourBands, PointColour, PointValue, has_object_kind};
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
-use super::TilesError;
+use super::{TilesError, encoding_of};
 use crate::crossmatch::ReleaseObject;
 use crate::source::{ScaleDomain, SourceDefinition};
 
@@ -98,6 +98,9 @@ pub struct DomainPoint {
     /// domain whose entries give one; else the colour index chosen for it, if its entries give
     /// one.
     pub value: Option<PointValue>,
+    /// Its object's kind, for a point of the Galaxy tracers domain, whose tiles carry it; none
+    /// elsewhere and for one body.
+    pub object: Option<ObjectKind>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -126,6 +129,7 @@ struct Placed {
     sky: usize,
     kind: KindOfValue,
     value: Option<PointValue>,
+    object: Option<ObjectKind>,
 }
 
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
@@ -266,6 +270,11 @@ pub fn assign(
             None
         };
         let value = age.or_else(|| colour_of(&o.object).map(PointValue::Colour));
+        // A point carries its kind of object where its domain's encoding writes one
+        // (build-octree-tiles, version 4); a body has none.
+        let object = (has_object_kind(encoding_of(domain).version)
+            && o.object.kind != ObjectKind::Body)
+            .then_some(o.object.kind);
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))
             .map_err(|_| TilesError::NotFinite(id))?;
@@ -281,6 +290,7 @@ pub fn assign(
             sky,
             kind,
             value,
+            object,
         });
     }
     let mut domains = BTreeMap::new();
@@ -324,6 +334,7 @@ fn intern(
             sky_source: sky,
             kind: p.kind,
             value: p.value,
+            object: p.object,
         });
     }
     Ok(interned)

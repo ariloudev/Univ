@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 pub use univ_model::tile::manifest::{
     Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, Level, MANIFEST_VERSION, NodeEntry,
-    Rotations, Sampling, SourceEntry, SourceRole, TileManifest,
+    Rotations, Sampling, SourceEntry, SourceRole, TRACERS_ENCODING, TileManifest,
 };
 
 use super::TilesError;
