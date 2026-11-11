@@ -10,10 +10,12 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "offer a switch for each scale domain, each source of the drawn points, each kind of value and each kind of structure, all on when the view opens."
+      shall: "offer a switch for each scale domain, each source of the drawn points, each kind of value, each kind of object of the Galaxy tracers and each kind of structure, all on when the view opens."
     criteria:
       - key: 01a1a8cc-3d02-7585-85fb-455a3c55e223
-        name: "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value and the kinds of the structures, each with a switch."
+        name: "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value, the kinds of object of the Galaxy tracers and the kinds of the structures, each with a switch."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c8f9900c685f
+        name: "Each kind of object's switch carries the colour its points are drawn in and the number of its points the release holds."
       - key: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
         name: "Every switch is on when the view opens on an address that turns no group off."
   - key: 01a1a8cc-3d02-7585-85fb-455c402dc776
@@ -25,6 +27,8 @@ requirements:
     criteria:
       - key: 01a1a8cc-3d02-7585-85fb-455d411f618e
         name: "A point is drawn only while its scale domain, the source of its preferred distance and that distance's kind of value are all on."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c8faa69b54c2
+        name: "A point of the Galaxy tracers domain is drawn only while its kind of object is on, as well as its other groups."
       - key: 01a1a8cc-3d02-7585-85fb-455ef6890107
         name: "A structure is drawn only while its kind is on."
       - key: 01a1a8cc-3d02-7585-85fb-455fd5131e7f
@@ -44,7 +48,7 @@ requirements:
       shall: "say at the head of the Show drawer how much of the points and of the structures is drawn, with one link that turns every group on."
     criteria:
       - key: 01a1bcf9-343a-712a-a28c-7503bb8fdbb5
-        name: "The summary gives, as a number on and the number in all, the scale domains, the sources and the kinds of value of the points, and the kinds of structure."
+        name: "The summary gives, as a number on and the number in all, the scale domains, the sources, the kinds of value and the kinds of object of the points, and the kinds of structure."
       - key: 01a1bcf9-343a-712a-a28c-75049b84e0eb
         name: "The link that shows everything appears only while at least one group is off."
       - key: 01a1bcf9-343a-712a-a28c-7505bbe87412
@@ -86,7 +90,7 @@ requirements:
       - key: 01a1bcf9-343a-712a-a28c-751205a93cd4
         name: "Each kind of structure's toggle carries its colour and the number of structures of the kind the release holds."
       - key: 01a1bcf9-343a-712a-a28c-7513e662d7d4
-        name: "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, and other."
+        name: "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, the Galaxy's arms, and other."
       - key: 01a1bcf9-343a-712a-a28c-7514105b3d9c
         name: "A kind of structure turned off is shown hollow, and its toggle is not pressed for assistive technology."
   - key: 01a1bcf9-343a-712a-a28c-751561c4240f

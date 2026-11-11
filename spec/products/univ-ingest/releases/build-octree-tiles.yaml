@@ -60,6 +60,18 @@ requirements:
         name: "An age is encoded within 0.01 of the logarithm it was built from."
       - key: 01a1c7c5-a164-7706-ad2c-c835f5afc589
         name: "A version 3 point takes the same bytes as a version 2 point."
+  - key: 01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "encode, from encoding version 4, the kind of object of each point of the Galaxy tracers domain."
+    criteria:
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c92237c8477b
+        name: "A version 4 point holds every column of a version 3 point and then its kind of object, as an index into the kinds of object the tile manifest lists."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c92376902d6e
+        name: "A point whose object names no kind of object carries a code that no kind of object takes."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c9246ed5d932
+        name: "The tiles of the Galaxy tracers domain take encoding version 4, and the tiles of every other scale domain keep version 3, so that a release that adds version 4 leaves their files unchanged."
   - key: 01a19f23-636f-72bd-b194-1534af285ad4
     statement:
       form: ubiquitous

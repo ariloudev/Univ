@@ -1,0 +1,71 @@
+key: 01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed
+slug: see-the-galaxys-arms-face-on
+name: "See the Galaxy's arms face-on"
+body: |
+  Looking down on the Milky Way's disk to see its spiral arms: the young tracers that lie along them
+  within a few kiloparsecs of the Sun, and the Reid et al. 2019 model of the arms over the whole
+  disk. The stars of the stars domain are hidden in this view, since millions of overlapping stars
+  around the Sun drown the tracers, and the old tracers, RR Lyrae stars and globular clusters, belong
+  to the halo and the bulge rather than to the arms.
+
+  The Galactic Centre lies 8.15 kpc from the Sun toward l = 0°, b = 0°, the distance Reid et al.
+  2019 adopt (ApJ 885, 131, Table 3, fit A5) and fit their arms with, so that the model arms and the
+  view share one centre.
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd1631f1368
+requirements:
+  - key: 01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789
+    statement:
+      form: event_driven
+      when: "the person chooses the arms view"
+      system: "Univ Explorer"
+      shall: "look down on the Galactic disk from the north Galactic pole, centred halfway between the Sun and the Galactic Centre."
+    criteria:
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c8ff5f10db66
+        name: "A control beside the control that returns to Earth offers the arms view."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c9001874842a
+        name: "In the arms view the eye looks along the direction from the north Galactic pole toward the south Galactic pole."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c9013e941971
+        name: "In the arms view the focus is 4.075 kpc from the Sun toward l = 0°, b = 0°, halfway to the Galactic Centre at 8.15 kpc."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c902b661dfcb
+        name: "In the arms view the Sun lies above the Galactic Centre on the screen, as in Figure 1 of Reid et al. 2019, so that the Galaxy turns clockwise."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c903d2d3cf16
+        name: "In the arms view every point of every model spiral arm and its extrapolation lies within the view."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90484cdd721
+        name: "The arms view shows the galactic axes."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c9052bd62642
+        name: "Where the person's system asks for reduced motion, the view moves to the arms view at once instead of flying."
+  - key: 01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85
+    statement:
+      form: event_driven
+      when: "the person chooses the arms view"
+      system: "Univ Explorer"
+      shall: "draw only the Galaxy's young tracers and its spiral arms."
+    criteria:
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90774284032
+        name: "The arms view turns the Galaxy tracers domain on and every other scale domain off."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
+        name: "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on."
+      - key: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664
+        name: "The arms view turns the classical Cepheids, the RR Lyrae stars and the globular clusters off."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1
+        name: "The arms view chooses the Galaxy's tracers younger than 30 million years."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90a7548931b
+        name: "The arms view turns the spiral arms and their extrapolations on and every other kind of structure off."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90b518949a5
+        name: "Every source and every kind of value of the Galaxy tracers domain is on in the arms view."
+  - key: 01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "keep the arms view in the page's address until the person moves the view."
+    criteria:
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90df8380717
+        name: "Choosing the arms view puts view=arms in the page's address."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2
+        name: "Opening an address with view=arms opens the explorer in the arms view, with what it draws."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c90f96e6d031
+        name: "Turning the view, moving the focus or zooming takes view=arms out of the address and leaves what is drawn as it is."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8
+        name: "Dragging up or down from the arms view tilts the view away from the pole."

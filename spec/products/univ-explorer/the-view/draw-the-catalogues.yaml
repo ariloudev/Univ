@@ -172,12 +172,16 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "draw each point of the Galaxy tracers domain in the colour of the source of its preferred distance, larger than a star's point."
+      shall: "draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point."
     criteria:
       - key: 01a1c319-7860-76e8-92ac-c5e61e66e5d3
-        name: "Each source of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains."
+        name: "Each kind of object of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains."
       - key: 01a1c319-7860-76e8-92ac-c5e7f392df4f
-        name: "The key names each source of the Galaxy tracers domain with its colour and the number of its points drawn."
+        name: "The key names each kind of object of the Galaxy tracers domain with its colour and the number of its points drawn."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c8fb25546047
+        name: "A point of the Galaxy tracers domain is drawn in its kind of object's colour whichever source placed it."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c8fc292cfa4a
+        name: "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind."
       - key: 01a1c319-7860-76e8-92ac-c5e864b8c262
         name: "A point of the Galaxy tracers domain is drawn twice the size of a point of the stars domain at the same distance."
   - key: 01a1c319-7860-76e8-92ac-c5e9e544de53

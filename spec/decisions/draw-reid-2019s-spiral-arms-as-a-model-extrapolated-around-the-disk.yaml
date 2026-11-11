@@ -1,0 +1,81 @@
+key: 01a1cbb8-4b9d-727f-bb23-497176d190e5
+slug: draw-reid-2019s-spiral-arms-as-a-model-extrapolated-around-the-disk
+title: "Draw Reid 2019's spiral arms as a model, extrapolated around the disk"
+context: "Young tracers show the arms only within about 5 kpc of the Sun. Reid et al. 2019 (ApJ 885, 131) fit a log spiral with a kink to the maser parallaxes of each of seven arms, over the range of azimuth their masers cover, and draw the arms further in their Figure 1 by hand-adjusted extensions that their Table 2 does not give."
+state:
+  kind: accepted
+  selectedOption: 01a1cbb8-4b9d-727f-bb23-4976708e4d5f
+  outcome: "Each arm of Reid et al. 2019's Table 2 is a spiral arm structure over its fitted range and an extrapolation structure that carries the same formula up to 90° beyond each end, both of the status model."
+drivers:
+  - key: 01a1cbb8-4b9d-727f-bb23-49724e95c2e7
+    kind: local
+    label: "Whole disk"
+    statement: "The arms show across the Galaxy, beyond where the tracers reach."
+  - key: 01a1cbb8-4b9d-727f-bb23-49733721c742
+    kind: local
+    label: "Fit apart from ours"
+    statement: "What the paper fitted stays apart from what this project carries on beyond it."
+  - key: 01a1cbb8-4b9d-727f-bb23-4974040b1d95
+    kind: local
+    label: "Legible face-on"
+    statement: "The arms read clearly when the disk is seen face-on."
+options:
+  - key: 01a1cbb8-4b9d-727f-bb23-497522ed9bc2
+    title: "Fitted range only"
+    description: "A path for each arm over the range of azimuth its fit covers."
+  - key: 01a1cbb8-4b9d-727f-bb23-4976708e4d5f
+    title: "Fit and extrapolation"
+    description: "A path for each arm over its fitted range, and a fainter path that carries its formula on for up to 90° beyond each end, between Galactocentric radii of 3 and 16 kpc."
+  - key: 01a1cbb8-4b9d-727f-bb23-4977bbbea57f
+    title: "Fit, extrapolation and widths"
+    description: "As fit and extrapolation, with each arm's 1σ width drawn as a line either side from Table 2's width and its growth of 42 pc per kpc."
+assessments:
+  - option: 01a1cbb8-4b9d-727f-bb23-497522ed9bc2
+    driver: 01a1cbb8-4b9d-727f-bb23-49724e95c2e7
+    rating: conflicts
+    rationale: "the far side of the Galaxy stays mostly empty"
+  - option: 01a1cbb8-4b9d-727f-bb23-497522ed9bc2
+    driver: 01a1cbb8-4b9d-727f-bb23-49733721c742
+    rating: supports
+    rationale: "only what the paper fitted is drawn"
+  - option: 01a1cbb8-4b9d-727f-bb23-497522ed9bc2
+    driver: 01a1cbb8-4b9d-727f-bb23-4974040b1d95
+    rating: supports
+    rationale: "seven short curves"
+  - option: 01a1cbb8-4b9d-727f-bb23-4976708e4d5f
+    driver: 01a1cbb8-4b9d-727f-bb23-49724e95c2e7
+    rating: supports
+    rationale: "each arm runs on up to 90° beyond its data"
+  - option: 01a1cbb8-4b9d-727f-bb23-4976708e4d5f
+    driver: 01a1cbb8-4b9d-727f-bb23-49733721c742
+    rating: supports
+    rationale: "the extrapolation is its own kind of structure, fainter, and says what it rests on"
+  - option: 01a1cbb8-4b9d-727f-bb23-4976708e4d5f
+    driver: 01a1cbb8-4b9d-727f-bb23-4974040b1d95
+    rating: supports
+    rationale: "one line for each arm, brighter where it was fitted"
+  - option: 01a1cbb8-4b9d-727f-bb23-4977bbbea57f
+    driver: 01a1cbb8-4b9d-727f-bb23-49724e95c2e7
+    rating: supports
+    rationale: "as fit and extrapolation"
+  - option: 01a1cbb8-4b9d-727f-bb23-4977bbbea57f
+    driver: 01a1cbb8-4b9d-727f-bb23-49733721c742
+    rating: supports
+    rationale: "as fit and extrapolation"
+  - option: 01a1cbb8-4b9d-727f-bb23-4977bbbea57f
+    driver: 01a1cbb8-4b9d-727f-bb23-4974040b1d95
+    rating: conflicts
+    rationale: "three lines for each arm crowd the inner Galaxy"
+consequences:
+  - key: 01a1cbb8-4b9d-727f-bb23-4978f6b70e31
+    kind: obligation
+    statement: "Structure files take a log spiral's cited parameters, from which Univ Ingest computes a path, and structures gain the status model."
+  - key: 01a1cbb8-4b9d-727f-bb23-4979e1a056f2
+    kind: risk
+    statement: "The extrapolations differ from the arms Reid et al. 2019 draw beyond their data, which the paper adjusted by hand, so they are labelled as this project's own."
+  - key: 01a1cbb8-4b9d-727f-bb23-497aeb0413ea
+    kind: cost
+    statement: "The Structures drawer's axis and headings reach down to kiloparsecs, since spiral arms are the first structures within the Galaxy."
+subjects:
+  - role: outcome
+    node: 01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32

@@ -1,0 +1,98 @@
+key: 01a1cbb8-4b9d-727f-bb23-497b27ad83d0
+slug: trace-the-spiral-arms-with-zari-2021s-luminous-hot-stars
+title: "Trace the spiral arms with Zari 2021's luminous hot stars"
+context: "Young open clusters show arm segments within about 3 kpc of the Sun. Hot young stars trace the arms further, as the Gaia-based maps of Poggio et al. 2021 and of Gaia Collaboration, Drimmel et al. 2023 show. Of the published Gaia samples, Zari et al. 2021 (A&A 650, A112) gives 417,535 OB and late-B to A stars brighter than M_K = 0 on VizieR, with astro-kinematic distance percentiles but no parallax errors; ALS III (Pantaleoni González et al. 2025) gives about 14,000 confirmed massive stars only through its own website, with no licence stated; Xu et al. 2021 (A&A 645, L8) gives 9,750 spectroscopic OB stars with parallaxes and no distances; the Drimmel et al. 2023 sample of about 580,000 stars is published only as its query."
+state:
+  kind: accepted
+  selectedOption: 01a1cbb8-4b9d-727f-bb23-497fc8ee522c
+  outcome: "Zari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id."
+drivers:
+  - key: 01a1cbb8-4b9d-727f-bb23-497c875f86ea
+    kind: local
+    label: "Reach"
+    statement: "The stars show arm segments out to about 5 kpc from the Sun."
+  - key: 01a1cbb8-4b9d-727f-bb23-497d2f3508b8
+    kind: local
+    label: "Existing access"
+    statement: "The source is fetched through a provider Univ Ingest already uses, under terms that allow it to be published."
+  - key: 01a1cbb8-4b9d-727f-bb23-497e106e197d
+    kind: local
+    label: "Purity"
+    statement: "The stars are young massive stars, not older stars of the same colour."
+options:
+  - key: 01a1cbb8-4b9d-727f-bb23-497fc8ee522c
+    title: "Zari 2021 filtered"
+    description: "The 417,535 stars of J/A+A/650/A112/filtered from VizieR, with Zari's astro-kinematic distance percentiles."
+  - key: 01a1cbb8-4b9d-727f-bb23-4980e83d3db8
+    title: "ALS III"
+    description: "About 14,000 massive stars of the Alma Luminous Star catalogue III, from its website's query form, with its OB-specific Bayesian distances."
+  - key: 01a1cbb8-4b9d-727f-bb23-498128c7d924
+    title: "Xu 2021"
+    description: "The 9,750 spectroscopic OB stars of J/A+A/645/L8 from VizieR, placed by their parallaxes alone."
+  - key: 01a1cbb8-4b9d-727f-bb23-49821c621a82
+    title: "Drimmel 2023 query"
+    description: "The about 580,000 hot stars that the ADQL of Gaia Collaboration, Drimmel et al. 2023 selects from the Gaia archive, with Bailer-Jones distances joined."
+assessments:
+  - option: 01a1cbb8-4b9d-727f-bb23-497fc8ee522c
+    driver: 01a1cbb8-4b9d-727f-bb23-497c875f86ea
+    rating: supports
+    rationale: "its stars reach 5 kpc and beyond"
+  - option: 01a1cbb8-4b9d-727f-bb23-497fc8ee522c
+    driver: 01a1cbb8-4b9d-727f-bb23-497d2f3508b8
+    rating: supports
+    rationale: "VizieR, as for the other tracer sources"
+  - option: 01a1cbb8-4b9d-727f-bb23-497fc8ee522c
+    driver: 01a1cbb8-4b9d-727f-bb23-497e106e197d
+    rating: neutral
+    rationale: "built to be complete rather than pure, it holds late-B and A stars and some evolved stars"
+  - option: 01a1cbb8-4b9d-727f-bb23-4980e83d3db8
+    driver: 01a1cbb8-4b9d-727f-bb23-497c875f86ea
+    rating: conflicts
+    rationale: "its literature compilation thins out beyond about 3 kpc"
+  - option: 01a1cbb8-4b9d-727f-bb23-4980e83d3db8
+    driver: 01a1cbb8-4b9d-727f-bb23-497d2f3508b8
+    rating: conflicts
+    rationale: "a website form with no licence stated"
+  - option: 01a1cbb8-4b9d-727f-bb23-4980e83d3db8
+    driver: 01a1cbb8-4b9d-727f-bb23-497e106e197d
+    rating: supports
+    rationale: "every star is photometrically or spectroscopically confirmed as massive"
+  - option: 01a1cbb8-4b9d-727f-bb23-498128c7d924
+    driver: 01a1cbb8-4b9d-727f-bb23-497c875f86ea
+    rating: conflicts
+    rationale: "few parallaxes within 10% beyond about 2 kpc"
+  - option: 01a1cbb8-4b9d-727f-bb23-498128c7d924
+    driver: 01a1cbb8-4b9d-727f-bb23-497d2f3508b8
+    rating: supports
+    rationale: "VizieR"
+  - option: 01a1cbb8-4b9d-727f-bb23-498128c7d924
+    driver: 01a1cbb8-4b9d-727f-bb23-497e106e197d
+    rating: supports
+    rationale: "spectral types from Skiff's compilation"
+  - option: 01a1cbb8-4b9d-727f-bb23-49821c621a82
+    driver: 01a1cbb8-4b9d-727f-bb23-497c875f86ea
+    rating: supports
+    rationale: "its stars reach 5 kpc and beyond"
+  - option: 01a1cbb8-4b9d-727f-bb23-49821c621a82
+    driver: 01a1cbb8-4b9d-727f-bb23-497d2f3508b8
+    rating: neutral
+    rationale: "the Gaia archive, but a new chunked query that ESA's service has aborted before"
+  - option: 01a1cbb8-4b9d-727f-bb23-49821c621a82
+    driver: 01a1cbb8-4b9d-727f-bb23-497e106e197d
+    rating: conflicts
+    rationale: "it admits A stars"
+consequences:
+  - key: 01a1cbb8-4b9d-727f-bb23-4983e3f0c745
+    kind: obligation
+    statement: "Galaxy tracers gain the kind of object luminous hot star, named for what the sample holds rather than as OB stars."
+  - key: 01a1cbb8-4b9d-727f-bb23-49849c5d0217
+    kind: risk
+    statement: "Astro-kinematic distances rest on a model of the disc's rotation as well as on the parallax, so they are inferred, and a star joined to a Gaia DR3 star with a precise parallax is placed by that parallax instead."
+  - key: 01a1cbb8-4b9d-727f-bb23-49850b2dc364
+    kind: cost
+    statement: "Release 15 is a full build that adds about 417,000 Galaxy tracers, nearly three times the domain's points."
+subjects:
+  - role: affected
+    node: 01a1c319-7860-76e8-92ac-c608fc0fd4c3
+  - role: outcome
+    node: 01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e
