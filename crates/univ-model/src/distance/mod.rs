@@ -35,6 +35,9 @@ pub enum Method {
     BayesianGeometric,
     /// Bailer-Jones et al. 2021, photogeometric prior.
     BayesianPhotogeometric,
+    /// Zari et al. 2021: the posterior of a star's parallax and proper motion with a prior from
+    /// a model of the disc's rotation, an astro-kinematic distance.
+    AstroKinematic,
     Cepheids,
     TipOfTheRedGiantBranch,
     Masers,

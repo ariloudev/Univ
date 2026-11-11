@@ -23,6 +23,23 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-11T17:56:29Z
+lastEnded: 2026-11-11T18:04:14Z
 turns:
   - started: 2026-11-11T17:56:29Z
+loft:
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-11T18:01:51Z
+    ended: 2026-11-11T18:01:53Z
+    failed: false
+    stage: 01a1cbc1-101b-76de-8044-96615438b872
+  - commands:
+      - fmt
+      - check
+    agent: main
+    started: 2026-11-11T18:04:12Z
+    ended: 2026-11-11T18:04:14Z
+    failed: false
+    stage: 01a1cbc1-101b-76de-8044-96615438b872

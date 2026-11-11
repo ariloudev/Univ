@@ -1,6 +1,7 @@
 //! The Galaxy's tracers in a release: each is an object of the kind its source names, tiled in
 //! the Galaxy tracers domain once placed, and a Cepheid or RR Lyrae star joins the Gaia DR3 star
-//! its source names (normalize-records; build-octree-tiles; define-a-source).
+//! its source names, as a luminous hot star does (normalize-records; build-octree-tiles;
+//! define-a-source).
 
 #![expect(
     clippy::unwrap_used,
@@ -17,12 +18,13 @@ use univ_ingest::matching::match_entries;
 use univ_model::object::ObjectKind;
 
 /// The recorded tracer sources and the kind of object each names.
-const TRACERS: [(&str, &str); 5] = [
+const TRACERS: [(&str, &str); 6] = [
     ("hunt-reffert-2023", "open_cluster"),
     ("baumgardt-vasiliev-2021", "globular_cluster"),
     ("skowron-2025-cepheids", "classical_cepheid"),
     ("li-2023-rr-lyrae", "rr_lyrae_star"),
     ("reid-2019-masers", "star_forming_region"),
+    ("zari-2021-luminous-hot-stars", "luminous_hot_star"),
 ];
 
 #[test]
@@ -66,19 +68,23 @@ fn each_tracer_is_an_object_of_its_kind_in_the_galaxy_tracers_domain_once_placed
 }
 
 #[test]
-fn a_cepheid_and_an_rr_lyrae_star_join_the_gaia_star_their_source_names() {
+fn a_cepheid_an_rr_lyrae_star_and_a_luminous_hot_star_join_the_gaia_star_their_source_names() {
     // SIMULATED positions; CG Cas's Gaia DR3 source_id as Skowron et al. 2025 give it, and an
     // RR Lyrae star's as Li et al. 2023 give it, each also a Gaia DR3 star below G = 14.
     let (cg_cas, rr) = ("429385923752386944", "507222753405440");
+    // And a luminous hot star's EDR3 source_id as Zari et al. 2021 give it.
+    let hot = "52581364756139392";
     let entries = vec![
         entry("gaia-dr3-bright", cg_cas, 0.2468, 60.959),
         bare("skowron-2025-cepheids", cg_cas),
         entry("gaia-dr3-bright", rr, 44.6653, 1.7894),
         entry("li-2023-rr-lyrae", rr, 44.6653, 1.7894),
+        entry("gaia-dr3-bright", hot, 63.805_085, 22.097_121),
+        bare("zari-2021-luminous-hot-stars", hot),
     ];
     let rules = matching_rules().with_object_kinds(&common::read_sources());
     let m = match_entries(&rules, entries);
-    assert_eq!(m.objects.len(), 2);
+    assert_eq!(m.objects.len(), 3);
     for (tracer, id, kind) in [
         (
             "skowron-2025-cepheids",
@@ -86,6 +92,11 @@ fn a_cepheid_and_an_rr_lyrae_star_join_the_gaia_star_their_source_names() {
             ObjectKind::ClassicalCepheid,
         ),
         ("li-2023-rr-lyrae", rr, ObjectKind::RrLyraeStar),
+        (
+            "zari-2021-luminous-hot-stars",
+            hot,
+            ObjectKind::LuminousHotStar,
+        ),
     ] {
         let at = m.position_of(&designation(tracer, id)).unwrap();
         assert_eq!(

@@ -2738,6 +2738,13 @@
             "type": "string"
           },
           {
+            "description": "Zari et al. 2021: the posterior of a star's parallax and proper motion with a prior from\na model of the disc's rotation, an astro-kinematic distance.",
+            "enum": [
+              "astro_kinematic"
+            ],
+            "type": "string"
+          },
+          {
             "enum": [
               "cepheids"
             ],

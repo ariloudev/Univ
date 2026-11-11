@@ -64,6 +64,15 @@ blocks:
         title: "T2. Zari 2021 source"
         detail: "sources/zari-2021-luminous-hot-stars.yaml sliced by GaiaEDR3, inferred astro-kinematic distances with 16th/84th bounds, parallax kept with no error and no distance derived, joined to Gaia DR3 by source id. Done when normalize_tracers and release_tracers tests on a recorded fixture pass."
         state: active
+      - key: 01a1cbd4-4647-75ee-9e7e-bf9ec9095dee
+        at: 2026-11-11T18:17:28Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T2. Zari 2021 source"
+        detail: "sources/zari-2021-luminous-hot-stars.yaml (48 slices by GaiaEDR3), Method::AstroKinematic added, Zari in the gaia-source-id cross-identification, a 5-row recorded fixture. Tests: inferred distance with its percentiles, parallax with none reported and the zero point as published, the Gaia DR3 join, the measured Gaia parallax placing the star before its inferred distance, and the release build with six tracer sources. The whole univ-ingest suite passes."
+        state: done
   - key: 01a1cbc1-101b-76de-8044-9664466cf541
     id: t3-tiles
     kind: task
@@ -77,6 +86,15 @@ blocks:
         title: "T3. Tile encoding 4 for the tracers"
         detail: "Version 4 adds a kind-of-object column (0 none, else 1 + index into object_kinds), written for galaxy_tracers only; the reference decoder and its fixtures read it. Done when the v4 round-trip, the no-kind point, the unchanged v3 domains and the decoder fixtures pass."
         state: open
+      - key: 01a1cbd4-4647-75ee-9e7e-bf9f8564c6bd
+        at: 2026-11-11T18:17:28Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T3. Tile encoding 4 for the tracers"
+        detail: "Version 4 adds a kind-of-object column (0 none, else 1 + index into object_kinds), written for galaxy_tracers only; the reference decoder and its fixtures read it. Done when the v4 round-trip, the no-kind point, the unchanged v3 domains and the decoder fixtures pass."
+        state: active
   - key: 01a1cbc1-101b-76de-8044-9665c6e113cd
     id: t4-arms
     kind: task
@@ -131,3 +149,185 @@ blocks:
           | Issue | Found by | Fix | State |
           |---|---|---|---|
           | (none yet) | | | |
+  - key: 01a1cbd4-4647-75ee-9e7e-bf9ce7cc6c69
+    id: spec-change-zari-wording
+    kind: loft
+    versions:
+      - key: 01a1cbd4-4647-75ee-9e7e-bf9ded554bc0
+        at: 2026-11-11T18:17:28Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        view: spec-change
+        note: "A minor correction made while building T2 (minor spec changes are pre-approved): Zari's parallax zero point is a value its authors computed by the Lindegren et al. 2021 recipe, so it is kept as published rather than as a measured value; and the astro-kinematic prior models young stars' velocities *and* density (the ReadMe's abstract), not disc rotation alone. The decision's risk statement says the same."
+        base: "d52c5df"
+        recorded:
+          commit: "c659e45c27b5d6fb145a3647c8cb964c2c67fa68"
+          branch: "stage/spiral-arms-1"
+          loft: 2.3.0
+          at: 2026-11-11T18:17:28Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 1,
+              "graph.diff": 3,
+              "graph.edges": 1,
+              "graph.nodes": 6,
+              "status.base.added": 0,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Trace the spiral arms with Zari 2021's luminous hot stars",
+                  "words": {
+                    "after": "Trace the spiral arms with Zari 2021's luminous hot stars\n\nZari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id.",
+                    "before": "Trace the spiral arms with Zari 2021's luminous hot stars\n\nZari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c915da03062a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names its parallax, proper motion and prior from a model of young stars' velocities and density, after Zari et al. 2021.",
+                  "words": {
+                    "after": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names its parallax, proper motion and prior from a model of young stars' velocities and density, after Zari et al. 2021.",
+                    "before": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names the parallax, proper motion and disc-kinematics prior of Zari et al. 2021."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9166100490e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star keeps its Gaia EDR3 parallax as a measured value, with no uncertainty reported since its source publishes none, and the parallax zero point its source computed, as published.",
+                  "words": {
+                    "after": "A luminous hot star keeps its Gaia EDR3 parallax as a measured value, with no uncertainty reported since its source publishes none, and the parallax zero point its source computed, as published.",
+                    "before": "A luminous hot star keeps its Gaia EDR3 parallax and parallax zero point as measured values, with no uncertainty reported since its source publishes none."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Trace the spiral arms with Zari 2021's luminous hot stars",
+                  "words": {
+                    "after": "Trace the spiral arms with Zari 2021's luminous hot stars\n\nZari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id.",
+                    "before": "Trace the spiral arms with Zari 2021's luminous hot stars\n\nZari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                  "kind": "requirement",
+                  "label": "RQ-188",
+                  "name": "Univ Ingest shall keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c915da03062a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names its parallax, proper motion and prior from a model of young stars' velocities and density, after Zari et al. 2021.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9166100490e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star keeps its Gaia EDR3 parallax as a measured value, with no uncertainty reported since its source publishes none, and the parallax zero point its source computed, as published.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c915da03062a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 176,
+                    "name": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names its parallax, proper motion and prior from a model of young stars' velocities and density, after Zari et al. 2021.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9166100490e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 178,
+                    "name": "A luminous hot star keeps its Gaia EDR3 parallax as a measured value, with no uncertainty reported since its source publishes none, and the parallax zero point its source computed, as published.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  }
+                ],
+                "commit": "d52c5dfdac7178ff1ea151ea11b6d44fc67fa233",
+                "removed": [],
+                "revision": "d52c5df"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 9,
+                "publishedAt": "2026-11-11T16:04:40Z",
+                "stateRoot": "cf70fa83262810b6be6b9d3dc0bdaf3eb5ebafd0c12af53ce73a6e813aba1f97"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/spiral-arms-1",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

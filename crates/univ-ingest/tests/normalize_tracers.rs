@@ -1,6 +1,8 @@
 //! The Galaxy's tracers keep the distance their source publishes, with its uncertainty, method and
 //! kind of value; a pulsating star keeps its pulsation type as published; a maser keeps its
-//! parallax as measured and no distance (normalize-records, the Requirement on Galaxy tracers).
+//! parallax as measured and no distance; a luminous hot star keeps its astro-kinematic distance as
+//! inferred and its parallax with no error and no distance (normalize-records, the Requirement on
+//! Galaxy tracers).
 
 mod common;
 
@@ -130,4 +132,42 @@ fn a_maser_keeps_its_parallax_as_measured_and_no_distance() {
     );
     assert_eq!(e.name.as_deref(), Some("NGC6334"));
     assert_eq!(e.flags.get("Arm").unwrap(), "CrN");
+}
+
+#[test]
+fn a_luminous_hot_star_keeps_its_astro_kinematic_distance_as_inferred_with_its_percentiles() {
+    // Recorded 2026-11-11: the first five stars of Zari et al. 2021's first slice; EDR3
+    // 52433033765297664 at 2.577 (2.442 to 2.728) kpc.
+    let n = normalized_fixture("zari-2021-luminous-hot-stars");
+    assert_eq!(n.report.published, 5);
+    let d = distance(&n, "52433033765297664");
+    assert!((d.native.value - 2.576_838_254_9).abs() < 1e-9);
+    assert_eq!(d.native.unit, Unit::Kiloparsec);
+    assert_eq!(d.kind, DistanceKind::Geometric);
+    assert_eq!(d.method, Method::AstroKinematic);
+    assert_eq!(d.kind_of_value, KindOfValue::Inferred);
+    let Uncertainty::CredibleInterval {
+        minus,
+        plus,
+        probability,
+    } = d.native.uncertainty
+    else {
+        panic!("{:?}", d.native.uncertainty)
+    };
+    assert!((d.native.value - minus - 2.441_838_264_5).abs() < 1e-9);
+    assert!((d.native.value + plus - 2.727_838_277_8).abs() < 1e-9);
+    assert!((probability - 0.68).abs() < 1e-12);
+}
+
+#[test]
+fn a_luminous_hot_star_keeps_its_parallax_with_none_reported_and_its_zero_point_as_published() {
+    let n = normalized_fixture("zari-2021-luminous-hot-stars");
+    let e = entry(&n, "52433033765297664");
+    let parallax = e.parallax.as_deref().unwrap();
+    assert_eq!(parallax.kind, KindOfValue::Measured);
+    assert_eq!(parallax.native.value, 0.3318);
+    assert_eq!(parallax.native.unit, Unit::Milliarcsecond);
+    assert_eq!(parallax.native.uncertainty, Uncertainty::NoneReported);
+    assert_eq!(e.flags.get("ZeroPoint").unwrap(), "-0.0447489992");
+    assert_eq!(e.flags.get("Probv1").unwrap(), "1.0000000000");
 }
