@@ -250,6 +250,15 @@ blocks:
         title: "Explorer: the age choice"
         detail: "age= in the address, a Show drawer control with the share of tracers with an age, a per-point cut that hides from pointer, click and key, and All resets it. Done when the Vitest tests and the Playwright ?age=30 test pass."
         state: active
+      - key: 01a1c819-5067-77d6-9953-23f2868bb2b8
+        at: 2026-11-11T00:54:24Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: the age choice"
+        detail: "ui/age.ts reads and keeps `age=100|30|10` in the address. The catalogue folds the age cut into its per-point mask (inside), so drawing (a_inside), picking (drawnPoints) and the key's counts all leave out tracers at or above the age; the renderer's culled opacity now asks culled(). The Show drawer's AgeChoice (any, < 100, < 30, < 10) names how many tracers held carry an age; All and Show everything reset it; the summary says the age chosen. Tests: catalogue/age.test.ts (3), ui/age.test.ts (3), show/AgeChoice.test.tsx (5); an e2e test of the address, reload and All (run at integration). All 511 Vitest tests and the typecheck pass."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-feff6afd914a
     id: t9-explorer-panel
     kind: task
@@ -263,6 +272,15 @@ blocks:
         title: "Explorer: age in the panel"
         detail: "An age line in Myr with its interval, kind, source and published log. Done when objectRecordText and RecordPanel tests pass on an open-cluster record fixture."
         state: open
+      - key: 01a1c819-5067-77d6-9953-23f39e784bde
+        at: 2026-11-11T00:54:24Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: age in the panel"
+        detail: "An age line in Myr with its interval, kind, source and published log. Done when objectRecordText and RecordPanel tests pass on an open-cluster record fixture."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-ff006a71aa5f
     id: t10-science
     kind: task
@@ -343,3 +361,20 @@ blocks:
           | `normalization.rs` would pass 500 lines with the age reading | Line count before the edit | The colour check moved to `source/normalization/colour.rs`, the age reading to `age.rs` (465 lines now) | fixed |
           | `MeasurementWriter::write` passed clippy's 100-line limit with the age loop | clippy | Colours and ages written by their own method | fixed |
           | Plan said the manifest gains `value_codes` in place of `colour_bands` | Implementing task 5 | Kept `colour_bands` and added `log_age_code: 3`: additive, so the explorer's strict `colour_bands` enum and version 2 manifests read unchanged | changed |
+      - key: 01a1c819-5067-77d6-9953-23f43278fc50
+        at: 2026-11-11T00:54:24Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test (an aged entry failed to read back) | Ages checked by their own rule: normalized in years, native in years or log years | fixed |
+          | `bea0412` was committed unformatted: the commit followed `;` after `cargo fmt --check`, not its exit status | The check's output, after the commit | `eecea9e` formats and lints it; commits since then chain on the check's status | fixed |
+          | `normalization.rs` would pass 500 lines with the age reading | Line count before the edit | The colour check moved to `source/normalization/colour.rs`, the age reading to `age.rs` (465 lines now) | fixed |
+          | `MeasurementWriter::write` passed clippy's 100-line limit with the age loop | clippy | Colours and ages written by their own method | fixed |
+          | Plan said the manifest gains `value_codes` in place of `colour_bands` | Implementing task 5 | Kept `colour_bands` and added `log_age_code: 3`: additive, so the explorer's strict `colour_bands` enum and version 2 manifests read unchanged | changed |
+          | The renderer took a tile's mask being present to mean the view is culled, which an age mask alone would have dimmed | Reading the renderer for task 8 | `DrawnDetail.culled()` says whether a volume cull is on; opacity reads it | fixed |
+          | The plan's Playwright test was to draw fewer tracers at `?age=30`, but the integration fixture release holds no tracer tiles | Task 8 | The e2e test covers the address, the reload and All; drawing, picking and counting by age are proved in `catalogue/age.test.ts` on the version 3 SIMULATED tiles | changed |

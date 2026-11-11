@@ -21,6 +21,7 @@ const SHORT: Readonly<Record<string, string>> = {
   gcns: "GCNS",
   "hipparcos-1997": "Hipparcos 1997",
   "hipparcos-2007": "Hipparcos 2007",
+  "hunt-reffert-2023": "Hunt & Reffert 2023",
   "iau-star-names": "IAU WGSN",
   "mcconnachie-2012": "McConnachie 2012",
   openngc: "OpenNGC",

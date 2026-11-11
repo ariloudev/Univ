@@ -211,6 +211,28 @@ export function brightnessLines(record: ObjectRecord, name: Namer): LineData[] {
   return [...firstOf(magnitudes), ...firstOf(colours), ...types];
 }
 
+/** The share of the posterior a credible interval holds, as a percentage, where it says one. */
+const heldText = (m: Measurement): string => {
+  const p = (m.normalized ?? m.native).uncertainty?.probability;
+  return p === undefined ? "" : ` (${figures(p * 100, 2)}%)`;
+};
+
+/** The ages of the object (read-an-object): each in millions of years with its uncertainty, and
+ * the base-10 logarithm of the age in years as its source publishes it, where it publishes one. */
+export function ageLines(record: ObjectRecord, name: Namer): LineData[] {
+  return record.measurements
+    .filter((m) => m.quantity === "age")
+    .flatMap((m) => {
+      const years = m.normalized ?? m.native;
+      const source = name(m.source);
+      const kind = m.kind_of_value;
+      const age = { label: "Age", value: `${shortWithUncertainty(figures(years.value / 1e6, 2), years.uncertainty, 1e-6)} Myr${heldText(m)}`, source, kind };
+      if (m.native.unit !== "log_year") return [age];
+      const published = shortWithUncertainty(m.native.value.toFixed(2), m.native.uncertainty);
+      return [age, { label: "log age (yr)", value: `${published}, as published`, source, kind }];
+    });
+}
+
 /** The colour index the view draws the star by, where it has one. */
 export const drawnColourOf = (record: ObjectRecord): StarColourIndex | undefined => drawnColourIndex(colourIndices(record));
 

@@ -16,7 +16,7 @@ import { Mark } from "../Mark.tsx";
 import { ColourScale, DotPlot, TickStrip } from "./charts.tsx";
 import { Groups } from "./Groups.tsx";
 import { sourceShort } from "./names.ts";
-import { type Namer, brightnessLines, cataloguesText, distanceView, drawnColourOf, hasProperMotion, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
+import { type Namer, ageLines, brightnessLines, cataloguesText, distanceView, drawnColourOf, hasProperMotion, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
 import { Chooser, Lead, Note, Raised, Rows, Section } from "./parts.tsx";
 import { RecordPanel } from "./RecordPanel.tsx";
 
@@ -56,6 +56,7 @@ export function ObjectRecordPanel({ record, as, context, onClose }: Props) {
       <Distance {...props} />
       <Position {...props} />
       <Brightness {...props} />
+      <Age {...props} />
       <Motion {...props} />
       <Groups record={record} context={context} sources={sources} title={record.kind === "galaxy_group" ? "Members" : "Groups"} name={name} />
       <LiesInside {...props} />
@@ -142,6 +143,17 @@ function Brightness({ record, name }: PartProps) {
     <Section title="Brightness and colour" testid="record-brightness">
       <Rows lines={lines} />
       {colour === undefined ? null : <ColourScale colour={colour} />}
+    </Section>
+  );
+}
+
+/** Its ages, such as an open cluster's: in millions of years, and as their sources publish them. */
+function Age({ record, name }: PartProps) {
+  const lines = ageLines(record, name);
+  if (lines.length === 0) return null;
+  return (
+    <Section title="Age" testid="record-age">
+      <Rows lines={lines} />
     </Section>
   );
 }
