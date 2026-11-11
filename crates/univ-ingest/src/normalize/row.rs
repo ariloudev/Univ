@@ -213,7 +213,7 @@ impl Row<'_, '_> {
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
             colours: self.colours()?,
-            ages: self.ages()?,
+            ages: self.ages(),
             spectral_type: self.spectral_type().map(Box::new),
             group_id: plan
                 .group_id

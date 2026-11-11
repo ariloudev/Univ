@@ -136,6 +136,8 @@ const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20
 export const VERSIONS: readonly number[] = Object.keys(POINT_BYTES).map(Number);
 /** The value a version 2 or 3 point holds when it has none. */
 const NO_COLOUR = -32_768;
+/** The code of a version 3 point whose value is the base-10 logarithm of its age in years. */
+const LOG_AGE_CODE = 3;
 const MAX_TILE_BYTES = 1_048_576;
 const STEPS = 65_536;
 const TWO_32 = 4_294_967_296;
@@ -217,8 +219,12 @@ export function decodeTile(
   const colourColumn = HEADER_BYTES + V1_POINT_BYTES * n;
   const bandsColumn = colourColumn + 2 * n;
   const bandNames = manifest.encoding.colour_bands ?? [];
-  // Version 3 codes a log age apart from the colour bands.
-  const ageCode = version >= 3 ? manifest.encoding.log_age_code : undefined;
+  // Version 3 codes a log age apart from the colour bands, as LOG_AGE_CODE, which its manifest
+  // repeats: one that names another code is refused, so that no colour is read as an age.
+  const ageCode = version >= 3 ? LOG_AGE_CODE : undefined;
+  if (ageCode !== undefined && manifest.encoding.log_age_code !== ageCode) {
+    fail(`the manifest gives the log age code ${manifest.encoding.log_age_code}, not the ${ageCode} of version ${version}`);
+  }
   const points: DecodedPoint[] = new Array(n);
   for (let k = 0; k < n; k++) {
     const at = HEADER_BYTES + 6 * k;

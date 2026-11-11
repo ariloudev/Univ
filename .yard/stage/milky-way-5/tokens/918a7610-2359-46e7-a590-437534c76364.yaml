@@ -2,12 +2,12 @@ format: yardtokens/2
 session: 918a7610-2359-46e7-a590-437534c76364
 host: claude-code
 firstEnded: 2026-11-10T23:23:08Z
-lastEnded: 2026-11-11T01:15:29Z
+lastEnded: 2026-11-11T02:21:45Z
 tokens:
-  input: 624
-  cacheRead: 80983089
-  cacheWrite: 938925
-  output: 207692
+  input: 726
+  cacheRead: 96336460
+  cacheWrite: 1127553
+  output: 245694
 stages:
   - stage: 01a1c7c5-c152-76e5-9ef9-cc8f5fac1755
     input: 4
@@ -21,16 +21,16 @@ stages:
         cacheWrite: 5525
         output: 918
   - stage: 01a1c7c5-c152-76e5-9ef9-cc90ee16de62
-    input: 518
-    cacheRead: 75599494
-    cacheWrite: 777458
-    output: 174193
+    input: 620
+    cacheRead: 90952865
+    cacheWrite: 966086
+    output: 212195
     agents:
       - agent: main
-        input: 406
-        cacheRead: 71285997
-        cacheWrite: 325504
-        output: 142639
+        input: 456
+        cacheRead: 83690136
+        cacheWrite: 358350
+        output: 162694
       - agent: a1ca879b4778ab908
         type: general-purpose
         input: 22
@@ -43,6 +43,12 @@ stages:
         cacheRead: 893270
         cacheWrite: 86205
         output: 10168
+      - agent: a5d6e6656dd84e59c
+        type: general-purpose
+        input: 52
+        cacheRead: 2949232
+        cacheWrite: 155782
+        output: 17947
       - agent: afc4bec04a30d0f64
         type: general-purpose
         input: 36
@@ -74,10 +80,10 @@ noStage:
 agents:
   - agent: main
     model: claude-opus-5-5
-    input: 428
-    cacheRead: 73091127
-    cacheWrite: 359962
-    output: 153071
+    input: 478
+    cacheRead: 85495266
+    cacheWrite: 392808
+    output: 173126
   - agent: a1ba36cb2b459be13
     type: Explore
     model: claude-opus-5-5
@@ -99,6 +105,13 @@ agents:
     cacheRead: 893270
     cacheWrite: 86205
     output: 10168
+  - agent: a5d6e6656dd84e59c
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 52
+    cacheRead: 2949232
+    cacheWrite: 155782
+    output: 17947
   - agent: afc4bec04a30d0f64
     type: general-purpose
     model: claude-opus-5-5

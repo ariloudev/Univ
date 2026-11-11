@@ -97,7 +97,9 @@ interface Histogram {
 }
 
 /** `mask`, or every point of `batch` where it is none, with each point whose log age is at or
- * above `maxLogAge` left out; `mask` itself where no point has an age or no age is chosen. */
+ * above `maxLogAge` left out; `mask` itself where no point has an age or no age is chosen. A
+ * tile holds a log age to the hundredth (build-octree-tiles), so a cluster within about 1% of
+ * the age chosen may fall on either side of it; the science report counts the ages as published. */
 function withAge(batch: Batch, mask: Uint8Array | undefined, maxLogAge: number | undefined): Uint8Array | undefined {
   const ages = batch.ages;
   if (maxLogAge === undefined || ages === undefined || !ages.some((age) => age >= maxLogAge)) return mask;

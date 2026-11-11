@@ -164,17 +164,25 @@ pub fn colour_of(object: &Object) -> Option<PointColour> {
     best.map(|(_, c)| c)
 }
 
-/// The base-10 logarithm of `object`'s preferred age in years (build-octree-tiles): the first
-/// age its entries give, as published where its source publishes the logarithm.
+/// The base-10 logarithm of `object`'s preferred age in years (build-octree-tiles), the first age
+/// its entries give that has one: Hunt & Reffert 2023 is the only source of ages, so the first is
+/// the preferred. It is taken as published where its source publishes the logarithm; an age in
+/// years that is not positive has none.
 #[must_use]
 pub fn log_age_of(object: &Object) -> Option<f64> {
-    let age = object.entries.iter().flat_map(|e| &e.entry.ages).next()?;
-    let v = &age.value;
-    Some(if v.native.unit == Unit::LogYear {
-        v.native.value
-    } else {
-        v.normalized.value.log10()
-    })
+    object
+        .entries
+        .iter()
+        .flat_map(|e| &e.entry.ages)
+        .find_map(|age| {
+            let v = &age.value;
+            let log = if v.native.unit == Unit::LogYear {
+                v.native.value
+            } else {
+                v.normalized.value.log10()
+            };
+            log.is_finite().then_some(log)
+        })
 }
 
 /// The kind of value of the measurement `m` of `object`.

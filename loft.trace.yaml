@@ -3802,7 +3802,7 @@ links:
     reviewed: 637b2f4a44857c91d51aa64951c5440bfe6f6ce422723794a9ba5285aa09cd7a
     tests:
       - file: "clients/tile-decoder/decode.test.ts"
-        name: "the decoder decodes tiles of encoding versions 1 and 2"
+        name: "the decoder decodes tiles of encoding versions 1, 2 and 3"
         body: f498937ecb739a5adc7e0ea950c4a1d0aa0922696d3d710ee02f7c9db6c3a3c8
       - file: "crates/univ-model/src/tile/tests.rs"
         name: "a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours"
@@ -3811,7 +3811,7 @@ links:
     reviewed: 279d1e3ce5238e28b0e8c711c9cbe69fe7cec4d115e2e9537e4ce6dd435dfa3c
     tests:
       - file: "clients/tile-decoder/decode.test.ts"
-        name: "each decoded point of a version 2 tile gives its colour index and bands, or that it has none"
+        name: "each decoded point of a version 2 or 3 tile gives its colour index and bands, or that it has none"
         body: 1e577bee76d8ac7bc99ad17ef0309f1588efd3b3068d57eb25419ed1cf098b1e
   - node: 01a19f20-8e6c-7039-b16f-ac0782b8bf64
     reviewed: cd3d5c598eb5768886cce5b75d25023538b1c09c500dc8d51e4db468635f4520
@@ -4725,6 +4725,8 @@ links:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "turns every group of the points or the structures on, or off, from their All and None"
         body: 3a43bd2590f82f2d5adb8ae1b43f2d36688bef022f2f4e7b46ab48cb6c8bf8bc
+      - file: "clients/explorer/src/ui/show/AgeChoice.test.tsx"
+        name: "says the age chosen in its summary, and shows tracers of any age from All and from Show everything"
   - node: 01a1bcf9-343a-712a-a28c-751b082d1288
     reviewed: 216c0dd14d5fcbbf727a12971ecfee7bfa6ba6a93048435e41f53d64cab4224d
     tests:
@@ -6261,3 +6263,79 @@ links:
       - file: "clients/explorer/src/ui/inside.test.ts"
         name: "is named in the address by the structure it culls to"
         body: 7665828ee4ed91a37092c6c24760fcc830d9489f939ec269e8731992d2510874
+  - node: 01a1c7c5-a164-7706-ad2c-c82776d44e42
+    tests:
+      - file: "clients/explorer/src/ui/record/objectRecordText.test.ts"
+        name: "gives an open cluster's age in millions of years with its interval, kind and source, and its logarithm as published"
+      - file: "clients/explorer/src/ui/ObjectPanel.test.tsx"
+        name: "gives an open cluster's age in its own part, and none for an object without one"
+  - node: 01a1c7c5-a164-7706-ad2c-c829df008c94
+    tests:
+      - file: "clients/explorer/src/catalogue/age.test.ts"
+        name: "draws, lets the pointer name and counts only the tracers younger than the age chosen, and those without an age"
+      - file: "clients/explorer/src/ui/show/AgeChoice.test.tsx"
+        name: "offers any age, or younger than 100, 30 or 10 million years, any age pressed as the view opens"
+      - file: "clients/explorer/src/catalogue/age.test.ts"
+        name: "draws every tracer again once any age is chosen"
+  - node: 01a1c7c5-a164-7706-ad2c-c82aea0d2f15
+    tests:
+      - file: "clients/explorer/src/ui/show/AgeChoice.test.tsx"
+        name: "names the share of the tracers held that carry an age, which it acts on"
+      - file: "clients/explorer/src/catalogue/age.test.ts"
+        name: "counts the tracers held and those of them that carry an age"
+  - node: 01a1c7c5-a164-7706-ad2c-c82b30be9905
+    tests:
+      - file: "clients/explorer/src/ui/age.test.ts"
+        name: "is kept in the page's address, and reloading the page gives the same age"
+      - file: "clients/explorer/src/ui/age.test.ts"
+        name: "is read from the page's address, any age where it names none offered"
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "keeps the age of the Galaxy's tracers drawn in the address, across a reload, until All shows every age"
+  - node: 01a1c7c5-a164-7706-ad2c-c82c968f363a
+    tests:
+      - file: "clients/explorer/src/catalogue/age.test.ts"
+        name: "draws, lets the pointer name and counts only the tracers younger than the age chosen, and those without an age"
+  - node: 01a1c7c5-a164-7706-ad2c-c82eaf9e36dd
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_ages.rs"
+        name: "an_open_cluster_keeps_its_log_age_as_published_and_its_age_in_years_as_an_estimate"
+      - file: "crates/univ-ingest/tests/normalize_age_definitions.rs"
+        name: "hunt_and_reffert_read_their_log_ages_as_estimated_with_a_68_percent_interval"
+  - node: 01a1c7c5-a164-7706-ad2c-c82fc742d77b
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_ages.rs"
+        name: "an_open_cluster_keeps_its_log_age_as_published_and_its_age_in_years_as_an_estimate"
+      - file: "crates/univ-model/src/entry/age.rs"
+        name: "a_log_age_is_kept_and_normalized_to_years_with_its_interval_raised"
+      - file: "crates/univ-ingest/tests/object_reads.rs"
+        name: "every_measurement_has_its_native_value_unit_uncertainty_kind_and_source"
+  - node: 01a1c7c5-a164-7706-ad2c-c830ff27afdf
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_ages.rs"
+        name: "an_open_cluster_whose_age_is_blank_has_none"
+  - node: 01a1c7c5-a164-7706-ad2c-c832997484e0
+    tests:
+      - file: "crates/univ-ingest/tests/tiles_age.rs"
+        name: "an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none"
+      - file: "crates/univ-model/src/tile/age_tests.rs"
+        name: "version_3_round_trips_every_value_code_in_20_bytes_a_point"
+  - node: 01a1c7c5-a164-7706-ad2c-c833a68083c3
+    tests:
+      - file: "crates/univ-ingest/tests/tiles_age.rs"
+        name: "an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none"
+  - node: 01a1c7c5-a164-7706-ad2c-c834de8aedd4
+    tests:
+      - file: "crates/univ-ingest/tests/tiles_age.rs"
+        name: "an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none"
+      - file: "crates/univ-model/src/tile/age_tests.rs"
+        name: "version_3_round_trips_every_value_code_in_20_bytes_a_point"
+  - node: 01a1c7c5-a164-7706-ad2c-c835f5afc589
+    tests:
+      - file: "crates/univ-model/src/tile/age_tests.rs"
+        name: "version_3_round_trips_every_value_code_in_20_bytes_a_point"
+  - node: 01a1c7c5-a164-7706-ad2c-c83691223195
+    tests:
+      - file: "clients/tile-decoder/decode.test.ts"
+        name: "each decoded point of a version 3 tile gives the logarithm of its age, or that it has none"
+      - file: "clients/tile-decoder/decode.test.ts"
+        name: "the age code is refused in a version 2 tile"

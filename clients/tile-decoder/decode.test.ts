@@ -187,6 +187,13 @@ test('each decoded point of a version 3 tile gives the logarithm of its age, or 
   }
 });
 
+test('a version 3 manifest naming another log age code is refused, so that no colour reads as an age', () => {
+  const t = everyTile.find((t) => t.tile.points.some((p) => p.colour !== null && p.colour !== undefined));
+  assert.ok(t);
+  const manifest = { ...t.manifest, encoding: { ...t.manifest.encoding, log_age_code: 1 } };
+  assert.throws(() => decodeTile(bytesOf(t.tile.hex), t.node, manifest), /log age code 1, not the 3/);
+});
+
 test('the age code is refused in a version 2 tile', () => {
   const t = everyTile.find((t) => t.tile.points.some((p) => p.log_age !== undefined));
   assert.ok(t);

@@ -70,3 +70,17 @@ fn an_open_cluster_whose_age_is_blank_has_none() {
     assert!(entry(&n, "ASCC_5").ages.is_empty());
     assert_eq!(entry(&n, "ASCC_6").ages.len(), 1);
 }
+
+#[test]
+fn an_open_cluster_whose_age_cannot_stand_keeps_its_place_and_has_no_age() {
+    // ASCC_5's 16th percentile moved above its 50th: the interval does not hold the age.
+    let definition = definition_of("hunt-reffert-2023");
+    let body = std::fs::read_to_string(fixture_of(&definition)).unwrap();
+    let broken = body.replace("\t 6.96985722\t", "\t 7.50000000\t");
+    assert_ne!(broken, body);
+    let n = normalize_body(&definition, broken.as_bytes());
+    assert_eq!((n.report.published, n.report.left_out_total()), (5, 0));
+    let e = entry(&n, "ASCC_5");
+    assert!(e.ages.is_empty());
+    assert_eq!(e.distances.len(), 1);
+}

@@ -779,12 +779,13 @@ checks:
     select:
       kind: query
       # The terms by subquery, not term(): a release before ages were kept holds none of them,
-      # and has no age to find.
+      # and has no age to find. An age published in years has its normalized value and unit
+      # NULL, the native ones unchanged, so each is read with its native one beside it.
       sql: >-
         SELECT DISTINCT m.object_id FROM measurements m WHERE m.release = :release
         AND m.quantity = (SELECT id FROM terms WHERE release = :release AND term = 'age')
-        AND (m.unit IS NULL OR m.value IS NULL OR m.value <= 0
-        OR m.unit IS NOT (SELECT id FROM terms WHERE release = :release AND term = 'year')
+        AND (coalesce(m.value, m.native_value) <= 0
+        OR coalesce(m.unit, m.native_unit) IS NOT (SELECT id FROM terms WHERE release = :release AND term = 'year')
         OR m.native_unit NOT IN (SELECT id FROM terms WHERE release = :release AND term IN ('year', 'log_year')))
     expect: { equals: 0 }
     cite:
@@ -964,8 +965,9 @@ checks:
       kind: report
       sql: >-
         SELECT (SELECT id FROM sources s WHERE s.release = :release AND s.n = e.source) AS source,
-        count(*) AS with_age, sum(m.value < 1e8) AS under_100_myr, sum(m.value < 3e7) AS under_30_myr,
-        sum(m.value < 1e7) AS under_10_myr
+        count(*) AS with_age, sum(coalesce(m.value, m.native_value) < 1e8) AS under_100_myr,
+        sum(coalesce(m.value, m.native_value) < 3e7) AS under_30_myr,
+        sum(coalesce(m.value, m.native_value) < 1e7) AS under_10_myr
         FROM measurements m JOIN entries e ON e.release = m.release AND e.object_id = m.object_id
         AND e.entry = m.entry WHERE m.release = :release
         AND m.quantity = (SELECT id FROM terms WHERE release = :release AND term = 'age')
