@@ -10,6 +10,15 @@ versions:
     title: "Wave 2: explorer"
     goal: "The explorer colours and switches the Galaxy tracers by kind of object, draws and lists the model arms as models, and opens a face-on arms view, reviewed and gated"
     status: active
+  - key: 01a1cc9b-d7c1-777f-9f6f-58253b60f704
+    at: 2026-11-11T21:55:27Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Explorer"
+    goal: "Tracers coloured and switched by kind of object, the model arms drawn and read as models, and the arms view in the address"
+    status: done
 blocks:
   - key: 01a1cc40-7464-702e-9bcc-903db6f1c012
     id: plan-ref
@@ -200,6 +209,15 @@ blocks:
         title: "T12. Wave review"
         detail: "/simplify and /code-review, findings fixed; cargo xtask check and integration once each; traces linked; Yard Log closed; a face-on screenshot of release 15 sent as a file."
         state: active
+      - key: 01a1cc9b-d7c1-777f-9f6f-5824a165eee1
+        at: 2026-11-11T21:55:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T12. Wave review"
+        detail: "/simplify (4 reviewers) and /code-review fixed as listed in Build issues; cargo xtask check passed (13 gates, loft verify skipped off develop); cargo xtask integration: Rust end-to-end green, 24 of 26 Playwright green, then the 2 axe tests, fixed, passed alone against a Worker on the fixture state; 770 of 770 criteria linked, reconcile --fail-on warning clean. Release 15 served by cargo xtask explore; face-on screenshot sent."
+        state: done
   - key: 01a1cc42-46e6-771b-ba22-292aa5725c81
     id: spec-change-switch-count
     kind: loft
@@ -2369,3 +2387,25 @@ blocks:
           | Skipped: first drag from the pole jumps about 0.6° to MAX_PITCH | /code-review | navigate-with-the-mouse requires stopping short of the poles | kept |
           | Skipped: model text names every cited paper | /code-review | each arm file cites Reid 2019 alone | kept |
           | Skipped: shader-side tracer colours (~8 MB at 1M tracers); fixed 7-slot histogram; per-frame ObjectKinds render (the Key's pattern); double outline walk | /simplify, /code-review | small costs, or a change to shared patterns beyond the wave | kept |
+  - key: 01a1cc9b-d7c1-777f-9f6f-58239197b41e
+    id: wave-2-produced
+    kind: note
+    versions:
+      - key: 01a1cc9b-d7c1-777f-9f6f-58265c2640a8
+        at: 2026-11-11T21:55:27Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "What wave 2 produced"
+        markdown: |-
+          | Part | Result |
+          |---|---|
+          | Tracers | coloured by kind of object from v4 tiles; key and Show switches by kind, named with their counts; `hide=object:...` |
+          | Model arms | the Galaxy's arms family, extrapolations fainter and beneath; panel says model and extrapolation; depth list down to kpc with a half dot |
+          | Arms view | Arms button beside Earth; face-on from the north Galactic pole, focus 4.075 kpc toward l = 0; young tracers and arms only; `view=arms` until a move |
+
+          **Seen on release 15:** the luminous hot stars, dense within ~3 kpc, saturate to white under additive blending, so arm segments in the tracers are hard to see; labels of arms and Earth overlap near the Sun. Left for a follow-up.
+
+          **Open:** merge into product/spiral-arms waits for the owner's word.
+        tone: success
