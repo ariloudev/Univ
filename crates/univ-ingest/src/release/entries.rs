@@ -9,6 +9,7 @@ use univ_model::object::{LineOfSight, ObjectEntry, Resolution};
 use univ_model::position::Frame;
 use univ_model::redshift::RedshiftFrame;
 use univ_model::release::UncertaintyColumns;
+use univ_model::release::rows::Json as RowJson;
 use univ_model::release::rows::{EntryRow, MeasurementRow};
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
@@ -55,7 +56,7 @@ pub fn entry_number(entries: &[ObjectEntry], d: &Designation) -> Option<u32> {
 }
 
 /// `extra` as a column: none when it holds nothing.
-fn extra(extra: &Map<String, Json>) -> Result<Option<String>, String> {
+fn extra(extra: &Map<String, Json>) -> Result<Option<RowJson>, String> {
     if extra.is_empty() {
         Ok(None)
     } else {
@@ -216,7 +217,7 @@ struct Detail<'q> {
     method: Option<u32>,
     measure: Option<u32>,
     cmb: Option<&'q Quantity>,
-    extra: Option<String>,
+    extra: Option<RowJson>,
 }
 
 /// The measurements of one entry, written as rows.
@@ -358,7 +359,7 @@ impl Measurements<'_, '_> {
                 method: Some(terms.of(&z.cmb.dipole)?),
                 measure: None,
                 cmb: Some(&z.cmb.value),
-                extra: frame.map(str::to_owned),
+                extra: frame.map(|f| RowJson(f.to_owned())),
             };
             self.push(
                 numbering,

@@ -47,6 +47,23 @@ fn declared_all(table: &str) -> (Vec<String>, Vec<String>) {
 }
 
 #[test]
+fn every_table_names_its_scale_in_the_schema() {
+    for table in &TABLES {
+        let create = format!("CREATE TABLE IF NOT EXISTS {} (", table.name);
+        let at = SCHEMA
+            .find(&create)
+            .unwrap_or_else(|| panic!("{} is not in the schema", table.name));
+        let above = SCHEMA[..at].lines().last();
+        assert_eq!(
+            above,
+            Some(format!("-- Scale: {}.", table.scale.words()).as_str()),
+            "{}",
+            table.name
+        );
+    }
+}
+
+#[test]
 fn every_row_type_matches_its_table_in_the_schema() {
     for table in TABLES {
         let (columns, key) = declared(table.name);

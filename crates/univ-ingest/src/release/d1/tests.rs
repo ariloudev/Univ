@@ -1,5 +1,5 @@
 use super::*;
-use univ_model::release::rows::{IdReplacedRow, IdsIssuedRow, ReleaseRow};
+use univ_model::release::rows::{IdReplacedRow, IdsIssuedRow, Json, ReleaseRow};
 
 #[test]
 fn the_files_load_the_schema_then_each_table_in_order() {
@@ -43,7 +43,7 @@ fn a_table_is_split_into_parts_and_its_keys_and_numbers_checked() {
         id,
         release: 1,
         change: "retired".into(),
-        replaced_by: "x".repeat(20_000),
+        replaced_by: Json("x".repeat(20_000)),
     };
     // About 20 kB a row: 2,000 rows fill more than one 32 MiB part.
     for id in 0..2_000 {
@@ -53,7 +53,7 @@ fn a_table_is_split_into_parts_and_its_keys_and_numbers_checked() {
     let mut not_finite = ReleaseRow {
         number: 1,
         built_at: String::new(),
-        cosmology: String::new(),
+        cosmology: Json::default(),
         peculiar_velocity_km_s: f64::NAN,
         model_version: String::new(),
         ingest_version: String::new(),
@@ -61,7 +61,7 @@ fn a_table_is_split_into_parts_and_its_keys_and_numbers_checked() {
         matching_rules: String::new(),
         ranking_rule: String::new(),
         ranking_rule_name: String::new(),
-        sources: String::new(),
+        sources: Json::default(),
         objects: 0,
         structures: 0,
         grids: 0,

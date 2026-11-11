@@ -4,8 +4,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::ToSql;
-use crate::release::sql::{Row, Scope, SqlValue, Table};
+use super::{Json, ToSql};
+use crate::release::sql::{Row, Scale, Scope, SqlValue, Table};
 
 /// The per-object parameters a chain can take: `chain_p1` to `chain_p4`.
 pub const PARAMS: usize = 4;
@@ -13,11 +13,11 @@ pub const PARAMS: usize = 4;
 row! {
     /// A distinct transformation chain, its per-object numbers left as `"$1"` to `"$4"` and its
     /// native value as `"$native"` (see [`crate::release::chains`]).
-    ChainRow => "chains", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    ChainRow => "chains", scope: PerRelease, scale: Chain, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u32,
         /// JSON array of the chain's steps.
-        steps: String,
+        steps: Json,
         /// How many per-object parameters it takes.
         params: u32,
         /// How many objects of the release it derived.
@@ -28,7 +28,7 @@ row! {
 row! {
     /// An object with its preferred measurements and, when placed, its derived position. Term
     /// columns are `u32`; entries are numbered by their place among the object's.
-    ObjectRow => "objects", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    ObjectRow => "objects", scope: PerRelease, scale: Object, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u64,
         kind: u32,
@@ -75,15 +75,15 @@ row! {
         runner_up_measurement: Option<f64>,
         runner_up_velocity: Option<f64>,
         /// JSON array of its candidate links, none when it has none.
-        links: Option<String>,
+        links: Option<Json>,
         /// JSON array of its relations, none when it has none.
-        relations: Option<String>,
+        relations: Option<Json>,
     }
 }
 
 row! {
     /// A catalogue entry of an object: the object's entry number `entry`.
-    EntryRow => "entries", scope: PerRelease, key: ["object_id", "entry", "release"],
+    EntryRow => "entries", scope: PerRelease, scale: Entry, key: ["object_id", "entry", "release"],
     indexes: [], {
         release: u32,
         object_id: u64,
@@ -112,9 +112,9 @@ row! {
         error_kind: Option<u32>,
         group_id: Option<String>,
         /// JSON object of its flags, none when it has none.
-        flags: Option<String>,
+        flags: Option<Json>,
         /// JSON object of what no column holds, none when nothing.
-        extra: Option<String>,
+        extra: Option<Json>,
     }
 }
 
@@ -123,7 +123,7 @@ row! {
     /// `velocity`, `proper_motion_ra`, `proper_motion_dec`, `magnitude` or
     /// `supergalactic_velocity_x`, `_y` or `_z`, `n` its place among the entry's values of
     /// that quantity.
-    MeasurementRow => "measurements", scope: PerRelease,
+    MeasurementRow => "measurements", scope: PerRelease, scale: Entry,
     key: ["object_id", "entry", "quantity", "n", "release"], indexes: [], {
         release: u32,
         object_id: u64,
@@ -153,13 +153,13 @@ row! {
         cmb_plus: Option<f64>,
         cmb_level: Option<f64>,
         /// JSON object of what no column holds, none when nothing.
-        extra: Option<String>,
+        extra: Option<Json>,
     }
 }
 
 row! {
     /// A designation an object carries.
-    DesignationRow => "designations", scope: PerRelease,
+    DesignationRow => "designations", scope: PerRelease, scale: Entry,
     key: ["source", "identifier", "object_id", "release"], indexes: [["object_id", "release"]], {
         release: u32,
         source: u32,
@@ -172,7 +172,7 @@ row! {
     /// A common name of an object, by its key (see [`super::name_key`]). The name itself is
     /// part of the primary key: two spellings an object's source gives, such as `M 31` and
     /// `M31`, share a key and are both kept.
-    NameRow => "names", scope: PerRelease,
+    NameRow => "names", scope: PerRelease, scale: Object,
     key: ["key", "object_id", "source", "name", "release"],
     indexes: [["object_id", "release"]], {
         release: u32,

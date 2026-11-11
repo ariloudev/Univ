@@ -255,7 +255,20 @@ pub enum ColumnKind {
     Integer,
     Real,
     Text,
+    /// Text holding JSON that univ-model serializes: allowed only in tables of a scale
+    /// [`Scale::allows_json`], so that no query reaches into JSON over millions of rows.
+    Json,
 }
+
+impl ColumnKind {
+    /// Whether SQLite stores the column's values as text: JSON is text.
+    #[must_use]
+    pub fn is_text(self) -> bool {
+        matches!(self, Self::Text | Self::Json)
+    }
+}
+
+pub use super::scale::Scale;
 
 /// Which rows of a table belong to release n.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -298,6 +311,8 @@ pub struct Table {
     pub key: &'static [&'static str],
     pub indexes: &'static [&'static [&'static str]],
     pub scope: Scope,
+    /// What its rows grow with.
+    pub scale: Scale,
 }
 
 impl Table {
@@ -431,6 +446,7 @@ mod tests {
         kinds: &[ColumnKind::Integer, ColumnKind::Integer, ColumnKind::Text],
         indexes: &[&["name"]],
         scope: Scope::PerRelease,
+        scale: Scale::Release,
     };
 
     #[test]

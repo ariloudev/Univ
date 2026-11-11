@@ -72,6 +72,7 @@ pub mod keys;
 pub mod manifest;
 pub mod read;
 pub mod rows;
+mod scale;
 pub mod shards;
 pub mod shared;
 pub mod sql;
@@ -93,7 +94,7 @@ pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};
 pub use rows::TABLES;
 pub use shared::{RETIRED, valid_in};
-pub use sql::{ColumnKind, Row, Scope, SqlValue, Table, Tree};
+pub use sql::{ColumnKind, Row, Scale, Scope, SqlValue, Table, Tree};
 pub use statements::Statements;
 pub use uncertainty::UncertaintyColumns;
 

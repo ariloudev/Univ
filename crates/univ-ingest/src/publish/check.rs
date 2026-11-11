@@ -195,7 +195,7 @@ fn check_content(
 /// What the fingerprint measures of `column`, as a message names it.
 fn measure_name(table: &Table, column: &str) -> String {
     match table.position(column).map(|i| table.kinds[i]) {
-        Some(ColumnKind::Text) => format!("total bytes of {column}"),
+        Some(ColumnKind::Text | ColumnKind::Json) => format!("total bytes of {column}"),
         _ => format!("total of {column}"),
     }
 }

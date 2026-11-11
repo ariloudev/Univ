@@ -48,8 +48,12 @@
 --   normalized ones are NULL when they are the native ones unchanged (the same unit).
 --
 -- Columns holding JSON hold what univ-model serializes for that value, as the API returns it.
+-- Each table's `-- Scale:` line says what its rows grow with: the release, its sources, its
+-- structures, its chains, its objects or its catalogue entries. A table per object or per
+-- catalogue entry holds no JSON (keep-json-out-of-the-tables-that-grow-with-a-releases-objects).
 -- Positions are ICRS Cartesian about the Solar System barycentre unless named otherwise.
 
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY
 );
@@ -59,6 +63,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
 -- readers list only the releases whose published_at is set. d1_estimated_bytes is the
 -- release's CON-3 estimate, which publishing sums over the releases not pruned. Every derived
 -- position of the release is placed under its cosmology (JSON) by univ-model model_version.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS releases (
   number INTEGER PRIMARY KEY,
   built_at TEXT NOT NULL,
@@ -81,6 +86,7 @@ CREATE TABLE IF NOT EXISTS releases (
 );
 
 -- The release that reads naming no release answer from: one row, moved in a single write.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS latest (
   one INTEGER PRIMARY KEY CHECK (one = 1),
   release INTEGER NOT NULL REFERENCES releases (number),
@@ -88,6 +94,7 @@ CREATE TABLE IF NOT EXISTS latest (
 );
 
 -- The names that term columns hold by id, per release.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS terms (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
@@ -97,6 +104,7 @@ CREATE TABLE IF NOT EXISTS terms (
 ) WITHOUT ROWID;
 
 -- Each source of the release, n its index, which the `source` columns of the release hold.
+-- Scale: per source.
 CREATE TABLE IF NOT EXISTS sources (
   release INTEGER NOT NULL,
   n INTEGER NOT NULL,
@@ -120,6 +128,7 @@ CREATE TABLE IF NOT EXISTS sources (
 CREATE INDEX IF NOT EXISTS sources_by_id ON sources (id, release);
 
 -- Each payload a source's provenance records, and what normalization made of the source.
+-- Scale: per source.
 CREATE TABLE IF NOT EXISTS payloads (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
@@ -132,6 +141,7 @@ CREATE TABLE IF NOT EXISTS payloads (
   retired INTEGER,
   PRIMARY KEY (source, item, release)
 ) WITHOUT ROWID;
+-- Scale: per source.
 CREATE TABLE IF NOT EXISTS normalizations (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
@@ -147,6 +157,7 @@ CREATE TABLE IF NOT EXISTS normalizations (
 -- to "$4", filled from the object's chain_p1 to chain_p4, and each copy of the position's
 -- native value by "$native" (see objects). `params` is how many of chain_p1..4 it takes,
 -- `objects` how many objects of the release it derived.
+-- Scale: per chain.
 CREATE TABLE IF NOT EXISTS chains (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
@@ -176,6 +187,7 @@ CREATE TABLE IF NOT EXISTS chains (
 --   them (ESA 1997; Lahav et al. 2000). Its transformation chain is chains.steps of chain,
 --   filled with chain_p1 to chain_p4 and the native value.
 -- - links and relations: JSON arrays, NULL when empty.
+-- Scale: per object.
 CREATE TABLE IF NOT EXISTS objects (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
@@ -240,6 +252,7 @@ CREATE TABLE IF NOT EXISTS objects (
 --   entries), "position_uncertainty" (when not held by the error columns), "spectral_type"
 --   (its text as published and its kind of value, where its source gives one) and "references"
 --   (the papers a researched entry's values come from: citation, doi, bibcode).
+-- Scale: per catalogue entry.
 CREATE TABLE IF NOT EXISTS entries (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,
@@ -292,6 +305,7 @@ CREATE TABLE IF NOT EXISTS entries (
 --   where its source publishes the magnitudes and not the colour.
 -- - An age: normalized to years; native as published, such as the base-10 logarithm of the
 --   age in years (unit log_year).
+-- Scale: per catalogue entry.
 CREATE TABLE IF NOT EXISTS measurements (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,
@@ -325,6 +339,7 @@ CREATE TABLE IF NOT EXISTS measurements (
 ) WITHOUT ROWID;
 
 -- Every designation an object carries, an entry's own or one its source gives beside it.
+-- Scale: per catalogue entry.
 CREATE TABLE IF NOT EXISTS designations (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
@@ -337,6 +352,7 @@ CREATE INDEX IF NOT EXISTS designations_by_object ON designations (object_id, re
 
 -- Common names by their key: lower case with white space removed. The name is part of the
 -- primary key, so two spellings one source gives an object ("M 31", "M31") are both kept.
+-- Scale: per object.
 CREATE TABLE IF NOT EXISTS names (
   release INTEGER NOT NULL,
   key TEXT NOT NULL,
@@ -352,11 +368,13 @@ CREATE INDEX IF NOT EXISTS names_by_object ON names (object_id, release);
 -- The id ledger, kept across releases and never pruned: the ids each release issued, and
 -- what became of every id that left the releases. A read of release n takes the rows whose
 -- release is at most n.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS ids_issued (
   release INTEGER PRIMARY KEY,
   first INTEGER NOT NULL,
   last INTEGER NOT NULL
 );
+-- Scale: per object.
 CREATE TABLE IF NOT EXISTS ids_replaced (
   id INTEGER PRIMARY KEY,
   release INTEGER NOT NULL,
@@ -367,6 +385,7 @@ CREATE TABLE IF NOT EXISTS ids_replaced (
 -- The cell index of bounded volume queries (univ_model::release::cells). A placed object is in
 -- the level-0 cell of its scale domain (term) that holds its position; a structure is in each
 -- cell of the structures space, at its level, that its bounding box meets.
+-- Scale: per object.
 CREATE TABLE IF NOT EXISTS object_cells (
   release INTEGER NOT NULL,
   domain INTEGER NOT NULL,
@@ -377,6 +396,7 @@ CREATE TABLE IF NOT EXISTS object_cells (
   retired INTEGER,
   PRIMARY KEY (domain, ix, iy, iz, object_id, release)
 ) WITHOUT ROWID;
+-- Scale: per structure.
 CREATE TABLE IF NOT EXISTS structure_cells (
   release INTEGER NOT NULL,
   level INTEGER NOT NULL,
@@ -394,6 +414,7 @@ CREATE TABLE IF NOT EXISTS structure_cells (
 -- object at its derived position or a tracer, and "placed_from_file", the redshift, its kind,
 -- where it was cited, its CMB-frame value and the comoving distance of each tracer placed from
 -- the structure file's own sky position and redshift; NULL when the list is not placed whole.
+-- Scale: per structure.
 CREATE TABLE IF NOT EXISTS structures (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,
@@ -413,6 +434,7 @@ CREATE TABLE IF NOT EXISTS structures (
 ) WITHOUT ROWID;
 
 -- Each scale domain's tiles, whose manifest and tiles are in R2.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS scale_domains (
   release INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -426,6 +448,7 @@ CREATE TABLE IF NOT EXISTS scale_domains (
 ) WITHOUT ROWID;
 
 -- Each volume grid, whose header and samples are in R2.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS grids (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,
@@ -451,6 +474,7 @@ CREATE TABLE IF NOT EXISTS grids (
 --   "distance" or "parallax", "min", "max", "unit" (univ-model unit name), "basis" (what the
 --   values are), "entries" (how many contributed)}, over the entries' normalized values; NULL
 --   when none holds one. A grid source, or the researched structures, holds no entry: both NULL.
+-- Scale: per source.
 CREATE TABLE IF NOT EXISTS source_details (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
@@ -480,6 +504,7 @@ CREATE TABLE IF NOT EXISTS source_details (
 --   pointer into the record, "native": {"value", "unit", "hubble_constant", "assumed"},
 --   "rescaled": {"value", "unit"}, "factor", "method": "hubble_ratio" or "comoving_ratio",
 --   "redshift": that of a comoving ratio, else null}; NULL when none.
+-- Scale: per structure.
 CREATE TABLE IF NOT EXISTS structure_details (
   release INTEGER NOT NULL,
   id TEXT NOT NULL,
@@ -498,6 +523,7 @@ CREATE TABLE IF NOT EXISTS structure_details (
 -- uncertainties the source states once for its whole catalogue, each {"quantity", "value",
 -- "unit", "times_one_plus_z", "basis"}, which every value of that quantity takes as an estimated
 -- uncertainty.
+-- Scale: per source.
 CREATE TABLE IF NOT EXISTS source_terms (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
@@ -515,6 +541,7 @@ CREATE TABLE IF NOT EXISTS source_terms (
 -- clause of its terms requiring data adapted from it to be shared under the same licence; and
 -- flags, JSON {column: {"values": {value: meaning}, "cite"}} of what each value of its flag
 -- columns means.
+-- Scale: per source.
 CREATE TABLE IF NOT EXISTS source_reading (
   release INTEGER NOT NULL,
   source INTEGER NOT NULL,
@@ -529,6 +556,7 @@ CREATE TABLE IF NOT EXISTS source_reading (
 
 -- The object shard of every object of a release (version 5), in the catalogue database: a read
 -- by id goes to that shard alone.
+-- Scale: per object.
 CREATE TABLE IF NOT EXISTS object_shards (
   release INTEGER NOT NULL,
   id INTEGER NOT NULL,
@@ -541,6 +569,7 @@ CREATE TABLE IF NOT EXISTS object_shards (
 -- Morton code (univ_model::release::shards::morton) lies from first to last, one row for each
 -- run of consecutive cells, so a shard may hold several runs of one domain. A volume query
 -- reads only the shards whose cells its box can meet.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS shard_cells (
   release INTEGER NOT NULL,
   shard INTEGER NOT NULL,
@@ -553,6 +582,7 @@ CREATE TABLE IF NOT EXISTS shard_cells (
 
 -- Each object shard of a release (version 5): its objects and the CON-3 estimate of its rows,
 -- which publishing sums over the releases not pruned to check that shard's database.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS release_shards (
   release INTEGER NOT NULL,
   shard INTEGER NOT NULL,
@@ -566,6 +596,7 @@ CREATE TABLE IF NOT EXISTS release_shards (
 -- tiles/cosmic_web/r07.bin, and the SHA-256 of what it holds there. R2 keeps each file once,
 -- under files/{sha256} (univ_model::release::keys::file), shared by every release that maps a
 -- path to it; pruning deletes a file only once no release left unpruned maps a path to it.
+-- Scale: per release.
 CREATE TABLE IF NOT EXISTS release_files (
   release INTEGER NOT NULL,
   path TEXT NOT NULL,

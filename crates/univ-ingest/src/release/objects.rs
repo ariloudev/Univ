@@ -16,6 +16,7 @@ use univ_model::ledger::Ledger;
 use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, Placement};
 use univ_model::position::Frame;
 use univ_model::release::chains::{expand, template};
+use univ_model::release::rows::Json;
 use univ_model::release::rows::{
     DesignationRow, EntryRow, IdReplacedRow, IdsIssuedRow, MeasurementRow, NameRow, ObjectRow,
     PARAMS, name_key,
@@ -35,8 +36,10 @@ use crate::tiles::{domain_of, name_of};
 /// # Errors
 ///
 /// Fails when serde cannot write it as JSON.
-pub fn json<T: Serialize + ?Sized>(value: &T) -> Result<String, String> {
-    serde_json::to_string(value).map_err(|e| format!("a value cannot be written as JSON: {e}"))
+pub fn json<T: Serialize + ?Sized>(value: &T) -> Result<Json, String> {
+    serde_json::to_string(value)
+        .map(Json)
+        .map_err(|e| format!("a value cannot be written as JSON: {e}"))
 }
 
 /// A unit variant's name as serde writes it, such as `galaxy_group`.
