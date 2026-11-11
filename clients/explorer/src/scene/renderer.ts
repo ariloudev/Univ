@@ -33,8 +33,11 @@ export interface Points {
   kinds: Uint8Array;
   /** Each point's source, by its index in its domain's manifest. */
   sources: Uint16Array;
-  /** Each point's own colour as RGBA bytes, for a star; none for a point drawn by its kind. */
+  /** Each point's own colour as RGBA bytes, for a star or a tracer; none for a point drawn by
+   * its kind. */
   colours?: Uint8Array | undefined;
+  /** Each point's object index, for a Galaxy tracer; none for any other point. */
+  objects?: Uint8Array | undefined;
   extent: Sphere;
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
@@ -130,6 +133,7 @@ export class Renderer implements Drawer {
   private masks: Masks = NO_MASKS;
   private readonly hiddenKinds: WebGLUniformLocation | null;
   private readonly hiddenSources: WebGLUniformLocation | null;
+  private readonly hiddenObjects: WebGLUniformLocation | null;
   /** The point program's `a_inside`. */
   private readonly insideAt: number;
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
@@ -163,6 +167,7 @@ export class Renderer implements Drawer {
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
     this.hiddenKinds = gl.getUniformLocation(this.points.program, "u_hiddenKinds");
     this.hiddenSources = gl.getUniformLocation(this.points.program, "u_hiddenSources");
+    this.hiddenObjects = gl.getUniformLocation(this.points.program, "u_hiddenObjects");
     const at = (name: string) => gl.getUniformLocation(this.points.program, name);
     this.detailAt = { onsets: at("u_onsets"), cumulative: at("u_cumulative"), slice: at("u_slice"), count: at("u_count") };
     // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
@@ -170,6 +175,8 @@ export class Renderer implements Drawer {
     gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     // Nor sources: `a_source` beyond every mask's bits, so that nothing turned off hides them.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
+    // Nor kinds of object: `a_object` 0, a point of no kind, which no switch turns off.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_object"), 0);
     // And every point is drawn while the catalogue marks none, markers always.
     this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
     gl.vertexAttrib1f(this.insideAt, 1);
@@ -241,7 +248,7 @@ export class Renderer implements Drawer {
     return buffer;
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours"> & { sources?: Uint16Array }): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects"> & { sources?: Uint16Array }): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
@@ -250,6 +257,7 @@ export class Renderer implements Drawer {
     ];
     if (points.sources !== undefined) buffers.push(this.buffer(this.points.program, "a_source", points.sources, 1));
     if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
+    if (points.objects !== undefined) buffers.push(this.buffer(this.points.program, "a_object", points.objects, 1));
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }
@@ -404,6 +412,7 @@ export class Renderer implements Drawer {
     this.use(this.points, frame);
     this.dust.usePoints();
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
+    gl.uniform1ui(this.hiddenObjects, this.masks.objects);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
     const share = (id: string) => detail.share(id);

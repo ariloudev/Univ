@@ -65,10 +65,10 @@ function ageState(world: World | undefined, cut: AgeCut, choose: (cut: AgeCut) =
  * `world`'s catalogue. */
 function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, age: AgeCut, levelOfDetail: boolean): void {
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
-  const { domain, source, kind } = hidden;
+  const { domain, source, kind, object } = hidden;
   useEffect(() => {
-    if (world !== undefined) hide(world, { domain, source, kind }, domains);
-  }, [world, domains, domain, source, kind]);
+    if (world !== undefined) hide(world, { domain, source, kind, object }, domains);
+  }, [world, domains, domain, source, kind, object]);
   // `domains` is read once the catalogue is made, so that it starts as the choice stands.
   useEffect(() => {
     if (world === undefined) return;

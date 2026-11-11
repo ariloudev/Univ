@@ -7,7 +7,7 @@ import { type ReadOptions, read, readJson } from "../api/client.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
 import { starBytes } from "../scene/starColour.ts";
-import { TRACERS_DOMAIN, tracerBytes } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, objectIndex, tracerBytes } from "../scene/tracers.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf, levelOfAddress } from "./lod.ts";
 import { shuffled } from "./shuffle.ts";
@@ -35,9 +35,12 @@ export interface Batch {
   sources: Uint16Array;
   /** The stars' colours, for a tile of the stars domain. */
   stars?: StarColours | undefined;
-  /** Each point's colour as red, green, blue and opacity bytes: a star's, or a tracer's source's;
-   * none for the other domains, whose points are drawn by their kind of value. */
+  /** Each point's colour as red, green, blue and opacity bytes: a star's, or a tracer's kind of
+   * object's; none for the other domains, whose points are drawn by their kind of value. */
   colours?: Uint8Array | undefined;
+  /** Each point's object index (tracers.ts's `objectIndex`), 0 for none, for a tile of the
+   * Galaxy tracers domain; none for any other tile. */
+  objects?: Uint8Array | undefined;
   /** Each point's base-10 logarithm of its age in years, NaN where it carries none, for a tile
    * of the Galaxy tracers domain with any age; none for any other tile. */
   ages?: Float32Array | undefined;
@@ -177,10 +180,11 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
   const names = domain.manifest.encoding.colour_bands;
   const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
   const tracers = domain.name === TRACERS_DOMAIN;
-  const colours = tracers ? tracerBytes(sources) : stars?.bytes;
+  const objects = tracers ? Uint8Array.from(points, (p) => objectIndex(p.objectKind)) : undefined;
+  const colours = objects === undefined ? stars?.bytes : tracerBytes(objects);
   // A tracers tile with no age carries none, so that no age choice acts on it.
   const ages = tracers && points.some((p) => p.logAge !== undefined) ? Float32Array.from(points, (p) => p.logAge ?? Number.NaN) : undefined;
-  return { tile, offsets, kinds, sources, ids, stars, colours, ages, extent: extentOf(offsets, tile.centre) };
+  return { tile, offsets, kinds, sources, ids, stars, colours, objects, ages, extent: extentOf(offsets, tile.centre) };
 }
 
 /** Fetches, checks and decodes the tile of `tile` in `domain` of `release`. */

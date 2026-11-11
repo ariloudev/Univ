@@ -206,12 +206,12 @@ function Key({ catalogue }: { catalogue: Tally }) {
   );
 }
 
-/** The Galaxy's tracers in the key: each source in its colour, with its points drawn. */
+/** The Galaxy's tracers in the key: each kind of object in its colour, with its points drawn. */
 function TracerKey({ lines, kinds }: { lines: TracerLine[]; kinds: readonly number[] }) {
   if (lines.length === 0) return null;
   return (
     <>
-      <h2 className="font-semibold">The Galaxy's tracers, by source, drawn twice a star's size</h2>
+      <h2 className="font-semibold">The Galaxy's tracers, by kind of object, drawn twice a star's size</h2>
       <ul data-testid="tracer-key" className="space-y-1 text-xs">
         {lines.map((line) => (
           <li key={line.id} className="flex items-center gap-2">

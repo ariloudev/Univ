@@ -45,6 +45,15 @@ blocks:
         title: "T7. Colour tracers by kind"
         detail: "The catalogue reads version 4's kind column; scene/tracers.ts colours by kind with an unknown-kind colour; the key lists kinds with counts. Done when Vitest covers tracerBytes by kind, the unknown colour and the key."
         state: active
+      - key: 01a1cc45-60c5-74c8-b43c-8d5ac71f4c73
+        at: 2026-11-11T20:21:01Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T7. Colour tracers by kind"
+        detail: "A tracers tile gives each point its object index (0 for none); tracers.ts colours the six tracer kinds and an unknown kind apart from every other colour; the catalogue counts tracers by kind of object, and the key lists each kind with its points drawn, and the unknown kind where any are drawn. The masks, shader and pick carry a kind-of-object bit too, for T8. Vitest: 514 pass."
+        state: done
   - key: 01a1cc40-7464-702e-9bcc-903fbfcc5e1f
     id: t8-switches
     kind: task
@@ -58,6 +67,15 @@ blocks:
         title: "T8. Kind-of-object switches"
         detail: "An object group in ui/hidden.ts (hide=object:…), a mask in scene/masks.ts, a row of switches with colour and count, counted in the summary. Done when Vitest covers the address, the mask and the drawer."
         state: open
+      - key: 01a1cc45-60c5-74c8-b43c-8d5b158313ac
+        at: 2026-11-11T20:21:01Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8. Kind-of-object switches"
+        detail: "An object group in ui/hidden.ts (hide=object:…), a mask in scene/masks.ts, a row of switches with colour and count, counted in the summary. Done when Vitest covers the address, the mask and the drawer."
+        state: active
   - key: 01a1cc40-7464-702e-9bcc-90406542355f
     id: t9-arms
     kind: task

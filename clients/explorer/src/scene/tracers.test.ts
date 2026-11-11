@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { KIND_COLOURS } from "./kinds.ts";
 import { NO_COLOUR_GREY, blackBodyColour } from "./starColour.ts";
-import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, pointSizeOf, tracerBytes, tracerColour } from "./tracers.ts";
+import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_TITLES, objectIndex, pointSizeOf, tracerBytes, tracerColour } from "./tracers.ts";
 
 const distance = (a: readonly number[], b: readonly number[]) => Math.hypot(...[0, 1, 2].map((i) => (a[i] ?? 0) - (b[i] ?? 0)));
 
 describe("the Galaxy's tracers", () => {
-  it("gives each source a colour apart from every star temperature's, the stars' grey, the galaxies' blue and each other", () => {
+  it("gives each kind of object a colour apart from every star temperature's, the stars' grey, the galaxies' blue and each other", () => {
     const stars = Array.from({ length: 77 }, (_, i) => blackBodyColour(2000 + i * 500));
     const others = [...stars, NO_COLOUR_GREY, ...KIND_COLOURS];
     for (const [i, colour] of TRACER_COLOURS.entries()) {
@@ -16,15 +16,22 @@ describe("the Galaxy's tracers", () => {
     }
   });
 
-  it("has a colour for each of the seven sources the domain's manifest lists", () => {
-    expect(TRACER_COLOURS.length).toBeGreaterThanOrEqual(7);
+  it("has a colour for each kind of object of the tracers, and one for a tracer of unknown kind", () => {
+    expect(TRACER_COLOURS.length).toBe(TRACER_KINDS.length + 1);
+    expect(TRACER_TITLES.length).toBe(TRACER_COLOURS.length);
+    expect(TRACER_KINDS).toContain("luminous_hot_star");
   });
 
-  it("colours each point by its source, from the first colour again past the last", () => {
-    const bytes = tracerBytes(Uint16Array.from([0, 1, TRACER_COLOURS.length]));
-    expect([...bytes.slice(0, 4)]).toEqual([...bytes.slice(8, 12)]);
-    expect([...bytes.slice(0, 4)]).not.toEqual([...bytes.slice(4, 8)]);
-    expect(tracerColour(TRACER_COLOURS.length + 1)).toBe(tracerColour(1));
+  it("colours each point by its kind of object, and a point of no kind or an unknown index as unknown", () => {
+    const hot = objectIndex("luminous_hot_star");
+    const bytes = tracerBytes(Uint8Array.from([0, hot, objectIndex("open_cluster"), 250]));
+    expect([...bytes.slice(0, 4)]).toEqual([...bytes.slice(12, 16)]);
+    expect([...bytes.slice(4, 8)]).not.toEqual([...bytes.slice(0, 4)]);
+    expect([...bytes.slice(4, 8)]).not.toEqual([...bytes.slice(8, 12)]);
+    expect(tracerColour(hot)).toBe(TRACER_COLOURS[hot]);
+    expect(tracerColour(250)).toBe(tracerColour(0));
+    expect(objectIndex(undefined)).toBe(0);
+    expect(objectIndex("galaxy_group")).toBe(0);
   });
 
   it("draws a tracer twice the size of a star, and every other point a star's size", () => {
