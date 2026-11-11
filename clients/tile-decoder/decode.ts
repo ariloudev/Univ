@@ -151,8 +151,15 @@ const MAGIC = [0x55, 0x56, 0x54, 0x4c]; // "UVTL"
 const HEADER_BYTES = 48;
 /** The bytes a point of version 1 takes; version 2's columns follow version 1's. */
 const V1_POINT_BYTES = 17;
+/** The bytes of a version 2 or 3 point: version 1's, then a value and its code. */
+const V3_POINT_BYTES = 20;
 /** The bytes a point takes, by encoding version: the versions this decoder knows. */
-const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20, 3: 20, 4: 21 };
+const POINT_BYTES: Readonly<Record<number, number>> = {
+  1: V1_POINT_BYTES,
+  2: V3_POINT_BYTES,
+  3: V3_POINT_BYTES,
+  4: V3_POINT_BYTES + 1,
+};
 
 /** The encoding versions this decoder knows. */
 export const VERSIONS: readonly number[] = Object.keys(POINT_BYTES).map(Number);
@@ -249,7 +256,7 @@ export function decodeTile(
     fail(`the manifest gives the log age code ${manifest.encoding.log_age_code}, not the ${ageCode} of version ${version}`);
   }
   // Version 4's kind of object follows version 3's columns.
-  const objectColumn = HEADER_BYTES + 20 * n;
+  const objectColumn = HEADER_BYTES + V3_POINT_BYTES * n;
   const objectKinds = manifest.encoding.object_kinds ?? [];
   if (version >= 4 && objectKinds.length === 0) {
     fail(`the manifest of a version ${version} tile lists no kinds of object`);

@@ -23,9 +23,38 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-11T18:04:14Z
+lastEnded: 2026-11-11T19:14:20Z
 turns:
   - started: 2026-11-11T17:56:29Z
+    ended: 2026-11-11T19:12:27Z
+  - started: 2026-11-11T19:13:37Z
+    ended: 2026-11-11T19:13:39Z
+  - started: 2026-11-11T19:13:56Z
+    ended: 2026-11-11T19:14:00Z
+  - started: 2026-11-11T19:14:01Z
+    ended: 2026-11-11T19:14:04Z
+  - started: 2026-11-11T19:14:20Z
+subagents:
+  - agent: ad72bc8c8c6d986d6
+    type: Explore
+    started: 2026-11-11T19:12:25Z
+    ended: 2026-11-11T19:13:56Z
+    stage: 01a1cbc1-101b-76de-8044-96615438b872
+  - agent: afab92313ec96c878
+    type: Explore
+    started: 2026-11-11T19:12:25Z
+    ended: 2026-11-11T19:14:01Z
+    stage: 01a1cbc1-101b-76de-8044-96615438b872
+  - agent: a68660f114bf83429
+    type: Explore
+    started: 2026-11-11T19:12:25Z
+    ended: 2026-11-11T19:13:37Z
+    stage: 01a1cbc1-101b-76de-8044-96615438b872
+  - agent: a3200c36bf761d285
+    type: Explore
+    started: 2026-11-11T19:12:25Z
+    ended: 2026-11-11T19:14:20Z
+    stage: 01a1cbc1-101b-76de-8044-96615438b872
 loft:
   - commands:
       - fmt

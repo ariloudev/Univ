@@ -99,13 +99,13 @@ fn the_formula_gives_the_radii_of_the_arms_toward_the_sun() {
         ("reid-2019-perseus-arm", 10.070),
         ("reid-2019-sagittarius-carina-arm", 6.871),
     ] {
-        let at = spiral(id).radius_kpc(0.0).unwrap();
+        let at = spiral(id).radius_kpc(0.0);
         assert!((at - r).abs() < 0.001, "{id}: {at}");
     }
     // The pitch angle is the one on the azimuth's side of the kink: Sagittarius-Carina winds
     // at 17.1 degrees inside its kink at 24 and at 1.0 degree outside it.
     let sgr = spiral("reid-2019-sagittarius-carina-arm");
-    let (at_kink, beyond) = (sgr.radius_kpc(24.0).unwrap(), sgr.radius_kpc(84.0).unwrap());
+    let (at_kink, beyond) = (sgr.radius_kpc(24.0), sgr.radius_kpc(84.0));
     assert!((at_kink - 6.04).abs() < 1e-9);
     let expected = 6.04 * (-(60f64.to_radians()) * 1f64.to_radians().tan()).exp();
     assert!((beyond - expected).abs() < 1e-9, "{beyond}");
@@ -114,12 +114,12 @@ fn the_formula_gives_the_radii_of_the_arms_toward_the_sun() {
 #[test]
 fn a_spiral_arm_spans_its_fitted_azimuths_and_no_more() {
     let perseus = spiral("reid-2019-perseus-arm");
-    let betas = perseus.azimuths().unwrap();
+    let betas = perseus.azimuths();
     assert_eq!(betas.first(), Some(&-23.0));
     assert_eq!(betas.last(), Some(&115.0));
     assert_eq!(betas.len(), 139, "each whole degree from -23 to 115");
     assert!(betas.windows(2).all(|w| (w[1] - w[0] - 1.0).abs() < 1e-9));
-    assert_eq!(perseus.path_galactic_kpc().unwrap().len(), betas.len());
+    assert_eq!(perseus.path_galactic_kpc().len(), betas.len());
 }
 
 #[test]
@@ -129,7 +129,7 @@ fn an_extrapolation_runs_on_up_to_90_degrees_while_its_radius_lies_within_3_to_1
             panic!("{id}")
         };
         let [low, high] = [l.fitted[0].value(), l.fitted[1].value()];
-        let betas = l.azimuths().unwrap();
+        let betas = l.azimuths();
         let (first, last) = (betas[0], *betas.last().unwrap());
         assert!(
             first <= low && low - first <= EXTRAPOLATION_DEGREES,
@@ -142,7 +142,7 @@ fn an_extrapolation_runs_on_up_to_90_degrees_while_its_radius_lies_within_3_to_1
         // It passes through its fitted range, both ends included.
         assert!(betas.contains(&low) && betas.contains(&high), "{id}");
         for beta in betas.iter().filter(|b| **b < low || **b > high) {
-            let r = l.radius_kpc(*beta).unwrap();
+            let r = l.radius_kpc(*beta);
             assert!(
                 (RADIUS_BAND_KPC.0..=RADIUS_BAND_KPC.1).contains(&r),
                 "{id}: {r} kpc at {beta}"
@@ -152,12 +152,10 @@ fn an_extrapolation_runs_on_up_to_90_degrees_while_its_radius_lies_within_3_to_1
     // Scutum-Centaurus winds inward past 3 kpc before 90 degrees beyond its fit, so its
     // extrapolation stops there; Perseus runs the full 90 degrees each way.
     let sct = spiral("reid-2019-scutum-centaurus-arm-extrapolated");
-    let last = *sct.azimuths().unwrap().last().unwrap();
+    let last = *sct.azimuths().last().unwrap();
     assert!(last < 104.0 + EXTRAPOLATION_DEGREES, "{last}");
-    assert!(sct.radius_kpc(last + 1.0).unwrap() < RADIUS_BAND_KPC.0);
-    let per = spiral("reid-2019-perseus-arm-extrapolated")
-        .azimuths()
-        .unwrap();
+    assert!(sct.radius_kpc(last + 1.0) < RADIUS_BAND_KPC.0);
+    let per = spiral("reid-2019-perseus-arm-extrapolated").azimuths();
     assert_eq!((per[0], *per.last().unwrap()), (-113.0, 205.0));
 }
 
@@ -168,7 +166,7 @@ fn the_masers_an_arm_was_fitted_to_lie_on_it_in_the_galactic_frame() {
     // (0.076 mas), on the far side of the Galaxy. Each lies within the arm's width of the path;
     // mirrored about the Sun-centre line (the other sense of azimuth), the path misses them by
     // more than a kiloparsec.
-    let path = spiral("reid-2019-perseus-arm").path_galactic_kpc().unwrap();
+    let path = spiral("reid-2019-perseus-arm").path_galactic_kpc();
     let mirrored: Vec<Vec3> = path.iter().map(|p| [p[0], -p[1], p[2]]).collect();
     for (name, l, b, mas) in [
         ("NGC 7538", 111.54, 0.77, 0.378),
@@ -204,7 +202,7 @@ fn a_spiral_arms_path_is_placed_in_the_icrs_as_a_reconstructed_path_with_its_der
         panic!("{:?}", placed.shape.geometry)
     };
     // Turned back to the galactic frame, the path is the one computed there, in parsecs.
-    let galactic = spiral("reid-2019-perseus-arm").path_galactic_kpc().unwrap();
+    let galactic = spiral("reid-2019-perseus-arm").path_galactic_kpc();
     let back = between(Frame::Icrs, Frame::Galactic);
     assert_eq!(points.len(), galactic.len());
     for (icrs, g) in points.iter().zip(&galactic) {

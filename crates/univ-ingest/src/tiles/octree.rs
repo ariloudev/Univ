@@ -3,7 +3,7 @@
 
 use rand_chacha::ChaCha20Rng;
 use rand_chacha::rand_core::{Rng, SeedableRng};
-use univ_model::tile::{HEADER_BYTES, NodeBox, TileError, max_points};
+use univ_model::tile::{NodeBox, TileError, max_points, tile_bytes};
 
 use super::TilesError;
 use super::domain::DomainPoint;
@@ -166,7 +166,7 @@ pub fn build(
                         domain: domain.to_owned(),
                         address,
                         points: n,
-                        bytes: HEADER_BYTES + point_bytes * n,
+                        bytes: tile_bytes(point_bytes, n),
                     });
                 }
                 tree.nodes.push(Node {

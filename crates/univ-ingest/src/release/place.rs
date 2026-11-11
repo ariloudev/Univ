@@ -87,25 +87,14 @@ pub fn index_bounds(
         Some(StructureGeometry::SkyRegion(b)) => sky_region(b, release),
         Some(StructureGeometry::AxisBox(b)) => {
             let primitive = axis_box(b, release)?.into();
-            Shape::new(
-                Frame::Icrs,
-                Unit::Megaparsec,
-                Geometry::Primitive { primitive },
-            )
-            .map_err(|e| format!("its box cannot stand: {e}"))?
-            .bounds_in(Frame::Icrs)
-            .ok_or_else(|| "its box has no bounds".to_owned())
+            bounds_of(Geometry::Primitive { primitive }, "box")
         }
-        Some(StructureGeometry::LogSpiral(l)) => Shape::new(
-            Frame::Icrs,
-            Unit::Megaparsec,
+        Some(StructureGeometry::LogSpiral(l)) => bounds_of(
             Geometry::Path {
                 points: spiral_path(l)?,
             },
-        )
-        .map_err(|e| format!("its path cannot stand: {e}"))?
-        .bounds_in(Frame::Icrs)
-        .ok_or_else(|| "its path has no bounds".to_owned()),
+            "path",
+        ),
         None => match &structure.position {
             Some(at) => point(at, release, correction),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -465,20 +454,28 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     Ok(Aabb { min, max })
 }
 
+/// The bounds of `geometry`, in ICRS megaparsecs; `what` names it in a refusal.
+fn bounds_of(geometry: Geometry, what: &str) -> Result<Aabb, String> {
+    Shape::new(Frame::Icrs, Unit::Megaparsec, geometry)
+        .map_err(|e| format!("its {what} cannot stand: {e}"))?
+        .bounds_in(Frame::Icrs)
+        .ok_or_else(|| format!("its {what} has no bounds"))
+}
+
 /// A log spiral's path in the ICRS about the barycentre, in Mpc: its heliocentric galactic
 /// points turned into the ICRS, the Sun's offset from the barycentre, under 0.01 AU, left aside.
 ///
 /// # Errors
 ///
-/// Fails on a parameter whose unit does not convert.
+/// Fails when kiloparsecs do not convert to megaparsecs.
 pub fn spiral_path(spiral: &LogSpiral) -> Result<Vec<Vec3>, String> {
     let to_icrs = between(Frame::Galactic, Frame::Icrs);
     let per_kpc = Unit::Kiloparsec
         .factor_to(Unit::Megaparsec)
         .map_err(|e| e.to_string())?;
     Ok(spiral
-        .path_galactic_kpc()?
+        .path_galactic_kpc()
         .into_iter()
-        .map(|p| to_icrs.apply(p).map(|c| c * per_kpc))
+        .map(|p| scaled(to_icrs.apply(p), per_kpc))
         .collect())
 }

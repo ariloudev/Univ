@@ -67,8 +67,8 @@ fn the_most_points_a_tile_holds_fit_in_one_mebibyte() {
     // A version 4 point is the widest, so it bounds a tile of either version written.
     assert_eq!(MAX_POINTS, 49_929);
     assert_eq!(max_points(POINT_BYTES), 52_426);
-    assert!(tile_bytes(MAX_POINTS) <= MAX_TILE_BYTES);
-    assert!(tile_bytes(MAX_POINTS + 1) > MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, MAX_POINTS) <= MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, MAX_POINTS + 1) > MAX_TILE_BYTES);
 }
 
 #[test]
@@ -76,7 +76,7 @@ fn a_tile_round_trips_within_half_a_step_of_each_position() {
     let node = node();
     let points = points();
     let bytes = encode(&node, &points).unwrap();
-    assert_eq!(bytes.len(), HEADER_BYTES + POINT_BYTES * points.len());
+    assert_eq!(bytes.len(), tile_bytes(POINT_BYTES, points.len()));
     let tile = decode(&bytes).unwrap();
     assert_eq!(tile.version, BASE_VERSION);
     assert_eq!(tile.node, node);
@@ -354,7 +354,7 @@ fn an_oversized_tile_of_an_unknown_version_is_refused_naming_its_version() {
 /// A tile of the newest version of one point at the far corner of the node with corner `min`
 /// and edge `edge`.
 fn one_point_tile(min: f64, edge: f64) -> Vec<u8> {
-    let mut bytes = vec![0; tile_bytes(1)];
+    let mut bytes = vec![0; tile_bytes(V4_POINT_BYTES, 1)];
     bytes[..4].copy_from_slice(&MAGIC);
     bytes[4..6].copy_from_slice(&VERSION.to_le_bytes());
     bytes[8..12].copy_from_slice(&1u32.to_le_bytes());

@@ -160,10 +160,10 @@ pub const fn max_points(point_bytes: usize) -> usize {
 /// The quantization steps along each axis of a node's edge.
 pub const STEPS: u32 = 65_536;
 
-/// The size of a tile of `points` points of the widest version this module writes, in bytes.
+/// The size in bytes of a tile of `points` points of `point_bytes` each.
 #[must_use]
-pub const fn tile_bytes(points: usize) -> usize {
-    HEADER_BYTES + V4_POINT_BYTES * points
+pub const fn tile_bytes(point_bytes: usize, points: usize) -> usize {
+    HEADER_BYTES + point_bytes * points
 }
 
 /// The cube of one octree node: its minimum corner and its edge, in the manifest's frame and
@@ -393,7 +393,8 @@ pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError
 /// a colour index or an age beyond what a tile holds.
 pub fn encode_as(version: u16, node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
     let point_bytes = match version {
-        BASE_VERSION | VERSION => point_bytes(version).unwrap_or(V4_POINT_BYTES),
+        BASE_VERSION => POINT_BYTES,
+        VERSION => V4_POINT_BYTES,
         other => return Err(TileError::UnwrittenVersion(other)),
     };
     let node = NodeBox::new(node.min, node.edge)?;
@@ -411,7 +412,7 @@ pub fn encode_as(version: u16, node: &NodeBox, points: &[TilePoint]) -> Result<V
             position: p.position,
         });
     }
-    let mut bytes = Vec::with_capacity(HEADER_BYTES + point_bytes * n);
+    let mut bytes = Vec::with_capacity(tile_bytes(point_bytes, n));
     bytes.extend_from_slice(&MAGIC);
     bytes.extend_from_slice(&version.to_le_bytes());
     bytes.extend_from_slice(&0u16.to_le_bytes());

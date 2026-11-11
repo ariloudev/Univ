@@ -26,7 +26,7 @@ use univ_model::position::Vec3;
 use univ_model::units::Unit;
 
 use super::cited::Cited;
-use super::geometry::is_length;
+use super::geometry::{is_angle, is_length};
 
 /// How far an extrapolation runs on beyond each end of its arm's fitted range, in degrees of
 /// azimuth.
@@ -67,6 +67,21 @@ pub struct LogSpiral {
     pub r0: Cited,
     /// The Sun's height above the Galactic plane, a length.
     pub sun_height: Cited,
+    /// The parameters in degrees and kiloparsecs, converted once when read.
+    #[serde(skip)]
+    numbers: Numbers,
+}
+
+/// A log spiral's parameters as plain numbers: azimuths in degrees, lengths in kpc.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+struct Numbers {
+    kink: f64,
+    r_kink: f64,
+    tan_inside: f64,
+    tan_outside: f64,
+    fitted: [f64; 2],
+    r0: f64,
+    sun_height: f64,
 }
 
 /// A log spiral as written, checked into [`LogSpiral`].
@@ -84,10 +99,62 @@ struct RawSpiral {
     sun_height: Cited,
 }
 
+/// `c` in `unit`.
+fn in_unit(c: &Cited, unit: Unit) -> Result<f64, String> {
+    c.quantity
+        .to(unit)
+        .map(|q| q.value)
+        .map_err(|e| e.to_string())
+}
+
 impl TryFrom<RawSpiral> for LogSpiral {
     type Error = String;
     fn try_from(r: RawSpiral) -> Result<Self, String> {
-        let s = Self {
+        let [low, high] = &r.fitted;
+        for (name, c) in [
+            ("beta_kink", &r.beta_kink),
+            ("pitch_inside", &r.pitch_inside),
+            ("pitch_outside", &r.pitch_outside),
+            ("fitted[0]", low),
+            ("fitted[1]", high),
+        ] {
+            if !is_angle(c) {
+                return Err(format!("a log spiral's {name} is an angle"));
+            }
+        }
+        for (name, c) in [
+            ("r_kink", &r.r_kink),
+            ("width", &r.width),
+            ("r0", &r.r0),
+            ("sun_height", &r.sun_height),
+        ] {
+            if !is_length(c.unit()) || c.unit() == Unit::Megaparsec {
+                return Err(format!(
+                    "a log spiral's {name} is a length within the Galaxy"
+                ));
+            }
+        }
+        let tan = |c: &Cited| in_unit(c, Unit::Degree).map(|d| d.to_radians().tan());
+        let numbers = Numbers {
+            kink: in_unit(&r.beta_kink, Unit::Degree)?,
+            r_kink: in_unit(&r.r_kink, Unit::Kiloparsec)?,
+            tan_inside: tan(&r.pitch_inside)?,
+            tan_outside: tan(&r.pitch_outside)?,
+            fitted: [in_unit(low, Unit::Degree)?, in_unit(high, Unit::Degree)?],
+            r0: in_unit(&r.r0, Unit::Kiloparsec)?,
+            sun_height: in_unit(&r.sun_height, Unit::Kiloparsec)?,
+        };
+        let [low, high] = numbers.fitted;
+        if low >= high {
+            return Err(format!(
+                "a log spiral's fitted range runs from its lower azimuth to its higher, not {low}° \
+                 to {high}°"
+            ));
+        }
+        if numbers.r_kink <= 0.0 || numbers.r0 <= 0.0 {
+            return Err("a log spiral's radius at the kink and R0 are positive".to_owned());
+        }
+        Ok(Self {
             extent: r.extent,
             beta_kink: r.beta_kink,
             r_kink: r.r_kink,
@@ -97,102 +164,49 @@ impl TryFrom<RawSpiral> for LogSpiral {
             fitted: r.fitted,
             r0: r.r0,
             sun_height: r.sun_height,
-        };
-        for (name, c) in s.pairs() {
-            let angle = matches!(name, "beta_kink" | "pitch_inside" | "pitch_outside")
-                || name.starts_with("fitted");
-            let fits = if angle {
-                c.unit().factor_to(Unit::Degree).is_ok()
-            } else {
-                is_length(c.unit()) && c.unit() != Unit::Megaparsec
-            };
-            if !fits {
-                let what = if angle {
-                    "an angle"
-                } else {
-                    "a length within the Galaxy"
-                };
-                return Err(format!("a log spiral's {name} is {what}"));
-            }
-        }
-        let [low, high] = s.fitted_degrees()?;
-        if low >= high {
-            return Err(format!(
-                "a log spiral's fitted range runs from its lower azimuth to its higher, not {low}° \
-                 to {high}°"
-            ));
-        }
-        if s.r_kink_kpc()? <= 0.0 || s.r0_kpc()? <= 0.0 {
-            return Err("a log spiral's radius at the kink and R0 are positive".to_owned());
-        }
-        Ok(s)
+            numbers,
+        })
     }
 }
 
-/// `c` in `unit`.
-fn in_unit(c: &Cited, unit: Unit) -> Result<f64, String> {
-    c.unit()
-        .factor_to(unit)
-        .map(|f| c.value() * f)
-        .map_err(|e| e.to_string())
-}
-
 impl LogSpiral {
-    /// Each cited parameter with its name, `fitted[0]` and `fitted[1]` for the range.
+    /// Each cited parameter but the fitted range, with its name.
     #[must_use]
-    pub fn pairs(&self) -> Vec<(&'static str, &Cited)> {
-        vec![
+    pub fn scalars(&self) -> [(&'static str, &Cited); 7] {
+        [
             ("beta_kink", &self.beta_kink),
             ("r_kink", &self.r_kink),
             ("pitch_inside", &self.pitch_inside),
             ("pitch_outside", &self.pitch_outside),
             ("width", &self.width),
-            ("fitted[0]", &self.fitted[0]),
-            ("fitted[1]", &self.fitted[1]),
             ("r0", &self.r0),
             ("sun_height", &self.sun_height),
         ]
     }
 
-    fn fitted_degrees(&self) -> Result<[f64; 2], String> {
-        Ok([
-            in_unit(&self.fitted[0], Unit::Degree)?,
-            in_unit(&self.fitted[1], Unit::Degree)?,
-        ])
-    }
-
-    fn r_kink_kpc(&self) -> Result<f64, String> {
-        in_unit(&self.r_kink, Unit::Kiloparsec)
-    }
-
-    fn r0_kpc(&self) -> Result<f64, String> {
-        in_unit(&self.r0, Unit::Kiloparsec)
+    /// The fitted range, the one pair of bounds, with its name.
+    #[must_use]
+    pub fn pairs(&self) -> [(&'static str, &[Cited; 2]); 1] {
+        [("fitted", &self.fitted)]
     }
 
     /// The Galactocentric radius at azimuth `beta` degrees, in kpc.
-    ///
-    /// # Errors
-    ///
-    /// Fails on a parameter in a unit that does not convert.
-    pub fn radius_kpc(&self, beta: f64) -> Result<f64, String> {
-        let kink = in_unit(&self.beta_kink, Unit::Degree)?;
-        let pitch = if beta <= kink {
-            &self.pitch_inside
+    #[must_use]
+    pub fn radius_kpc(&self, beta: f64) -> f64 {
+        let n = &self.numbers;
+        let tan = if beta <= n.kink {
+            n.tan_inside
         } else {
-            &self.pitch_outside
+            n.tan_outside
         };
-        let psi = in_unit(pitch, Unit::Degree)?.to_radians();
-        Ok(self.r_kink_kpc()? * (-(beta - kink).to_radians() * psi.tan()).exp())
+        n.r_kink * (-(beta - n.kink).to_radians() * tan).exp()
     }
 
     /// The azimuths the path samples, in degrees, in increasing order: each whole degree within
     /// its range and each end.
-    ///
-    /// # Errors
-    ///
-    /// As [`LogSpiral::radius_kpc`].
-    pub fn azimuths(&self) -> Result<Vec<f64>, String> {
-        let [low, high] = self.fitted_degrees()?;
+    #[must_use]
+    pub fn azimuths(&self) -> Vec<f64> {
+        let [low, high] = self.numbers.fitted;
         let mut out = vec![low];
         let mut beta = low.floor() + 1.0;
         while beta < high {
@@ -201,45 +215,37 @@ impl LogSpiral {
         }
         out.push(high);
         if self.extent == Extent::Fitted {
-            return Ok(out);
+            return out;
         }
-        let inside = |beta: f64| -> Result<bool, String> {
-            let r = self.radius_kpc(beta)?;
-            Ok((RADIUS_BAND_KPC.0..=RADIUS_BAND_KPC.1).contains(&r))
-        };
+        let inside =
+            |beta: f64| (RADIUS_BAND_KPC.0..=RADIUS_BAND_KPC.1).contains(&self.radius_kpc(beta));
         let mut before = Vec::new();
         let mut beta = low.ceil() - 1.0;
-        while low - beta <= EXTRAPOLATION_DEGREES && inside(beta)? {
+        while low - beta <= EXTRAPOLATION_DEGREES && inside(beta) {
             before.push(beta);
             beta -= 1.0;
         }
-        let mut after = Vec::new();
         let mut beta = high.floor() + 1.0;
-        while beta - high <= EXTRAPOLATION_DEGREES && inside(beta)? {
-            after.push(beta);
+        while beta - high <= EXTRAPOLATION_DEGREES && inside(beta) {
+            out.push(beta);
             beta += 1.0;
         }
         before.reverse();
         before.extend(out);
-        before.extend(after);
-        Ok(before)
+        before
     }
 
     /// The path in heliocentric galactic Cartesian kpc, one point at each of
     /// [`LogSpiral::azimuths`].
-    ///
-    /// # Errors
-    ///
-    /// As [`LogSpiral::radius_kpc`].
-    pub fn path_galactic_kpc(&self) -> Result<Vec<Vec3>, String> {
-        let r0 = self.r0_kpc()?;
-        let z = -in_unit(&self.sun_height, Unit::Kiloparsec)?;
-        self.azimuths()?
+    #[must_use]
+    pub fn path_galactic_kpc(&self) -> Vec<Vec3> {
+        let (r0, z) = (self.numbers.r0, -self.numbers.sun_height);
+        self.azimuths()
             .into_iter()
             .map(|beta| {
-                let r = self.radius_kpc(beta)?;
+                let r = self.radius_kpc(beta);
                 let b = beta.to_radians();
-                Ok([r0 - r * b.cos(), r * b.sin(), z])
+                [r0 - r * b.cos(), r * b.sin(), z]
             })
             .collect()
     }

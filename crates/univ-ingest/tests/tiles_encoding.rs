@@ -18,7 +18,7 @@ use univ_ingest::tiles::{
 use univ_model::cosmology::Cosmology;
 use univ_model::position::{Frame, from_icrs};
 use univ_model::tile::{
-    HEADER_BYTES, MAX_POINTS, MAX_TILE_BYTES, POINT_BYTES, STEPS, decode, max_points, tile_bytes,
+    MAX_POINTS, MAX_TILE_BYTES, POINT_BYTES, STEPS, V4_POINT_BYTES, decode, max_points, tile_bytes,
 };
 
 #[test]
@@ -169,8 +169,8 @@ fn every_tile_stays_within_one_mebibyte_under_the_repository_rules() {
     // SIMULATED stress: 300,000 points, half spread over 10 kpc and half packed into a few
     // star-cluster-sized clumps, under the repository's rules.
     let rules = repository_rules();
-    assert!(tile_bytes(rules.split_threshold) <= MAX_TILE_BYTES);
-    assert!(tile_bytes(rules.level_points) <= MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, rules.split_threshold) <= MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, rules.level_points) <= MAX_TILE_BYTES);
     let mut points = uniform(150_000, 10_000.0, 12);
     let mut lcg = Lcg(13);
     for id in 150_001..=300_000 {
@@ -232,7 +232,7 @@ fn a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it
 
     let full = u64::try_from(most + above).unwrap();
     let built = build_domain(ScaleDomain::Stars, &crowded(full), &gaia(), &context).unwrap();
-    assert_eq!(built.largest_tile(), HEADER_BYTES + POINT_BYTES * most);
+    assert_eq!(built.largest_tile(), tile_bytes(POINT_BYTES, most));
     assert!(built.largest_tile() <= MAX_TILE_BYTES);
 }
 

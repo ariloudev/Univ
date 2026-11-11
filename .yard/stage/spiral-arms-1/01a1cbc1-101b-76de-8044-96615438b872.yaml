@@ -217,6 +217,33 @@ blocks:
           | `MAX_POINTS` became version 4's (49,929), so the octree would refuse a stars leaf that fits a version 3 tile | `tiles_encoding` test | The octree takes the domain's point size; the global rules check keeps the stricter bound | fixed |
           | The fixture release holds no Galaxy tracers, so the decoder fixtures carried no version 4 tile | Rewriting the fixtures changed only a manifest | A SIMULATED tracers fixture domain, every kind of object and some none | fixed |
           | `tile/mod.rs` reached 502 lines | `cargo xtask lines` | Kind-of-object codes split into `tile/object.rs` | fixed |
+      - key: 01a1cc19-66e2-70e4-b9c8-f6e2538eceec
+        at: 2026-11-11T19:32:59Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | Zari's zero point called measured; prior described as disc rotation only | re-reading the paper while writing T2 | spec reworded (c659e45) | fixed |
+          | Tile tests assumed version 3 everywhere | T3 test run | BASE_VERSION and per-version limits | fixed |
+          | Octree refused v3 leaves at v4's limit | T3 test run | octree takes the domain's point size | fixed |
+          | Fixture release had no tracers for v4 fixtures | T3 | SIMULATED `simulated_tracers` domain | fixed |
+          | `tile/mod.rs` over 500 lines | `cargo xtask lines` | split out `tile/object.rs` | fixed |
+          | Structure domain test assumed nothing lies within the Galaxy | T4 workspace tests | Galaxy band added for the model arms | fixed |
+          | W3OH too near the mirrored Perseus path for a clean test | T4 test | far-side maser G031.24−00.11 instead | fixed |
+          | /simplify: spiral names flattened to `fitted[0]` strings and patched back | reuse, simplification, altitude reviews | `fitted` returned as a pair to the shared `indexed` helpers | fixed |
+          | /simplify: spiral unit check by name strings, own `in_unit`, per-degree conversions | reuse, efficiency | `is_angle`/`is_length`, `Quantity::to`, numbers converted once; radius, azimuths and path infallible | fixed |
+          | /simplify: `tile_bytes` meant v4 only; size formula copied four times | reuse, simplification, altitude | `tile_bytes(point_bytes, n)` everywhere | fixed |
+          | /simplify: v4 decided in both `assign` and `encoding_of` | reuse, altitude | `assign` asks the domain's encoding | fixed |
+          | /simplify: unreachable fallback in `encode_as`; kind count 7 written twice; TS literal 20 | simplification | explicit match; `OBJECT_KINDS.len()`; `V3_POINT_BYTES` | fixed |
+          | /simplify: bounds chain copied between box and path | simplification | `bounds_of` helper | fixed |
+          | /simplify skipped: path computed three times per arm | efficiency | microseconds over 14 arms; sharing it would restructure three public functions | skipped |
+          | /simplify skipped: `extent` repeats the kind; `Status::Model` beside `kind_of_value` | altitude | both are in the approved spec; changing them is a spec change, not a cleanup | skipped |
+          | /simplify skipped: `RawSpiral` repeats `LogSpiral`; encoding passed as version and width | simplification | the crate's `Raw*` convention; `Encoding` consts tie the two | skipped |
+          | /simplify skipped: test's Galaxy bound | altitude | deriving it still hard-codes R0, a per-file value | skipped |
   - key: 01a1cbd4-4647-75ee-9e7e-bf9ce7cc6c69
     id: spec-change-zari-wording
     kind: loft

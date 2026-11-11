@@ -13,11 +13,11 @@ use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{MeasurementRef, Object, ObjectKind};
 use univ_model::position::{Frame, Vec3};
-use univ_model::tile::{ColourBands, PointColour, PointValue};
+use univ_model::tile::{ColourBands, PointColour, PointValue, has_object_kind};
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
-use super::TilesError;
+use super::{TilesError, encoding_of};
 use crate::crossmatch::ReleaseObject;
 use crate::source::{ScaleDomain, SourceDefinition};
 
@@ -270,8 +270,10 @@ pub fn assign(
             None
         };
         let value = age.or_else(|| colour_of(&o.object).map(PointValue::Colour));
-        // A Galaxy tracer carries its kind of object too (build-octree-tiles, version 4).
-        let object = (domain == ScaleDomain::GalaxyTracers && o.object.kind != ObjectKind::Body)
+        // A point carries its kind of object where its domain's encoding writes one
+        // (build-octree-tiles, version 4); a body has none.
+        let object = (has_object_kind(encoding_of(domain).version)
+            && o.object.kind != ObjectKind::Body)
             .then_some(o.object.kind);
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))

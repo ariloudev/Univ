@@ -4,7 +4,7 @@ use super::value::point_value;
 use super::{
     DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, NodeBox, POINT_BYTES, Tile, TileError,
     V1_POINT_BYTES, has_colour, has_object_kind, kind_of_code, max_points, object_kind_of_code,
-    point_bytes,
+    point_bytes, tile_bytes,
 };
 use crate::ids::ObjectId;
 
@@ -63,7 +63,7 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
             point_bytes,
         });
     }
-    let expected = HEADER_BYTES + point_bytes * n;
+    let expected = tile_bytes(point_bytes, n);
     if bytes.len() < expected {
         return Err(TileError::Truncated {
             expected,

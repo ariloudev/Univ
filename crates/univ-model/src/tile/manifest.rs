@@ -166,7 +166,7 @@ pub struct Encoding {
         feature = "openapi",
         schema(value_type = Option<Vec<ObjectKind>>, min_items = 7, max_items = 7)
     )]
-    pub object_kinds: Option<[ObjectKind; 7]>,
+    pub object_kinds: Option<[ObjectKind; OBJECT_KINDS.len()]>,
 }
 
 /// The encoding of [`BASE_VERSION`], which every scale domain's tiles take but the Galaxy

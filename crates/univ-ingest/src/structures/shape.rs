@@ -129,11 +129,14 @@ impl StructureGeometry {
                 out
             }
             Self::AxisBox(b) => indexed("box", b.pairs()),
-            Self::LogSpiral(l) => l
-                .pairs()
-                .into_iter()
-                .map(|(name, c)| (format!("log_spiral.{name}"), c))
-                .collect(),
+            Self::LogSpiral(l) => {
+                let mut out = indexed("log_spiral", l.pairs());
+                out.extend(
+                    l.scalars()
+                        .map(|(name, c)| (format!("log_spiral.{name}"), c)),
+                );
+                out
+            }
         }
     }
 }
