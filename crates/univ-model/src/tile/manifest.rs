@@ -24,7 +24,8 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, MAX_TILE_BYTES, POINT_BYTES, STEPS, VERSION,
+    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAX_TILE_BYTES, POINT_BYTES,
+    STEPS, VERSION,
 };
 use crate::cosmology::Cosmology;
 use crate::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME, Rotation, from_icrs};
@@ -153,6 +154,10 @@ pub struct Encoding {
     /// The colour bands, coded by their index plus one, 0 coding none; absent before version 2.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub colour_bands: Option<[ColourBands; 2]>,
+    /// The code of a point whose value is the base-10 logarithm of its age in years; absent
+    /// before version 3.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub log_age_code: Option<u8>,
 }
 
 /// The encoding of this version.
@@ -168,6 +173,7 @@ pub const ENCODING: Encoding = Encoding {
     ),
     kinds: KINDS,
     colour_bands: Some(COLOUR_BANDS),
+    log_age_code: Some(LOG_AGE_CODE),
 };
 
 /// A level of the octree: its nodes' edge and its quantization step, in the unit, and the

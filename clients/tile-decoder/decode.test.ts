@@ -16,6 +16,8 @@ interface Expected {
   kind: KindOfValue;
   /** The colour index before rounding and its bands; null where the point has none. */
   colour?: [number, ColourBands] | null;
+  /** The base-10 logarithm of its age in years before rounding, where it carries one. */
+  log_age?: number;
 }
 
 interface FixtureTile {
@@ -30,7 +32,8 @@ interface Fixture {
   tiles: FixtureTile[];
 }
 
-/** The fixtures of a directory: the current encoding's in fixtures/, version 1's kept in v1/. */
+/** The fixtures of a directory: the current encoding's in fixtures/, versions 1's and 2's kept
+ * in v1/ and v2/. */
 const fixturesIn = (path: string): Fixture[] => {
   const dir = new URL(path, import.meta.url);
   const read = (file: string): unknown => JSON.parse(readFileSync(new URL(file, dir), 'utf8'));
@@ -46,6 +49,7 @@ const fixturesIn = (path: string): Fixture[] => {
 
 const fixtures = fixturesIn('./fixtures/');
 const version1 = fixturesIn('./fixtures/v1/');
+const version2 = fixturesIn('./fixtures/v2/');
 
 const bytesOf = (hex: string): Uint8Array => Uint8Array.from(Buffer.from(hex, 'hex'));
 
@@ -111,10 +115,11 @@ test("AC-283: each decoded point gives its object id, its source and its kind of
   }
 });
 
-test('the decoder decodes tiles of encoding versions 1 and 2', () => {
-  assert.deepEqual(VERSIONS, [1, 2]);
-  assert.ok(fixtures.every((f) => f.manifest.encoding.version === 2));
+test('the decoder decodes tiles of encoding versions 1, 2 and 3', () => {
+  assert.deepEqual(VERSIONS, [1, 2, 3]);
+  assert.ok(fixtures.every((f) => f.manifest.encoding.version === 3));
   assert.deepEqual(version1.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 1]]);
+  assert.deepEqual(version2.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 2]]);
   let checked = 0;
   for (const f of version1) {
     for (const tile of f.tiles) {
@@ -129,10 +134,15 @@ test('the decoder decodes tiles of encoding versions 1 and 2', () => {
   assert.ok(checked > 0);
 });
 
-test('each decoded point of a version 2 tile gives its colour index and bands, or that it has none', () => {
+/** Every tile of the version 2 fixtures, kept as they were written. */
+const everyVersion2Tile = version2.flatMap((f) =>
+  f.tiles.map((t) => ({ fixture: `v2/${f.name}`, manifest: f.manifest, node: nodeOf(f.manifest, t.address), tile: t })),
+);
+
+test('each decoded point of a version 2 or 3 tile gives its colour index and bands, or that it has none', () => {
   let coloured = 0;
   let none = 0;
-  for (const { fixture, manifest, node, tile } of everyTile) {
+  for (const { fixture, manifest, node, tile } of [...everyTile, ...everyVersion2Tile]) {
     decodeTile(bytesOf(tile.hex), node, manifest).forEach((p, k) => {
       const expected = tile.points[k].colour ?? null;
       const at = `${fixture} ${tile.address} point ${k}`;
@@ -152,6 +162,39 @@ test('each decoded point of a version 2 tile gives its colour index and bands, o
   assert.deepEqual([...bands].sort(), ['B-V', 'BP-RP']);
 });
 
+test('each decoded point of a version 3 tile gives the logarithm of its age, or that it has none', () => {
+  let aged = 0;
+  for (const { fixture, manifest, node, tile } of everyTile) {
+    assert.equal(manifest.encoding.log_age_code, 3);
+    decodeTile(bytesOf(tile.hex), node, manifest).forEach((p, k) => {
+      const expected = tile.points[k].log_age;
+      const at = `${fixture} ${tile.address} point ${k}`;
+      if (expected === undefined) {
+        assert.equal(p.logAge, undefined, `${at}: no age`);
+      } else {
+        assert.equal(p.colour, undefined, `${at}: an age in place of a colour`);
+        assert.ok(p.logAge !== undefined && Math.abs(p.logAge - expected) <= 0.005 + 1e-12, `${at}: within 0.005`);
+        aged += 1;
+      }
+    });
+  }
+  assert.ok(aged > 0, `${aged} points with an age`);
+  // A version 2 point never has an age.
+  for (const { manifest, node, tile } of everyVersion2Tile) {
+    assert.ok(decodeTile(bytesOf(tile.hex), node, manifest).every((p) => p.logAge === undefined));
+  }
+});
+
+test('the age code is refused in a version 2 tile', () => {
+  const t = everyTile.find((t) => t.tile.points.some((p) => p.log_age !== undefined));
+  assert.ok(t);
+  const bytes = bytesOf(t.tile.hex);
+  new DataView(bytes.buffer).setUint16(4, 2, true);
+  const { log_age_code: _, ...encoding } = t.manifest.encoding;
+  const manifest = { ...t.manifest, encoding: { ...encoding, version: 2 } };
+  assert.throws(() => decodeTile(bytes, t.node, manifest), /value code 3, which the manifest does not list/);
+});
+
 /** The first fixture tile with points, as bytes to alter. */
 const sample = () => {
   const t = everyTile.find((t) => t.tile.points.length > 1);
@@ -160,7 +203,7 @@ const sample = () => {
 };
 
 test('AC-284: a tile of an encoding version the decoder does not know fails naming the version', () => {
-  for (const version of [0, 3, 7, 65_535]) {
+  for (const version of [0, 4, 7, 65_535]) {
     const { bytes, node, manifest } = sample();
     new DataView(bytes.buffer).setUint16(4, version, true);
     assert.throws(
@@ -180,11 +223,11 @@ test('a tile that is not what its manifest lists is refused', () => {
     ['an object id of 0', (b) => (b.fill(0, 48 + 6 * pointsOf(b), 48 + 6 * pointsOf(b) + 8), b), /object id 0/],
     ['an object id of 2^53', (b) => (b.set([0, 0, 0, 0, 0, 0, 0x20, 0], 48 + 6 * pointsOf(b)), b), /outside 1 to 2\^53/],
     ['an unknown kind', (b) => (b.set([4], 48 + 16 * pointsOf(b)), b), /kind of value 4/],
-    ['an unknown colour bands code', (b) => (b.set([3], 48 + 19 * pointsOf(b)), b), /colour bands code 3/],
+    ['an unknown value code', (b) => (b.set([4], 48 + 19 * pointsOf(b)), b), /value code 4/],
     [
-      'a colour index with no bands',
+      'a value with no code',
       (b) => (new DataView(b.buffer).setInt16(48 + 17 * pointsOf(b), 100, true), b.set([0], 48 + 19 * pointsOf(b)), b),
-      /colour bands code 0/,
+      /value code 0/,
     ],
     ['an unlisted source', (b) => (b.set([0xff, 0xff], 48 + 14 * pointsOf(b)), b), /source 65535/],
     ['another node', (b) => (new DataView(b.buffer).setFloat64(16, 1e9, true), b), /is not node/],

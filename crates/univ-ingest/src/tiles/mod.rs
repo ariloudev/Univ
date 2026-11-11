@@ -47,7 +47,7 @@ use univ_model::tile::{MAX_TILE_BYTES, NodeBox, TileError, TilePoint, encode};
 
 pub use domain::{
     Assigned, DOMAINS, DomainPoint, DomainPoints, NEARBY_GALAXIES_DEPTH_MPC, assign, colour_of,
-    domain_of, name_of, unit_of, unit_symbol,
+    domain_of, log_age_of, name_of, unit_of, unit_symbol,
 };
 pub use manifest::{
     Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, GENERATOR, Level, MANIFEST_VERSION,
@@ -318,6 +318,7 @@ pub fn build_domain(
                     source: p.source,
                     kind: p.kind,
                     colour: p.colour,
+                    log_age: p.log_age,
                 }
             })
             .collect();

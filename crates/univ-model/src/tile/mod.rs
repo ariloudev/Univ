@@ -48,6 +48,21 @@
 //! built from. A point with no colour index has both −32768 and 0, and a decoder refuses a point
 //! with one and not the other.
 //!
+//! # Version 3
+//!
+//! Version 3 is version 2 with the version field 3, its points the same 20 bytes. The two last
+//! columns hold a point's value, a colour index or an age, and the code of what it is:
+//!
+//! | Offset | Bytes | Field |
+//! |---|---|---|
+//! | 48 + 17 n | 2 n | Each point's value in hundredths, `i16`; −32768 for none |
+//! | 48 + 19 n | n | Its code, `u8`: 0 for none, 1 or 2 for a colour index between the bands of [`COLOUR_BANDS`] (in hundredths of a magnitude), [`LOG_AGE_CODE`] for the base-10 logarithm of an age in years (in hundredths) |
+//!
+//! A point of the Galaxy tracers domain carries its object's preferred age where it has one,
+//! else its colour index; a point never carries both. An age decodes within 0.005 of the
+//! logarithm it was built from. A version 2 decoder refuses code 3, and a version 3 decoder
+//! refuses it in a version 2 tile.
+//!
 //! A decoder refuses a tile with another magic, a version it does not know (naming it), a
 //! reserved field that is not zero, fewer or more bytes than its count gives, more than
 //! [`MAX_TILE_BYTES`], a node that cannot stand (see [`NodeBox::new`]), an object id outside 1
@@ -55,6 +70,8 @@
 //! version before the size, so a tile of a version it does not know is named as such at any
 //! size.
 
+#[cfg(test)]
+mod age_tests;
 pub mod format;
 #[cfg(test)]
 mod format_tests;
@@ -62,11 +79,17 @@ pub mod manifest;
 mod read;
 #[cfg(test)]
 mod tests;
+mod value;
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use thiserror::Error;
 
 pub use read::decode;
+pub use value::{
+    COLOUR_BANDS, ColourBands, LOG_AGE_CODE, NO_COLOUR, PointColour, has_age, has_colour,
+};
+
+use value::hundredths;
 
 use crate::ids::ObjectId;
 use crate::position::Vec3;
@@ -74,30 +97,30 @@ use crate::value::KindOfValue;
 
 /// The magic a tile starts with.
 pub const MAGIC: [u8; 4] = *b"UVTL";
-/// The version of the encoding this module writes. It reads this one and version 1.
-pub const VERSION: u16 = 2;
+/// The version of the encoding this module writes. It reads this one and versions 1 and 2.
+pub const VERSION: u16 = 3;
 /// The bytes before the first point.
 pub const HEADER_BYTES: usize = 48;
 /// The bytes each point takes in version 1: 6 of position, 8 of object id, 2 of source, 1 of
 /// kind of value.
 pub const V1_POINT_BYTES: usize = 17;
-/// The bytes each point takes in version 2: version 1's, then 2 of colour index and 1 of its
-/// bands.
+/// The bytes each point takes in versions 2 and 3: version 1's, then 2 of a colour index (or,
+/// in version 3, an age) and 1 of its code.
 pub const POINT_BYTES: usize = 20;
 /// The largest tile a release may hold: 1 MiB, the release's quality bound.
 pub const MAX_TILE_BYTES: usize = 1_048_576;
-/// The most points a version 2 tile may hold within [`MAX_TILE_BYTES`]: 52,426.
+/// The most points a version 2 or 3 tile may hold within [`MAX_TILE_BYTES`]: 52,426.
 pub const MAX_POINTS: usize = max_points(POINT_BYTES);
 
 /// The encoding versions this module reads, oldest first; it writes the last, [`VERSION`].
-pub const VERSIONS: [u16; 2] = [1, VERSION];
+pub const VERSIONS: [u16; 3] = [1, 2, VERSION];
 
 /// The bytes each point takes in tiles of `version`, if one of [`VERSIONS`].
 #[must_use]
 pub const fn point_bytes(version: u16) -> Option<usize> {
     match version {
         1 => Some(V1_POINT_BYTES),
-        VERSION => Some(POINT_BYTES),
+        2 | VERSION => Some(POINT_BYTES),
         _ => None,
     }
 }
@@ -108,63 +131,6 @@ pub const fn max_points(point_bytes: usize) -> usize {
     (MAX_TILE_BYTES - HEADER_BYTES) / point_bytes
 }
 
-/// Whether tiles of `version` carry each point's colour index: from version 2 on.
-#[must_use]
-pub const fn has_colour(version: u16) -> bool {
-    version >= 2
-}
-
-/// The colour index a version 2 point holds when it has none.
-pub const NO_COLOUR: i16 = i16::MIN;
-
-/// The two bands a colour index lies between.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-pub enum ColourBands {
-    #[serde(rename = "BP-RP")]
-    BpRp,
-    #[serde(rename = "B-V")]
-    BV,
-}
-
-/// The colour bands of version 2, each coded as its index plus one; 0 codes none.
-pub const COLOUR_BANDS: [ColourBands; 2] = [ColourBands::BpRp, ColourBands::BV];
-
-impl ColourBands {
-    /// The bands a pair such as `["B", "V"]` names, as a source definition gives them, if
-    /// version 2 codes them.
-    #[must_use]
-    pub fn of(bands: &[String; 2]) -> Option<Self> {
-        match [bands[0].as_str(), bands[1].as_str()] {
-            ["BP", "RP"] => Some(Self::BpRp),
-            ["B", "V"] => Some(Self::BV),
-            _ => None,
-        }
-    }
-
-    /// The code version 2 gives the bands: their index in [`COLOUR_BANDS`] plus one, which
-    /// [`ColourBands::of_code`] reads back (the codec's tests check every band both ways).
-    #[must_use]
-    pub const fn code(self) -> u8 {
-        match self {
-            Self::BpRp => 1,
-            Self::BV => 2,
-        }
-    }
-
-    /// The bands a version 2 code other than 0 gives, if [`COLOUR_BANDS`] holds them.
-    #[must_use]
-    pub fn of_code(code: u8) -> Option<Self> {
-        COLOUR_BANDS.get(usize::from(code).checked_sub(1)?).copied()
-    }
-}
-
-/// A point's colour index, in magnitudes, and the bands it lies between.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct PointColour {
-    pub index: f64,
-    pub bands: ColourBands,
-}
 /// The quantization steps along each axis of a node's edge.
 pub const STEPS: u32 = 65_536;
 
@@ -267,6 +233,9 @@ pub struct TilePoint {
     pub kind: KindOfValue,
     /// The colour index chosen for its object, if it has one.
     pub colour: Option<PointColour>,
+    /// The base-10 logarithm of its object's preferred age in years, if it carries one in place
+    /// of a colour index.
+    pub log_age: Option<f64>,
 }
 
 /// A decoded point: its position at the centre of its quantization step, the step it was
@@ -280,6 +249,8 @@ pub struct DecodedPoint {
     pub kind: KindOfValue,
     /// Its colour index to the hundredth of a magnitude; none in a version 1 tile.
     pub colour: Option<PointColour>,
+    /// The base-10 logarithm of its age in years to the hundredth; none before version 3.
+    pub log_age: Option<f64>,
 }
 
 /// A decoded tile: its node and its points, in the order stored.
@@ -324,8 +295,8 @@ pub enum TileError {
     #[error("point {point} has the kind of value {code}, which the encoding does not define")]
     Kind { point: usize, code: u8 },
     #[error(
-        "point {point} has the colour bands code {code}, which the encoding does not define or \
-         its colour index contradicts"
+        "point {point} has the value code {code}, which the tile's version does not define or \
+         its value contradicts"
     )]
     Colour { point: usize, code: u8 },
     #[error(
@@ -333,6 +304,10 @@ pub enum TileError {
          holds"
     )]
     ColourRange { id: ObjectId, index: f64 },
+    #[error("object {id}'s log age {log_age} lies beyond the -327.67 to 327.67 a tile holds")]
+    AgeRange { id: ObjectId, log_age: f64 },
+    #[error("object {id} carries both a colour index and an age, where a tile holds one")]
+    TwoValues { id: ObjectId },
 }
 
 /// The kinds of value of version 1, each coded as its index.
@@ -370,23 +345,13 @@ fn quantize(p: f64, min: f64, step: f64) -> u16 {
     ((p - min) / step).floor().clamp(0.0, f64::from(u16::MAX)) as u16
 }
 
-/// A colour index in hundredths of a magnitude, if a tile can hold it.
-#[expect(
-    clippy::cast_possible_truncation,
-    reason = "the value is checked to lie within i16's range, above NO_COLOUR, before the cast"
-)]
-fn hundredths(index: f64) -> Option<i16> {
-    let h = (index * 100.0).round();
-    (h.is_finite() && h > f64::from(NO_COLOUR) && h <= f64::from(i16::MAX)).then_some(h as i16)
-}
-
-/// Encodes `points` as a version 2 tile of `node`, in the order given.
+/// Encodes `points` as a version 3 tile of `node`, in the order given.
 ///
 /// # Errors
 ///
 /// Fails on a node that cannot stand (a child cube may halve below a normal step), more points
-/// than [`MAX_POINTS`], a point outside the node or not finite, or a colour index beyond what
-/// a tile holds.
+/// than [`MAX_POINTS`], a point outside the node or not finite, a colour index or an age beyond
+/// what a tile holds, or a point with both.
 pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
     let node = NodeBox::new(node.min, node.edge)?;
     let n = points.len();
@@ -427,20 +392,26 @@ pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError
         bytes.extend_from_slice(&p.source.to_le_bytes());
     }
     bytes.extend(points.iter().map(|p| kind_code(p.kind)));
+    let mut codes = Vec::with_capacity(n);
     for p in points {
-        let held = match p.colour {
-            None => NO_COLOUR,
-            Some(c) => hundredths(c.index).ok_or(TileError::ColourRange {
-                id: p.id,
-                index: c.index,
-            })?,
+        let (held, code) = match (p.colour, p.log_age) {
+            (None, None) => (NO_COLOUR, 0),
+            (Some(c), None) => (
+                hundredths(c.index).ok_or(TileError::ColourRange {
+                    id: p.id,
+                    index: c.index,
+                })?,
+                c.bands.code(),
+            ),
+            (None, Some(log_age)) => (
+                hundredths(log_age).ok_or(TileError::AgeRange { id: p.id, log_age })?,
+                LOG_AGE_CODE,
+            ),
+            (Some(_), Some(_)) => return Err(TileError::TwoValues { id: p.id }),
         };
         bytes.extend_from_slice(&held.to_le_bytes());
+        codes.push(code);
     }
-    bytes.extend(
-        points
-            .iter()
-            .map(|p| p.colour.map_or(0, |c| c.bands.code())),
-    );
+    bytes.extend(codes);
     Ok(bytes)
 }

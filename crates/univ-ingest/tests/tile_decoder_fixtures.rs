@@ -69,6 +69,9 @@ struct Expected {
     kind: KindOfValue,
     /// Its colour index before rounding, and its bands; none where it has none.
     colour: Option<(f64, ColourBands)>,
+    /// The base-10 logarithm of its age in years before rounding, where it carries one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    log_age: Option<f64>,
 }
 
 /// A domain's built tiles, the points they were built from and the ids of their sources.
@@ -116,11 +119,13 @@ fn simulated() -> Domain {
             source: n % 2,
             sky_source: n % 2,
             kind: KINDS[usize::from(n) % KINDS.len()],
-            // Every third point has none; the rest alternate between the bands.
+            // Every third point has no colour; the rest alternate between the bands. Of the
+            // points without a colour, every other carries a log age in years in its place.
             colour: (n % 3 != 0).then(|| PointColour {
                 index: f64::from(n) / 17.0 - 0.4,
                 bands: COLOUR_BANDS[usize::from(n) % COLOUR_BANDS.len()],
             }),
+            log_age: (n % 6 == 0).then(|| 6.5 + f64::from(n) / 25.0),
         })
         .collect();
     let sources = [source_id("gaia-dr3-bright"), source_id("hipparcos-2007")];
@@ -160,6 +165,7 @@ fn tiles_file(d: &Domain) -> String {
             source: d.sources[usize::from(built.source)].clone(),
             kind: built.kind,
             colour: built.colour.map(|c| (c.index, c.bands)),
+            log_age: built.log_age,
         }
     };
     let tiles = d

@@ -18,6 +18,7 @@ fn tile(n: u32) -> (NodeBox, Vec<u8>) {
                 id: ObjectId::new(u64::from(k) * 7_919).unwrap(),
                 source: u16::try_from(k % 3).unwrap(),
                 kind: KINDS[usize::try_from(k % 4).unwrap()],
+                log_age: None,
                 colour: (k % 2 == 0).then_some(PointColour {
                     index: 0.65,
                     bands: ColourBands::BpRp,
@@ -40,12 +41,12 @@ fn field<'a>(layout: &'a EncodingLayout, name: &str) -> &'a HeaderField {
 
 #[test]
 fn every_listed_version_has_a_layout_and_no_other_does() {
-    assert_eq!(VERSIONS, [1, 2]);
+    assert_eq!(VERSIONS, [1, 2, 3]);
     for v in VERSIONS.map(u32::from) {
         assert_eq!(layout(v).unwrap().version, v);
     }
     assert!(layout(0).is_none());
-    assert!(layout(3).is_none());
+    assert!(layout(4).is_none());
     // Version 1 is described as it was: 17 bytes a point and no colour.
     let one = layout(1).unwrap();
     assert_eq!(one.point_bytes, 17);
@@ -140,7 +141,7 @@ fn the_layout_serializes_its_types_as_clients_name_them() {
     let json = serde_json::to_value(current()).unwrap();
     assert_eq!(json["header"][0]["type"], "ascii");
     assert_eq!(json["header"][0]["value"], "UVTL");
-    assert_eq!(json["header"][1]["value"], 2);
+    assert_eq!(json["header"][1]["value"], 3);
     assert_eq!(json["colour_bands"], serde_json::json!(["BP-RP", "B-V"]));
     assert_eq!(json["points"][4]["type"], "i16le");
     assert_eq!(json["points"][0]["type"], "u16le");

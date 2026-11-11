@@ -94,8 +94,11 @@ pub struct DomainPoint {
     pub sky_source: u16,
     /// The kind of value of its preferred distance measurement.
     pub kind: KindOfValue,
-    /// The colour index chosen for it, if its entries give one.
+    /// The colour index chosen for it, if its entries give one and it carries no age.
     pub colour: Option<PointColour>,
+    /// The base-10 logarithm of its preferred age in years, for a point of the Galaxy tracers
+    /// domain whose entries give one.
+    pub log_age: Option<f64>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -124,6 +127,7 @@ struct Placed {
     sky: usize,
     kind: KindOfValue,
     colour: Option<PointColour>,
+    log_age: Option<f64>,
 }
 
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
@@ -160,6 +164,19 @@ pub fn colour_of(object: &Object) -> Option<PointColour> {
         }
     }
     best.map(|(_, c)| c)
+}
+
+/// The base-10 logarithm of `object`'s preferred age in years (build-octree-tiles): the first
+/// age its entries give, as published where its source publishes the logarithm.
+#[must_use]
+pub fn log_age_of(object: &Object) -> Option<f64> {
+    let age = object.entries.iter().flat_map(|e| &e.entry.ages).next()?;
+    let v = &age.value;
+    Some(if v.native.unit == Unit::LogYear {
+        v.native.value
+    } else {
+        v.normalized.value.log10()
+    })
 }
 
 /// The kind of value of the measurement `m` of `object`.
@@ -236,6 +253,11 @@ pub fn assign(
             definitions[distance].scale_domain,
             position.distance().value,
         );
+        let log_age = if domain == ScaleDomain::GalaxyTracers {
+            log_age_of(&o.object)
+        } else {
+            None
+        };
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))
             .map_err(|_| TilesError::NotFinite(id))?;
@@ -250,7 +272,13 @@ pub fn assign(
             distance,
             sky,
             kind,
-            colour: colour_of(&o.object),
+            // A Galaxy tracer carries its age where it has one, in the place of its colour.
+            log_age,
+            colour: if log_age.is_some() {
+                None
+            } else {
+                colour_of(&o.object)
+            },
         });
     }
     let mut domains = BTreeMap::new();
@@ -294,6 +322,7 @@ fn intern(
             sky_source: sky,
             kind: p.kind,
             colour: p.colour,
+            log_age: p.log_age,
         });
     }
     Ok(interned)

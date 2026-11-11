@@ -24,6 +24,7 @@ fn points() -> Vec<TilePoint> {
             id: id(1),
             source: 0,
             kind: KindOfValue::Measured,
+            log_age: None,
             colour: None,
         },
         TilePoint {
@@ -31,6 +32,7 @@ fn points() -> Vec<TilePoint> {
             id: id((1 << 53) - 1),
             source: u16::MAX,
             kind: KindOfValue::Reconstructed,
+            log_age: None,
             colour: Some(PointColour {
                 index: -327.67,
                 bands: ColourBands::BV,
@@ -48,6 +50,7 @@ fn points() -> Vec<TilePoint> {
             id: id(u64::from(k) + 2),
             source: u16::try_from(k % 5).unwrap(),
             kind: kinds[k as usize % 4],
+            log_age: None,
             colour: (k % 3 != 0).then(|| PointColour {
                 index: f64::from(k) / 40.0 - 1.234,
                 bands: COLOUR_BANDS[k as usize % 2],
@@ -96,6 +99,7 @@ fn the_byte_layout_is_as_documented() {
         id: id(0x0102_0304_0506),
         source: 0x0A0B,
         kind: KindOfValue::Inferred,
+        log_age: None,
         colour: Some(PointColour {
             index: 1.856,
             bands: ColourBands::BV,
@@ -103,7 +107,7 @@ fn the_byte_layout_is_as_documented() {
     };
     let bytes = encode(&node, &[p]).unwrap();
     assert_eq!(&bytes[0..4], b"UVTL");
-    assert_eq!(&bytes[4..8], &[2, 0, 0, 0]);
+    assert_eq!(&bytes[4..8], &[3, 0, 0, 0]);
     assert_eq!(&bytes[8..16], &[1, 0, 0, 0, 0, 0, 0, 0]);
     assert_eq!(&bytes[40..48], &65_536.0_f64.to_le_bytes());
     assert_eq!(
@@ -142,6 +146,7 @@ fn a_colour_index_round_trips_to_the_nearest_hundredth_with_its_bands_or_none() 
         }
     }
     let beyond = TilePoint {
+        log_age: None,
         colour: Some(PointColour {
             index: 400.0,
             bands: ColourBands::BpRp,
@@ -163,10 +168,10 @@ fn a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_c
         HEADER_BYTES + (V1_POINT_BYTES + 2) * n,
     );
     let mut unknown = good.clone();
-    unknown[bands + 1] = 3;
+    unknown[bands + 1] = 4;
     assert_eq!(
         decode(&unknown),
-        Err(TileError::Colour { point: 1, code: 3 })
+        Err(TileError::Colour { point: 1, code: 4 })
     );
     // Point 0 has no colour: a code without a colour index is refused.
     let mut code_alone = good.clone();
@@ -237,10 +242,10 @@ fn a_decoder_refuses_bad_input_with_an_error() {
     ));
 
     let mut version = good.clone();
-    version[4] = 3;
+    version[4] = 4;
     let error = decode(&version).unwrap_err();
-    assert_eq!(error, TileError::UnknownVersion(3));
-    assert!(error.to_string().contains("version 3"), "{error}");
+    assert_eq!(error, TileError::UnknownVersion(4));
+    assert!(error.to_string().contains("version 4"), "{error}");
 
     let mut magic = good.clone();
     magic[0] = b'X';
@@ -322,10 +327,10 @@ fn a_child_cube_halves_its_parent_and_takes_its_octant() {
 fn an_oversized_tile_of_an_unknown_version_is_refused_naming_its_version() {
     let mut bytes = vec![0; 1_048_577];
     bytes[..4].copy_from_slice(&MAGIC);
-    bytes[4..6].copy_from_slice(&3u16.to_le_bytes());
+    bytes[4..6].copy_from_slice(&4u16.to_le_bytes());
     let error = decode(&bytes).unwrap_err();
-    assert_eq!(error, TileError::UnknownVersion(3));
-    assert!(error.to_string().contains("version 3"), "{error}");
+    assert_eq!(error, TileError::UnknownVersion(4));
+    assert!(error.to_string().contains("version 4"), "{error}");
     bytes[..4].copy_from_slice(b"XXXX");
     assert_eq!(decode(&bytes), Err(TileError::Magic(*b"XXXX")));
     bytes[..4].copy_from_slice(&MAGIC);

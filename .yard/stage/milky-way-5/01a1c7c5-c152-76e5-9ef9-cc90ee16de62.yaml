@@ -126,6 +126,15 @@ blocks:
         title: "Hunt & Reffert definition and release rows"
         detail: "The definition is in already (task 2). The age push in release/entries.rs. Done when release_tracers reads an age measurement back."
         state: active
+      - key: 01a1c804-9005-70b8-be29-1fc66f0276a6
+        at: 2026-11-11T00:31:44Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Hunt & Reffert definition and release rows"
+        detail: "Each age is pushed as an `age` measurement (colours and ages in their own writer, to keep `write` under clippy's 100 lines). The read-back test object_reads (AC-132) now finds every age of the fixture release with its native, normalized, kind and source; univ-ingest and univ-api tests pass."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fefbd0552a16
     id: t5-tile-v3
     kind: task
@@ -139,6 +148,24 @@ blocks:
         title: "Tile encoding version 3"
         detail: "tile/value.rs PointValue (codes 1–3), VERSION 3, manifest value_codes, tracer ages in domain.rs, OpenAPI snapshot. Done when tiles_age, the codec tests and format_tests pass."
         state: open
+      - key: 01a1c804-9005-70b8-be29-1fc72e7eba4f
+        at: 2026-11-11T00:31:44Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tile encoding version 3"
+        detail: "tile/value.rs PointValue (codes 1–3), VERSION 3, manifest value_codes, tracer ages in domain.rs, OpenAPI snapshot. Done when tiles_age, the codec tests and format_tests pass."
+        state: active
+      - key: 01a1c813-f225-73d1-8f4d-0f945d41bd31
+        at: 2026-11-11T00:48:32Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tile encoding version 3"
+        detail: "VERSION 3, VERSIONS [1, 2, 3]; tile/value.rs holds the colour bands and the point value, with LOG_AGE_CODE 3 refused in version 2; TilePoint/DecodedPoint gain log_age; the manifest's encoding gains log_age_code (colour_bands kept, so version 2 manifests still read); the format describes version 3's value and value_code. tiles/domain.rs gives a Galaxy tracer its first age's log, in place of its colour. Tests: tile age_tests (round trip of every code in 20 bytes, code 3 refused in v2, both values refused, layout), tiles_age (real clusters within 0.01, Cepheids none, no stars point aged), tiles_encoding; the OpenAPI snapshot rewritten (additive)."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fefcd6688cc5
     id: t6-decoder
     kind: task
@@ -152,6 +179,15 @@ blocks:
         title: "Reference decoder reads version 3"
         detail: "fixtures/v2 frozen, decode.ts v3 with an age, the fixtures rewritten. Done when decode.test.ts decodes versions 1–3."
         state: open
+      - key: 01a1c813-f225-73d1-8f4d-0f95b619615f
+        at: 2026-11-11T00:48:32Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Reference decoder reads version 3"
+        detail: "fixtures/v2 frozen, decode.ts v3 with an age, the fixtures rewritten. Done when decode.test.ts decodes versions 1–3."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-fefd2a8e3b8e
     id: t7-explorer-tiles
     kind: task
@@ -256,3 +292,18 @@ blocks:
           | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test (an aged entry failed to read back) | Ages checked by their own rule: normalized in years, native in years or log years | fixed |
           | `bea0412` was committed unformatted: the commit followed `;` after `cargo fmt --check`, not its exit status | The check's output, after the commit | `eecea9e` formats and lints it; commits since then chain on the check's status | fixed |
           | `normalization.rs` would pass 500 lines with the age reading | Line count before the edit | The colour check moved to `source/normalization/colour.rs`, the age reading to `age.rs` (465 lines now) | fixed |
+      - key: 01a1c813-f225-73d1-8f4d-0f962725a629
+        at: 2026-11-11T00:48:32Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test (an aged entry failed to read back) | Ages checked by their own rule: normalized in years, native in years or log years | fixed |
+          | `bea0412` was committed unformatted: the commit followed `;` after `cargo fmt --check`, not its exit status | The check's output, after the commit | `eecea9e` formats and lints it; commits since then chain on the check's status | fixed |
+          | `normalization.rs` would pass 500 lines with the age reading | Line count before the edit | The colour check moved to `source/normalization/colour.rs`, the age reading to `age.rs` (465 lines now) | fixed |
+          | `MeasurementWriter::write` passed clippy's 100-line limit with the age loop | clippy | Colours and ages written by their own method | fixed |
+          | Plan said the manifest gains `value_codes` in place of `colour_bands` | Implementing task 5 | Kept `colour_bands` and added `log_age_code: 3`: additive, so the explorer's strict `colour_bands` enum and version 2 manifests read unchanged | changed |

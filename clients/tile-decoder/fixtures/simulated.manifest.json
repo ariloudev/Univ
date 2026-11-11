@@ -55,7 +55,7 @@
     "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
   },
   "encoding": {
-    "version": 2,
+    "version": 3,
     "header_bytes": 48,
     "point_bytes": 20,
     "steps_per_edge": 65536,
@@ -70,7 +70,8 @@
     "colour_bands": [
       "BP-RP",
       "B-V"
-    ]
+    ],
+    "log_age_code": 3
   },
   "levels": [
     {
@@ -134,7 +135,7 @@
       "points": 8,
       "sampled_from": 60,
       "bytes": 208,
-      "sha256": "376b7ac5faed8d2a83c0e4eff67a2adfeeb22af7d6de765d7b4a408b90c94ab0"
+      "sha256": "cc3b66883db14772778759a063f10a470d9aeb50e9f5c30a76060642fa152bb0"
     },
     {
       "address": "r0",
@@ -154,7 +155,7 @@
       "points": 9,
       "sampled_from": 9,
       "bytes": 228,
-      "sha256": "f8161e504bcdf95b07c8aa63e6471a49295e6ddfee0a272ac85c8fc5d5443f76"
+      "sha256": "d58b29257a911de88b531491141c291947dec591fb5a53d2e925454d4e71f560"
     },
     {
       "address": "r1",
@@ -174,7 +175,7 @@
       "points": 8,
       "sampled_from": 8,
       "bytes": 208,
-      "sha256": "055265e9ef853e882ab9858d14cb5316a97c7d6c06c578789a8d92edf47a7b6e"
+      "sha256": "adcd32075dd91d66a1f7554792c952950e1e7fdf481588cc4cc7452eaa46fc1c"
     },
     {
       "address": "r2",
@@ -194,7 +195,7 @@
       "points": 3,
       "sampled_from": 3,
       "bytes": 108,
-      "sha256": "2865e9389274fb0d33af57be03e68d4d56d8d14e5b8e2f251fd0bc963a6f5cd9"
+      "sha256": "5fa318c6ebc85d55c25007d605266d0d8f8525c3bbce45fb7b29d134838b0ac9"
     },
     {
       "address": "r3",
@@ -214,7 +215,7 @@
       "points": 6,
       "sampled_from": 6,
       "bytes": 168,
-      "sha256": "be739e9616d50d7236fd635034663b742302d872dbfcf86a84f1775f669388d9"
+      "sha256": "9e507603f3986c6d55ba28b56467a92c812dc2ef2b7632262adaeac7e10fd7c7"
     },
     {
       "address": "r4",
@@ -234,7 +235,7 @@
       "points": 6,
       "sampled_from": 6,
       "bytes": 168,
-      "sha256": "c15040be5de44167585202726bf63b6f0d01a5b9060d52beddf61bf2836d5fc7"
+      "sha256": "47b662521872f08ea4eabd5cea62b149bd4320db15c6c0439dd2a6ae781382a2"
     },
     {
       "address": "r5",
@@ -254,7 +255,7 @@
       "points": 8,
       "sampled_from": 8,
       "bytes": 208,
-      "sha256": "e776daecdfca9aaa2db9b41e8d81ef34cd397fc7ff37ce457489868deddca503"
+      "sha256": "f170cdff8bbe2df989b06c82e7c48da825a2b065365f55054c90acdb791812a4"
     },
     {
       "address": "r6",
@@ -274,7 +275,7 @@
       "points": 6,
       "sampled_from": 6,
       "bytes": 168,
-      "sha256": "43e0c96e3a7f8cf3a926f0ee6f3c5a90342512362c2309bf2fa745592ecae6d4"
+      "sha256": "64a7843884d23f9e23ad89da28a5cb3abb224cd93ae2c4d289bf960cad5e1e06"
     },
     {
       "address": "r7",
@@ -294,7 +295,7 @@
       "points": 6,
       "sampled_from": 6,
       "bytes": 168,
-      "sha256": "73741101e787ff01a7173ebfbff1d3e16bd09d9728fb6487336a8769077d9fd3"
+      "sha256": "59c1a1b7c995312c47f7c5c3d6d12c053f2d5abe034f9ebd57d97725bed59e3c"
     }
   ]
 }

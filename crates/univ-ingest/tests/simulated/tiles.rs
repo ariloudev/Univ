@@ -82,6 +82,7 @@ pub fn point(id: u64, position: Vec3) -> DomainPoint {
         sky_source: 0,
         kind: KindOfValue::Measured,
         colour: None,
+        log_age: None,
     }
 }
 
