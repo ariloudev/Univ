@@ -20,6 +20,7 @@ import { type Inside, type StructureChoice, useStructureChoice } from "./inside.
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 import { type AgeCut, logAgeOf, useAgeCut } from "./age.ts";
 import type { AgeState } from "./show/AgeChoice.tsx";
+import type { TracerKinds } from "./show/ObjectKinds.tsx";
 import type { AgesHeld } from "../catalogue/catalogue.ts";
 
 /** The structure `choice` names, and the cull to its volume, where it has one
@@ -61,14 +62,20 @@ function ageState(world: World | undefined, cut: AgeCut, choose: (cut: AgeCut) =
   return { cut, choose, frame: world.frame, held: () => world.catalogue?.agesHeld() ?? NO_AGES };
 }
 
+/** The Galaxy's tracers drawn by kind of object, once there is a view. */
+function tracerKinds(world: World | undefined): TracerKinds | undefined {
+  if (world === undefined) return undefined;
+  return { frame: world.frame, lines: () => world.catalogue?.tracers() ?? [] };
+}
+
 /** Applies what is hidden of the points, the age of the tracers drawn and the level of detail to
  * `world`'s catalogue. */
 function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, age: AgeCut, levelOfDetail: boolean): void {
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
-  const { domain, source, kind } = hidden;
+  const { domain, source, kind, object } = hidden;
   useEffect(() => {
-    if (world !== undefined) hide(world, { domain, source, kind }, domains);
-  }, [world, domains, domain, source, kind]);
+    if (world !== undefined) hide(world, { domain, source, kind, object }, domains);
+  }, [world, domains, domain, source, kind, object]);
   // `domains` is read once the catalogue is made, so that it starts as the choice stands.
   useEffect(() => {
     if (world === undefined) return;
@@ -182,7 +189,7 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge) }}
+      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge), tracers: tracerKinds(world) }}
       outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">

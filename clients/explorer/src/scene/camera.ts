@@ -6,7 +6,7 @@
 // no point. Everything is in double precision here; the renderer receives positions relative
 // to the eye, so that float32 keeps parsec detail a hundred megaparsecs out.
 
-import { type Mat3, type Vec3, add, apply, cross, multiply, normalize, scale, sub, unapply } from "./vec.ts";
+import { type Mat3, type Vec3, add, apply, cross, multiply, scale, sub, unapply } from "./vec.ts";
 
 /** The nearest the eye comes to the focus: 0.1 parsec, in megaparsecs. */
 export const MIN_DISTANCE = 1e-7;
@@ -43,10 +43,13 @@ export function eyeOf(view: View, toFrame: Mat3): Vec3 {
   return add(view.focus, unapply(toFrame, scale(outward(view), view.distance)));
 }
 
-/** The rotation from the ICRS to the eye's axes: right, up, and backward (OpenGL's camera). */
+/** The rotation from the ICRS to the eye's axes: right, up, and backward (OpenGL's camera). The
+ * right is the way of increasing yaw along the frame's equator, which the pole crossed with the
+ * backward direction gives everywhere but at a pole, and which stays defined there: an eye above
+ * the pole sees the frame's yaw-90° axis to its right. */
 export function eyeAxes(view: View, toFrame: Mat3): Mat3 {
   const back = outward(view);
-  const right = normalize(cross([0, 0, 1], back));
+  const right: Vec3 = [-Math.sin(view.yaw), Math.cos(view.yaw), 0];
   const up = cross(back, right);
   return multiply([right, up, back], toFrame);
 }

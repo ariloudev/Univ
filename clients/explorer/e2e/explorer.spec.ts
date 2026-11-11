@@ -245,7 +245,7 @@ test("lists the structures outward from Earth, under headings, each on one axis,
   const distances = labels.map(mpc).filter((d) => d !== undefined);
   expect(distances.length).toBeGreaterThan(0);
   expect(distances).toEqual([...distances].sort((a, b) => a - b));
-  await expect(list.getByRole("heading", { level: 3 }).first()).toHaveText(/^(Within 100 Mpc|100 Mpc to 1 Gpc|1 to 10 Gpc|Not placed)\d+$/);
+  await expect(list.getByRole("heading", { level: 3 }).first()).toHaveText(/^(Within 30 kpc|30 kpc to 100 Mpc|100 Mpc to 1 Gpc|1 to 10 Gpc|Not placed)\d+$/);
   expect(await page.getByTestId("depth-track").count()).toBe(total);
   // From the find box: only the voids, counted out of all.
   await find.fill("void");
@@ -402,7 +402,7 @@ test("has no serious or critical accessibility violations", async ({ page }) => 
   await page.getByRole("button", { name: "Show", exact: true }).click();
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-  expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  expect(serious.map((v) => `${v.id}: ${v.help}: ${v.nodes.map((n) => n.html).join(" ")}`)).toEqual([]);
 });
 
 /** Whether two boxes overlap by more than a pixel. */
@@ -563,4 +563,44 @@ test("opens on an address that turns the dust map on, and says why it cannot be 
   await page.getByRole("button", { name: "Show", exact: true }).click();
   await expect(page.getByTestId("dust-switch").getByRole("status")).toContainText("could not be drawn");
   await expect(page).not.toHaveURL(/dust=on/);
+});
+
+test("opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation", async ({ page }) => {
+  await firstPoints(page);
+  await page.getByRole("button", { name: "See the Galaxy's arms face-on" }).click();
+  await expect(page).toHaveURL(/view=arms/);
+  await expect(page).toHaveURL(/age=30/);
+  await expect(page).toHaveURL(/domain%3Astars/);
+  await expect(page).toHaveURL(/object%3Arr_lyrae_star/);
+  await expect(page).toHaveURL(/structure%3Avoid/);
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  const drawer = page.getByRole("complementary", { name: "Show" });
+  await expect(drawer.getByLabel("Galaxy tracers", { exact: true })).toBeChecked();
+  for (const domain of ["Stars", "Nearby galaxies", "Cosmic web"]) await expect(drawer.getByLabel(domain, { exact: true })).not.toBeChecked();
+  for (const kind of ["Luminous hot stars", "Open clusters", "Star-forming regions"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "true");
+  for (const kind of ["Classical Cepheids", "RR Lyrae stars", "Globular clusters"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "false");
+  await expect(drawer.getByRole("button", { name: "Tracers younger than 30 million years" })).toHaveAttribute("aria-pressed", "true");
+  const results = await new AxeBuilder({ page }).analyze();
+  const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(serious.map((v) => `${v.id}: ${v.help}: ${v.nodes.map((n) => n.html).join(" ")}`)).toEqual([]);
+  // A drag turns the view away from the pole: out of the address, what is drawn left as it is.
+  const box = await page.locator("canvas").boundingBox();
+  if (box === null) throw new Error("no canvas");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 120, { steps: 8 });
+  await page.mouse.up();
+  await expect(page).not.toHaveURL(/view=arms/);
+  await expect(page).toHaveURL(/age=30/);
+  await expect(page).toHaveURL(/domain%3Astars/);
+});
+
+test("opens on an address that asks for the arms view, in galactic axes, with what it draws", async ({ page }) => {
+  await page.goto("/?view=arms");
+  await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
+  await expect(page).toHaveURL(/age=30/);
+  await expect(page).toHaveURL(/domain%3Acosmic_web/);
+  await expect(page).toHaveURL(/view=arms/);
+  await page.getByRole("button", { name: "View", exact: true }).click();
+  await expect(page.getByTestId("frame")).toContainText("Axes galactic");
 });

@@ -77,19 +77,25 @@ describe("the bars and the view's drawer", () => {
     expect(note).toContain("4,000 stars");
   });
 
-  it("name each source of the Galaxy's tracers in its colour, with its points drawn", () => {
+  it("name each kind of object of the Galaxy's tracers in its colour, with its points drawn, and those of unknown kind", () => {
     const lines = [
-      { id: "hunt-reffert-2023", title: "Open clusters", colour: tracerColour(0), points: 6818 },
-      { id: "li-2023-rr-lyrae", title: "RR Lyrae stars", colour: tracerColour(1), points: 12 },
+      { id: "open_cluster", title: "Open clusters", colour: tracerColour(2), points: 6818 },
+      { id: "rr_lyrae_star", title: "RR Lyrae stars", colour: tracerColour(5), points: 12 },
+      { id: "unknown", title: "Tracers of unknown kind", colour: tracerColour(0), points: 3 },
     ];
     show({ ...tally(), tracers: () => lines, tracerKinds: [0, 6818, 12, 0] });
     const kinds = screen.getByTestId("tracer-kinds").textContent ?? "";
     expect(kinds).toContain("estimated 6,818");
     expect(kinds).toContain("inferred 12");
     const items = within(screen.getByTestId("tracer-key")).getAllByRole("listitem");
-    expect(items.map((li) => li.textContent)).toEqual(["Open clusters: 6,818 points", "RR Lyrae stars: 12 points"]);
+    expect(items.map((li) => li.textContent)).toEqual([
+      "Open clusters: 6,818 points",
+      "RR Lyrae stars: 12 points",
+      "Tracers of unknown kind: 3 points",
+    ]);
+    expect(screen.getByText(/by kind of object/)).toBeTruthy();
     const probe = document.createElement("span");
-    probe.style.background = css(tracerColour(1));
+    probe.style.background = css(tracerColour(5));
     expect((items[1]?.querySelector("span") as HTMLElement).style.background).toBe(probe.style.background);
   });
 

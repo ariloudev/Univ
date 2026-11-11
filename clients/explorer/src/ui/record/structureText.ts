@@ -326,6 +326,21 @@ export function disputedBy(s: StructureRecord): string[] {
   return [...new Set((s.record.disputes ?? []).map((d) => papers.get(d.cite.paper)?.short ?? d.cite.paper))];
 }
 
+/** What the panel says above its values of a structure computed from a published model: that it
+ * is a model, and whose; none for any other status. */
+export function modelText(s: StructureRecord): string | undefined {
+  if (s.status !== "model") return undefined;
+  const papers = [...papersOf(s).values()].map((p) => p.short);
+  const whose = papers.length === 0 ? "a published model" : `the model of ${papers.join(" and ")}`;
+  return `A model, not an outline of what was observed: computed from ${whose}.`;
+}
+
+/** What the panel of a model arm's extrapolation says of it; none for any other kind. */
+export function extrapolationText(kind: string): string | undefined {
+  if (kind !== "spiral_arm_extrapolation") return undefined;
+  return "Only the stretch along its arm's fitted range rests on the paper's fit: the rest carries the fitted formula on beyond the data it was fitted to, as this project's extrapolation.";
+}
+
 /** What the symbol of an attractor or a repeller means; none for any other kind. */
 export function flowText(kind: string): string | undefined {
   const flow = FLOWS[kind];

@@ -25,7 +25,7 @@ import {
 import type { Rgba } from "../scene/drawing.ts";
 import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
-import { TRACERS_DOMAIN, tracerColour } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds } from "../scene/tracers.ts";
 import { type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
@@ -66,21 +66,27 @@ export interface AgesHeld {
   aged: number;
 }
 
-/** A source of the Galaxy's tracers in the key: its colour and its points drawn. */
+/** A kind of object of the Galaxy's tracers in the key: its colour and its points drawn. */
 export interface TracerLine {
+  /** The kind of object, or `unknown` for the tracers of none. */
   id: string;
   title: string;
   colour: Rgba;
   points: number;
 }
 
-/** A batch's points counted by kind of value, source and whether coloured, so that what is
- * turned off is counted out by cell rather than point by point; and, where the view is culled
- * to a volume, which of them lie inside it, and those counted alone. */
+/** The object indices a histogram of the Galaxy's tracers counts by: none, and each kind. */
+const OBJECT_SLOTS = TRACER_OBJECTS.length;
+
+/** A batch's points counted by kind of value, source, object index and whether coloured, so that
+ * what is turned off is counted out by cell rather than point by point; and, where the view is
+ * culled to a volume, which of them lie inside it, and those counted alone. */
 interface Histogram {
   /** The sources of the batch's domain: one more than the highest index of its manifest. */
   sources: number;
-  /** Every point, by cell `(kind × sources + source) × 2 + coloured`. */
+  /** The object indices counted: `OBJECT_SLOTS` for a batch of tracers, 1 for any other. */
+  objects: number;
+  /** Every point, by cell `((kind × sources + source) × objects + object) × 2 + coloured`. */
   all: Uint32Array;
   /** The points counted: every one, or those inside the volume the view is culled to. */
   cells: Uint32Array;
@@ -114,14 +120,19 @@ function withAge(batch: Batch, mask: Uint8Array | undefined, maxLogAge: number |
 /** The points of `batch` that carry an age. */
 const agedIn = (batch: Batch): number => (batch.ages === undefined ? 0 : batch.ages.reduce((n, age) => (Number.isNaN(age) ? n : n + 1), 0));
 
+/** The object indices `batch`'s histogram counts by. */
+const objectsOf = (batch: Batch): number => (batch.objects === undefined ? 1 : OBJECT_SLOTS);
+
 /** `batch`'s points counted by cell, its domain having `sources` sources: only those `inside`
  * marks, where it marks any. */
 function cellsOf(batch: Batch, sources: number, inside?: Uint8Array): Uint32Array {
-  const cells = new Uint32Array(KINDS.length * sources * 2);
+  const objects = objectsOf(batch);
+  const cells = new Uint32Array(KINDS.length * sources * objects * 2);
   const bands = batch.stars?.bands;
   for (let i = 0; i < batch.kinds.length; i += 1) {
     if (inside !== undefined && inside[i] === 0) continue;
-    const at = ((batch.kinds[i] ?? 0) * sources + (batch.sources[i] ?? 0)) * 2 + ((bands?.[i] ?? 0) > 0 ? 1 : 0);
+    const object = batch.objects?.[i] ?? 0;
+    const at = (((batch.kinds[i] ?? 0) * sources + (batch.sources[i] ?? 0)) * objects + object) * 2 + ((bands?.[i] ?? 0) > 0 ? 1 : 0);
     cells[at] = (cells[at] ?? 0) + 1;
   }
   return cells;
@@ -160,7 +171,7 @@ export class Catalogue implements DrawnDetail {
   /** Stars drawn in the colour of their colour index, and in grey for want of one; and of them,
    * those whose preferred distance is inferred, drawn half as opaque. */
   readonly stars = { coloured: 0, grey: 0, inferred: 0 };
-  /** The Galaxy's tracers drawn, by their source's index in the domain's manifest. */
+  /** The Galaxy's tracers drawn, by their object index. */
   private readonly tracerPoints: number[] = [];
   /** The Galaxy's tracers drawn of each kind of value, by its index in `KINDS`. */
   readonly tracerKinds = [0, 0, 0, 0];
@@ -408,12 +419,15 @@ export class Catalogue implements DrawnDetail {
     const histogram = this.histograms.get(batch.tile.id);
     if (histogram === undefined) return;
     const domain = batch.tile.domain;
-    const { sources, cells } = histogram;
+    const { sources, objects, cells } = histogram;
     cells.forEach((n, at) => {
-      const kind = Math.floor(at / 2 / sources);
-      const source = Math.floor(at / 2) % sources;
-      if (n === 0 || !isPointShown(this.masks, domain, source, kind)) return;
-      if (domain === TRACERS_DOMAIN) this.countTracer(source, kind, by * n);
+      if (n === 0) return;
+      const object = Math.floor(at / 2) % objects;
+      const rest = Math.floor(at / 2 / objects);
+      const kind = Math.floor(rest / sources);
+      const source = rest % sources;
+      if (!isPointShown(this.masks, domain, source, kind, object)) return;
+      if (domain === TRACERS_DOMAIN) this.countTracer(object, kind, by * n);
       else this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
       this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * n);
     });
@@ -430,16 +444,22 @@ export class Catalogue implements DrawnDetail {
     if (kind === KIND_INDEX.inferred) this.stars.inferred += n;
   }
 
-  /** Counts `n` tracers of `source` and `kind` (their indices). */
-  private countTracer(source: number, kind: number, n: number): void {
-    this.tracerPoints[source] = (this.tracerPoints[source] ?? 0) + n;
+  /** Counts `n` tracers of object index `object` and kind of value `kind`. */
+  private countTracer(object: number, kind: number, n: number): void {
+    this.tracerPoints[object] = (this.tracerPoints[object] ?? 0) + n;
     this.tracerKinds[kind] = (this.tracerKinds[kind] ?? 0) + n;
   }
 
-  /** Each source of the Galaxy's tracers, its colour and its points drawn. */
+  /** Each kind of object of the Galaxy's tracers, its colour and its points drawn, and the
+   * tracers of unknown kind where any are drawn; none where the release holds no tracers. */
   tracers(): TracerLine[] {
-    const sources = this.domains.get(TRACERS_DOMAIN)?.manifest.sources ?? [];
-    return sources.map((s) => ({ id: s.id, title: s.title, colour: tracerColour(s.index), points: this.tracerPoints[s.index] ?? 0 }));
+    if (!this.domains.has(TRACERS_DOMAIN)) return [];
+    const lines = TRACER_OBJECTS.map(({ id, title, colour }, object) => ({ id, title, colour, points: this.tracerPoints[object] ?? 0 }));
+    // Those of unknown kind last, and only where any are drawn.
+    const [unknown, ...kinds] = lines;
+    // A release whose tiles give no kind of object holds tracers of unknown kind alone.
+    const held = holdsTracerKinds(this.domains.values()) ? kinds : [];
+    return unknown !== undefined && unknown.points > 0 ? [...held, unknown] : held;
   }
 
   /** Counts again, once, every drawn point that `masks` leaves on (choose-what-is-drawn). */
@@ -509,7 +529,7 @@ export class Catalogue implements DrawnDetail {
       this.ages.tracers += batch.ids.length;
       this.ages.aged += aged;
     }
-    this.histograms.set(id, { sources, all, culled, cells, inside, empty: inside !== undefined && !inside.includes(1), aged });
+    this.histograms.set(id, { sources, objects: objectsOf(batch), all, culled, cells, inside, empty: inside !== undefined && !inside.includes(1), aged });
   }
 
   /** Culls the view to `volume`, or no longer where it is none (see-the-structures): the points

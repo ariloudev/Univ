@@ -2,6 +2,7 @@
 // flights, the chosen axes, and one drawing for each animation frame that needs one.
 
 import type { Rotations } from "../api/schemas.ts";
+import { armsView } from "./armsView.ts";
 import { type View, eyeOf } from "./camera.ts";
 import { type Sight, sightOf } from "./frustum.ts";
 import { FLIGHT_MS, between, pan, turn, viewingDistance, zoom } from "./controls.ts";
@@ -34,6 +35,8 @@ export class Controller {
   frame: Frame = EQUATORIAL;
   private rotations: Rotations | undefined;
   private flight: Flight | undefined;
+  /** Whether the view is the arms view, or on its way there: until the next move. */
+  private arms = false;
   private dirty = true;
   private ring = 0;
   /** Whether the distance rings are drawn in place of the equator's ring, and the set drawn. */
@@ -76,9 +79,10 @@ export class Controller {
     for (const listener of this.listeners) listener();
   }
 
-  /** Moves the view at once, ending any flight. */
+  /** Moves the view at once, ending any flight, and the arms view. */
   private steer(view: View): void {
     this.flight = undefined;
+    this.arms = false;
     this.changed(view);
   }
 
@@ -96,6 +100,8 @@ export class Controller {
   setAxes(axes: Axes): void {
     const frame = frameOf(axes, this.rotations);
     if (frame === undefined) return;
+    // Other axes turn the view away from the arms view's.
+    if (axes !== this.axes) this.arms = false;
     this.axes = axes;
     this.frame = frame;
     this.ring = 0;
@@ -134,10 +140,38 @@ export class Controller {
 
   /** Flies to `focus`, seen from `distance`, or moves there at once for reduced motion. */
   flyTo(focus: Vec3, distance: number): void {
-    const to = { ...this.view, focus, distance };
+    // Out of the arms view, though the flight goes nowhere.
+    if (this.arms) {
+      this.arms = false;
+      this.changed(this.view);
+    }
+    this.flyToView({ ...this.view, focus, distance });
+  }
+
+  /** Flies to the arms view (see-the-galaxys-arms-face-on) in galactic axes, or moves there at
+   * once for reduced motion; whether the release's rotations allow it. */
+  armsView(): boolean {
+    const frame = frameOf("galactic", this.rotations);
+    if (frame === undefined) return false;
+    if (this.axes !== "galactic") this.setAxes("galactic");
+    const { width, height } = this.around.size();
+    this.flyToView(armsView(frame.toFrame, height > 0 ? width / height : 1));
+    this.arms = true;
+    this.changed(this.view);
+    return true;
+  }
+
+  /** Whether the view is the arms view, or flying there: no turn, move or zoom since. */
+  get inArmsView(): boolean {
+    return this.arms;
+  }
+
+  /** Flies to `to`, or moves there at once for reduced motion. */
+  private flyToView(to: View): void {
     // Already there, or on the way: a flight begun again would only start over.
     const heading = this.flight?.to ?? this.view;
-    if (heading.distance === distance && heading.focus.every((c, i) => c === focus[i])) return;
+    const same = heading.distance === to.distance && heading.yaw === to.yaw && heading.pitch === to.pitch;
+    if (same && heading.focus.every((c, i) => c === to.focus[i])) return;
     if (this.around.reducedMotion()) {
       this.steer(to);
       return;

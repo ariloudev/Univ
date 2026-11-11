@@ -1,13 +1,15 @@
 // The groups turned off (choose-what-is-drawn): scale domains, sources of the drawn points,
-// kinds of value and kinds of structure, kept in the page's address as one `hide` parameter.
+// kinds of value, the Galaxy tracers' kinds of object and kinds of structure, kept in the page's
+// address as one `hide` parameter.
 
 import { useCallback, useEffect, useState } from "react";
 
 import { KIND_INDEX } from "../scene/kinds.ts";
+import { isTracerKind } from "../scene/tracers.ts";
 import { setInAddress } from "./address.ts";
 
-/** A group: scale domains, sources by id, kinds of value, kinds of structure. */
-export type Group = "domain" | "source" | "kind" | "structure";
+/** A group: scale domains, sources by id, kinds of value, kinds of object, kinds of structure. */
+export type Group = "domain" | "source" | "kind" | "object" | "structure";
 
 /** What is turned off, by group. */
 export type Hidden = Readonly<Record<Group, ReadonlySet<string>>>;
@@ -22,20 +24,21 @@ export interface Change {
 /** Makes `changes`, in order, at once. */
 export type Apply = (changes: readonly Change[]) => void;
 
-export const GROUPS: readonly Group[] = ["domain", "source", "kind", "structure"];
+export const GROUPS: readonly Group[] = ["domain", "source", "kind", "object", "structure"];
 
 const isGroup = (name: string): name is Group => (GROUPS as readonly string[]).includes(name);
 
 /** Nothing turned off: everything drawn. */
-export const NOTHING_HIDDEN: Hidden = { domain: new Set(), source: new Set(), kind: new Set(), structure: new Set() };
+export const NOTHING_HIDDEN: Hidden = { domain: new Set(), source: new Set(), kind: new Set(), object: new Set(), structure: new Set() };
 
 /** The groups the page's address turns off: `hide=domain:cosmic_web,source:twomrs,…`. Entries
- * that name no group, or no kind of value, are left out. */
+ * that name no group, no kind of value or no kind of object of the tracers are left out. */
 export function hiddenInAddress(search: string): Hidden {
-  const sets = { domain: new Set<string>(), source: new Set<string>(), kind: new Set<string>(), structure: new Set<string>() };
+  const sets = { domain: new Set<string>(), source: new Set<string>(), kind: new Set<string>(), object: new Set<string>(), structure: new Set<string>() };
   for (const entry of (new URLSearchParams(search).get("hide") ?? "").split(",")) {
     const [group = "", name = ""] = entry.split(":", 2);
-    if (name === "" || !isGroup(group) || (group === "kind" && !Object.hasOwn(KIND_INDEX, name))) continue;
+    if (name === "" || !isGroup(group)) continue;
+    if ((group === "kind" && !Object.hasOwn(KIND_INDEX, name)) || (group === "object" && !isTracerKind(name))) continue;
     sets[group].add(name);
   }
   return sets;

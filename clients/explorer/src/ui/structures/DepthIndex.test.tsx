@@ -13,6 +13,7 @@ const ROWS: DepthRow[] = [
   row("giant-arc", "Giant Arc", "arc", 2820, "statistical_claim"),
   row("sa68", "SA 68 Supercluster", "supercluster", undefined),
   row("bootes", "Bootes Void", "void", 226),
+  row("perseus", "Perseus arm (Reid 2019 model)", "spiral_arm", 0.00412, "model"),
 ];
 
 const none = () => undefined;
@@ -36,23 +37,24 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
 
   it("lists the structures nearest first, under headings with their counts, those not placed last", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
-    expect(names()).toEqual(["Local Void", "Bootes Void", "Sloan Great Wall", "Giant Arc", "SA 68 Supercluster"]);
+    expect(names()).toEqual(["Perseus arm (Reid 2019 model)", "Local Void", "Bootes Void", "Sloan Great Wall", "Giant Arc", "SA 68 Supercluster"]);
     const headings = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-    expect(headings).toEqual(["Within 100 Mpc1", "100 Mpc to 1 Gpc2", "1 to 10 Gpc1", "Not placed1"]);
+    expect(headings).toEqual(["Within 30 kpc1", "30 kpc to 100 Mpc1", "100 Mpc to 1 Gpc2", "1 to 10 Gpc1", "Not placed1"]);
   });
 
   it("gives each structure's distance, and draws a dot on the shared axis for each one placed", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
     expect(within(screen.getByRole("button", { name: /^Giant Arc/ })).getByText("2.82 Gpc")).toBeTruthy();
     expect(within(screen.getByRole("button", { name: /^SA 68/ })).getByText("not placed")).toBeTruthy();
+    expect(within(screen.getByRole("button", { name: /^Perseus arm/ })).getByText("4.12 kpc")).toBeTruthy();
     const dots = screen.getAllByTestId("depth-track").map((track) => track.querySelectorAll("circle").length);
-    expect(dots).toEqual([1, 1, 1, 1, 0]);
-    expect(screen.getAllByText(/^(10 Mpc|100 Mpc|1 Gpc|10 Gpc)$/).map((t) => t.textContent)).toEqual(["10 Mpc", "100 Mpc", "1 Gpc", "10 Gpc"]);
+    expect(dots).toEqual([1, 1, 1, 1, 1, 0]);
+    expect(screen.getAllByText(/^(1 kpc|100 kpc|10 Mpc|1 Gpc)$/).map((t) => t.textContent)).toEqual(["1 kpc", "100 kpc", "10 Mpc", "1 Gpc"]);
   });
 
   it("marks how each structure is known on its dot, as the legend says", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
-    expect(screen.getByTestId("depth-legend").textContent).toBe("observedstatistical claimreconstructed");
+    expect(screen.getByTestId("depth-legend").textContent).toBe("observedstatistical claimreconstructedmodel");
     const dot = (name: RegExp) => screen.getByRole("button", { name }).querySelector("circle");
     const known = (name: RegExp) => screen.getByRole("button", { name }).querySelector("[data-known]")?.getAttribute("data-known");
     expect(known(/^Bootes Void/)).toBe("observed");
@@ -62,6 +64,11 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
     expect(known(/^Local Void/)).toBe("reconstructed");
     expect(dot(/^Local Void/)?.getAttribute("stroke-dasharray")).toBe("1.8 1.8");
     expect(screen.getByRole("button", { name: /^Giant Arc/ }).getAttribute("aria-label")).toContain("statistical claim");
+    // A model's dot is half filled, in the legend too.
+    expect(known(/^Perseus arm/)).toBe("model");
+    expect(dot(/^Perseus arm/)?.getAttribute("fill")).toBe("var(--color-panel)");
+    expect(screen.getByRole("button", { name: /^Perseus arm/ }).querySelector("[data-half] path")?.getAttribute("fill")).toBe("#9e73ff");
+    expect(screen.getByTestId("depth-legend").querySelectorAll("[data-half]")).toHaveLength(1);
   });
 
   it("marks a structure known in no way in the dim, and says nothing of it", () => {
@@ -75,17 +82,17 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
     await userEvent.click(screen.getByRole("button", { name: "A to Z" }));
     expect(screen.getByRole("button", { name: "A to Z" }).getAttribute("aria-pressed")).toBe("true");
-    expect(names()).toEqual(["Bootes Void", "Giant Arc", "Local Void", "SA 68 Supercluster", "Sloan Great Wall"]);
+    expect(names()).toEqual(["Bootes Void", "Giant Arc", "Local Void", "Perseus arm (Reid 2019 model)", "SA 68 Supercluster", "Sloan Great Wall"]);
     expect(screen.queryAllByRole("heading", { level: 3 })).toEqual([]);
-    expect(screen.getAllByTestId("depth-track")).toHaveLength(5);
+    expect(screen.getAllByTestId("depth-track")).toHaveLength(6);
   });
 
   it("narrows the list to the structures whose name or kind holds the text typed, counting them out of all", async () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
-    expect(screen.getByTestId("structures-count").textContent).toBe("5");
+    expect(screen.getByTestId("structures-count").textContent).toBe("6");
     await userEvent.type(screen.getByRole("searchbox", { name: "Find a structure" }), "VOID");
     expect(names()).toEqual(["Local Void", "Bootes Void"]);
-    expect(screen.getByTestId("structures-count").textContent).toBe("2 of 5");
+    expect(screen.getByTestId("structures-count").textContent).toBe("2 of 6");
     await userEvent.clear(screen.getByRole("searchbox", { name: "Find a structure" }));
     await userEvent.type(screen.getByRole("searchbox", { name: "Find a structure" }), "wall");
     expect(names()).toEqual(["Sloan Great Wall"]);
@@ -95,7 +102,7 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
     await userEvent.type(screen.getByRole("searchbox", { name: "Find a structure" }), "Andromeda");
     expect(screen.getByTestId("structures").textContent).toBe("No structure's name or kind holds “Andromeda”. Try part of a name, or a kind such as void.");
-    expect(screen.getByTestId("structures-count").textContent).toBe("0 of 5");
+    expect(screen.getByTestId("structures-count").textContent).toBe("0 of 6");
   });
 
   it("says where no structure is drawn to list", () => {
@@ -138,7 +145,7 @@ describe("the Structures drawer as a depth index (see-the-structures)", () => {
     render(<DepthIndex rows={ROWS} chosen={undefined} onChoose={none} />);
     expect(screen.getByRole("button", { name: "Nearest first" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole<HTMLInputElement>("searchbox", { name: "Find a structure" }).value).toBe("");
-    expect(names()).toHaveLength(5);
+    expect(names()).toHaveLength(6);
   });
 
   it("marks the chosen structure's row as chosen, and no other", () => {
