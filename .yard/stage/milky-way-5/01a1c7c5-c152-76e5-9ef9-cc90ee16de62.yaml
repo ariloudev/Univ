@@ -10,3 +10,171 @@ versions:
     title: "Build wave 5"
     goal: "Ages are normalized, stored, served, encoded in version 3 tiles, decoded, filtered and shown, each criterion verified by its test; review done and the gate and integration green"
     status: planned
+  - key: 01a1c7d6-7f64-73ec-b7c0-ff0492aa24a4
+    at: 2026-11-10T23:41:25Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 5"
+    goal: "Ages are normalized, stored, served, encoded in version 3 tiles, decoded, filtered and shown, each criterion verified by its test; review done and the gate and integration green"
+    status: active
+blocks:
+  - key: 01a1c7d6-7f64-73ec-b7c0-fef72e8a2f0c
+    id: t1-model-age
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff05db86935d
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Model: age and its units"
+        detail: "Unit::Year and Unit::LogYear, entry/age.rs, CatalogueEntry.ages with serde default, MeasuredQuantity::Age. Done when the univ-model tests round-trip an age, read an old entry and refuse an age in parsecs."
+        state: active
+  - key: 01a1c7d6-7f64-73ec-b7c0-fef817e96b54
+    id: t2-source-ages
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0669a6aacd
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Source definitions: normalization.ages"
+        detail: "Field::Age/AgeLow/AgeHigh, AgeReading in source/normalization/age.rs. Done when tests/normalize_age_definitions.rs refuses an undeclared column, a bad probability and a wrong unit, and accepts Hunt & Reffert."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-fef9192a74e8
+    id: t3-normalize-ages
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff07496a63b6
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Normalize ages"
+        detail: "plan/age.rs and row/age.rs; native log, normalized years, a credible interval. Done when tests/normalize_ages.rs passes on the re-recorded fixture."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-fefa3d22e53a
+    id: t4-hr-release
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff08b4c684d5
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Hunt & Reffert definition and release rows"
+        detail: "Columns logAge16/50/84, normalization.ages with a quoted basis, the age push in release/entries.rs. Done when release_tracers reads an age measurement back."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-fefbd0552a16
+    id: t5-tile-v3
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff09f3e85365
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Tile encoding version 3"
+        detail: "tile/value.rs PointValue (codes 1–3), VERSION 3, manifest value_codes, tracer ages in domain.rs, OpenAPI snapshot. Done when tiles_age, the codec tests and format_tests pass."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-fefcd6688cc5
+    id: t6-decoder
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0a2a3133c4
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Reference decoder reads version 3"
+        detail: "fixtures/v2 frozen, decode.ts v3 with an age, the fixtures rewritten. Done when decode.test.ts decodes versions 1–3."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-fefd2a8e3b8e
+    id: t7-explorer-tiles
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0b6303b40e
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: tiles to ages"
+        detail: "schemas accept value_codes; tracer batches carry ages; star colours read only from colour codes. Done when tiles.test.ts passes."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-fefe2568066c
+    id: t8-explorer-age-choice
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0c56ce2176
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: the age choice"
+        detail: "age= in the address, a Show drawer control with the share of tracers with an age, a per-point cut that hides from pointer, click and key, and All resets it. Done when the Vitest tests and the Playwright ?age=30 test pass."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-feff6afd914a
+    id: t9-explorer-panel
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0d2dfa0030
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: age in the panel"
+        detail: "An age line in Myr with its interval, kind, source and published log. Done when objectRecordText and RecordPanel tests pass on an open-cluster record fixture."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-ff006a71aa5f
+    id: t10-science
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0eddc07801
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Science check open-cluster-ages"
+        detail: "A count of Hunt & Reffert clusters with an age (fail), and the count under 30 Myr (report). Done when it runs on a scratch release built from the fixtures."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-ff01bace2bad
+    id: t11-review
+    kind: task
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff0f556217f6
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate, trace and close"
+        detail: "/simplify and /code-review with fixes; cargo xtask check and integration once each; trace linked and accepted; Yard Log closed; merged into product/milky-way."
+        state: open
+  - key: 01a1c7d6-7f64-73ec-b7c0-ff022c24ed78
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1c7d6-7f64-73ec-b7c0-ff10803a519d
+        at: 2026-11-10T23:41:25Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | (none yet) | | | |

@@ -10,6 +10,15 @@ versions:
     title: "Spec: young clusters by age"
     goal: "The spec says how Hunt & Reffert's ages are kept, carried in version 3 tiles, filtered in the Show drawer and read in the panel; committed"
     status: active
+  - key: 01a1c7c6-1f6d-759c-a467-635b91cfe218
+    at: 2026-11-10T23:23:32Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Spec: young clusters by age"
+    goal: "The spec says how Hunt & Reffert's ages are kept, carried in version 3 tiles, filtered in the Show drawer and read in the panel; committed"
+    status: done
 blocks:
   - key: 01a1c7c5-c152-76e5-9ef9-cc91467080ba
     id: spec-change-ages
@@ -2764,3 +2773,25 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1c7c6-1f6d-759c-a467-635ab7deaaf9
+    id: spec-produced
+    kind: note
+    versions:
+      - key: 01a1c7c6-1f6d-759c-a467-635ce8dda2a4
+        at: 2026-11-10T23:23:32Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "What the spec stage produced"
+        markdown: |-
+          Committed as `192f617`.
+
+          | File | Change |
+          |---|---|
+          | normalize-records | New requirement: an open cluster keeps Hunt & Reffert's age as estimated, in years, with the 16th–84th percentiles as a 68% interval and the logarithm as its native value |
+          | build-octree-tiles | New requirement: from version 3, a Galaxy tracer carries log₁₀ age in years in the colour slot, under its own code, within 0.01; no point grows |
+          | decode-the-tile-format | The decoder reads versions 1, 2 and 3; a version 3 point gives a colour, an age, or neither |
+          | choose-what-is-drawn | New requirement: an age choice for the Galaxy's tracers (any, or under 100, 30 or 10 Myr), kept in the address. All resets it |
+          | read-an-object | The panel gives each age in Myr with its uncertainty, kind of value and source, and its published logarithm |
+        tone: success

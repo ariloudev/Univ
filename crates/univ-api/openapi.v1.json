@@ -2482,6 +2482,7 @@
           "proper_motion_dec",
           "magnitude",
           "colour_index",
+          "age",
           "supergalactic_velocity_x",
           "supergalactic_velocity_y",
           "supergalactic_velocity_z"
@@ -6042,7 +6043,9 @@
           "megaparsec_over_h",
           "magnitude",
           "dimensionless",
-          "extinction_zgr23_per_parsec"
+          "extinction_zgr23_per_parsec",
+          "year",
+          "log_year"
         ],
         "type": "string"
       },

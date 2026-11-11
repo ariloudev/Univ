@@ -1,6 +1,7 @@
 //! A catalogue entry: one row of a source, normalized, with each value kept as published beside
 //! its normalized form.
 
+mod age;
 mod colour;
 mod flags;
 mod position;
@@ -9,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use thin_vec::ThinVec;
 use thiserror::Error;
 
+pub use age::Age;
 pub use colour::{ColourIndex, SpectralType};
 pub use position::{NativePosition, Position, PositionErrors, PositionUncertainty};
 
@@ -225,6 +227,8 @@ pub struct CatalogueEntry {
     pub magnitude: Option<Box<Magnitude>>,
     /// The colour indices its source publishes, or derives from two of its magnitudes.
     pub colours: ThinVec<ColourIndex>,
+    /// The ages its source publishes, such as a star cluster's.
+    pub ages: ThinVec<Age>,
     pub spectral_type: Option<Box<SpectralType>>,
     pub group_id: Option<Box<str>>,
     pub supergalactic_velocity: Option<Box<SupergalacticVelocity>>,
@@ -270,6 +274,9 @@ struct RawCatalogueEntry {
     // Absent from entries normalized before colours were read.
     #[serde(default)]
     colours: ThinVec<ColourIndex>,
+    // Absent from entries normalized before ages were read.
+    #[serde(default)]
+    ages: ThinVec<Age>,
     #[serde(default)]
     spectral_type: Option<Box<SpectralType>>,
     group_id: Option<Box<str>>,
@@ -296,6 +303,7 @@ impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
             proper_motion: raw.proper_motion,
             magnitude: raw.magnitude,
             colours: raw.colours,
+            ages: raw.ages,
             spectral_type: raw.spectral_type,
             group_id: raw.group_id,
             supergalactic_velocity: raw.supergalactic_velocity,
@@ -374,6 +382,15 @@ impl CatalogueEntry {
         }
         for c in &self.colours {
             in_unit("colour index", &c.value, Unit::Magnitude)?;
+        }
+        for a in &self.ages {
+            // An age is published in years or as their logarithm, normalized to years.
+            let native = a.value.native.unit;
+            if a.value.normalized.unit != Unit::Year
+                || !matches!(native, Unit::Year | Unit::LogYear)
+            {
+                return Err(EntryError::Unit("age", a.value.normalized.unit));
+            }
         }
         if let Some(sg) = &self.supergalactic_velocity {
             for v in [&sg.x, &sg.y, &sg.z] {

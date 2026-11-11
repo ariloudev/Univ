@@ -23,12 +23,28 @@ adapter:
       - cacheRead
       - cacheWrite
       - output
-lastEnded: 2026-11-10T23:23:11Z
+lastEnded: 2026-11-10T23:57:03Z
 turns:
   - started: 2026-11-10T23:23:08Z
+    ended: 2026-11-10T23:23:38Z
+  - started: 2026-11-10T23:27:23Z
+    ended: 2026-11-10T23:55:39Z
+  - started: 2026-11-10T23:56:09Z
+    ended: 2026-11-10T23:56:11Z
+  - started: 2026-11-10T23:57:03Z
+subagents:
+  - agent: a1ba36cb2b459be13
+    type: Explore
+    started: 2026-11-10T23:23:32Z
+    ended: 2026-11-10T23:27:23Z
+plan:
+  - started: 2026-11-10T23:27:40Z
+    ended: 2026-11-10T23:40:59Z
 loft:
   - commands:
       - fmt
     agent: main
     started: 2026-11-10T23:23:11Z
+    ended: 2026-11-10T23:23:12Z
+    failed: false
     stage: 01a1c7c5-c152-76e5-9ef9-cc8f5fac1755

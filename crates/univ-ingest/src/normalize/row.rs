@@ -212,6 +212,7 @@ impl Row<'_, '_> {
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
             colours: self.colours()?,
+            ages: thin_vec::ThinVec::new(),
             spectral_type: self.spectral_type().map(Box::new),
             group_id: plan
                 .group_id

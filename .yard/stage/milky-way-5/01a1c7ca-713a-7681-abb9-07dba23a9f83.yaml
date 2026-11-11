@@ -1,0 +1,133 @@
+key: 01a1c7ca-713a-7681-abb9-07dba23a9f83
+id: asked-toolu-01hb4jygztmf31yqacjgimtw
+versions:
+  - key: 01a1c7ca-713a-7681-abb9-07dd7eed80e8
+    at: 2026-11-10T23:28:15Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Asked in the session"
+    status: active
+  - key: 01a1c7d6-7f64-73ec-b7c0-ff03ee54dc3d
+    at: 2026-11-10T23:41:25Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Asked in the session"
+    status: done
+blocks:
+  - key: 01a1c7ca-713a-7681-abb9-07dc454a0b69
+    id: plan-29-plan-crystalline-hopping-yeti-asked-toolu-01hb4jygztmf31yqacjgimtw
+    kind: plan
+    versions:
+      - key: 01a1c7ca-713a-7681-abb9-07de9ba341b6
+        at: 2026-11-10T23:28:15Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 5 build plan: young open clusters by age (`stage/milky-way-5`)"
+        markdown: |
+          # Wave 5 build plan: young open clusters by age (`stage/milky-way-5`)
+
+          ## Context
+
+          Release 13 shows no spiral arms, because neither the old G < 14 disk stars nor clusters of every age trace them. Tonight's test plot of Hunt & Reffert 2023 open clusters younger than 30 Myr (1,225 of 6,818) shows three arm segments: the Local Arm, Sagittarius–Carina and Perseus. The owner chose this option alone for the arms wave.
+
+          The spec change is committed as `192f617`:
+          - **normalize-records:** an estimated age in years, with the 16–84% interval and the published logarithm kept as the native value.
+          - **build-octree-tiles:** version 3 tiles; a tracer's log age goes in the colour slot under its own code, within 0.01, with no bigger point.
+          - **decode-the-tile-format:** the reference decoder reads versions 1–3.
+          - **choose-what-is-drawn:** a tracer age choice (any, < 100, < 30, < 10 Myr), kept in the address; All resets it.
+          - **read-an-object:** the panel shows each age.
+
+          Colour indices are the precedent end to end, and each step copies their path.
+
+          ## Tasks
+
+          1. **Model: age and its units** (`crates/univ-model`).
+             - In `units.rs`, add `Unit::Year` (a new `Dimension::Time`, factor 1) and `Unit::LogYear`. `LogYear` is the base-10 log of years, has its own dimension, and converts to nothing linearly.
+             - Add `entry/age.rs` with `Age { value: Value }`. `CatalogueEntry` gains `ages: ThinVec<Age>`, with `#[serde(default)]` in `RawCatalogueEntry` so stored entries still read. `check()` requires years.
+             - Add `MeasuredQuantity::Age` (term `"age"`; no migration, since quantities are terms). Update the quantity comment in `release/schema.sql`.
+             - Done when: univ-model tests show an entry round-tripping with an age, an old entry without `ages` still reading, and an age in parsecs refused.
+          2. **Source definitions** (`crates/univ-ingest/src/source`).
+             - Add `Field::Age`, `AgeLow` and `AgeHigh`.
+             - Add `normalization.ages` as `AgeReading { value, error: ErrorColumns, kind_of_value, basis }` in a new `source/normalization/age.rs`, since `normalization.rs` is at 496 lines.
+             - Its check reuses the distance check's probability bounds and the rules that a column must be declared.
+             - Done when: a new test file `tests/normalize_age_definitions.rs` refuses an undeclared column, a probability of 0 or 1.5, and a unit other than `log_year`, and accepts Hunt & Reffert's definition.
+          3. **Normalize ages** (`normalize/plan/age.rs` and `normalize/row/age.rs`, after `plan/colour.rs` and `row/colour.rs`).
+             - The native value is the log as published. The normalized value is 10^logAge50 years.
+             - The `CredibleInterval` uncertainty is minus = 10^50 − 10^16 and plus = 10^84 − 10^50, at p = 0.68.
+             - A blank `logAge50` gives no age.
+             - Done when: `tests/normalize_ages.rs`, on the re-recorded Hunt & Reffert fixture (`record_fixtures`, run by hand with network), gives each cluster's age, interval, native log and `estimated` kind, and gives a blank row none.
+          4. **Hunt & Reffert definition and the release rows.**
+             - `sources/hunt-reffert-2023.yaml` gains the columns `logAge16/50/84` (`log_year`), `normalization.ages` with a `basis` quoting the VizieR column descriptions ("16th/50th/84th percentile of logarithm of cluster age", fetched 2026-11-10), and a `cuts` sentence.
+             - In `release/entries.rs`, add an `"age"` push after the colour loop.
+             - Done when: `tests/release_tracers.rs` shows an open cluster's `age` measurement row read back through `read/measurements.rs` with its native and normalized values.
+          5. **Tile encoding version 3** (`crates/univ-model/src/tile`).
+             - Move `ColourBands`/`PointColour` into a new `tile/value.rs` as `PointValue`: a colour in `BP-RP` or `B-V` (codes 1, 2), or `LogAge` (code 3), with `NO_VALUE` = `i16::MIN` and hundredths kept.
+             - `VERSION = 3`, `VERSIONS = [1, 2, 3]`, with code 3 refused in version 2.
+             - `format.rs` describes version 3. The manifest's `Encoding` gains `value_codes` in place of the fixed `[ColourBands; 2]` for version 3, and version 2 manifests still read.
+             - In `tiles/domain.rs`, a `galaxy_tracers` point carries its preferred age (the first published age) where it has one, else its colour as now.
+             - Update the OpenAPI snapshot (`UNIV_OPENAPI_SNAPSHOT=write`) and check `breaks()` accepts it as additive.
+             - Done when:
+               - `tests/tiles_age.rs` encodes a cluster's log age within 0.01, and an ageless tracer with none.
+               - The codec tests round-trip every code in version 3, refuse code 3 in version 2, and give a version 3 point 20 bytes.
+               - `format_tests.rs` lists versions 1–3.
+          6. **Reference decoder** (`clients/tile-decoder`).
+             - Freeze today's fixtures as `fixtures/v2/`.
+             - `decode.ts` reads version 3 and gives `colour` or `age` (log years) or neither, with the bad-code test moved to code 4.
+             - The SIMULATED domain in `tile_decoder_fixtures.rs` gains age points; rewrite the fixtures with `UPDATE_FIXTURES=1`.
+             - Done when: `decode.test.ts` decodes versions 1, 2 and 3, and a version 3 tracer gives its age within 0.01.
+          7. **Explorer: tiles to ages.**
+             - In `api/schemas.ts`, accept the version 3 manifest (`value_codes`) beside version 2's `colour_bands`.
+             - In `catalogue/tiles.ts`, a tracer batch gets `ages` (Int16 hundredths, with none as `NO_VALUE`). `scenePoint.ts` reads star colours only from colour codes.
+             - Done when: `tiles.test.ts` gives a v3 tracer batch its ages, and star colours are unchanged on the v2 and v3 fixtures.
+          8. **Explorer: the age choice.**
+             - The address takes `age=100|30|10` (Myr), parsed beside `hide` in `ui/hidden.ts` (or a sibling `ui/age.ts`).
+             - The Show drawer gets a segmented control under the points, "Galaxy tracers' age: any · < 100 · < 30 · < 10 Myr", that names how many of the tracers' points have an age.
+             - The cut is applied per point through the catalogue's existing `drawnPoints`/`inside` path, so a point hidden for its age is not named by the pointer, not chosen by a click and not counted in the key. "All" resets the age choice to any.
+             - Done when there are Vitest tests (hidden/age parsing, choices, actions All, catalogue counts) and a Playwright test that opens `?age=30` and draws fewer tracers, with the key count matching.
+          9. **Explorer: age in the panel.**
+             - `ui/starText.ts` gains `ages(record)` (`quantity === "age"`).
+             - `objectRecordText.ts` adds an age line: "Age 22 Myr (+8/−6, 68%), estimated, Hunt & Reffert 2023 · log age 7.34 as published".
+             - It is rendered in the record panel beside brightness and colour.
+             - Done when: `objectRecordText.test.ts` and `RecordPanel.test.tsx`, on a new open-cluster record fixture in `src/test/records/`, show it.
+          10. **Science check.** Add `open-cluster-ages` to `rules/science-checks.yaml`, as kind `query`:
+              - Open clusters of Hunt & Reffert with an age number at least 6,700, a fail check against the 6,818 rows (with the count of blank ages filled in from the fixture run).
+              - A report of the count under 30 Myr, cited to Hunt & Reffert 2023 with tonight's count of 1,225.
+              - Done when: `cargo xtask science` on a scratch release built from the fixtures runs the check without error.
+          11. **Review and close.**
+              - `/simplify` and `/code-review`, with findings fixed and listed in `build-issues`.
+              - `cargo xtask check` once and `cargo xtask integration` once.
+              - Link the new tests in `loft.trace.yaml`, run `loft reconcile --accept`, and record the `trace` view.
+              - Close the Yard Log, then merge into `product/milky-way` (merges into the product branch are allowed this session).
+
+          The `build-issues` note of *Build wave 5* is kept throughout.
+
+          ## Out of scope
+
+          - Model arms, Gaia OBA stars and density rendering, which were not chosen.
+          - Release 14 itself: the full ingest that carries the ages waits for the owner's word. After it, a face-on screenshot with `?age=30` shows the arms in the explorer.
+
+          ## Verification
+
+          - **Between tasks:**
+            - `cargo test -p univ-model tile`
+            - `cargo test -p univ-ingest age tiles_age release_tracers`
+            - `cargo test -p univ-api openapi_snapshot`
+            - `pnpm test` in `clients/tile-decoder` and `clients/explorer` (Vitest)
+            - clippy on the touched crates, `cargo fmt --check`, and `cargo xtask lines`, since `normalization.rs`, `row.rs`, `plan.rs` and `tile/mod.rs` are near 500 lines.
+          - **End of the wave:** `cargo xtask check` and `cargo xtask integration` green, each run once.
+        planMode: true
+    responses:
+      - key: 01a1c7d6-1828-7573-8691-e767a7a3cb14
+        at: 2026-11-10T23:40:59Z
+        revision: 4
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        verdict: approved
