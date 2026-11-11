@@ -19,6 +19,15 @@ versions:
     title: "Release 13"
     goal: "Releases 10 and 11 are pruned under the guard, release 13 is built, checked, published and benched, and release 12 is pruned"
     status: active
+  - key: 01a1cafc-a231-75ab-99fd-fef28bcc3f1d
+    at: 2026-11-11T14:21:56Z
+    revision: 28
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Release 13"
+    goal: "Releases 10 and 11 are pruned under the guard, release 13 is built, checked, published and benched, and release 12 is pruned"
+    status: done
 blocks:
   - key: 01a1c4a1-56d2-715c-bf0e-06153f84c1f8
     id: release-13-running
@@ -120,4 +129,62 @@ blocks:
           - first points: p95 291 ms (bound 3 s).
 
           **Left open:** the prunes of releases 10, 11 and 12 wait for the owner's word. The backup `wrangler-r12` can be removed once release 13 is accepted.
+        tone: success
+  - key: 01a1cafc-a231-75ab-99fd-fef1362abae0
+    id: releases-10-12-pruned
+    kind: note
+    versions:
+      - key: 01a1cafc-a231-75ab-99fd-fef3b38f2803
+        at: 2026-11-11T14:21:56Z
+        revision: 28
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Releases 10–12 pruned, stale data removed"
+        markdown: |-
+          The owner asked for the prunes and the clean-up on 2026-11-11, after release 14 was swapped in.
+
+          **Prunes** (`univ-ingest prune`, the release 14 binary, on the real state; the explorer stopped first):
+
+          | Release | R2 files deleted | D1 rows deleted | Local build |
+          |---|---|---|---|
+          | 10 | 4,412 | 9,469,783 | deleted |
+          | 11 | 4,493 | 145,706 | deleted |
+          | 12 | 4,579 | 23,767,004 | deleted |
+
+          All three stay in the list of releases with their pruning times; the id ledger is untouched. Release 13 stays published, as release 14's rollback, with its build and `state/states/13`.
+
+          **Stale data removed** (the owner ran the deletion): the old stores `wrangler-r12`, `wrangler-r13` and `wrangler-release-9-set-aside`, the backups `backup-r11` and `backup-pre-w5`, `preview`, `scratch`, the science databases in `r13/` and `r14/`, the builds of releases 5 and 9, and `state/states/1`–`12`.
+
+          **VACUUM** of the 8 local D1 files holding free pages after the prunes, each after an APFS clone and checked by `quick_check`: the D1 went from 55 GB to 39 GB. Release 14 serves its list of releases, domains, tracer manifest, M31, ASCC 5's age and 300 random objects across the shards.
+
+          Free disk went from 766 GiB to 974 GiB.
+
+          Benching release 13 (`cargo xtask bench`) was not run in this stage.
+        tone: success
+      - key: 01a1cafc-d20d-7604-ab9a-bfc1483eb77f
+        at: 2026-11-11T14:22:08Z
+        revision: 29
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Releases 10–12 pruned, stale data removed"
+        markdown: |-
+          The owner asked for the prunes and the clean-up on 2026-11-11, after release 14 was swapped in.
+
+          **Prunes** (`univ-ingest prune`, the release 14 binary, on the real state; the explorer stopped first):
+
+          | Release | R2 files deleted | D1 rows deleted | Local build |
+          |---|---|---|---|
+          | 10 | 4,412 | 9,469,783 | deleted |
+          | 11 | 4,493 | 145,706 | deleted |
+          | 12 | 4,579 | 23,767,004 | deleted |
+
+          All three stay in the list of releases with their pruning times; the id ledger is untouched. Release 13 stays published, as release 14's rollback, with its build and `state/states/13`.
+
+          **Stale data removed** (the owner ran the deletion): the old stores `wrangler-r12`, `wrangler-r13` and `wrangler-release-9-set-aside`, the backups `backup-r11` and `backup-pre-w5`, `preview`, `scratch`, the science databases in `r13/` and `r14/`, the builds of releases 5 and 9, and `state/states/1`–`12`.
+
+          **VACUUM** of the 8 local D1 files holding free pages after the prunes, each after an APFS clone and checked by `quick_check`: the D1 went from 55 GB to 39 GB. Release 14 serves its list of releases, domains, tracer manifest, M31, ASCC 5's age and 300 random objects across the shards.
+
+          Free disk went from 766 GiB to 974 GiB.
         tone: success
