@@ -35,6 +35,8 @@ export class Controller {
   frame: Frame = EQUATORIAL;
   private rotations: Rotations | undefined;
   private flight: Flight | undefined;
+  /** Whether the view is the arms view, or on its way there: until the next move. */
+  private arms = false;
   private dirty = true;
   private ring = 0;
   /** Whether the distance rings are drawn in place of the equator's ring, and the set drawn. */
@@ -77,9 +79,10 @@ export class Controller {
     for (const listener of this.listeners) listener();
   }
 
-  /** Moves the view at once, ending any flight. */
+  /** Moves the view at once, ending any flight, and the arms view. */
   private steer(view: View): void {
     this.flight = undefined;
+    this.arms = false;
     this.changed(view);
   }
 
@@ -146,11 +149,19 @@ export class Controller {
     if (this.axes !== "galactic") this.setAxes("galactic");
     const { width, height } = this.around.size();
     this.flyToView(armsView(frame.toFrame, height > 0 ? width / height : 1));
+    this.arms = true;
+    this.changed(this.view);
     return true;
+  }
+
+  /** Whether the view is the arms view, or flying there: no turn, move or zoom since. */
+  get inArmsView(): boolean {
+    return this.arms;
   }
 
   /** Flies to `to`, or moves there at once for reduced motion. */
   private flyToView(to: View): void {
+    this.arms = false;
     // Already there, or on the way: a flight begun again would only start over.
     const heading = this.flight?.to ?? this.view;
     const same = heading.distance === to.distance && heading.yaw === to.yaw && heading.pitch === to.pitch;

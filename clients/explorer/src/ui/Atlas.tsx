@@ -10,6 +10,7 @@ import type { Inside } from "./inside.ts";
 import { useDrawnRings } from "./ringsSwitch.ts";
 import { ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 import { KeyBar, ViewDrawer, Whereabouts } from "./Panels.tsx";
+import { useArmsView } from "./arms.ts";
 import { type DrawerName, Rail, drawerTitle } from "./Rail.tsx";
 import { ScaleBar } from "./ScaleBar.tsx";
 import { SearchBox } from "./SearchBox.tsx";
@@ -65,10 +66,27 @@ interface AtlasProps {
   show: ShowPanelProps;
   /** The structures' outlines' switch, which the structures drawn follow. */
   outlines: Switch;
-  /** Opens the arms view, where the view offers it (see-the-galaxys-arms-face-on). */
-  onArms?: (() => void) | undefined;
   /** The view: its canvas and what is drawn over it. */
   children: ReactNode;
+}
+
+/** The rail: its drawers, opened and closed in `place`, and the buttons that open the arms view
+ * and return to Earth in `world`. */
+function AtlasRail({ world, place, show }: { world: World | undefined; place: AtlasPlace; show: ShowPanelProps }) {
+  const { drawer, onDrawer } = place;
+  const onArms = useArmsView({ world, show });
+  return (
+    <Rail
+      open={drawer}
+      onToggle={(name) => {
+        onDrawer(drawer === name ? undefined : name);
+      }}
+      onEarth={() => {
+        world?.controller.returnToEarth();
+      }}
+      onArms={onArms}
+    />
+  );
 }
 
 /** What is chosen, as one key: the record is made anew for each thing chosen, so one folded
@@ -108,8 +126,8 @@ export function AtlasPage({ start, end, slot, children }: { start: ReactNode; en
  * line; the record on the right while something is chosen; the bottom bar of scale, key and
  * credits; and, in the top bar, the eye's distance, the axes and the search. Below 1,024 pixels a
  * drawer and the record open over the view. */
-export function Atlas({ world, release, cosmology, place, structures, selection, show, outlines, onArms, children }: AtlasProps) {
-  const { drawer, onDrawer } = place;
+export function Atlas({ world, release, cosmology, place, structures, selection, show, outlines, children }: AtlasProps) {
+  const { drawer } = place;
   const key = chosenKey(selection);
   const grid = useGrid();
   const rings = useDrawnRings(world?.controller);
@@ -117,16 +135,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
     <>
       {place.topBar === null || world === undefined ? null : createPortal(<TopBarParts world={world} release={release} selection={selection} switches={{ grid, rings, outlines }} />, place.topBar)}
       <div className="relative flex min-h-0">
-        <Rail
-          open={drawer}
-          onToggle={(name) => {
-            onDrawer(drawer === name ? undefined : name);
-          }}
-          onEarth={() => {
-            world?.controller.returnToEarth();
-          }}
-          onArms={onArms}
-        />
+        <AtlasRail world={world} place={place} show={show} />
         {drawer === undefined || world === undefined ? null : (
           <Drawer name={drawer} world={world} cosmology={cosmology} structures={structures} selection={selection} show={show} />
         )}

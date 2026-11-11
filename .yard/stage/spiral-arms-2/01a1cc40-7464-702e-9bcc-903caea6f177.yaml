@@ -169,6 +169,15 @@ blocks:
         title: "T11. Arms view groups and address"
         detail: "Choosing the view sets the groups and view=arms; opening ?view=arms applies them; a turn, pan or zoom drops it. Done when Vitest and a Playwright test with axe pass."
         state: active
+      - key: 01a1cc51-5874-7725-9d97-7e13371dddf7
+        at: 2026-11-11T20:34:05Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11. Arms view groups and address"
+        detail: "ui/arms.ts: the Arms control (and an address with view=arms, once the domains are read) turns the tracers domain on and the rest off, the hot stars, open clusters and star-forming regions on and the older tracers off, the arms on and every other kind of structure off, every source and kind of value on, tracers under 30 Myr, and puts view=arms in the address; a turn, move or zoom takes it out and leaves what is drawn. The hook lives in a small AtlasRail, keeping Atlas and Scene within fallow's complexity limits. Vitest 537 and pnpm check pass; two Playwright tests (with axe) run in T12's integration."
+        state: done
   - key: 01a1cc40-7464-702e-9bcc-9043d023100c
     id: t12-review
     kind: task
@@ -182,6 +191,15 @@ blocks:
         title: "T12. Wave review"
         detail: "/simplify and /code-review, findings fixed; cargo xtask check and integration once each; traces linked; Yard Log closed; a face-on screenshot of release 15 sent as a file."
         state: open
+      - key: 01a1cc51-5874-7725-9d97-7e14c0766ec4
+        at: 2026-11-11T20:34:05Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T12. Wave review"
+        detail: "/simplify and /code-review, findings fixed; cargo xtask check and integration once each; traces linked; Yard Log closed; a face-on screenshot of release 15 sent as a file."
+        state: active
   - key: 01a1cc42-46e6-771b-ba22-292aa5725c81
     id: spec-change-switch-count
     kind: loft
@@ -2306,3 +2324,22 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1cc51-5874-7725-9d97-7e12a859a6dd
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1cc51-5874-7725-9d97-7e154c269434
+        at: 2026-11-11T20:34:05Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | No count of the tracers by kind of object anywhere the explorer can read | T8 design | spec: a kind's switch counts its points drawn, as the key (c05769f) | fixed |
+          | Catalogue test counted tracers by source | T7 test run | rewritten on the SIMULATED v4 tracers fixture, with hiding by kind | fixed |
+          | 'Around us' within 0.5 Mpc would have swallowed every model arm | T9 design | a parsec | fixed |
+          | Flights kept the start's orientation, so a flight to the pole would snap | T10 design | `between` turns the eye too, the short way | fixed |
+          | fallow: Atlas and Scene over its complexity limit with one more prop or hook | pnpm check | the arms hook in a small AtlasRail | fixed |
