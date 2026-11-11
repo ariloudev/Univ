@@ -1,0 +1,92 @@
+key: 01a1cca1-1789-7424-a53b-b6cd3ac4d42d
+slug: keep-json-out-of-the-tables-that-grow-with-a-releases-objects
+title: "Keep JSON out of the tables that grow with a release's objects"
+context: "Release 15 holds 53.5 million objects and 76.2 million catalogue entries across 16 D1 databases. About half of its entries carry a source's flags and a bag of extra values as JSON text, and objects carry their links and relations as JSON arrays. A query into those values cannot use an index: release 15's science check of the Reid 2019 masers read `json_extract(flags, '$.Arm')` over every entry and ran for more than 20 minutes, against seconds for checks that read indexed columns. Only the API's lists of bound parameters and a few tables bounded by sources and structures read JSON without that cost."
+state:
+  kind: accepted
+  selectedOption: 01a1cca1-1789-7424-a53b-b6d16938c87a
+  outcome: "No table whose rows grow with a release's objects holds JSON: an entry's flags, references and extra values, an object's links and relations, and the memberships of objects in structures are rows of tables of their own, indexed by what they are found by."
+drivers:
+  - key: 01a1cca1-1789-7424-a53b-b6cea57a67e0
+    kind: local
+    label: "Queries at scale"
+    statement: "Every read of the tables that grow with the objects, by Univ Server or by a check, goes through an index."
+  - key: 01a1cca1-1789-7424-a53b-b6cfce741861
+    kind: local
+    label: "Holds by construction"
+    statement: "The rule is kept by the schema and the gate, not by judgement in each query."
+  - key: 01a1cca1-1789-7424-a53b-b6d0d218515c
+    kind: local
+    label: "Same responses"
+    statement: "The API's responses keep their fields and their values."
+options:
+  - key: 01a1cca1-1789-7424-a53b-b6d16938c87a
+    title: "Relational rows"
+    description: "Flags, references, extra values, links, relations and memberships become rows of tables of their own, with typed columns and indexes; JSON stays only in tables bounded by the release's sources, structures and chains."
+  - key: 01a1cca1-1789-7424-a53b-b6d2a6cde16f
+    title: "Columns for what is queried"
+    description: "Move the flags and references that queries read today into columns, and keep the rest as JSON that the API passes through."
+  - key: 01a1cca1-1789-7424-a53b-b6d35ac3ea97
+    title: "Indexes on JSON expressions"
+    description: "Keep the JSON columns and add SQLite indexes on the `json_extract` expressions that queries read."
+assessments:
+  - option: 01a1cca1-1789-7424-a53b-b6d16938c87a
+    driver: 01a1cca1-1789-7424-a53b-b6cea57a67e0
+    rating: supports
+    rationale: "every table that grows with the objects is read through its own indexes"
+  - option: 01a1cca1-1789-7424-a53b-b6d16938c87a
+    driver: 01a1cca1-1789-7424-a53b-b6cfce741861
+    rating: supports
+    rationale: "no JSON column is left in those tables for a query to reach into"
+  - option: 01a1cca1-1789-7424-a53b-b6d16938c87a
+    driver: 01a1cca1-1789-7424-a53b-b6d0d218515c
+    rating: supports
+    rationale: "Univ Server assembles the same fields from the rows"
+  - option: 01a1cca1-1789-7424-a53b-b6d2a6cde16f
+    driver: 01a1cca1-1789-7424-a53b-b6cea57a67e0
+    rating: neutral
+    rationale: "today's queries are served, the next one into the JSON is not"
+  - option: 01a1cca1-1789-7424-a53b-b6d2a6cde16f
+    driver: 01a1cca1-1789-7424-a53b-b6cfce741861
+    rating: conflicts
+    rationale: "the JSON stays in 76 million rows for the next query to reach into"
+  - option: 01a1cca1-1789-7424-a53b-b6d2a6cde16f
+    driver: 01a1cca1-1789-7424-a53b-b6d0d218515c
+    rating: supports
+    rationale: "the API passes the remaining JSON through"
+  - option: 01a1cca1-1789-7424-a53b-b6d35ac3ea97
+    driver: 01a1cca1-1789-7424-a53b-b6cea57a67e0
+    rating: neutral
+    rationale: "indexed only for the expressions chosen in advance"
+  - option: 01a1cca1-1789-7424-a53b-b6d35ac3ea97
+    driver: 01a1cca1-1789-7424-a53b-b6cfce741861
+    rating: conflicts
+    rationale: "each new expression needs its own index, added by judgement"
+  - option: 01a1cca1-1789-7424-a53b-b6d35ac3ea97
+    driver: 01a1cca1-1789-7424-a53b-b6d0d218515c
+    rating: supports
+    rationale: "nothing the API reads changes"
+consequences:
+  - key: 01a1cca1-1789-7424-a53b-b6d40e4c027a
+    kind: cost
+    statement: "The release schema moves to version 7, and the next release is a full build and publish."
+  - key: 01a1cca1-1789-7424-a53b-b6d522e85dfa
+    kind: obligation
+    statement: "The gate refuses a JSON column in a table that grows with the objects, and a JSON function over a stored column outside the tables bounded by sources and structures."
+  - key: 01a1cca1-1789-7424-a53b-b6d6eba41dbc
+    kind: obligation
+    statement: "The science checks read the tables that grow with the objects through an index, and fail a check whose query plan scans one whole."
+  - key: 01a1cca1-1789-7424-a53b-b6d7c8c65034
+    kind: benefit
+    statement: "A maser's arm, a flag or a reference is found by an index, so checks and future API filters on them take milliseconds."
+subjects:
+  - role: outcome
+    node: 01a1cca1-1789-7424-a53b-b6caaaba436f
+  - role: outcome
+    node: 01a1cca1-1789-7424-a53b-b6cb86c7b7f5
+  - role: outcome
+    node: 01a1cca1-1789-7424-a53b-b6ccd16f6358
+  - role: outcome
+    node: 01a1cca1-1789-7424-a53b-b6d81af17920
+  - role: outcome
+    node: 01a1cca1-61b4-7169-8060-dc09bd8ff146
