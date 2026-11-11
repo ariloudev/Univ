@@ -10,3 +10,26 @@ versions:
     title: "Wave 5: young clusters by age"
     goal: "Open clusters carry Hunt & Reffert's estimated ages, and the explorer can show only the young ones, so the Local, Sagittarius–Carina and Perseus arm segments are visible; merged into product/milky-way"
     status: planned
+  - key: 01a1c87f-5c37-758c-8031-853b2bc8ef7d
+    at: 2026-11-11T02:45:52Z
+    revision: 26
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 5: young clusters by age"
+    goal: "Open clusters carry Hunt & Reffert's estimated ages, and the explorer can show only the young ones, so the Local, Sagittarius–Carina and Perseus arm segments are visible; merged into product/milky-way"
+    status: done
+blocks:
+  - key: 01a1c87f-5c37-758c-8031-853a14e9cd6b
+    id: wave-5-merged
+    kind: note
+    versions:
+      - key: 01a1c87f-5c37-758c-8031-853cf22a8c4b
+        at: 2026-11-11T02:45:52Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 5 merged"
+        markdown: "`stage/milky-way-5` merged as `aa4a4d2`, its Yard Log closed. The gate (13 gates) and integration (28 Worker end-to-end, 24 Playwright) passed on the branch. Release 14, which carries the ages, is being built from `3d1f3ff` (the review fixes after it change no data: no Hunt & Reffert row was left out)."
+        tone: success
