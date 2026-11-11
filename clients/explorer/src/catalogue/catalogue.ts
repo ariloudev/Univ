@@ -25,7 +25,7 @@ import {
 import type { Rgba } from "../scene/drawing.ts";
 import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
-import { TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_TITLES, tracerColour } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds } from "../scene/tracers.ts";
 import { type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
@@ -76,7 +76,7 @@ export interface TracerLine {
 }
 
 /** The object indices a histogram of the Galaxy's tracers counts by: none, and each kind. */
-const OBJECT_SLOTS = TRACER_COLOURS.length;
+const OBJECT_SLOTS = TRACER_OBJECTS.length;
 
 /** A batch's points counted by kind of value, source, object index and whether coloured, so that
  * what is turned off is counted out by cell rather than point by point; and, where the view is
@@ -131,7 +131,7 @@ function cellsOf(batch: Batch, sources: number, inside?: Uint8Array): Uint32Arra
   const bands = batch.stars?.bands;
   for (let i = 0; i < batch.kinds.length; i += 1) {
     if (inside !== undefined && inside[i] === 0) continue;
-    const object = Math.min(batch.objects?.[i] ?? 0, objects - 1);
+    const object = batch.objects?.[i] ?? 0;
     const at = (((batch.kinds[i] ?? 0) * sources + (batch.sources[i] ?? 0)) * objects + object) * 2 + ((bands?.[i] ?? 0) > 0 ? 1 : 0);
     cells[at] = (cells[at] ?? 0) + 1;
   }
@@ -454,14 +454,12 @@ export class Catalogue implements DrawnDetail {
    * tracers of unknown kind where any are drawn; none where the release holds no tracers. */
   tracers(): TracerLine[] {
     if (!this.domains.has(TRACERS_DOMAIN)) return [];
-    const line = (id: string, object: number): TracerLine => ({
-      id,
-      title: TRACER_TITLES[object] ?? id,
-      colour: tracerColour(object),
-      points: this.tracerPoints[object] ?? 0,
-    });
-    const lines = TRACER_KINDS.map((kind, i) => line(kind, i + 1));
-    return (this.tracerPoints[0] ?? 0) > 0 ? [...lines, line("unknown", 0)] : lines;
+    const lines = TRACER_OBJECTS.map(({ id, title, colour }, object) => ({ id, title, colour, points: this.tracerPoints[object] ?? 0 }));
+    // Those of unknown kind last, and only where any are drawn.
+    const [unknown, ...kinds] = lines;
+    // A release whose tiles give no kind of object holds tracers of unknown kind alone.
+    const held = holdsTracerKinds(this.domains.values()) ? kinds : [];
+    return unknown !== undefined && unknown.points > 0 ? [...held, unknown] : held;
   }
 
   /** Counts again, once, every drawn point that `masks` leaves on (choose-what-is-drawn). */

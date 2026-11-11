@@ -5,7 +5,8 @@ import { KINDS } from "../../scene/kinds.ts";
 import { type Change, type Group, GROUPS, type Hidden } from "../hidden.ts";
 import type { ShowChoices } from "./choices.ts";
 
-const every = (group: Group, names: readonly string[], shown: boolean): Change[] => names.map((name) => ({ group, name, shown }));
+/** Each of `names` in `group` turned on, or off. */
+export const every = (group: Group, names: readonly string[], shown: boolean): Change[] => names.map((name) => ({ group, name, shown }));
 
 /** Only the source `id`: it and each domain whose points it places on, every other source off. */
 export const onlySource = (id: string, choices: ShowChoices): Change[] => [

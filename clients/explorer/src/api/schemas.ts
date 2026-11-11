@@ -54,6 +54,8 @@ const ManifestCheck = z.looseObject({
     colour_bands: z.array(z.enum(["BP-RP", "B-V"])).optional(),
     /** The code of a point whose value is the logarithm of its age, from encoding version 3. */
     log_age_code: z.number().int().optional(),
+    /** The kinds of object a point's code names, by the code less one, from encoding version 4. */
+    object_kinds: z.array(z.string()).optional(),
   }),
   sources: z.array(
     z.looseObject({ index: z.number().int(), id: z.string(), title: z.string(), citation: z.string(), credit: z.string() }),

@@ -18,7 +18,7 @@ function Known({ known, colour, cx, cy }: { known: Known | undefined; colour: st
   if (known === undefined) return <Dot cx={cx} cy={cy} colour="var(--color-dim)" />;
   return (
     <g data-known={known}>
-      <Dot cx={cx} cy={cy} colour={colour} open={known !== "observed" && known !== "model"} dotted={known === "reconstructed"} half={known === "model"} />
+      <Dot cx={cx} cy={cy} colour={colour} open={known !== "observed"} dotted={known === "reconstructed"} half={known === "model"} />
     </g>
   );
 }

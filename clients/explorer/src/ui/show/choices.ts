@@ -5,7 +5,7 @@
 import { MPC_PER } from "../../catalogue/tiles.ts";
 import { KINDS, STRUCTURE_FAMILIES } from "../../scene/kinds.ts";
 import { MASK_BITS } from "../../scene/masks.ts";
-import { TRACERS_DOMAIN, TRACER_KINDS } from "../../scene/tracers.ts";
+import { TRACER_KINDS, holdsTracerKinds } from "../../scene/tracers.ts";
 import type { Hidden } from "../hidden.ts";
 import { sourceShort } from "../record/names.ts";
 
@@ -40,6 +40,7 @@ interface ChoiceDomain {
     radius: number;
     points: number;
     sources: readonly { index: number; id: string; title: string; role: string }[];
+    encoding: { object_kinds?: readonly string[] | undefined };
   };
 }
 
@@ -65,7 +66,7 @@ export function choicesOf(unordered: readonly ChoiceDomain[], structures: readon
     domains: domains.map((d) => ({ name: d.name, points: d.manifest.points })),
     sources: [...sources.values()],
     families,
-    objectKinds: domains.some((d) => d.name === TRACERS_DOMAIN) ? TRACER_KINDS : [],
+    objectKinds: holdsTracerKinds(domains) ? TRACER_KINDS : [],
     domainNames: domains.map((d) => d.name),
     sourceIds: [...sources.keys()],
     structureKinds: families.flatMap((f) => f.kinds.map((k) => k.kind)),

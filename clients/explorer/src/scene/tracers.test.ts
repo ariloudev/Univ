@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { KIND_COLOURS } from "./kinds.ts";
 import { NO_COLOUR_GREY, blackBodyColour } from "./starColour.ts";
-import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_TITLES, objectIndex, pointSizeOf, tracerBytes, tracerColour } from "./tracers.ts";
+import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_OBJECTS, objectIndex, pointSizeOf, tracerBytes, tracerColour } from "./tracers.ts";
 
 const distance = (a: readonly number[], b: readonly number[]) => Math.hypot(...[0, 1, 2].map((i) => (a[i] ?? 0) - (b[i] ?? 0)));
 
@@ -17,9 +17,9 @@ describe("the Galaxy's tracers", () => {
   });
 
   it("has a colour for each kind of object of the tracers, and one for a tracer of unknown kind", () => {
-    expect(TRACER_COLOURS.length).toBe(TRACER_KINDS.length + 1);
-    expect(TRACER_TITLES.length).toBe(TRACER_COLOURS.length);
+    expect(TRACER_OBJECTS.map((o) => o.id)).toEqual(["unknown", ...TRACER_KINDS]);
     expect(TRACER_KINDS).toContain("luminous_hot_star");
+    for (const kind of TRACER_KINDS) expect(TRACER_OBJECTS[objectIndex(kind)]?.id).toBe(kind);
   });
 
   it("colours each point by its kind of object, and a point of no kind or an unknown index as unknown", () => {

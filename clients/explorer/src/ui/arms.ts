@@ -5,10 +5,11 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { STRUCTURE_FAMILIES } from "../scene/kinds.ts";
-import { TRACERS_DOMAIN, TRACER_KINDS } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, TRACER_KINDS, type TracerKind } from "../scene/tracers.ts";
 import { setInAddress } from "./address.ts";
 import type { AgeCut } from "./age.ts";
 import type { Change, Hidden } from "./hidden.ts";
+import { every } from "./show/actions.ts";
 import type { ShowPanelProps } from "./show/ShowPanel.tsx";
 import type { World } from "./useWorld.ts";
 
@@ -17,10 +18,10 @@ export const ARMS_AGE: AgeCut = 30;
 
 /** The kinds of object the arms view draws: the young tracers of the arms. Cepheids, RR Lyrae
  * stars and globular clusters, older, it turns off. */
-export const ARM_TRACERS: readonly string[] = ["luminous_hot_star", "open_cluster", "star_forming_region"];
+export const ARM_TRACERS: readonly TracerKind[] = ["luminous_hot_star", "open_cluster", "star_forming_region"];
 
-/** The kinds of structure the arms view draws. */
-export const ARM_STRUCTURES: readonly string[] = ["spiral_arm", "spiral_arm_extrapolation"];
+/** The kinds of structure the arms view draws: the family of the Galaxy's arms. */
+export const ARM_STRUCTURES: readonly string[] = STRUCTURE_FAMILIES.find((f) => f.family === "the Galaxy's arms")?.kinds ?? [];
 
 /** The address's value of `view` for the arms view. */
 const ARMS = "arms";
@@ -30,16 +31,24 @@ export const armsInAddress = (search: string): boolean => new URLSearchParams(se
 
 /** The changes that make what is drawn the arms view's, from `hidden`: the Galaxy tracers domain
  * on and every other of `domains` off; the arms' tracers on and the other kinds of object off;
- * the arms on and every other kind of structure, of `structureKinds` or any the explorer knows,
- * off; and every source and kind of value on. */
+ * the arms on and every other kind of structure, of `structureKinds` or any the explorer knows
+ * (the address may open the view before the release's structures are read), off; and every
+ * source and kind of value on. */
 export function armsChanges(hidden: Hidden, domains: readonly string[], structureKinds: readonly string[]): Change[] {
-  const structures = new Set([...STRUCTURE_FAMILIES.flatMap((f) => f.kinds), ...structureKinds, ...hidden.structure]);
+  const structures = [...new Set([...STRUCTURE_FAMILIES.flatMap((f) => f.kinds), ...structureKinds])];
+  const only = (names: readonly string[], on: readonly string[]) => [names.filter((n) => on.includes(n)), names.filter((n) => !on.includes(n))] as const;
+  const [tracers, others] = only(domains, [TRACERS_DOMAIN]);
+  const [young, old] = only(TRACER_KINDS, ARM_TRACERS);
+  const [arms, rest] = only(structures, ARM_STRUCTURES);
   return [
-    ...domains.map((name) => ({ group: "domain" as const, name, shown: name === TRACERS_DOMAIN })),
-    ...TRACER_KINDS.map((name) => ({ group: "object" as const, name, shown: ARM_TRACERS.includes(name) })),
-    ...[...structures].map((name) => ({ group: "structure" as const, name, shown: ARM_STRUCTURES.includes(name) })),
-    ...[...hidden.source].map((name) => ({ group: "source" as const, name, shown: true })),
-    ...[...hidden.kind].map((name) => ({ group: "kind" as const, name, shown: true })),
+    ...every("domain", tracers, true),
+    ...every("domain", others, false),
+    ...every("object", young, true),
+    ...every("object", old, false),
+    ...every("structure", arms, true),
+    ...every("structure", rest, false),
+    ...every("source", [...hidden.source], true),
+    ...every("kind", [...hidden.kind], true),
   ];
 }
 
@@ -63,7 +72,7 @@ export function useArmsView({ world, show }: { world: World | undefined; show: P
   }, [controller, hidden, apply, chooseAge, domains, structureKinds]);
   // The arms view the address asks for, once, as soon as the domains and their rotations are read.
   useEffect(() => {
-    if (opened.current || domains.length === 0 || controller?.canShow("galactic") !== true) return;
+    if (opened.current || !domains.includes(TRACERS_DOMAIN) || controller?.canShow("galactic") !== true) return;
     opened.current = true;
     if (armsInAddress(location.search)) open();
   }, [controller, domains, open]);
@@ -76,5 +85,7 @@ export function useArmsView({ world, show }: { world: World | undefined; show: P
       setInAddress({ view: undefined });
     });
   }, [controller]);
-  return controller === undefined ? undefined : open;
+  // Offered only where the release holds the Galaxy's tracers and can turn to galactic axes.
+  const offered = domains.includes(TRACERS_DOMAIN) && controller?.canShow("galactic") === true;
+  return offered ? open : undefined;
 }

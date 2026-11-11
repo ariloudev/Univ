@@ -103,3 +103,25 @@ describe("opening the arms view", () => {
     expect(new URLSearchParams(location.search).get("view")).toBe("arms");
   });
 });
+
+describe("where the arms view is offered", () => {
+  it("is not offered for a release without the Galaxy's tracers", () => {
+    const world = fakeWorld();
+    world.controller.setRotations(manifestOf("stars").rotations);
+    const { result } = renderHook(() => useArmsView({ world, show: showOf({}, ["stars", "cosmic_web"]) }));
+    expect(result.current).toBeUndefined();
+  });
+
+  it("ends, and leaves the address, on a change of axes or a flight elsewhere", () => {
+    const world = fakeWorld();
+    world.controller.setRotations(manifestOf("stars").rotations);
+    const { result } = renderHook(() => useArmsView({ world, show: showOf({}) }));
+    for (const away of [() => world.controller.setAxes("equatorial"), () => world.controller.flyTo(world.controller.view.focus, world.controller.view.distance)]) {
+      act(() => result.current?.());
+      expect(new URLSearchParams(location.search).get("view")).toBe("arms");
+      act(away);
+      expect(world.controller.inArmsView).toBe(false);
+      expect(new URLSearchParams(location.search).get("view")).toBeNull();
+    }
+  });
+});

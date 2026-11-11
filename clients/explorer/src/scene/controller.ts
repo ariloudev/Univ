@@ -100,6 +100,8 @@ export class Controller {
   setAxes(axes: Axes): void {
     const frame = frameOf(axes, this.rotations);
     if (frame === undefined) return;
+    // Other axes turn the view away from the arms view's.
+    if (axes !== this.axes) this.arms = false;
     this.axes = axes;
     this.frame = frame;
     this.ring = 0;
@@ -138,6 +140,11 @@ export class Controller {
 
   /** Flies to `focus`, seen from `distance`, or moves there at once for reduced motion. */
   flyTo(focus: Vec3, distance: number): void {
+    // Out of the arms view, though the flight goes nowhere.
+    if (this.arms) {
+      this.arms = false;
+      this.changed(this.view);
+    }
     this.flyToView({ ...this.view, focus, distance });
   }
 
@@ -161,7 +168,6 @@ export class Controller {
 
   /** Flies to `to`, or moves there at once for reduced motion. */
   private flyToView(to: View): void {
-    this.arms = false;
     // Already there, or on the way: a flight begun again would only start over.
     const heading = this.flight?.to ?? this.view;
     const same = heading.distance === to.distance && heading.yaw === to.yaw && heading.pitch === to.pitch;

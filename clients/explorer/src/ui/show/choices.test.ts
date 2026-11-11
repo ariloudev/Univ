@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { STRUCTURE_FAMILIES } from "../../scene/kinds.ts";
+import { TRACER_KINDS } from "../../scene/tracers.ts";
 import { DOMAINS, manifestOf } from "../../test/fixtures.ts";
 import { NOTHING_HIDDEN, hiddenInAddress } from "../hidden.ts";
 import { anyOff, choicesOf, summaryOf } from "./choices.ts";
@@ -32,6 +33,13 @@ describe("what the Show drawer offers", () => {
     ]);
     expect(choices.sources[2]).toMatchObject({ short: "Cosmicflows-4 groups", title: "Cosmicflows-4 group distances" });
     expect(choices.sourceIds).toHaveLength(6);
+  });
+
+  it("offers the kinds of object of the Galaxy's tracers only where their tiles give each point's kind", () => {
+    const tracers = (objectKinds?: string[]) => ({ name: "galaxy_tracers", manifest: { ...manifestOf("stars"), encoding: { ...manifestOf("stars").encoding, object_kinds: objectKinds } } });
+    expect(choicesOf([tracers(["luminous_hot_star"])], []).objectKinds).toEqual(TRACER_KINDS);
+    expect(choicesOf([tracers()], []).objectKinds).toEqual([]);
+    expect(choicesOf(domains, []).objectKinds).toEqual([]);
   });
 
   it("groups the kinds of structure by family, with their counts, any other kind under other", () => {

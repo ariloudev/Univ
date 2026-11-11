@@ -45,7 +45,7 @@ export function Points({ choices, hidden, onApply, age, tracers }: Props & { age
       <Sources choices={choices} hidden={hidden} onApply={onApply} />
       <Note>A catalogue is switched in every domain it is in; a domain's box switches all its points.</Note>
       {tracers !== undefined && choices.objectKinds.length > 0 ? (
-        <ObjectKinds kinds={choices.objectKinds} tracers={tracers} hidden={hidden} onApply={onApply} />
+        <ObjectKinds tracers={tracers} hidden={hidden} onApply={onApply} />
       ) : null}
       {age !== undefined && choices.domainNames.includes(TRACERS_DOMAIN) ? <AgeChoice age={age} /> : null}
     </Part>

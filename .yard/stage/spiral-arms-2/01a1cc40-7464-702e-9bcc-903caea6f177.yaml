@@ -2343,3 +2343,29 @@ blocks:
           | 'Around us' within 0.5 Mpc would have swallowed every model arm | T9 design | a parsec | fixed |
           | Flights kept the start's orientation, so a flight to the pole would snap | T10 design | `between` turns the eye too, the short way | fixed |
           | fallow: Atlas and Scene over its complexity limit with one more prop or hook | pnpm check | the arms hook in a small AtlasRail | fixed |
+      - key: 01a1cc58-3fb5-725d-a400-1aa2236295a6
+        at: 2026-11-11T20:41:37Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | No count of the tracers by kind of object anywhere the explorer can read | T8 design | spec: a kind's switch counts its points drawn, as the key (c05769f) | fixed |
+          | Catalogue test counted tracers by source | T7 test run | rewritten on the SIMULATED v4 tracers fixture, with hiding by kind | fixed |
+          | 'Around us' within 0.5 Mpc would have swallowed every model arm | T9 design | a parsec | fixed |
+          | Flights kept the start's orientation, so a flight to the pole would snap | T10 design | `between` turns the eye too, the short way | fixed |
+          | fallow: Atlas and Scene over its complexity limit with one more prop or hook | pnpm check | the arms hook in a small AtlasRail | fixed |
+          | Three parallel tracer arrays indexed with an offset | /simplify (reuse, simplification, altitude) and /code-review | one `TRACER_OBJECTS` table by object index | fixed |
+          | `armsChanges` built changes by hand; kind lists untyped | /simplify | `every` from actions.ts; `TracerKind[]`; the arms family read from kinds.ts | fixed |
+          | kpc conversion, Dot's open/half, rail foot, ObjectKinds' dead branch, opacity read through `drawnBeneath` | /simplify | `toMpc`; independent flags; one foot wrapper; lines rendered directly; `faint` read directly | fixed |
+          | Arms view's 16 kpc and R0 repeated from ingest and the arm files | /simplify (altitude) | a Vitest test reads `RADIUS_BAND_KPC` and every arm file's r0 | fixed |
+          | Arms button offered without the tracers domain (blank view) | /code-review | offered only with the tracers domain and galactic rotations | fixed |
+          | Changing axes, or a flight that goes nowhere, left view=arms in the address | /code-review | `setAxes` and `flyTo` end the arms view and notify | fixed |
+          | Pre-v4 releases would get six dead kind switches | /code-review | kinds offered only where the manifest gives `object_kinds` | fixed |
+          | A finished flight did not land exactly on its target | /code-review | `between` returns the target at t = 1 | fixed |
+          | Skipped: first drag from the pole jumps about 0.6° to MAX_PITCH | /code-review | navigate-with-the-mouse requires stopping short of the poles | kept |
+          | Skipped: model text names every cited paper | /code-review | each arm file cites Reid 2019 alone | kept |
+          | Skipped: shader-side tracer colours (~8 MB at 1M tracers); fixed 7-slot histogram; per-frame ObjectKinds render (the Key's pattern); double outline walk | /simplify, /code-review | small costs, or a change to shared patterns beyond the wave | kept |

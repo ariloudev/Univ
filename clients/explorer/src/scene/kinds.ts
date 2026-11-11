@@ -122,7 +122,7 @@ const APPROXIMATE_OPACITY = 0.3;
  * kind is faint. */
 export function structureColour(kind: string, approximate: boolean): Rgba {
   const [r, g, b] = STRUCTURE_KINDS[kind]?.rgb ?? STRUCTURE_COLOUR;
-  return [r, g, b, approximate || drawnBeneath(kind) ? APPROXIMATE_OPACITY : STRUCTURE_OPACITY];
+  return [r, g, b, approximate || STRUCTURE_KINDS[kind]?.faint === true ? APPROXIMATE_OPACITY : STRUCTURE_OPACITY];
 }
 
 /** `kind` of structure's colour for CSS, as the panel of what is drawn shows it. */

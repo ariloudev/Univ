@@ -81,28 +81,24 @@ export function Rail({
           {drawer.label}
         </button>
       ))}
-      {onArms === undefined ? null : (
-        <button
-          type="button"
-          onClick={onArms}
-          aria-label="See the Galaxy's arms face-on"
-          title="See the Galaxy's arms face-on"
-          className={`${BUTTON} mt-auto text-ink`}
-        >
+      <div className="mt-auto flex flex-col items-center gap-1" data-testid="rail-foot">
+        {onArms === undefined ? null : (
+          <button type="button" onClick={onArms} aria-label="See the Galaxy's arms face-on" title="See the Galaxy's arms face-on" className={`${BUTTON} text-ink`}>
+            <svg {...ICON}>
+              <path d="M10 10c1.5-1.5 4-.5 4 1.5S12 16 9 16s-6-3-6-6 3.5-7 8-7 7 3 7 6" />
+              <circle cx="10" cy="10" r="0.9" fill="currentColor" />
+            </svg>
+            Arms
+          </button>
+        )}
+        <button type="button" onClick={onEarth} aria-label="Return to Earth" title="Return to Earth" className={`${BUTTON} text-ink`}>
           <svg {...ICON}>
-            <path d="M10 10c1.5-1.5 4-.5 4 1.5S12 16 9 16s-6-3-6-6 3.5-7 8-7 7 3 7 6" />
-            <circle cx="10" cy="10" r="0.9" fill="currentColor" />
+            <circle cx="10" cy="10" r="7" />
+            <path d="M10 3v14M3 10h14" />
           </svg>
-          Arms
+          Earth
         </button>
-      )}
-      <button type="button" onClick={onEarth} aria-label="Return to Earth" title="Return to Earth" className={`${BUTTON} ${onArms === undefined ? "mt-auto" : ""} text-ink`}>
-        <svg {...ICON}>
-          <circle cx="10" cy="10" r="7" />
-          <path d="M10 3v14M3 10h14" />
-        </svg>
-        Earth
-      </button>
+      </div>
     </nav>
   );
 }

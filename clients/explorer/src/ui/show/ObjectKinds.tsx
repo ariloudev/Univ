@@ -16,29 +16,26 @@ export interface TracerKinds {
   frame: Store<number>;
 }
 
-/** A switch for each kind of object of `kinds`, with its colour and its points drawn. */
-export function ObjectKinds({ kinds, tracers, hidden, onApply }: { kinds: readonly string[]; tracers: TracerKinds; hidden: Hidden; onApply: Apply }) {
+/** A switch for each kind of object of the tracers, with its colour and its points drawn; none
+ * for the tracers of unknown kind, which no switch turns off. */
+export function ObjectKinds({ tracers, hidden, onApply }: { tracers: TracerKinds; hidden: Hidden; onApply: Apply }) {
   useStore(tracers.frame);
-  const lines = new Map(tracers.lines().map((line) => [line.id, line]));
+  const lines = tracers.lines().filter((line) => line.id !== "unknown");
   return (
     <>
       <Note>The Galaxy's tracers by kind of object, with their points drawn</Note>
       <div className="grid grid-cols-2 gap-1" data-testid="show-objects">
-        {kinds.map((kind) => {
-          const line = lines.get(kind);
-          if (line === undefined) return null;
-          return (
-            <GroupChip key={kind} group="object" name={kind} label={line.title} hidden={hidden} onApply={onApply}>
-              {(on) => (
-                <>
-                  <Swatch colour={css(line.colour)} hollow={!on} small />
-                  <span className="truncate">{line.title}</span>
-                  <span className="ml-auto text-dim">{line.points.toLocaleString("en-GB")}</span>
-                </>
-              )}
-            </GroupChip>
-          );
-        })}
+        {lines.map((line) => (
+          <GroupChip key={line.id} group="object" name={line.id} label={line.title} hidden={hidden} onApply={onApply}>
+            {(on) => (
+              <>
+                <Swatch colour={css(line.colour)} hollow={!on} small />
+                <span className="truncate">{line.title}</span>
+                <span className="ml-auto text-dim">{line.points.toLocaleString("en-GB")}</span>
+              </>
+            )}
+          </GroupChip>
+        ))}
       </div>
     </>
   );

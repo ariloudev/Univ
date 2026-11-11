@@ -1,3 +1,7 @@
+import { readFileSync, readdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import { manifestOf } from "../test/fixtures.ts";
@@ -80,5 +84,21 @@ describe("the arms view (see-the-galaxys-arms-face-on)", () => {
       const half = Math.min(w, h) / 2;
       expect(Math.hypot(edge.x - w / 2, edge.y - h / 2)).toBeGreaterThan(0.8 * half);
     }
+  });
+});
+
+describe("the arms view's numbers, as ingest and the structure files give them", () => {
+  const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
+  const read = (path: string) => readFileSync(join(repo, path), "utf8");
+
+  it("reaches as far as ingest lets an extrapolation run from the Galactic Centre", () => {
+    const band = /pub const RADIUS_BAND_KPC: \(f64, f64\) = \(([\d.]+), ([\d.]+)\);/.exec(read("crates/univ-ingest/src/structures/spiral.rs"));
+    expect(Number(band?.[2])).toBe(ARMS_REACH_KPC - ARMS_FOCUS_KPC);
+  });
+
+  it("places the Galactic Centre at the R0 every arm file cites", () => {
+    const files = readdirSync(join(repo, "structures")).filter((f) => f.startsWith("reid-2019-"));
+    expect(files).toHaveLength(14);
+    for (const file of files) expect(/r0:\s*\{ value: ([\d.]+), unit: kiloparsec/.exec(read(`structures/${file}`))?.[1]).toBe(String(GALACTIC_CENTRE_KPC));
   });
 });

@@ -20,6 +20,6 @@ describe("the rail (see-the-galaxys-arms-face-on)", () => {
   it("offers no arms view where the view has none to open", () => {
     render(<Rail open={undefined} onToggle={none} onEarth={none} />);
     expect(screen.queryByRole("button", { name: "See the Galaxy's arms face-on" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Return to Earth" }).className).toContain("mt-auto");
+    expect(screen.getByTestId("rail-foot").children).toHaveLength(1);
   });
 });

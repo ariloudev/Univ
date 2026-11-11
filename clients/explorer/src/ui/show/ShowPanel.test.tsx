@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { css, structureCss } from "../../scene/kinds.ts";
-import { TRACER_KINDS, TRACER_TITLES, tracerColour } from "../../scene/tracers.ts";
+import { TRACER_OBJECTS, tracerColour } from "../../scene/tracers.ts";
 import { createStore } from "../store.ts";
 import { DOMAINS, manifestOf } from "../../test/fixtures.ts";
 import { NOTHING_HIDDEN, hiddenInAddress } from "../hidden.ts";
@@ -170,7 +170,7 @@ describe("the Show drawer's dust map", () => {
       [...DOMAINS, "galaxy_tracers"].map((name) => ({ name, manifest: manifestOf(name) })),
       [],
     );
-    const lines = TRACER_KINDS.map((id, i) => ({ id, title: TRACER_TITLES[i + 1] ?? id, colour: tracerColour(i + 1), points: (i + 1) * 1000 }));
+    const lines = TRACER_OBJECTS.slice(1).map(({ id, title }, i) => ({ id, title, colour: tracerColour(i + 1), points: (i + 1) * 1000 }));
     const tracers = { frame: createStore(0), lines: () => lines };
     const onApply = vi.fn();
     render(<ShowPanel choices={withTracers} hidden={hiddenInAddress("?hide=object:open_cluster")} onApply={onApply} tracers={tracers} />);

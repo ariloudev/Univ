@@ -3,6 +3,7 @@
 // that every model arm and its extrapolation fills the view.
 
 import { FOV, type View } from "./camera.ts";
+import { toMpc } from "./units.ts";
 import { type Mat3, unapply } from "./vec.ts";
 
 /** The Galactic Centre's distance from the Sun that the model arms assume, kpc: R0 of Reid et
@@ -21,7 +22,7 @@ export const ARMS_REACH_KPC = 16 + ARMS_FOCUS_KPC;
 /** How much room the view leaves about the farthest arm point. */
 const MARGIN = 1.05;
 
-const MPC_PER_KPC = 1e-3;
+const MPC_PER_KPC = toMpc("kiloparsec") ?? 1e-3;
 
 /** The arms view on a viewport `aspect` wide for each unit high, `toGalactic` turning the ICRS
  * into galactic axes: the eye above the north Galactic pole looking toward the south one, at yaw

@@ -43,10 +43,10 @@ function Axis({ ticks, x, y, top, unit }: { ticks: readonly number[]; x: (v: num
 /** The radius of a dot. */
 const DOT_R = 4.5;
 
-/** A dot with the panel's ring about it, filled, or open, its ring dotted where `dotted`; open
- * with its left half filled where `half`. */
+/** A dot with the panel's ring about it, filled, or open, its ring dotted where `dotted`, and its
+ * left half filled where `half`. */
 export function Dot({ cx, cy, colour, open = false, dotted = false, half = false }: { cx: number; cy: number; colour: string; open?: boolean; dotted?: boolean; half?: boolean }) {
-  const ring = <circle cx={cx} cy={cy} r={DOT_R} fill={open || half ? PANEL : colour} stroke={open || half ? colour : PANEL} strokeWidth={2} strokeDasharray={dotted ? "1.8 1.8" : undefined} />;
+  const ring = <circle cx={cx} cy={cy} r={DOT_R} fill={open ? PANEL : colour} stroke={open ? colour : PANEL} strokeWidth={2} strokeDasharray={dotted ? "1.8 1.8" : undefined} />;
   if (!half) return ring;
   return (
     <g data-half="">

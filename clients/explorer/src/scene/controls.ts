@@ -51,6 +51,7 @@ export function viewingDistance(away: number, size?: number): number {
 /** The view `t` of the way (0 to 1) from `from` to `to`: the focus moved, the distance scaled,
  * the eye turned. */
 export function between(from: View, to: View, t: number): View {
+  if (t >= 1) return to;
   const s = t * t * (3 - 2 * t);
   const focus = add(from.focus, scale(sub(to.focus, from.focus), s));
   const distance = from.distance * (to.distance / from.distance) ** s;
