@@ -1,0 +1,122 @@
+key: 01a1c7c2-81d2-7618-90a9-a449736ba9d7
+id: wave-5
+versions:
+  - key: 01a1c7c2-81d2-7618-90a9-a44c42d25883
+    at: 2026-11-10T23:19:35Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 5: young clusters by age"
+    goal: "Open clusters carry Hunt & Reffert's estimated ages, and the explorer can show only the young ones, so the Local, Sagittarius–Carina and Perseus arm segments are visible; merged into product/milky-way"
+    status: planned
+  - key: 01a1c87f-5c37-758c-8031-853b2bc8ef7d
+    at: 2026-11-11T02:45:52Z
+    revision: 26
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 5: young clusters by age"
+    goal: "Open clusters carry Hunt & Reffert's estimated ages, and the explorer can show only the young ones, so the Local, Sagittarius–Carina and Perseus arm segments are visible; merged into product/milky-way"
+    status: done
+blocks:
+  - key: 01a1c87f-5c37-758c-8031-853a14e9cd6b
+    id: wave-5-merged
+    kind: note
+    versions:
+      - key: 01a1c87f-5c37-758c-8031-853cf22a8c4b
+        at: 2026-11-11T02:45:52Z
+        revision: 26
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 5 merged"
+        markdown: "`stage/milky-way-5` merged as `aa4a4d2`, its Yard Log closed. The gate (13 gates) and integration (28 Worker end-to-end, 24 Playwright) passed on the branch. Release 14, which carries the ages, is being built from `3d1f3ff` (the review fixes after it change no data: no Hunt & Reffert row was left out)."
+        tone: success
+  - key: 01a1c89b-1d6c-7452-94aa-efc64d5e2322
+    id: release-14
+    kind: note
+    versions:
+      - key: 01a1c89b-1d6c-7452-94aa-efc736f24951
+        at: 2026-11-11T03:16:11Z
+        revision: 27
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Release 14 published, checked and swapped in"
+        markdown: |-
+          Built from `3d1f3ff` in 34 min, published to an APFS clone of the real local state (14 min, 1.1 GB, latest 13 → 14), checked there, then swapped in at the end of the run; release 13's state kept as `.cache/univ-ingest/wrangler-r13`.
+
+          | | Release 13 | Release 14 |
+          |---|---|---|
+          | Objects | 53,364,009 | 53,364,009 |
+          | Placed | 53,049,877 | 53,049,877 |
+          | Tiles | 6,756 | 6,756 (Galaxy tracers in encoding 3) |
+          | Hunt & Reffert clusters | 6,818 | 6,818, every one with an age |
+          | Science | 33 PASS, 3 FAIL, 3 CONCERN | 34 PASS, 3 FAIL, 3 CONCERN, 4 INFO |
+
+          The three FAILs (`twompp-sdss-sourced`, `local-group-duplicates`, `fingerprints` read through `--store`) and three CONCERNs are release 13's, unchanged. The new `ages-normalized-to-years` passes; `open-cluster-ages` reports 2,794 / 1,169 / 405 clusters under 100 / 30 / 10 Myr, as the VizieR table gives.
+
+          Correction: the plan and the report's citation said 1,225 under 30 Myr. That was the count under logAge50 = 7.5 (31.6 Myr) from the first test plot; under 30 Myr it is 1,169. Fixed in `46a424b`.
+        tone: success
+  - key: 01a1cb5a-f1c1-716a-b0b0-30e3f9796771
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1cb5a-f1c1-716a-b0b0-30e447755481
+        at: 2026-11-11T16:04:57Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: publish
+        note: "Publish sequence 9 (`cd13bbf`), state root `cf70fa83…1f97`, after `d400625` merged product/milky-way into develop. It allocated 80 labels for waves 1–5's Requirements, criteria, Components and decisions, up to AC-725, CMP-71 and ADR-37. `loft verify`, `loft fmt --check` and `loft check --fail-on warning` pass."
+        recorded:
+          commit: "cd13bbf24138d45dd6517b4543815e746225a445"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-11T16:04:57Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 71,
+              "constraint": 8,
+              "criterion": 725,
+              "decision": 37,
+              "feature": 44,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 195
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "cd13bbf24138d45dd6517b4543815e746225a445",
+                "removed": [],
+                "revision": "cd13bbf24138d45dd6517b4543815e746225a445"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 9,
+                "publishedAt": "2026-11-11T16:04:40Z",
+                "stateRoot": "cf70fa83262810b6be6b9d3dc0bdaf3eb5ebafd0c12af53ce73a6e813aba1f97"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

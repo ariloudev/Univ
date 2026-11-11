@@ -119,7 +119,11 @@ fn each_native_value_keeps_its_published_unit_beside_the_normalized_value() {
 #[test]
 fn normalized_values_use_degrees_km_s_parsecs_for_stars_and_megaparsecs_beyond() {
     for (d, n) in every_table() {
-        let length = if d.scale_domain == ScaleDomain::Stars {
+        // Parsecs for stars and the Galaxy's tracers, the two domains in parsecs.
+        let length = if matches!(
+            d.scale_domain,
+            ScaleDomain::Stars | ScaleDomain::GalaxyTracers
+        ) {
             Unit::Parsec
         } else {
             Unit::Megaparsec

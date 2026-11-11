@@ -93,6 +93,7 @@ pub fn record(cache: &Path, id: &str, report: &NormalizationReport) {
 /// leaves them.
 pub fn cross(f: &Fixture) -> CrossMatched {
     let mut basis = Basis::read(&workspace().join("rules"), &[]).unwrap();
+    basis.matching = basis.matching.with_object_kinds(&f.definitions);
     basis.structures.clone_from(&f.structures);
     // Small enough that the fixture's objects take more than one object shard.
     basis.config.shard_budget_bytes = Some(SHARD_BUDGET);
@@ -157,7 +158,14 @@ pub fn built(
 
 /// Cross-matches, lays out the tiles and builds the fixture's next release.
 pub fn build_next(f: &Fixture) -> BuiltRelease {
-    let crossed = cross(f);
+    build_next_within(f, SHARD_BUDGET)
+}
+
+/// [`build_next`] with object shards of `budget` estimated D1 bytes in place of
+/// [`SHARD_BUDGET`].
+pub fn build_next_within(f: &Fixture, budget: u64) -> BuiltRelease {
+    let mut crossed = cross(f);
+    crossed.basis.config.shard_budget_bytes = Some(budget);
     let tiles = tiles(f, &crossed);
     built(f, &crossed, &tiles, &f.definitions, &f.structures).unwrap()
 }
@@ -169,6 +177,17 @@ pub fn read_manifest(dir: &Path) -> ReleaseManifest {
 
 /// The release in `dir`, its manifest `m`, as it reads with every database in one: see
 /// [`loaded_in`].
+/// Release 1's terms by id, as a loaded release holds them.
+pub fn terms(db: &rusqlite::Connection) -> std::collections::HashMap<i64, String> {
+    let mut q = db
+        .prepare("SELECT id, term FROM terms WHERE release = 1")
+        .unwrap();
+    q.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect()
+}
+
 pub fn loaded(dir: &Path, m: &ReleaseManifest) -> rusqlite::Connection {
     loaded_where(dir, m, |_| true)
 }

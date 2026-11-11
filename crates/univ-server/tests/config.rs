@@ -52,7 +52,11 @@ fn the_worker_reads_the_database_and_bucket_that_ingest_publishes_to() {
         value(&published, "database_id")
     );
     // And each object shard, under the same name, binding and id.
-    for i in 0..8 {
+    // Every shard the deployment binds, 16 since release 13's stars below G = 14.
+    let bound = univ_model::release::shards::bound_shards(&ingest);
+    assert!(bound >= 16, "{bound} object shards bound");
+    assert_eq!(univ_model::release::shards::bound_shards(&worker), bound);
+    for i in 0..bound {
         let marker = format!("database_name = \"univ-objects-{i}\"");
         let (published, served) = (table_with(&ingest, &marker), table_with(&worker, &marker));
         let binding = format!("OBJECTS_{i}");

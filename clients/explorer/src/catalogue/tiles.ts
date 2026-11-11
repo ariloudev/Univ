@@ -7,6 +7,7 @@ import { type ReadOptions, read, readJson } from "../api/client.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
 import { starBytes } from "../scene/starColour.ts";
+import { TRACERS_DOMAIN, tracerBytes } from "../scene/tracers.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf, levelOfAddress } from "./lod.ts";
 import { shuffled } from "./shuffle.ts";
@@ -32,9 +33,14 @@ export interface Batch {
   kinds: Uint8Array;
   /** Each point's index in the manifest's sources. */
   sources: Uint16Array;
-  /** The stars' colours, for a tile of the stars domain; none for any other, whose points are
-   * drawn by their kind of value. */
+  /** The stars' colours, for a tile of the stars domain. */
   stars?: StarColours | undefined;
+  /** Each point's colour as red, green, blue and opacity bytes: a star's, or a tracer's source's;
+   * none for the other domains, whose points are drawn by their kind of value. */
+  colours?: Uint8Array | undefined;
+  /** Each point's base-10 logarithm of its age in years, NaN where it carries none, for a tile
+   * of the Galaxy tracers domain with any age; none for any other tile. */
+  ages?: Float32Array | undefined;
   ids: Float64Array;
   /** Where the points lie. */
   extent: Extent;
@@ -45,7 +51,8 @@ const STARS_DOMAIN = "stars";
 
 /** The colours of a tile's stars. */
 export interface StarColours {
-  /** Each star's colour as red, green, blue and opacity bytes: from its colour index, or grey. */
+  /** Each star's colour as red, green, blue and opacity bytes: from its colour index, or grey,
+   * half as opaque where its preferred distance is inferred. */
   bytes: Uint8Array;
   /** Each star's colour index in hundredths of a magnitude, as the tile holds it. */
   hundredths: Int16Array;
@@ -68,6 +75,7 @@ function starColoursOf(points: readonly DecodedPoint[], names: readonly string[]
     // A colour index in bands the manifest does not name is not read: the star is drawn grey.
     const band = p.colour === undefined ? 0 : names.indexOf(p.colour.bands) + 1;
     stars.bytes.set(starBytes(band === 0 ? undefined : p.colour), i * 4);
+    if (p.kind === "inferred") stars.bytes[i * 4 + 3] = Math.round((stars.bytes[i * 4 + 3] ?? 0) / 2);
     if (band === 0 || p.colour === undefined) return;
     stars.hundredths[i] = Math.round(p.colour.index * 100);
     stars.bands[i] = band;
@@ -168,7 +176,11 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
   // kinds' colours rather than all turning grey.
   const names = domain.manifest.encoding.colour_bands;
   const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
-  return { tile, offsets, kinds, sources, ids, stars, extent: extentOf(offsets, tile.centre) };
+  const tracers = domain.name === TRACERS_DOMAIN;
+  const colours = tracers ? tracerBytes(sources) : stars?.bytes;
+  // A tracers tile with no age carries none, so that no age choice acts on it.
+  const ages = tracers && points.some((p) => p.logAge !== undefined) ? Float32Array.from(points, (p) => p.logAge ?? Number.NaN) : undefined;
+  return { tile, offsets, kinds, sources, ids, stars, colours, ages, extent: extentOf(offsets, tile.centre) };
 }
 
 /** Fetches, checks and decodes the tile of `tile` in `domain` of `release`. */

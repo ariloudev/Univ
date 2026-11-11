@@ -390,6 +390,16 @@ impl Measurements<'_, '_> {
             let band = numbering.terms.id(&m.band);
             self.value(numbering, "magnitude", &m.value, Some(band))?;
         }
+        self.write_colours_and_ages(numbering, entry)
+    }
+
+    /// The colour indices and ages of `entry`, each numbered within the entry, as its distances
+    /// are.
+    fn write_colours_and_ages(
+        &mut self,
+        numbering: &mut Numbering,
+        entry: &CatalogueEntry,
+    ) -> Result<(), String> {
         for (n, c) in entry.colours.iter().enumerate() {
             // Numbered within the entry, as its distances are; the bands are its kind.
             let mut more = Map::new();
@@ -405,6 +415,19 @@ impl Measurements<'_, '_> {
             self.push(
                 numbering,
                 "colour_index",
+                n,
+                v.kind,
+                &v.native,
+                &v.normalized,
+                detail,
+            )?;
+        }
+        for (n, a) in entry.ages.iter().enumerate() {
+            let v = &a.value;
+            let detail = Detail::default();
+            self.push(
+                numbering,
+                "age",
                 n,
                 v.kind,
                 &v.native,

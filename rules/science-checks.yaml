@@ -705,11 +705,12 @@ checks:
       - paper: "univ-server specification, Build octree tiles"
         locator: "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
         quote: >-
-          "Each object belongs to one scale domain: stars where the source definition of the
-          catalogue entry that holds its preferred distance names stars, and otherwise nearby
-          galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby
-          Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the
-          distance came from."
+          "Each object belongs to one scale domain: Galaxy tracers where any of its catalogue
+          entries comes from a source whose definition names Galaxy tracers, otherwise stars where
+          the source definition of the catalogue entry that holds its preferred distance names
+          stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the
+          depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web
+          beyond, whatever source the distance came from."
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
   - id: nearby-galaxies-from-no-star-source
@@ -736,6 +737,64 @@ checks:
         AND scale_domain = term('cosmic_web') AND (distance_mpc <= 11.0 OR distance_mpc IS NULL)
     expect: { equals: 0 }
     cite: *domains
+
+  - id: tracers-in-tracer-domain
+    title: Every placed object with a tracer source's entry in galaxy_tracers, and no other there
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM objects o WHERE o.release = :release AND o.placed = 1
+        AND o.scale_domain IN (SELECT id FROM terms WHERE release = :release AND term = 'galaxy_tracers')
+        AND NOT EXISTS (SELECT 1 FROM entries e WHERE e.release = o.release AND e.object_id = o.id
+        AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers'))
+        UNION SELECT o.id FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
+        WHERE e.release = :release AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers') AND o.placed = 1
+        AND o.scale_domain NOT IN (SELECT id FROM terms WHERE release = :release AND term = 'galaxy_tracers')
+    expect: { equals: 0 }
+    cite: *domains
+
+  - id: tracers-name-their-kind
+    title: Every object with a tracer source's entry is an open or globular cluster, a classical Cepheid, an RR Lyrae star or a star-forming region
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT DISTINCT o.id FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
+        WHERE e.release = :release AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers')
+        AND o.kind NOT IN (SELECT id FROM terms WHERE release = :release AND term IN ('open_cluster',
+        'globular_cluster', 'classical_cepheid', 'rr_lyrae_star', 'star_forming_region'))
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical
+          Cepheid, RR Lyrae star or star-forming region."
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
+
+  - id: ages-normalized-to-years
+    title: Every age is normalized to years, from years or their base-10 logarithm as published
+    severity: fail
+    select:
+      kind: query
+      # The terms by subquery, not term(): a release before ages were kept holds none of them,
+      # and has no age to find. An age published in years has its normalized value and unit
+      # NULL, the native ones unchanged, so each is read with its native one beside it.
+      sql: >-
+        SELECT DISTINCT m.object_id FROM measurements m WHERE m.release = :release
+        AND m.quantity = (SELECT id FROM terms WHERE release = :release AND term = 'age')
+        AND (coalesce(m.value, m.native_value) <= 0
+        OR coalesce(m.unit, m.native_unit) IS NOT (SELECT id FROM terms WHERE release = :release AND term = 'year')
+        OR m.native_unit NOT IN (SELECT id FROM terms WHERE release = :release AND term IN ('year', 'log_year')))
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "An age keeps its native value, the base-10 logarithm of the age in years as its source
+          publishes it, beside its normalized value in years."
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
 
   - id: redshift-distances-carry-peculiar-velocity
     title: Every redshift distance carries at least the 300 km/s term
@@ -809,6 +868,33 @@ checks:
         quote: "Univ Ingest shall keep every tile within 1 MiB."
         fetched: "this repository, spec/products/univ-ingest/releases/build-octree-tiles.yaml"
 
+  - id: inferred-share-of-gaia-stars
+    title: Between 2% and 8% of Bailer-Jones distances inferred, resting on a parallax below five times its error
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT avg(m.kind_of_value = term('inferred')) FROM measurements m JOIN entries e
+        ON e.release = m.release AND e.object_id = m.object_id AND e.entry = m.entry
+        WHERE m.release = :release AND m.quantity = term('distance')
+        AND e.source = source('bailer-jones-2021')
+    expect: { at_least: 0.02, at_most: 0.08 }
+    cite:
+      - paper: "Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1), gaiadr3.gaia_source"
+        locator: "a 1% random sample, random_index < 18,117,098, grouped by FLOOR(phot_g_mean_mag)"
+        quote: >-
+          Below G = 14: 168,410 sources in the sample, of which 160,693 have parallax_over_error
+          > 5 (95.4%), so 4.6% are under the ratio or have no parallax.
+        fetched: "https://gea.esac.esa.int/tap-server/tap/sync, 2026-11-10"
+    note: >-
+      The ranking rule's prior_led_parallax_ratio (5) makes a Bailer-Jones distance inferred below
+      it (normalize-records). Distances of the sample's sources without a parallax are absent from
+      the Bailer-Jones table (128,016 of 16,844,156 below G = 14, 0.76%), so the release's share
+      sits near 3.8%, and the floor of 2% leaves room for weighting by distance; a share far above 8%
+      means the rule reads the wrong column. Both distances of a star count, a star with no
+      photogeometric distance once.
+
   - id: d1-budget
     title: The manifest's D1 estimate of each database within the 4.5 GB release budget
     severity: fail
@@ -847,6 +933,53 @@ checks:
         AS scale_domain, placed, count(*) AS objects, min(distance_mpc) AS min_mpc, max(distance_mpc) AS max_mpc
         FROM objects o WHERE o.release = :release GROUP BY 1, 2 ORDER BY 1, 2
     cite: *domains
+
+  - id: pulsating-stars-joined-to-gaia
+    title: Cepheids and RR Lyrae stars joined to their Gaia DR3 star, by source
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT (SELECT id FROM sources s WHERE s.release = :release AND s.n = e.source) AS source,
+        count(*) AS stars, sum(EXISTS (SELECT 1 FROM entries g WHERE g.release = e.release
+        AND g.object_id = e.object_id AND g.source IN (SELECT n FROM sources WHERE release = :release
+        AND id = 'gaia-dr3-bright'))) AS joined_to_gaia
+        FROM entries e WHERE e.release = :release AND e.source IN (SELECT n FROM sources
+        WHERE release = :release AND id IN ('skowron-2025-cepheids', 'li-2023-rr-lyrae'))
+        GROUP BY e.source ORDER BY 1
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "A Cepheid or RR Lyrae star joins the object of its Gaia DR3 source by the source id its
+          source gives, as a published cross-identification."
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
+    note: >-
+      Only the stars below G = 14 have a Gaia DR3 entry in the release, so most of the fainter
+      RR Lyrae stars stand alone.
+
+  - id: open-cluster-ages
+    title: Objects with an age, by source, and those younger than 100, 30 and 10 million years
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT (SELECT id FROM sources s WHERE s.release = :release AND s.n = e.source) AS source,
+        count(*) AS with_age, sum(coalesce(m.value, m.native_value) < 1e8) AS under_100_myr,
+        sum(coalesce(m.value, m.native_value) < 3e7) AS under_30_myr,
+        sum(coalesce(m.value, m.native_value) < 1e7) AS under_10_myr
+        FROM measurements m JOIN entries e ON e.release = m.release AND e.object_id = m.object_id
+        AND e.entry = m.entry WHERE m.release = :release
+        AND m.quantity = (SELECT id FROM terms WHERE release = :release AND term = 'age')
+        GROUP BY e.source ORDER BY 1
+    cite:
+      - paper: "Hunt & Reffert 2023, A&A 673, A114"
+        locator: "VizieR J/A+A/673/A114/clusters, columns logAge16, logAge50 and logAge84"
+        quote: >-
+          Of the 6,818 open clusters (Type = o), every row gives logAge50; 2,794 lie below
+          10^8 yr, 1,169 below 3 x 10^7 yr and 405 below 10^7 yr (counted from logAge50,
+          against log10 of each age: 7.4771 for 30 Myr; 1,225 lie below logAge50 = 7.5, 31.6 Myr).
+        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10; recounted 2026-11-11"
 
   - id: unplaced-by-reason
     title: Unplaced objects by reason

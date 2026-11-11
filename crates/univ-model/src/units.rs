@@ -32,6 +32,15 @@ pub enum Unit {
     Magnitude,
     /// A pure number, such as a redshift.
     Dimensionless,
+    /// Dust extinction per parsec along a line of sight, the extinction in the units of Zhang,
+    /// Green & Rix 2023, as the Edenhofer et al. 2024 dust map gives its
+    /// density: its line integral is that extinction, which no other unit measures.
+    ExtinctionZgr23PerParsec,
+    /// A year, the unit an age is normalized to.
+    Year,
+    /// The base-10 logarithm of a time in years, as catalogues publish cluster ages: a logarithm,
+    /// which no factor turns into years.
+    LogYear,
 }
 
 /// What a unit measures; units convert only within one dimension.
@@ -46,6 +55,13 @@ pub enum Dimension {
     HubbleScaledLength,
     Magnitude,
     Dimensionless,
+    /// Extinction per unit length in the extinction scale of Zhang, Green & Rix 2023, which no
+    /// other scale converts to without a cited relation.
+    ExtinctionZgr23Density,
+    Time,
+    /// The base-10 logarithm of a time in years, kept apart from time: it converts to years by
+    /// a power of ten, never by a factor.
+    LogTime,
 }
 
 /// A conversion that cannot be made.
@@ -73,6 +89,9 @@ impl Unit {
             Self::MegaparsecOverH => Dimension::HubbleScaledLength,
             Self::Magnitude => Dimension::Magnitude,
             Self::Dimensionless => Dimension::Dimensionless,
+            Self::ExtinctionZgr23PerParsec => Dimension::ExtinctionZgr23Density,
+            Self::Year => Dimension::Time,
+            Self::LogYear => Dimension::LogTime,
         }
     }
 
@@ -93,8 +112,18 @@ impl Unit {
             | Self::Parsec
             | Self::MegaparsecOverH
             | Self::Magnitude
-            | Self::Dimensionless => 1.0,
+            | Self::Dimensionless
+            | Self::ExtinctionZgr23PerParsec
+            | Self::Year
+            | Self::LogYear => 1.0,
         }
+    }
+
+    /// Whether a value in this unit is normalized to `to`: by a factor within one dimension, or,
+    /// for the logarithm of a time in years, to years by a power of ten.
+    #[must_use]
+    pub fn normalizes_to(self, to: Self) -> bool {
+        self.dimension() == to.dimension() || (self == Self::LogYear && to == Self::Year)
     }
 
     /// The factor that turns a value in this unit into one in `to`.
@@ -111,14 +140,18 @@ impl Unit {
     }
 }
 
-/// The name of the scale domain whose positions are in parsecs.
+/// The name of the scale domain of stars, whose positions are in parsecs.
 pub const STARS_DOMAIN: &str = "stars";
 
-/// The unit of the positions of the scale domain named `domain` (`stars`, `nearby_galaxies` or
-/// `cosmic_web`): parsecs for stars, megaparsecs for every other.
+/// The name of the scale domain of the Galaxy's tracers, whose positions are in parsecs.
+pub const GALAXY_TRACERS_DOMAIN: &str = "galaxy_tracers";
+
+/// The unit of the positions of the scale domain named `domain` (`stars`, `galaxy_tracers`,
+/// `nearby_galaxies` or `cosmic_web`): parsecs for stars and Galaxy tracers, megaparsecs for
+/// every other.
 #[must_use]
 pub fn scale_domain_unit(domain: &str) -> Unit {
-    if domain == STARS_DOMAIN {
+    if domain == STARS_DOMAIN || domain == GALAXY_TRACERS_DOMAIN {
         Unit::Parsec
     } else {
         Unit::Megaparsec

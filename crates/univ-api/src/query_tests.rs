@@ -284,7 +284,7 @@ fn the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_a
         .iter()
         .map(|t| t["scale_domain"].as_str().unwrap())
         .collect();
-    assert_eq!(domains, ["cosmic_web", "stars"]);
+    assert_eq!(domains, ["cosmic_web", "galaxy_tracers", "stars"]);
     // The cosmic web's octree: a root of ±168 Mpc, octant bit 0 for high x, 1 for high y, 2
     // for high z. The sphere about x = 100 lies in the four level-1 octants of high x, and in
     // each of them in the level-2 octant of high x nearest the x axis.
@@ -297,6 +297,11 @@ fn the_first_page_gives_the_tile_nodes_covering_the_volume_each_fetched_by_its_a
     assert_eq!(nodes, ["r17", "r35", "r53", "r71"]);
     assert_eq!(
         tiles[1],
+        json!({"scale_domain": "galaxy_tracers", "level": 0, "nodes": []}),
+        "100 Mpc is beyond the Galaxy's tracers"
+    );
+    assert_eq!(
+        tiles[2],
         json!({"scale_domain": "stars", "level": 1, "nodes": []}),
         "100 Mpc is beyond the stars"
     );

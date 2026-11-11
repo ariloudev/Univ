@@ -1,0 +1,596 @@
+key: 01a1c328-fe56-704d-819d-6a8016cf85a9
+id: w1-build
+versions:
+  - key: 01a1c328-fe56-704d-819d-6a84a64f1ec4
+    at: 2026-11-10T01:53:26Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 1"
+    goal: "G < 14 sources, the inferred rule, the ranking set-aside, four more shards and the prune-then-change tests are in, each verified by its focused test"
+    status: planned
+  - key: 01a1c32a-9ac8-73c6-af9b-d55cd0e6b55e
+    at: 2026-11-10T01:55:11Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 1"
+    goal: "G < 14 sources, the inferred rule, the ranking set-aside, four more shards and the prune-then-change tests are in, each verified by its focused test"
+    status: active
+  - key: 01a1c348-6515-7452-a90d-89f1b0a6b581
+    at: 2026-11-10T02:27:44Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 1"
+    goal: "G < 14 sources, the inferred rule, the ranking set-aside, four more shards and the prune-then-change tests are in, each verified by its focused test"
+    status: done
+blocks:
+  - key: 01a1c32a-9ac8-73c6-af9b-d55150783726
+    id: t0-spec-fix
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d55dd9ffcb78
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Reword the inferred-placement criterion to respect too_uncertain_above"
+        detail: "Spec fix in normalize-records.yaml. Done when loft check passes and the spec-change view is recorded."
+        state: active
+      - key: 01a1c32a-ba83-75ab-af7a-776cbc0143fa
+        at: 2026-11-10T01:55:19Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Reword the inferred-placement criterion to respect too_uncertain_above"
+        detail: "Spec fix in normalize-records.yaml, committed as 2cfb2ef."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d552fdb65513
+    id: t1-ratio
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d55e9435b4c5
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "prior_led_parallax_ratio in the ranking rule"
+        detail: "rules/ranking.yaml and RankingRules. Done when the ranking_rules test refuses 0, -1 and NaN and accepts 5."
+        state: open
+      - key: 01a1c32a-ba83-75ab-af7a-776dff958f85
+        at: 2026-11-10T01:55:19Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "prior_led_parallax_ratio in the ranking rule"
+        detail: "rules/ranking.yaml and RankingRules. Done when the ranking_rules test refuses 0, -1 and NaN and accepts 5."
+        state: active
+      - key: 01a1c32b-8987-72a9-8a3a-294aafde9e76
+        at: 2026-11-10T01:56:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "prior_led_parallax_ratio in the ranking rule"
+        detail: "rules/ranking.yaml and RankingRules, with the test the_prior_led_parallax_ratio_is_the_rule_s_parameter_recorded_for_the_manifest."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d5532bef577b
+    id: t2-inferred
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d55f67234aaa
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bailer-Jones rows marked inferred below the ratio"
+        detail: "Query columns, two YAML rules and a consistency test. Done when normalize_bailer_jones_kind.rs passes on six fixture rows."
+        state: open
+      - key: 01a1c32b-8987-72a9-8a3a-294bc350ba24
+        at: 2026-11-10T01:56:12Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bailer-Jones rows marked inferred below the ratio"
+        detail: "Query columns, two YAML rules and a consistency test. Done when normalize_bailer_jones_kind.rs passes on six fixture rows."
+        state: active
+      - key: 01a1c333-4cdc-7458-9009-25cffac782a5
+        at: 2026-11-10T02:04:41Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bailer-Jones rows marked inferred below the ratio"
+        detail: "parallax_over_error selected as a quality column, with two kind_of_value rules (below 5, blank). normalize_bailer_jones_kind.rs passes 4 tests on recorded rows (ϖ/σ = −1.009, 4.971, 5.141) and the hand-set 5 and blank, and holds the rule's bound equal to the ranking rule's ratio."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d554c31f3113
+    id: t3-setaside
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d560ced0cb60
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Ranking sets inferred distances aside"
+        detail: "remaining() in ranking/distance.rs and Decided::KindOfValue. Done when the ranking_parallax tests pass."
+        state: open
+      - key: 01a1c333-4cdc-7458-9009-25d05264ea97
+        at: 2026-11-10T02:04:41Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Ranking sets inferred distances aside"
+        detail: "remaining() in ranking/distance.rs and Decided::KindOfValue. Done when the ranking_parallax tests pass."
+        state: active
+      - key: 01a1c33c-164f-742e-9c3f-1068ccd6488b
+        at: 2026-11-10T02:14:17Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Ranking sets inferred distances aside"
+        detail: "remaining() takes (threshold, aside); winner() reports Decided::KindOfValue where the set-aside changed the winner. Three new tests in ranking_parallax.rs, and the full univ-ingest and univ-model suites pass."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d555f413d911
+    id: t4-g14
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d561bdaf0901
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "G < 14 queries in 768 chunks"
+        detail: "gaia-dr3-bright and bailer-jones-2021, with the live count recorded. Done when the definitions check and fixtures normalize."
+        state: open
+      - key: 01a1c33c-164f-742e-9c3f-106954cb4d1a
+        at: 2026-11-10T02:14:17Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "G < 14 queries in 768 chunks"
+        detail: "gaia-dr3-bright and bailer-jones-2021, with the live count recorded. Done when the definitions check and fixtures normalize."
+        state: active
+      - key: 01a1c344-7381-7046-be03-0386feb92576
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "G < 14 queries in 768 chunks"
+        detail: "Both queries cut at G < 14 in 768 chunks. Live COUNT(*) on 2026-11-10: 16,844,156 sources and 16,716,140 Bailer-Jones distances, recorded in cuts. The decoder's simulated manifest was regenerated for the new title."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d556ce538cda
+    id: t5-shards
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d562cd69d91e
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bind object shards 8 to 11"
+        detail: "Both wrangler.toml files and the config test. Done when the config test passes."
+        state: open
+      - key: 01a1c344-7381-7046-be03-0387b1a0c764
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Bind object shards 8 to 11"
+        detail: "Both wrangler.toml files bind OBJECTS_8 to OBJECTS_11. The config test and the publisher's bound-shards test now expect 12."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d557856938ac
+    id: t6-prune-tests
+    kind: task
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d56302d6c49b
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Prune-then-change tests"
+        detail: "tests/prune_then_change.rs, cases (a) and (b). Done when both pass."
+        state: open
+      - key: 01a1c344-7381-7046-be03-0388a2b1fcee
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Prune-then-change tests"
+        detail: "tests/prune_then_change.rs, cases (a) and (b). Done when both pass."
+        state: active
+      - key: 01a1c348-6515-7452-a90d-89f0e29eebe8
+        at: 2026-11-10T02:27:44Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Prune-then-change tests"
+        detail: "tests/prune_then_change.rs. (a) Prune 1 and 2, then build 4 as a change: reads of 3 and 4 equal the unpruned run's, 4 adds the same rows, and nothing valid only in 1–2 is left. (b) Release 2, at half release 1's shard budget, moves objects between shards; pruning 1 leaves release 2's reads unchanged and each moved object once, in its new shard. The read helpers moved to tests/valid_rows/ for shared_rows.rs and this file."
+        state: done
+  - key: 01a1c32a-9ac8-73c6-af9b-d55aaa5b6821
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1c32a-9ac8-73c6-af9b-d56613df2b06
+        at: 2026-11-10T01:55:11Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | reword the criterion (task t0) | in hand |
+      - key: 01a1c32d-f4b0-77b1-853a-b5785f3e0c80
+        at: 2026-11-10T01:58:51Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | criterion reworded, `2cfb2ef` | fixed |
+          | 2 | Carrying the parallax and its error on the Bailer-Jones entries would make each a second, duplicate inverted-parallax candidate beside the Gaia entry's, and a rule can test only a declared column | reading `ranking/distance.rs` `candidates()` and `source/normalization.rs` `known()` | the query selects `g.parallax_over_error` as a quality column; criterion reworded | fixed |
+      - key: 01a1c344-7381-7046-be03-0389b446bc3c
+        at: 2026-11-10T02:23:25Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | The new criterion “a star whose only distance is inferred is still placed” contradicts the published `too_uncertain_above: 1.0` (RQ-26) | reading `rules/ranking.yaml` while planning | criterion reworded, `2cfb2ef` | fixed |
+          | 2 | Carrying the parallax and its error on the Bailer-Jones entries would make each a second, duplicate inverted-parallax candidate beside the Gaia entry's, and a rule can test only a declared column | reading `ranking/distance.rs` `candidates()` and `source/normalization.rs` `known()` | the query selects `g.parallax_over_error` as a quality column; criterion reworded, `e97cb9d` | fixed |
+          | 3 | The publisher's test pinned the bound shard count at 8 | `publish::wrangler` unit test after binding shards 8–11 | it now expects 12 | fixed |
+          | 4 | The decoder's simulated manifest records source titles, so the renamed Gaia title changed it | `tile_decoder_fixtures` | regenerated with `UPDATE_FIXTURES=1` | fixed |
+          | 5 | 128,016 Gaia sources below G = 14 have no Bailer-Jones distance (no parallax), so unless GCNS or Hipparcos places them they stay unplaced. The decision says “every star of the cut is placed” | live counts of 2026-11-10 | none needed in code; the release stage's note reports the count | noted |
+  - key: 01a1c32a-ba83-75ab-af7a-776a87fb6f90
+    id: w1-spec-change
+    kind: loft
+    versions:
+      - key: 01a1c32a-ba83-75ab-af7a-776ba7f5c51d
+        at: 2026-11-10T01:55:19Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: spec-change
+        note: "One criterion reworded (task t0). An inferred distance places its star like any other distance, under the published too-uncertain threshold (RQ-26)."
+        base: "product/milky-way"
+        recorded:
+          commit: "2cfb2ef149acb4986d32cfacf944b35d046243f7"
+          branch: "stage/milky-way-1"
+          loft: 2.3.0
+          at: 2026-11-10T01:55:19Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 1,
+              "graph.edges": 0,
+              "graph.nodes": 5,
+              "status.base.added": 0,
+              "status.base.changed": 1,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "words": {
+                    "after": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "before": "A star whose only distance is inferred is still placed, at that distance."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c601520a52af",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "parent": "01a1c319-7860-76e8-92ac-c601520a52af"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 144,
+                    "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  }
+                ],
+                "commit": "2edb4e4735caa18a50a3d3cc5446a0b4c7075808",
+                "removed": [],
+                "revision": "product/milky-way"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 8,
+                "publishedAt": "2026-11-10T00:58:19Z",
+                "stateRoot": "2737388e7982ae9afc71aeea4312e3d06c188090bdefb7a71943cc0a812ee2ae"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/milky-way-1",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1c32d-f4b0-77b1-853a-b576e32b8709
+    id: w1-spec-change-2
+    kind: loft
+    versions:
+      - key: 01a1c32d-f4b0-77b1-853a-b577b794f4f7
+        at: 2026-11-10T01:58:51Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: spec-change
+        note: "A second minor wording fix (build issue 2). The Bailer-Jones distances carry Gaia's `parallax_over_error`, the ratio the inferred rule tests, rather than the parallax and its error. Both of those stay measured on the same star's Gaia DR3 entry."
+        base: "product/milky-way"
+        recorded:
+          commit: "e97cb9d1ec0c7b036df1e56268d62eb8fbc496c4"
+          branch: "stage/milky-way-1"
+          loft: 2.3.0
+          at: 2026-11-10T01:58:51Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 2,
+              "graph.edges": 0,
+              "graph.nodes": 9,
+              "status.base.added": 0,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                  "words": {
+                    "after": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "before": "The Bailer-Jones 2021 distances carry the Gaia DR3 parallax and parallax error of each source they give a distance to."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "words": {
+                    "after": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "before": "A star whose only distance is inferred is still placed, at that distance."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c5f854eb67f1",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 13 adds or widens, to show the Milky Way in depth.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5f854eb67f1"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c601520a52af",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall classify a Bailer-Jones 2021 distance as inferred where the Gaia DR3 parallax of its star is less than five times its error, and as estimated otherwise.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                  "parent": "01a1c319-7860-76e8-92ac-c601520a52af"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c5fae6ebd0d3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 108,
+                    "name": "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c6074783ae9b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 144,
+                    "name": "An inferred distance places its star as any other distance does, under the ranking rule's threshold for a distance too uncertain to place.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  }
+                ],
+                "commit": "2edb4e4735caa18a50a3d3cc5446a0b4c7075808",
+                "removed": [],
+                "revision": "product/milky-way"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 8,
+                "publishedAt": "2026-11-10T00:58:19Z",
+                "stateRoot": "2737388e7982ae9afc71aeea4312e3d06c188090bdefb7a71943cc0a812ee2ae"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/milky-way-1",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1c348-6515-7452-a90d-89ef857c68f0
+    id: w1-build-produced
+    kind: note
+    versions:
+      - key: 01a1c348-6515-7452-a90d-89f25079898e
+        at: 2026-11-10T02:27:44Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "What the build produced"
+        markdown: |-
+          | Task | Commit | Verified by |
+          |---|---|---|
+          | t0 spec fix | `2cfb2ef`, `e97cb9d` | `loft check`, spec-change views |
+          | t1 prior-led ratio | `9eeca01` | `ranking_parallax` ratio test |
+          | t2 inferred Bailer-Jones | `f1d9a1c` | `normalize_bailer_jones_kind` (4 tests on recorded rows) |
+          | t3 ranking set-aside | `69203dd` | `ranking_parallax` (3 new tests) |
+          | t4 G < 14 | `92818b2` | live count 16,844,156 / 16,716,140; decoder fixture regenerated |
+          | t5 shards 8–11 | `3753505` | `config`, `publish::wrangler` tests |
+          | t6 prune-then-change | this stage's last commit | `prune_then_change` (2), with `prune` and `shared_rows` green |
+
+          Pruning followed by a change build keeps additive releases intact, in the cases the owner asked about. The guard still applies to the real store.
+        tone: success

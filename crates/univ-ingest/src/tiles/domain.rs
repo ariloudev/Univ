@@ -1,16 +1,19 @@
 //! Which scale domain each placed object belongs to, and its point there, and its derived ICRS
-//! Cartesian position taken into the domain's unit. An object whose preferred distance comes
-//! from a source whose definition names the stars domain is in stars; any other is in nearby
-//! galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`] of the barycentre and in cosmic web beyond,
-//! whatever source its distance came from (AC-92, the owner's decision of 2026-11-03).
+//! Cartesian position taken into the domain's unit. One of the Galaxy's tracers, the kind its
+//! tracer source names (set when its entries are matched), is in Galaxy tracers, whichever
+//! entry places it.
+//! Otherwise one whose preferred distance comes from a source whose definition names the stars
+//! domain is in stars, and any other is in nearby galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`]
+//! of the barycentre and in cosmic web beyond, whatever source its distance came from (AC-92,
+//! the owner's decisions of 2026-11-03 and 2026-11-10).
 
 use std::collections::BTreeMap;
 
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
-use univ_model::object::{MeasurementRef, Object};
+use univ_model::object::{MeasurementRef, Object, ObjectKind};
 use univ_model::position::{Frame, Vec3};
-use univ_model::tile::{ColourBands, PointColour};
+use univ_model::tile::{ColourBands, PointColour, PointValue};
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
@@ -18,11 +21,13 @@ use super::TilesError;
 use crate::crossmatch::ReleaseObject;
 use crate::source::{ScaleDomain, SourceDefinition};
 
-/// Every scale domain, in the order of their manifests and RNG streams.
-pub const DOMAINS: [ScaleDomain; 3] = [
+/// Every scale domain, in the order of their manifests and RNG streams: Galaxy tracers, added
+/// for release 13, last, so that every earlier domain keeps its stream and its tiles.
+pub const DOMAINS: [ScaleDomain; 4] = [
     ScaleDomain::Stars,
     ScaleDomain::NearbyGalaxies,
     ScaleDomain::CosmicWeb,
+    ScaleDomain::GalaxyTracers,
 ];
 
 /// The depth of the nearby galaxies domain, Mpc: that of the Updated Nearby Galaxy Catalog
@@ -30,12 +35,16 @@ pub const DOMAINS: [ScaleDomain; 3] = [
 /// boundary the structure files follow.
 pub const NEARBY_GALAXIES_DEPTH_MPC: f64 = 11.0;
 
-/// The scale domain of an object placed `placed_mpc` from the barycentre whose preferred
-/// distance's source definition names `source_domain`: stars stay stars; any other object is in
-/// nearby galaxies within [`NEARBY_GALAXIES_DEPTH_MPC`], and in cosmic web beyond it.
+/// The scale domain of an object of `kind` placed `placed_mpc` from the barycentre whose
+/// preferred distance's source definition names `source_domain`: one of the Galaxy's tracers,
+/// as its tracer source names it, is in Galaxy tracers, and so is any object placed by a tracer
+/// source; stars stay stars; any other object is in nearby galaxies within
+/// [`NEARBY_GALAXIES_DEPTH_MPC`], and in cosmic web beyond it.
 #[must_use]
-pub fn domain_of(source_domain: ScaleDomain, placed_mpc: f64) -> ScaleDomain {
+pub fn domain_of(kind: ObjectKind, source_domain: ScaleDomain, placed_mpc: f64) -> ScaleDomain {
     match source_domain {
+        _ if kind.is_tracer() => ScaleDomain::GalaxyTracers,
+        ScaleDomain::GalaxyTracers => ScaleDomain::GalaxyTracers,
         ScaleDomain::Stars => ScaleDomain::Stars,
         _ if placed_mpc <= NEARBY_GALAXIES_DEPTH_MPC => ScaleDomain::NearbyGalaxies,
         _ => ScaleDomain::CosmicWeb,
@@ -43,7 +52,8 @@ pub fn domain_of(source_domain: ScaleDomain, placed_mpc: f64) -> ScaleDomain {
 }
 
 /// The unit of a scale domain's positions, univ-model's rule
-/// ([`univ_model::units::scale_domain_unit`]): parsecs for stars, megaparsecs otherwise.
+/// ([`univ_model::units::scale_domain_unit`]): parsecs for stars and Galaxy tracers,
+/// megaparsecs otherwise.
 #[must_use]
 pub fn unit_of(domain: ScaleDomain) -> Unit {
     scale_domain_unit(name_of(domain))
@@ -52,9 +62,9 @@ pub fn unit_of(domain: ScaleDomain) -> Unit {
 /// The symbol of a scale domain's unit, as its manifest gives it.
 #[must_use]
 pub fn unit_symbol(domain: ScaleDomain) -> &'static str {
-    match domain {
-        ScaleDomain::Stars => "pc",
-        ScaleDomain::NearbyGalaxies | ScaleDomain::CosmicWeb => "Mpc",
+    match unit_of(domain) {
+        Unit::Parsec => "pc",
+        _ => "Mpc",
     }
 }
 
@@ -65,6 +75,7 @@ pub fn name_of(domain: ScaleDomain) -> &'static str {
         ScaleDomain::Stars => "stars",
         ScaleDomain::NearbyGalaxies => "nearby_galaxies",
         ScaleDomain::CosmicWeb => "cosmic_web",
+        ScaleDomain::GalaxyTracers => "galaxy_tracers",
     }
 }
 
@@ -83,8 +94,10 @@ pub struct DomainPoint {
     pub sky_source: u16,
     /// The kind of value of its preferred distance measurement.
     pub kind: KindOfValue,
-    /// The colour index chosen for it, if its entries give one.
-    pub colour: Option<PointColour>,
+    /// The base-10 logarithm of its preferred age in years, for a point of the Galaxy tracers
+    /// domain whose entries give one; else the colour index chosen for it, if its entries give
+    /// one.
+    pub value: Option<PointValue>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -112,7 +125,7 @@ struct Placed {
     distance: usize,
     sky: usize,
     kind: KindOfValue,
-    colour: Option<PointColour>,
+    value: Option<PointValue>,
 }
 
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
@@ -149,6 +162,27 @@ pub fn colour_of(object: &Object) -> Option<PointColour> {
         }
     }
     best.map(|(_, c)| c)
+}
+
+/// The base-10 logarithm of `object`'s preferred age in years (build-octree-tiles), the first age
+/// its entries give that has one: Hunt & Reffert 2023 is the only source of ages, so the first is
+/// the preferred. It is taken as published where its source publishes the logarithm; an age in
+/// years that is not positive has none.
+#[must_use]
+pub fn log_age_of(object: &Object) -> Option<f64> {
+    object
+        .entries
+        .iter()
+        .flat_map(|e| &e.entry.ages)
+        .find_map(|age| {
+            let v = &age.value;
+            let log = if v.native.unit == Unit::LogYear {
+                v.native.value
+            } else {
+                v.normalized.value.log10()
+            };
+            log.is_finite().then_some(log)
+        })
 }
 
 /// The kind of value of the measurement `m` of `object`.
@@ -221,9 +255,17 @@ pub fn assign(
             .cartesian(Frame::Icrs)
             .ok_or(TilesError::NotFinite(id))?;
         let domain = domain_of(
+            o.object.kind,
             definitions[distance].scale_domain,
             position.distance().value,
         );
+        // A Galaxy tracer carries its age where it has one, in the place of its colour.
+        let age = if domain == ScaleDomain::GalaxyTracers {
+            log_age_of(&o.object).map(PointValue::LogAge)
+        } else {
+            None
+        };
+        let value = age.or_else(|| colour_of(&o.object).map(PointValue::Colour));
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))
             .map_err(|_| TilesError::NotFinite(id))?;
@@ -238,7 +280,7 @@ pub fn assign(
             distance,
             sky,
             kind,
-            colour: colour_of(&o.object),
+            value,
         });
     }
     let mut domains = BTreeMap::new();
@@ -281,7 +323,7 @@ fn intern(
             source: distance,
             sky_source: sky,
             kind: p.kind,
-            colour: p.colour,
+            value: p.value,
         });
     }
     Ok(interned)

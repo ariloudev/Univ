@@ -3,10 +3,11 @@ import type { ReactNode } from "react";
 import { Swatch } from "./Swatch.tsx";
 import { SwitchBox } from "./SwitchBox.tsx";
 import type { Switch } from "./addressSwitch.ts";
-import type { Catalogue } from "../catalogue/catalogue.ts";
+import type { DustMap } from "../api/dust.ts";
+import type { Catalogue, TracerLine } from "../catalogue/catalogue.ts";
 import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
-import { KINDS, POINT_CSS } from "../scene/kinds.ts";
+import { KINDS, POINT_CSS, css } from "../scene/kinds.ts";
 import { Mark } from "./Mark.tsx";
 import { GREY_CSS, STAR_GRADIENT } from "../scene/starColour.ts";
 import { StarScale } from "./record/charts.tsx";
@@ -86,7 +87,7 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
 }
 
 /** What the key reads of the catalogue. */
-export type Tally = Pick<Catalogue, "kinds" | "stars" | "failed" | "unread" | "credits">;
+export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "tracerKinds" | "failed" | "unread" | "credits">;
 
 /** A part of the bottom bar that opens upward over the view. */
 function Popover({ label, children, width = "w-96", side = "left-0" }: { label: string; children: ReactNode; width?: string; side?: string }) {
@@ -104,7 +105,18 @@ function Popover({ label, children, width = "w-96", side = "left-0" }: { label: 
 
 /** The bottom bar's key and credits: the stars' colours and the count of each kind of value in
  * one line, each opening into the full key, and the credits of the drawn points' sources. */
-export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => Tally | undefined; frame: Store<number>; release: number }) {
+export function KeyBar({
+  catalogue: tally,
+  frame,
+  release,
+  dust,
+}: {
+  catalogue: () => Tally | undefined;
+  frame: Store<number>;
+  release: number;
+  /** The dust map drawn, if it is. */
+  dust?: DustMap | undefined;
+}) {
   useStore(frame);
   const catalogue = tally();
   if (catalogue === undefined) return null;
@@ -127,6 +139,7 @@ export function KeyBar({ catalogue: tally, frame, release }: { catalogue: () => 
       </div>
       <Popover label="Key">
         <Key catalogue={catalogue} />
+        <DustKey dust={dust} />
       </Popover>
       {missing > 0 ? <span className="shrink-0 text-warn">{missing.toLocaleString("en-GB")} tiles not drawn</span> : null}
       <Popover label="Credits" width="w-[28rem]" side="right-0">
@@ -161,7 +174,12 @@ function Key({ catalogue }: { catalogue: Tally }) {
           <Swatch colour={GREY_CSS} />
           {catalogue.stars.grey.toLocaleString("en-GB")} stars in grey, with no colour index.
         </p>
+        <p className="text-xs" data-testid="inferred-key">
+          Fainter stars have inferred distances: {catalogue.stars.inferred.toLocaleString("en-GB")} stars, drawn half as
+          opaque, whose preferred distance leans on its source's prior more than on their parallax.
+        </p>
       </div>
+      <TracerKey lines={catalogue.tracers()} kinds={catalogue.tracerKinds} />
       <h2 className="flex items-center gap-2 font-semibold">
         <Swatch colour={POINT_CSS} />
         Other points, by the kind of value of each distance
@@ -184,6 +202,54 @@ function Key({ catalogue }: { catalogue: Tally }) {
           {catalogue.unread} tiles could not be read from Univ Server and are not drawn.
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** The Galaxy's tracers in the key: each source in its colour, with its points drawn. */
+function TracerKey({ lines, kinds }: { lines: TracerLine[]; kinds: readonly number[] }) {
+  if (lines.length === 0) return null;
+  return (
+    <>
+      <h2 className="font-semibold">The Galaxy's tracers, by source, drawn twice a star's size</h2>
+      <ul data-testid="tracer-key" className="space-y-1 text-xs">
+        {lines.map((line) => (
+          <li key={line.id} className="flex items-center gap-2">
+            <Swatch colour={css(line.colour)} />
+            {line.title}: {line.points.toLocaleString("en-GB")} points
+          </li>
+        ))}
+      </ul>
+      <p data-testid="tracer-kinds" className="flex flex-wrap gap-x-3 text-xs">
+        {KINDS.map((kind, i) => (
+          <span key={kind} className="flex items-center">
+            <Mark kind={kind} />
+            {kind} {(kinds[i] ?? 0).toLocaleString("en-GB")}
+          </span>
+        ))}
+      </p>
+    </>
+  );
+}
+
+/** The units the dust map's header may name, in words. */
+const DUST_UNITS: Record<string, string> = {
+  extinction_zgr23_per_parsec: "extinction in the units of Zhang, Green & Rix 2023 per parsec",
+};
+
+/** The dust map in the key, while it is drawn: its source, its unit, and that its values are
+ * reconstructed, and how it is drawn. */
+function DustKey({ dust }: { dust: DustMap | undefined }) {
+  if (dust === undefined) return null;
+  return (
+    <div data-testid="dust-key" className="mt-2 space-y-1">
+      <h2 className="font-semibold">Dust</h2>
+      <p className="text-xs">
+        The mean dust density of the {dust.title}, in {DUST_UNITS[dust.unit] ?? dust.unit}, {dust.kind}, not measured: drawn
+        as a brown haze where the dust lies, and dimming the stars behind it, for display rather than as their photometric
+        extinction.
+      </p>
+      <p className="text-xs text-dim">{dust.citation}</p>
     </div>
   );
 }

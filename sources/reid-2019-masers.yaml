@@ -1,0 +1,82 @@
+id: reid-2019-masers
+title: "Reid 2019 maser parallaxes"
+provider: vizier
+access:
+  method: vizier_tsv
+  table: "J/ApJ/885/131/table1"
+  constraints: []
+  rows: 199
+cuts:
+  - "No server-side cut: every star-forming region of table1, 199 as served by IDIA on 2026-11-10."
+  - >-
+    No distance is published: the parallax is kept as measured, and the ranking rule's parallax
+    rule decides whether it places the region. VLBI parallaxes get no Gaia zero point. VLSR is
+    left out: a velocity relative to the local standard of rest, not heliocentric.
+  - "The position is VizieR's computed _RAJ2000 and _DEJ2000 from the sexagesimal J2000 position."
+columns:
+  - { column: Name, field: identifier, unit: dimensionless }
+  - { column: OName, field: name, unit: dimensionless }
+  - { column: _RAJ2000, field: right_ascension, unit: degree }
+  - { column: _DEJ2000, field: declination, unit: degree }
+  - { column: plx, field: parallax, unit: milliarcsecond }
+  - { column: e_plx, field: parallax_error, unit: milliarcsecond }
+  - { column: pmE, field: proper_motion_ra, unit: milliarcsecond_per_year }
+  - { column: pmN, field: proper_motion_dec, unit: milliarcsecond_per_year }
+  - { column: Arm, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  Reid M.J., Menten K.M., Brunthaler A., Zheng X.W., Dame T.M., Xu Y., et al. 2019,
+  "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way",
+  ApJ 885, 131. 2019ApJ...885..131R. VizieR catalogue J/ApJ/885/131,
+  doi:10.26093/cds/vizier.18850131.
+reference: { bibcode: "2019ApJ...885..131R" }
+terms:
+  url: "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  quote: >-
+    The VizieR Information System provides a standardized description of astronomical catalogues,
+    and generally a free access to the data contained therein, essentially dedicated to a scientific
+    usage. The data retrieved with VizieR are free of usage in a scientific context; however, as it
+    is the usage in scientific publication, the original authors and publication references
+    including the publisher have to be explicitely cited (see section Code of conduct of scientific
+    research).
+  credit: >-
+    This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI :
+    10.26093/cds/vizier). The original description of the VizieR service was published in 2000,
+    A&AS 143, 23. Cite Reid et al. 2019, ApJ 885, 131.
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    CDS allows use of VizieR data in a scientific context with citation of the authors and
+    publisher, and the ReadMe and landing-page metadata carry no catalogue-specific licence. The AAS
+    terms were not checked, and "scientific context" is not defined for a public hobby release.
+    Provisional: judged again before any public deployment.
+scale_domain: galaxy_tracers
+object_kind: star_forming_region
+# VizieR's mirrors, checked 2026-11-10: IDIA holds the table and answered first; CDS timed out
+# from here that day; China-VO and NAO lag behind the newest catalogues.
+mirrors:
+  - "http://vizier.idia.ac.za/viz-bin/asu-tsv"
+  - "https://vizier.cds.unistra.fr/viz-bin/asu-tsv"
+  - "http://vizier.china-vo.org/viz-bin/asu-tsv"
+flags:
+  Arm:
+    cite: "ReadMe of J/ApJ/885/131 (VizieR), Byte-by-byte Description of file table1.dat, Arm, Note (4)"
+    values:
+      GC: "Galactic Center region."
+      Con: "Connecting arm."
+      3kN: "3-kpc arms near."
+      3kF: "3-kpc arms far."
+      Nor: "Norma arm."
+      Out: "Outer arm."
+      ScF: "Scutum arm far."
+      ScN: "Scutum arm near."
+      CtN: "Centaurus arm near."
+      OSC: "Outer Scutum Centaurus arm."
+      SgN: "Sagittarius arm near."
+      SgF: "Sagittarius arm far."
+      CrN: "Carina arm near."
+      Loc: "Local arm."
+      Per: "Perseus arm."
+      LoS: "Local arm spur."

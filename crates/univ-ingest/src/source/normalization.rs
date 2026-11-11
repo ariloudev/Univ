@@ -12,12 +12,15 @@ use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+pub use age::AgeReading;
 pub use catalogue_error::CatalogueError;
 
 use super::rules::{self, Rule};
 use super::{Column, Field, Fix};
 
+mod age;
 mod catalogue_error;
+mod colour;
 
 /// How a source's rows are read beyond the column each field comes from.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -33,6 +36,8 @@ pub struct Normalization {
     pub colours: Vec<ColourReading>,
     #[serde(default)]
     pub spectral_type: Option<SpectralTypeReading>,
+    #[serde(default)]
+    pub ages: Vec<AgeReading>,
 }
 
 /// A colour index: published in `column`, or derived from the two magnitude columns `from`
@@ -221,7 +226,7 @@ const SINGLE: [Field; 17] = [
 ];
 
 /// Fields whose columns a reading in `normalization` must name.
-const READ: [Field; 14] = [
+const READ: [Field; 17] = [
     Field::ColourIndex,
     Field::ColourIndexError,
     Field::ColourMagnitude,
@@ -236,6 +241,9 @@ const READ: [Field; 14] = [
     Field::RedshiftError,
     Field::PhotometricRedshift,
     Field::PhotometricRedshiftError,
+    Field::Age,
+    Field::AgeLow,
+    Field::AgeHigh,
 ];
 
 pub(super) type Problem = (String, String);
@@ -248,7 +256,7 @@ pub(super) fn problem(field: impl Into<String>, what: impl Into<String>) -> Prob
 pub(super) struct Columns<'a>(&'a [Column]);
 
 impl Columns<'_> {
-    fn unit(&self, name: &str) -> Option<Unit> {
+    pub(super) fn unit(&self, name: &str) -> Option<Unit> {
         self.0.iter().find(|c| c.column == name).map(|c| c.unit)
     }
 
@@ -258,48 +266,6 @@ impl Columns<'_> {
             .map(|_| ())
             .ok_or_else(|| problem(at, format!("names {name}, which is not a column")))
     }
-}
-
-/// The columns a colour reading names, each a column of the definition in magnitudes.
-/// The photometric bands a colour index may lie between: Johnson–Cousins `U`, `B`, `V`, `R`
-/// and `I`, Gaia's `G`, `BP` and `RP`, and 2MASS's `J`, `H` and `Ks`, as the catalogues name
-/// them. A band outside them is refused, so a misspelling cannot leave a colour unread.
-const BANDS: [&str; 11] = ["U", "B", "V", "R", "I", "G", "BP", "RP", "J", "H", "Ks"];
-
-fn check_colour<'c>(
-    table: &Columns<'_>,
-    at: &str,
-    c: &'c ColourReading,
-) -> Result<Vec<&'c str>, Problem> {
-    if let Some(band) = c.bands.iter().find(|b| !BANDS.contains(&b.as_str())) {
-        return Err(problem(
-            at,
-            format!(
-                "names the band {band}, which is not one of {}",
-                BANDS.join(", ")
-            ),
-        ));
-    }
-    if c.bands[0] == c.bands[1] {
-        return Err(problem(at, format!("names the band {} twice", c.bands[0])));
-    }
-    let names: Vec<&str> = c
-        .column
-        .iter()
-        .chain(&c.error)
-        .chain(c.from.iter().flatten())
-        .map(String::as_str)
-        .collect();
-    for name in &names {
-        table.known(at, name)?;
-        if table.unit(name) != Some(Unit::Magnitude) {
-            return Err(problem(
-                at,
-                format!("names {name}, which is not in magnitudes"),
-            ));
-        }
-    }
-    Ok(names)
 }
 
 /// Checks the normalization block and the fixes' actions against the definition's columns.
@@ -339,11 +305,14 @@ pub(super) fn check(
         )?);
     }
     for (i, c) in normalization.colours.iter().enumerate() {
-        named.extend(check_colour(
+        named.extend(colour::check(
             &table,
             &format!("normalization.colours[{i}]"),
             c,
         )?);
+    }
+    for (i, a) in normalization.ages.iter().enumerate() {
+        named.extend(age::check(&table, &format!("normalization.ages[{i}]"), a)?);
     }
     if let Some(s) = &normalization.spectral_type {
         table.known("normalization.spectral_type", &s.column)?;
@@ -453,11 +422,7 @@ fn check_distance<'a>(
         .chain(d.also_published.iter().flat_map(|p| &p.error))
         .collect();
     for e in &errors {
-        if let ErrorColumns::CredibleInterval { probability, .. } = e
-            && !(*probability > 0.0 && *probability <= 1.0)
-        {
-            return Err(problem(at, "gives a probability outside (0, 1]"));
-        }
+        e.check_probability(at)?;
     }
     if table.unit(&d.value) == Some(Unit::Magnitude) && d.measure != Measure::Luminosity {
         return Err(problem(
@@ -484,6 +449,18 @@ pub(super) fn blank(field: &str, value: &str) -> Result<(), Problem> {
 }
 
 impl ErrorColumns {
+    /// Refuses a credible interval whose probability lies outside (0, 1].
+    pub(super) fn check_probability(&self, at: &str) -> Result<(), Problem> {
+        match self {
+            Self::CredibleInterval { probability, .. }
+                if !(*probability > 0.0 && *probability <= 1.0) =>
+            {
+                Err(problem(at, "gives a probability outside (0, 1]"))
+            }
+            _ => Ok(()),
+        }
+    }
+
     /// The columns the error is read from.
     #[must_use]
     pub fn columns(&self) -> Vec<&str> {

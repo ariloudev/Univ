@@ -11,8 +11,8 @@ use std::mem::size_of;
 use serde::Serialize;
 
 use super::{
-    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, MAGIC, MAX_TILE_BYTES, STEPS, has_colour,
-    max_points, point_bytes,
+    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAGIC, MAX_TILE_BYTES, STEPS,
+    has_age, has_colour, max_points, point_bytes,
 };
 use crate::value::KindOfValue;
 
@@ -115,6 +115,10 @@ pub struct EncodingLayout {
     /// The colour bands, coded by their index plus one, 0 coding none; none before version 2.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub colour_bands: Vec<ColourBands>,
+    /// The code of a point whose value is the base-10 logarithm of its age in years; none before
+    /// version 3.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub log_age_code: Option<u8>,
     /// How a quantized position becomes a position in the manifest's frame and unit.
     pub dequantization: String,
     /// What a decoder refuses.
@@ -235,10 +239,36 @@ fn points_v1() -> [Spec; 4] {
     ]
 }
 
-/// The point fields of `version`, in order: version 1's, and version 2's colour after them.
+/// The point fields of `version`, in order: version 1's, then version 2's colour, or version
+/// 3's value, after them.
 fn points_of(version: u16) -> Vec<Spec> {
     let mut fields = points_v1().to_vec();
-    if has_colour(version) {
+    if has_age(version) {
+        fields.extend([
+            (
+                "value",
+                FieldType::I16le,
+                1,
+                None,
+                "the point's value in hundredths, within 0.005 of the value it was built from: a \
+                 colour index in magnitudes, or the base-10 logarithm of an age in years, as its \
+                 code says; -32768 where it has none"
+                    .to_owned(),
+            ),
+            (
+                "value_code",
+                FieldType::U8,
+                1,
+                None,
+                format!(
+                    "what the value is: 1 plus the index in colour_bands of the bands a colour \
+                     index lies between, which the manifest's encoding.colour_bands repeats, or \
+                     {LOG_AGE_CODE} for a log age, which encoding.log_age_code repeats; 0 where the \
+                     point has no value"
+                ),
+            ),
+        ]);
+    } else if has_colour(version) {
         fields.extend([
             (
                 "colour",
@@ -309,7 +339,12 @@ fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
         "an object id outside 1 to 2^53 - 1",
         "a kind of value beyond kinds",
     ];
-    if coloured {
+    if has_age(version) {
+        refusals.push(
+            "a value code other than 0, 1 plus an index in colour_bands, or log_age_code, or a \
+             value of -32768 with a code other than 0, or 0 with another value",
+        );
+    } else if coloured {
         refusals.push(
             "a colour bands code beyond colour_bands, or a colour index of -32768 with a code \
              other than 0, or 0 with another colour index",
@@ -332,6 +367,7 @@ fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
         } else {
             Vec::new()
         },
+        log_age_code: has_age(version).then_some(LOG_AGE_CODE),
         dequantization: format!(
             "step = node_edge / {STEPS}, the step of the node's level in the manifest; each \
              coordinate decodes to the centre of its step, node_min + (q + 0.5) * step, within \

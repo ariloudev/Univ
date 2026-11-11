@@ -135,3 +135,31 @@ describe("the Show drawer", () => {
     expect(onApply.mock.lastCall?.[0]).toHaveLength(2);
   });
 });
+
+describe("the Show drawer's dust map", () => {
+  const dust = (on: boolean, problem?: string) => {
+    const set = vi.fn();
+    render(<ShowPanel choices={choices} hidden={NOTHING_HIDDEN} onApply={() => undefined} dust={{ state: [on, set], map: undefined, problem }} />);
+    return set;
+  };
+
+  it("holds a switch for the dust map, off as the view opens, that turns it on", async () => {
+    const set = dust(false);
+    const toggle = screen.getByRole("switch", { name: "Dust map" }) as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+    await userEvent.click(toggle);
+    expect(set).toHaveBeenCalledWith(true);
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("says, beside its switch, why the dust map turned itself off", () => {
+    dust(false, "The dust map's grid edenhofer-2024-dust could not be drawn: Not Found");
+    const section = screen.getByTestId("dust-switch");
+    expect(within(section).getByRole("status").textContent).toContain("edenhofer-2024-dust could not be drawn: Not Found");
+  });
+
+  it("says it is reading the map while it is on and not yet read", () => {
+    dust(true);
+    expect(within(screen.getByTestId("dust-switch")).getByText(/Reading the dust map/)).toBeTruthy();
+  });
+});

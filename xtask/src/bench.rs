@@ -17,7 +17,7 @@ use std::time::{Duration, Instant};
 
 use univ_model::release::shards::Database;
 
-use crate::integration::{Exchange, REAL_STATE, send, wrangler};
+use crate::integration::{Exchange, send, wrangler};
 use crate::owner::{real_owner, with_real_server};
 
 /// How many lookups are timed.
@@ -44,7 +44,7 @@ struct Timed {
 
 /// Times the object lookups; true when every lookup answered 200 within QA-2's bound.
 pub fn lookup(root: &Path) -> bool {
-    let state = root.join(REAL_STATE);
+    let state = crate::integration::local_state(root);
     let ids = match sample_ids(root, &state) {
         Ok(ids) => ids,
         Err(error) => {

@@ -72,12 +72,18 @@ cross_identifications:
       Gaia DR3 keeps the EDR3 source_id of every source (Gaia Collaboration, Vallenari et al.
       2023, A&A 674, A1), so the EDR3 ids of Bailer-Jones et al. 2021 (AJ 161, 147) and GCNS
       (Gaia Collaboration, Smart et al. 2021, A&A 649, A6) name the same sources as Gaia DR3.
-      The Gaia DR3 to Hipparcos-2 table gives the Gaia source_id of each pair.
+      The Gaia DR3 to Hipparcos-2 table gives the Gaia source_id of each pair. Skowron et al.
+      2025 (ApJS 278, 57; ReadMe, GaiaDR3, "Gaia source ID") and Li et al. 2023 (ApJ 944, 88;
+      ReadMe, GaiaDR3, "Unique source identifier for Gaia DR3") name each Cepheid and RR Lyrae
+      star by its Gaia DR3 source_id, so each joins the Gaia DR3 star it is, where that star is
+      below G = 14 (normalize-records).
     members:
       - { source: gaia-dr3-bright, field: identifier }
       - { source: gcns, field: identifier }
       - { source: bailer-jones-2021, field: identifier }
       - { source: gaia-dr3-hipparcos2, field: identifier }
+      - { source: skowron-2025-cepheids, field: identifier }
+      - { source: li-2023-rr-lyrae, field: identifier }
   - scheme: hip
     basis: >-
       The HIP number of Hipparcos-2 (van Leeuwen 2007, A&A 474, 653), given in the Gaia DR3
@@ -625,6 +631,18 @@ pairs:
       between Hipparcos's epoch J1991.25 and J2000 is a few arcseconds, and two stars bright
       enough to be named rarely lie within an arcminute of each other. Mesarthim (gamma Arietis)
       lies 1 arcsec from HIP 8832.
+  - sources: [openngc, baumgardt-vasiliev-2021]
+    angular_tolerance_arcsec: 60.0
+    line_of_sight: { compare: none }
+    basis: >-
+      Measured on 2026-11-10: the 107 globular clusters both name the same (Baumgardt's NGC_104
+      as OpenNGC's NGC 104) lie a median 3 arcsec apart, 90% within 9 and all within 40 (NGC 288);
+      60 arcsec takes every one of them, far inside a globular cluster's few-arcminute core. Ten
+      other OpenNGC objects lie within 60 arcsec of a cluster; where one is a cluster's second
+      candidate, the rule above keeps both apart and linked. Neither publishes a line of sight to
+      compare. The open clusters of Hunt & Reffert 2023 are not paired: their densest points lie a
+      median 50 arcsec and up to degrees from OpenNGC's positions, so a tolerance wide enough to
+      join them would join other clusters and nebulae too.
   - sources: [openngc, twomrs]
     angular_tolerance_arcsec: 10.0
     line_of_sight: { compare: none }

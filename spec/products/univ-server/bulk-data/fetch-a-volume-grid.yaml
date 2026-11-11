@@ -37,6 +37,8 @@ requirements:
         name: "A grid of labels, such as basins of attraction, gives the table that names each label."
       - key: 01a19f1f-9fd6-77e0-931c-f99a5e76e0b0
         name: "The header cites the grid's source and names the release that published it."
+      - key: 01a1c458-8e2a-7709-bb65-69dcbddd18b8
+        name: "The header says how a grid resampled from its source's cells was resampled and which sample value marks a cell of no data, and holds null for each where the grid has none."
   - key: 01a19f1f-9fd6-77e0-931c-f99b99d555ba
     statement:
       form: unwanted

@@ -1,0 +1,81 @@
+id: baumgardt-vasiliev-2021
+title: "Baumgardt & Vasiliev 2021 globular clusters"
+provider: globular-cluster-database
+access:
+  method: prepared
+  # The database serves its orbits table as whitespace-aligned text. The script reads the table
+  # (checked against its SHA-256 of 2026-11-10) and writes the columns taken as plain CSV;
+  # nothing is computed. The paper's distances are on no VizieR mirror (checked 2026-11-10).
+  file: baumgardt-vasiliev-2021.csv.gz
+  script: scripts/prepare-baumgardt-globulars.py
+  sha256: "30cd41a27d9cffbbf2f87434d2515870cbb60427c33cd953f6a2ded6399554d5"
+  rows: 165
+cuts:
+  - >-
+    Every row of the database's orbits table, 165 Galactic globular clusters, as read on
+    2026-11-10 (the page dates the database March 2023). The page: "This version uses the V-band
+    luminosities derived in Baumgardt et al. (2020) and the cluster distances derived in Baumgardt
+    & Vasiliev (2021)."
+  - >-
+    Rsun and Delta_R are the distance from the Sun and its error, in kpc, as the table's header
+    gives them. The orbits, radial velocities and Galactocentric coordinates are not taken.
+  - >-
+    RA and DEC are the table's equatorial degrees; the table names no frame or epoch, and they are
+    read as ICRS at J2000, where the difference from FK5 (tens of milliarcseconds) lies far below
+    the size of a cluster.
+columns:
+  - { column: name, field: identifier, unit: dimensionless }
+  - { column: ra_deg, field: right_ascension, unit: degree }
+  - { column: dec_deg, field: declination, unit: degree }
+  - { column: rsun_kpc, field: distance, unit: kiloparsec }
+  - { column: rsun_err_kpc, field: distance_error, unit: kiloparsec }
+  - { column: pmra, field: proper_motion_ra, unit: milliarcsecond_per_year }
+  - { column: pmdec, field: proper_motion_dec, unit: milliarcsecond_per_year }
+frame: icrs
+epoch: 2000.0
+citation: >-
+  Baumgardt H., Vasiliev E. 2021, "Accurate distances to Galactic globular clusters through a
+  combination of Gaia EDR3, HST and literature data", MNRAS 505, 5957. 2021MNRAS.505.5957B. Read
+  from the orbits table of the Galactic globular cluster database of H. Baumgardt, A. Sollima,
+  M. Hilker, A. Bellini, E. Vasiliev, V. Hénault-Brunet and N. Dickson
+  (people.smp.uq.edu.au/HolgerBaumgardt/globular).
+reference: { bibcode: "2021MNRAS.505.5957B" }
+terms:
+  url: "https://people.smp.uq.edu.au/HolgerBaumgardt/globular/"
+  quote: >-
+    (C) Holger Baumgardt, Antonio Sollima, Michael Hilker, Andrea Bellini, Eugene Vasiliev, Vincent
+    Henault-Brunet & Nolan Dickson, March 2023
+  credit: >-
+    Cite Baumgardt & Vasiliev 2021, MNRAS 505, 5957. Distances from the Galactic globular cluster
+    database of H. Baumgardt et al., people.smp.uq.edu.au/HolgerBaumgardt/globular.
+redistribution:
+  status: permission_pending
+  review: provisional
+  reasoning: >-
+    The database's page carries its authors' copyright and states no terms of use or
+    redistribution, and the paper's distances are on no VizieR mirror. Permission is to be asked
+    of the database's authors; the owner chose on 2026-11-10 to build and publish the source while
+    the answer is awaited. Provisional: judged again when the answer comes.
+  permission: { asked_of: "Holger Baumgardt, for the database's authors" }
+scale_domain: galaxy_tracers
+object_kind: globular_cluster
+mirrors:
+  - "https://people.smp.uq.edu.au/HolgerBaumgardt/globular/"
+normalization:
+  distances:
+    - value: rsun_kpc
+      error: { symmetric: rsun_err_kpc }
+      kind: primary_indicator
+      method:
+        mixed:
+          - trigonometric_parallax
+          - { other: "kinematic distance" }
+          - { other: "literature distances" }
+      measure: euclidean
+      kind_of_value: estimated
+      basis: >-
+        The paper's title: "Accurate distances to Galactic globular clusters through a combination
+        of Gaia EDR3, HST and literature data": each distance is a mean of the cluster's Gaia EDR3
+        parallax, its kinematic distance (proper motion dispersions against line-of-sight velocity
+        dispersions) and distances from the literature. The weakest kind among them,
+        primary_indicator, is stated, as the mean does not say which method dominates.

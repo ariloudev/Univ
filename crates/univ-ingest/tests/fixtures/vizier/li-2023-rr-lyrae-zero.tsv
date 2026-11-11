@@ -1,0 +1,47 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-10T03:47:05 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-10T03:47:05	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F88%2Ftable5&-out=GaiaDR3%2CRA_ICRS%2CDE_ICRS%2CDist-Phot%2Ce_Dist-Phot%2CType%2Cr_EBV&-out.max=5&Dist-Phot=0.00	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_19440088
+#Name: J/ApJ/944/88
+#Title: Phot. metallicity & distances for Gaia RR Lyrae stars (Li+, 2023)
+#INFO	ivoid=ivo://cds.vizier/j/apj/944/88	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/apj/944/88	    IVOID of underlying data collection
+#INFO	creator=Li X.-Y.	    First author or institution
+#INFO	cites=bibcode:2023ApJ...944...88L	    Article or Data origin sources
+#INFO	journal=ApJ	    Journal name
+#INFO	original_date=2023	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJ/944/88	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.19440088	    Dataset identifier that can be used for citation
+#INFO	publication_date=2025-05-21	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Coosys	H_2016.000:	ICRS
+#Table	J_ApJ_944_88_table5:
+#Name: J/ApJ/944/88/table5
+#Title: Final sample
+#Column	GaiaDR3	(I19)	Unique source identifier for Gaia DR3	[ucd=meta.id;meta.main]
+#Column	RA_ICRS	(F11.7)	Right ascension from Gaia DR3 (ICRS) at Epoch=2016	[ucd=pos.eq.ra;meta.main]
+#Column	DE_ICRS	(F11.7)	[-90/89] Declination from Gaia DR3 (ICRS) at Epoch=2016	[ucd=pos.eq.dec;meta.main]
+#Column	Dist-Phot	(F6.2)	[0/146] Photometric distance	[ucd=pos.distance;phot]
+#Column	e_Dist-Phot	(F6.2)	[0/125] Uncertainty of Distance	[ucd=stat.error;pos.distance;phot]
+#Column	Type	(A4)	Type of RR Lyrae star, "RRab" or "RRc"	[ucd=src.class]
+#Column	r_EBV	(A5)	Flag to indicate the source of E (B-V) (1)	[ucd=meta.ref;phot.color.excess]
+GaiaDR3	RA_ICRS	DE_ICRS	Dist-Phot	e_Dist-Phot	Type	r_EBV
+ 	deg	deg	kpc	kpc	 	
+-------------------	-----------	-----------	------	------	----	-----
+4044076957543222400	269.2420722	-31.0626586	  0.00	  0.00	RRab	c22
+4053651470439709568	263.5525534	-33.7959228	  0.00	  0.00	RRab	sfd98
+4055056229652979456	264.1423920	-31.7795444	  0.00	  0.00	RRc 	sfd98
+4058348412297723648	263.3246174	-30.8142446	  0.00	  0.00	RRab	sfd98
+4091684780202133504	278.8956733	-21.0344553	  0.00	  0.00	RRab	c22
+

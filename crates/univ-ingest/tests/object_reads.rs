@@ -132,7 +132,7 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
     // AC-132.
     let Decoded { pairs } = decoded();
     let mut redshifts = 0;
-    let mut colours = 0;
+    let (mut colours, mut ages) = (0, 0);
     for (o, r) in pairs {
         let mut count = 0;
         for (e, entry) in (0u32..).zip(&o.object.entries) {
@@ -208,11 +208,21 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
                 colours += 1;
                 count += 1;
             }
+            for (n, a) in (0u32..).zip(&entry.ages) {
+                let m = find(&r.measurements, e, MeasuredQuantity::Age, n);
+                check(m, &a.value.native, &a.value.normalized, a.value.kind);
+                ages += 1;
+                count += 1;
+            }
         }
         assert_eq!(r.measurements.len(), count, "{}", o.id.get());
     }
     assert!(redshifts > 0);
     assert!(colours > 0, "the fixture release reads colour indices back");
+    assert!(
+        ages > 0,
+        "the fixture release reads the open clusters' ages back"
+    );
 }
 
 #[test]
@@ -257,7 +267,9 @@ fn every_derived_position_names_its_frame_epoch_cosmology_and_chain() {
         let factor = Unit::Megaparsec.factor_to(read.unit).unwrap();
         let at = position.cartesian(Frame::Icrs).unwrap();
         assert_eq!([read.x, read.y, read.z], at.map(|c| c * factor));
-        assert_eq!(read.unit == Unit::Parsec, read.scale_domain == "stars");
+        // Parsecs for stars and the Galaxy's tracers, megaparsecs for galaxies.
+        let in_pc = matches!(read.scale_domain.as_str(), "stars" | "galaxy_tracers");
+        assert_eq!(read.unit == Unit::Parsec, in_pc, "{}", read.scale_domain);
         assert_eq!(
             (read.frame.as_str(), read.origin.as_str()),
             (ICRS_CARTESIAN_NAME, BARYCENTRE)
@@ -271,13 +283,11 @@ fn every_derived_position_names_its_frame_epoch_cosmology_and_chain() {
         assert_eq!(&read.native, position.native());
         assert_eq!(read.assumed_cosmology.as_ref(), position.assumed());
         assert_eq!(r.not_placed, None);
-        units.insert(format!("{:?}", read.unit));
+        units.insert((read.scale_domain.clone(), format!("{:?}", read.unit)));
     }
-    assert_eq!(
-        units.len(),
-        2,
-        "stars in parsecs, galaxies in megaparsecs: {units:?}"
-    );
+    for domain in ["stars", "galaxy_tracers", "nearby_galaxies", "cosmic_web"] {
+        assert!(units.iter().any(|(d, _)| d == domain), "{units:?}");
+    }
 }
 
 #[test]

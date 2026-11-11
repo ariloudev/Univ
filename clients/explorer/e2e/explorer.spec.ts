@@ -353,7 +353,7 @@ test("turns a scale domain off, counts none of its points in the key, and keeps 
   await page.getByRole("button", { name: "Show", exact: true }).click();
   await page.getByLabel("Stars", { exact: true }).uncheck();
   await expect(page).toHaveURL(/hide=domain%3Astars/);
-  await expect(page.getByTestId("show-summary")).toContainText("Points: 2 of 3 domains");
+  await expect(page.getByTestId("show-summary")).toContainText("Points: 3 of 4 domains");
   await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
   await page.reload();
   // The Show drawer is kept open across the reload.
@@ -374,6 +374,24 @@ test("shows only one catalogue from its line, every other one off, and everythin
   await expect(drawer.getByTestId("show-summary")).toContainText(/1 of \d+ catalogues/);
   await drawer.getByRole("button", { name: "Show everything" }).click();
   await expect(page).not.toHaveURL(/hide=/);
+});
+
+test("keeps the age of the Galaxy's tracers drawn in the address, across a reload, until All shows every age", async ({ page }) => {
+  await page.goto("/?age=30");
+  await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  const drawer = page.getByRole("complementary", { name: "Show" });
+  const young = drawer.getByRole("button", { name: "Tracers younger than 30 million years" });
+  await expect(young).toHaveAttribute("aria-pressed", "true");
+  await expect(drawer.getByTestId("show-summary")).toContainText("tracers younger than 30 million years");
+  await expect(drawer.getByTestId("show-age-share")).toContainText(/\d+ of the \d+ tracers held carry an age/);
+  await drawer.getByRole("button", { name: "Tracers younger than 10 million years" }).click();
+  await expect(page).toHaveURL(/age=10/);
+  await page.reload();
+  await expect(drawer.getByRole("button", { name: "Tracers younger than 10 million years" })).toHaveAttribute("aria-pressed", "true");
+  await drawer.getByRole("button", { name: "All points" }).click();
+  await expect(page).not.toHaveURL(/age=/);
+  await expect(drawer.getByRole("button", { name: "Tracers of any age" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("has no serious or critical accessibility violations", async ({ page }) => {
@@ -514,4 +532,35 @@ test("reads an object's record as a gazetteer entry: on the sky, its catalogues,
   await panel.getByText("Show every name, value and flag, with the papers").click();
   await expect(panel.getByTestId("catalogues")).toBeVisible();
   await expect(panel.getByTestId("sky")).toContainText(/RA \d{2}h \d{2}m [\d.]+s, Dec [+−]\d{2}° \d{2}′ [\d.]+″/);
+});
+
+test("turns the dust map on from the Show drawer, and, the release holding no dust grid, turns it off again saying why, the points still drawn, without a WebGL error", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    // The grid's 404 is the case under test; WebGL's errors, as warnings, are not.
+    if (/INVALID_|GL_INVALID|GL ERROR/.test(message.text())) errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await firstPoints(page);
+  const stars = page.getByTestId("star-key");
+  await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  const section = page.getByTestId("dust-switch");
+  const toggle = section.getByRole("switch", { name: "Dust map" });
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await expect(section.getByRole("status")).toContainText("edenhofer-2024-dust could not be drawn");
+  await expect(toggle).not.toBeChecked();
+  await expect(page).not.toHaveURL(/dust=on/);
+  await expect(stars).toContainText(/[1-9][\d,]* stars in the colour/);
+  await expect(page.getByTestId("dust-key")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("opens on an address that turns the dust map on, and says why it cannot be drawn", async ({ page }) => {
+  await page.goto("/?dust=on");
+  await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  await expect(page.getByTestId("dust-switch").getByRole("status")).toContainText("could not be drawn");
+  await expect(page).not.toHaveURL(/dust=on/);
 });

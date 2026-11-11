@@ -143,7 +143,8 @@ export function starColour(colour: StarColourIndex | undefined): Rgba {
   return rgba;
 }
 
-const toBytes = (rgba: Rgba): Uint8Array => Uint8Array.from(rgba, (c) => Math.round(c * 255));
+/** A colour as red, green, blue and opacity bytes, as the renderer takes it. */
+export const toBytes = (rgba: Rgba): Uint8Array => Uint8Array.from(rgba, (c) => Math.round(c * 255));
 const GREY_BYTES = toBytes(NO_COLOUR_GREY);
 
 /** `starColour` as red, green, blue and opacity bytes, as the renderer takes them; computed once

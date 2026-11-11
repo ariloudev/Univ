@@ -19,7 +19,7 @@ requirements:
       shall: "return each scale domain of the release with its extent, unit and point count."
     criteria:
       - key: 01a19f1f-9fd6-77e0-931c-f9865de3a042
-        name: "The listing holds the stars, nearby galaxies and cosmic web scale domains."
+        name: "The listing holds the stars, Galaxy tracers, nearby galaxies and cosmic web scale domains."
       - key: 01a19f1f-9fd6-77e0-931c-f987e3fef734
         name: "Each scale domain gives the radius it extends to from the Solar System barycentre, in its own unit."
   - key: 01a19f1f-9fd6-77e0-931c-f988f492ced3

@@ -11,8 +11,9 @@ pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
-    CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns,
-    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
+    AgeReading, CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading,
+    ErrorColumns, MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading,
+    SpectralTypeReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
@@ -26,6 +27,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use univ_model::ids::SourceId;
+use univ_model::object::ObjectKind;
 use univ_model::position::{Epoch, Frame};
 use univ_model::units::Unit;
 
@@ -52,6 +54,10 @@ pub struct SourceDefinition {
     pub terms: Terms,
     pub redistribution: Redistribution,
     pub scale_domain: ScaleDomain,
+    /// What each of its rows is, for a source of the Galaxy's tracers, which must name one; no
+    /// other source names one.
+    #[serde(default)]
+    pub object_kind: Option<ObjectKind>,
     /// The base URLs to try, in order; none for a source kept in this repository.
     pub mirrors: Vec<String>,
     /// Corrections to the source as published, each with its evidence.
@@ -109,6 +115,11 @@ pub enum Field {
     /// A colour index, or its error, as published; read as `normalization.colours` names it.
     ColourIndex,
     ColourIndexError,
+    /// A star cluster's age, in years or as the base-10 logarithm of years, and the lower and
+    /// upper bounds of its credible interval; read as `normalization.ages` names them.
+    Age,
+    AgeLow,
+    AgeHigh,
     /// A magnitude read only to derive a colour index from, as `normalization.colours` names it.
     ColourMagnitude,
     /// A spectral type as published; read as `normalization.spectral_type` names it.
@@ -261,6 +272,9 @@ pub enum ScaleDomain {
     Stars,
     NearbyGalaxies,
     CosmicWeb,
+    /// The tracers of the Galaxy's structure: clusters, pulsating stars and star-forming
+    /// regions, in parsecs (give-the-galaxys-tracers-a-scale-domain).
+    GalaxyTracers,
 }
 
 /// A correction to a source as published.
@@ -335,6 +349,25 @@ impl SourceDefinition {
         }
         if let Some(clause) = &self.terms.share_alike {
             blank("terms.share_alike", clause)?;
+        }
+        let tracers = self.scale_domain == ScaleDomain::GalaxyTracers;
+        match self.object_kind {
+            None if tracers => {
+                return Err((
+                    "object_kind".to_owned(),
+                    "is missing: a source of the Galaxy's tracers names what its rows are"
+                        .to_owned(),
+                ));
+            }
+            Some(kind) if !tracers || !kind.is_tracer() => {
+                return Err((
+                    "object_kind".to_owned(),
+                    "names a kind only a source of the Galaxy tracers domain gives, and only a \
+                     tracer's"
+                        .to_owned(),
+                ));
+            }
+            _ => {}
         }
         reading::check(self.designation.as_ref(), &self.flags, &self.columns)?;
         self.redistribution.check_permission()?;

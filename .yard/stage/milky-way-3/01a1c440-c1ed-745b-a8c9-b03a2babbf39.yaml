@@ -1,0 +1,245 @@
+key: 01a1c440-c1ed-745b-a8c9-b03a2babbf39
+id: w3-build
+versions:
+  - key: 01a1c440-c1ed-745b-a8c9-b0449143d924
+    at: 2026-11-10T06:59:00Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 3"
+    goal: "The Edenhofer 2024 dust map is defined, read from its HEALPix file and resampled into mean and standard-deviation grids of 10 pc cells about the Sun, published with the release, each criterion verified by its focused test"
+    status: active
+  - key: 01a1c454-eb54-7644-8aec-6c0c15e61d39
+    at: 2026-11-10T07:21:02Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Build wave 3"
+    goal: "The Edenhofer 2024 dust map is defined, read from its HEALPix file and resampled into mean and standard-deviation grids of 10 pc cells about the Sun, published with the release, each criterion verified by its focused test"
+    status: done
+blocks:
+  - key: 01a1c440-c1ed-745b-a8c9-b03cf1a2e579
+    id: w3-plan
+    kind: note
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b046444526f1
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 3 plan (pre-approved by the owner)"
+        markdown: |-
+          The source, read on 2026-11-10: Zenodo 10.5281/zenodo.8187943 v1.0, **CC BY 4.0**. `mean_and_std_healpix.fits` (3.25 GB) holds:
+          - the MEAN and STD images, each 516 radial bins × 786,432 HEALPix pixels (NSIDE 256, NESTED ordering), float32, unit "E of Zhang, Green, and Rix (2023)";
+          - the RADIAL PIXEL CENTERS (516) and BOUNDARIES (517), in pc.
+
+          The ready-made Cartesian file has 2 pc voxels and is 15.7 GB; the spec resamples from the HEALPix voxels.
+
+          | Task | Change | Criteria | Done when |
+          |---|---|---|---|
+          | t1 HEALPix | NESTED `pix2vec` and `vec2pix` for any NSIDE, in univ-model | (a means to the rest) | round trip of all 786,432 pixels at NSIDE 256; the 12 base pixels' centres match their analytic values |
+          | t2 model | a unit for the dust density, and a grid's resampling note and no-data marker kept in its header | the unit, kind and std-names-mean criteria | model and header tests |
+          | t3 reader | `grids/edenhofer.rs`: streams both images bin by bin into a 250³ galactic cube of 10 pc; each cell takes the mean of the voxel centres in it, else the voxel at its centre; cells nearer than 69 pc or beyond 1,250 pc are NaN | the cube, resampling, no-data and same-SHA criteria | tests on a SIMULATED small-NSIDE file written by the test |
+          | t4 source | `sources/edenhofer-2024-dust.yaml` (Zenodo, galaxy tracers? no: stars domain's grid), wired into the release's grid reading | the dust-source criterion | definition and release-grid tests |
+          | t5 measure | fetch the real file in the background, resample it once in an `#[ignore]` test, and note the time, memory, sizes and a sanity value | none | a note with the numbers |
+          | t6 review | `/simplify`, `/code-review`, the gate and integration once, the trace, close and merge | | green |
+  - key: 01a1c440-c1ed-745b-a8c9-b03d8ab637cb
+    id: w3-t1
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b047d9267efa
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "HEALPix NESTED pixel centres and lookup"
+        detail: "univ-model, any NSIDE"
+        state: active
+      - key: 01a1c44f-e681-713b-bdb5-a93e92d27750
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "HEALPix NESTED pixel centres and lookup"
+        detail: "Not needed: univ-model's healpix module already gives hash() and centre() for the nested scheme, and a univ-ingest test holds it to cdshealpix. The reader uses it."
+        state: dropped
+  - key: 01a1c440-c1ed-745b-a8c9-b03e84cb4897
+    id: w3-t2
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b048ad5ac75e
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust unit, resampling note and no-data marker"
+        detail: "model and grid header"
+        state: open
+      - key: 01a1c44f-e681-713b-bdb5-a93ffd5f9620
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Dust unit, resampling note and no-data marker"
+        detail: "8e7b15c: Unit::ExtinctionZgr23PerParsec (its own dimension); Grid.resampling and Grid.no_data, written into the header only when set, so existing grids' headers keep their bytes. OpenAPI gains the unit value only."
+        state: done
+  - key: 01a1c440-c1ed-745b-a8c9-b03fbc3e82e1
+    id: w3-t3
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b0496165b717
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer reader and resampler"
+        detail: "grids/edenhofer.rs"
+        state: open
+      - key: 01a1c44f-e681-713b-bdb5-a94085b2916f
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer reader and resampler"
+        detail: "grids/edenhofer/{mod,resample}.rs: the layout read from headers alone, then two passes (count voxel centres per cell from the geometry, then stream both images bin by bin). Five tests on a SIMULATED NSIDE 8, 64-bin map, every cell of a cut-out checked against a brute-force reading."
+        state: done
+  - key: 01a1c440-c1ed-745b-a8c9-b040804cbfd6
+    id: w3-t4
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b04ae65ff38e
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer source definition and release wiring"
+        detail: "sources/edenhofer-2024-dust.yaml"
+        state: open
+      - key: 01a1c44f-e681-713b-bdb5-a94150472270
+        at: 2026-11-10T07:15:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer source definition and release wiring"
+        detail: "sources/edenhofer-2024-dust.yaml; Zenodo, CC BY 4.0; release grid reading"
+        state: active
+      - key: 01a1c454-5252-75dd-9039-51a815213de3
+        at: 2026-11-10T07:20:22Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Edenhofer source definition and release wiring"
+        detail: "25c3835: sources/edenhofer-2024-dust.yaml (Zenodo file with size and SHA-256, CC BY 4.0, stars domain, fields density and density_error in the new unit); release::is_grid and read take it whole. A release-level test checks the header, the deviation named under its mean, the shared no-data cells, and the same SHA-256 from two builds."
+        state: done
+  - key: 01a1c440-c1ed-745b-a8c9-b0413099e9be
+    id: w3-t5
+    kind: task
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b04b42d789a9
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Fetch and resample the real map once"
+        detail: "measure time, memory and sizes"
+        state: open
+      - key: 01a1c454-5252-75dd-9039-51a91bf5bca4
+        at: 2026-11-10T07:20:22Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Fetch and resample the real map once"
+        detail: "Fetched 3,252,715,200 bytes; MD5 matches Zenodo's 10c823a5…. Resampling whole in release mode."
+        state: active
+      - key: 01a1c454-eb54-7644-8aec-6c0a92343100
+        at: 2026-11-10T07:21:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Fetch and resample the real map once"
+        detail: "6.4 s in release mode; 52.35% of cells hold data; densest cell at Orion A."
+        state: done
+  - key: 01a1c440-c1ed-745b-a8c9-b043c15391d1
+    id: w3-build-issues
+    kind: note
+    versions:
+      - key: 01a1c440-c1ed-745b-a8c9-b04d44aa4d15
+        at: 2026-11-10T06:59:00Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+      - key: 01a1c45f-cfff-75b7-9016-83e637feb9a3
+        at: 2026-11-10T07:32:55Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build and review issues"
+        markdown: |-
+          | # | Issue | Found by | Fix | State |
+          |---|---|---|---|---|
+          | 1 | My HEALPix module overwrote univ-model's existing `healpix.rs` | `git status` right after writing it | Restored; the reader uses the existing `hash` and `centre` | fixed |
+          | 2 | Column fields come from a fixed list (`dust_density` refused) | `definitions` test | `density` and `density_error`, the unit telling the dust apart | fixed |
+          | 3 | The spec said two grids; the code (rightly, as CF4++) publishes one grid with the deviation as its uncertainty | `/simplify` altitude, `/code-review` | Spec reworded, `337bb45` | fixed |
+          | 4 | No data used the paper's rounded 69 and 1,250 pc, overlapping the file's 68.62–1,248.10 pc bins | `/simplify` altitude | No data outside the file's own bins; the paper's values kept as a 1% layout check | fixed |
+          | 5 | Header notes written only when present, by patching the JSON | `/simplify`, `/code-review` | Always written, null where none, with a new criterion in fetch-a-volume-grid | fixed |
+          | 6 | Two passes over 405 M voxels computed each cell twice | `/simplify` efficiency, `/code-review` | One streaming pass; the centre-value cells read only their bins. Real map 6.4 s → 4.6 s | fixed |
+          | 7 | Hand-written FITS decoding, padding and short-read checks | `/simplify` reuse, `/code-review` | `read_numbers`, `fits::sample`, one seek per HDU | fixed |
+          | 8 | A table with PCOUNT or GCOUNT, or a MEAN that is not an IMAGE, would be misread | `/code-review` | XTENSION, PCOUNT 0 and GCOUNT 1 required | fixed |
+          | 9 | A NaN voxel would make an in-range cell NaN, read as no data | `/code-review` | Non-finite values refused; the real file has none | fixed |
+          | 10 | A cell's deviation is the mean of its voxels' deviations, not the deviation of its mean | `/code-review` | The resampling note says so: equal where the voxels vary together, an upper bound otherwise | fixed |
+          | 11 | The dimension's generic name would let another extinction scale convert 1:1 | `/simplify` altitude | `ExtinctionZgr23Density` | fixed |
+          | 12 | `is_grid` and `read` were two parallel lists of grid ids | `/simplify` altitude | One table of readers | fixed |
+          | 13 | Tests not linked in the trace | `/code-review` | Nine nodes linked and accepted | fixed |
+
+          **Skipped, with reasons:**
+          - A typed no-data marker: NaN in f32 marks it, and the header's note explains it.
+          - `Cutout` carrying its shape: it changes the other readers for no gain to them.
+          - A hand-written cell indexer: it would save about 0.4 s and duplicate `cell_at`.
+          - A shared test FITS writer: one test uses it.
+          - `HEADER_VERSION` stays 1: the two keys are additive.
+  - key: 01a1c454-eb54-7644-8aec-6c091b6835a4
+    id: w3-measured
+    kind: note
+    versions:
+      - key: 01a1c454-eb54-7644-8aec-6c0bf80af2c1
+        at: 2026-11-10T07:21:02Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "The real map, resampled once"
+        markdown: |-
+          `mean_and_std_healpix.fits` from Zenodo, 3,252,715,200 bytes, MD5 matching the record's. Resampled whole by `the_real_map_resamples_whole` (by hand, `--release`):
+
+          | Measure | Value |
+          |---|---|
+          | Time | 6.4 s (21 s with the test's build) |
+          | Memory | under 2 GB resident including the compile; the grid itself is about 0.4 GB (two f64 fields of 15.6 M cells, counts, 786,432 directions) |
+          | Cells holding data | 8,179,792 of 15,625,000 (0.5235, the shell's share of the cube: π/6 × (1 − (69/1250)³)) |
+          | Density per pc | median 1.09e-5, 99th percentile 1.34e-3, max 3.95e-2 |
+          | Densest cell | l 208.8°, b −19.7°, 430 pc: **Orion A** (l ≈ 209°, b ≈ −19.5°, about 400–430 pc), so the frame and axes are right |
+          | Release files | two of 62.5 MB (15.6 M little-endian f32 each) and a header |
+
+          **For wave 4:** the explorer will need a smaller texture than the 62.5 MB mean grid. Two ways: read it once and downsample in the client, or serve a coarser copy. This is decided in wave 4's plan.
+        tone: success

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::EntryError;
 use crate::position::{Epoch, Frame, SkyPosition, between, lon_lat, unit_vector};
-use crate::units::{Dimension, Unit};
+use crate::units::Unit;
 use crate::value::Value;
 
 /// A position as its source published it: an equatorial longitude and latitude in a frame,
@@ -114,8 +114,7 @@ impl Position {
 /// Refuses a value whose normalized unit is not `unit`, or whose native one measures another
 /// dimension.
 pub(super) fn in_unit(field: &'static str, value: &Value, unit: Unit) -> Result<(), EntryError> {
-    let dimension: Dimension = unit.dimension();
-    if value.normalized.unit != unit || value.native.unit.dimension() != dimension {
+    if value.normalized.unit != unit || !value.native.unit.normalizes_to(unit) {
         return Err(EntryError::Unit(field, value.normalized.unit));
     }
     Ok(())

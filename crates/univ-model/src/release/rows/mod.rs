@@ -294,7 +294,7 @@ row! {
         name: String,
         kind: String,
         status: String,
-        /// `stars`, `nearby_galaxies` or `cosmic_web`: the scale domain it is listed in.
+        /// `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`: the scale domain it is listed in.
         scale_domain: String,
         /// The centre of its geometry (its published position, a sphere's centre, the middle of
         /// a sky region, the centre of its placed members' box), ICRS Cartesian about the

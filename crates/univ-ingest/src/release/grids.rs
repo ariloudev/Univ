@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::json;
 use univ_model::cosmology::AssumedCosmology;
-use univ_model::derive::Release;
+use univ_model::derive::{Release, Rescaled};
 use univ_model::grid::{CellUncertainty, Grid, Samples};
 use univ_model::release::keys;
 use univ_model::release::rows::GridRow;
@@ -18,7 +18,10 @@ use univ_model::units::Unit;
 use univ_model::value::Quantity;
 
 use super::objects::{json, snake};
-use crate::grids::{Window, basins, cf4pp, read_cf4_basins, read_cf4pp, read_twompp, twompp};
+use crate::grids::{
+    Window, basins, cf4pp, edenhofer, read_cf4_basins, read_cf4pp, read_edenhofer, read_twompp,
+    twompp,
+};
 use crate::source::SourceDefinition;
 use crate::tiles::sha256;
 
@@ -34,10 +37,46 @@ pub struct GridFiles {
     pub row: GridRow,
 }
 
+/// How a grid source's whole grid is read from the files its fetch gives.
+type Reader = fn(&[PathBuf]) -> Result<Grid, String>;
+
+/// Each volume grid this build reads, by its source's id.
+const READERS: [(&str, Reader); 4] = [
+    (cf4pp::SOURCE, |files| {
+        let path = named(files, "new_CF4pp_mean_std_grids.npz")?;
+        read_cf4pp(path, Window::Whole)
+            .map(|g| g.grid)
+            .map_err(|e| e.to_string())
+    }),
+    (basins::SOURCE, |files| {
+        let path = named(files, "CF4_new_128-z008_watersheds-fits.zip")?;
+        read_cf4_basins(path, Window::Whole).map_err(|e| e.to_string())
+    }),
+    (twompp::SOURCE, |files| {
+        let (density, velocity) = (
+            named(files, "twompp_density.npy")?,
+            named(files, "twompp_velocity.npy")?,
+        );
+        read_twompp(density, velocity, Window::Whole).map_err(|e| e.to_string())
+    }),
+    (edenhofer::SOURCE, |files| {
+        let path = named(files, edenhofer::FILE)?;
+        read_edenhofer(path, Window::Whole, edenhofer::CELLS).map_err(|e| e.to_string())
+    }),
+];
+
+/// The reader of `definition`'s grid, none for a source that is no volume grid.
+fn reader(definition: &SourceDefinition) -> Option<Reader> {
+    READERS
+        .iter()
+        .find(|(id, _)| *id == definition.id.as_str())
+        .map(|&(_, read)| read)
+}
+
 /// Whether `definition` is a volume grid this build reads.
 #[must_use]
 pub fn is_grid(definition: &SourceDefinition) -> bool {
-    [cf4pp::SOURCE, basins::SOURCE, twompp::SOURCE].contains(&definition.id.as_str())
+    reader(definition).is_some()
 }
 
 /// The file among `files` whose name is `name`.
@@ -56,22 +95,8 @@ fn named<'a>(files: &'a [PathBuf], name: &str) -> Result<&'a Path, String> {
 /// Fails, naming the source, when it is not a grid this build reads or its files cannot be read.
 pub fn read(definition: &SourceDefinition, files: &[PathBuf]) -> Result<Grid, String> {
     let id = definition.id.as_str();
-    let grid = match id {
-        cf4pp::SOURCE => {
-            read_cf4pp(named(files, "new_CF4pp_mean_std_grids.npz")?, Window::Whole).map(|g| g.grid)
-        }
-        basins::SOURCE => read_cf4_basins(
-            named(files, "CF4_new_128-z008_watersheds-fits.zip")?,
-            Window::Whole,
-        ),
-        twompp::SOURCE => read_twompp(
-            named(files, "twompp_density.npy")?,
-            named(files, "twompp_velocity.npy")?,
-            Window::Whole,
-        ),
-        _ => return Err(format!("{id}: no volume grid reader")),
-    };
-    grid.map_err(|e| format!("{id}: {e}"))
+    let read = reader(definition).ok_or_else(|| format!("{id}: no volume grid reader"))?;
+    read(files).map_err(|e| format!("{id}: {e}"))
 }
 
 /// Little-endian `f32` samples.
@@ -81,6 +106,22 @@ fn floats(values: impl Iterator<Item = f64>) -> Vec<u8> {
         reason = "the samples are published as 32-bit floats; the format is f32"
     )]
     values.flat_map(|v| (v as f32).to_le_bytes()).collect()
+}
+
+/// The cell of `grid` in h^-1 Mpc, rescaled by the release's Hubble constant, as the spec asks;
+/// none for a grid in another unit.
+fn cell_rescaled(grid: &Grid, cosmology: &Release) -> Result<Option<Rescaled>, String> {
+    let g = &grid.geometry;
+    if g.unit != Unit::MegaparsecOverH {
+        return Ok(None);
+    }
+    let cell = Quantity::new(g.cell, g.unit, univ_model::value::Uncertainty::NoneReported)
+        .map_err(|e| e.to_string())?;
+    cosmology
+        .hubble_rescaling(AssumedCosmology::HUBBLE_SCALED)
+        .and_then(|r| r.apply(&cell))
+        .map(Some)
+        .map_err(|e| format!("{}: the cell cannot be rescaled: {e}", grid.source))
 }
 
 /// The files and row of `grid`, from `definition`, in release `release` under `cosmology`.
@@ -138,18 +179,7 @@ pub fn grid_files(
             "labels": field.labels,
         }));
     }
-    // The cell in h^-1 Mpc, rescaled by the release's Hubble constant, as the spec asks.
-    let cell_rescaled = if g.unit == Unit::MegaparsecOverH {
-        let cell = Quantity::new(g.cell, g.unit, univ_model::value::Uncertainty::NoneReported)
-            .map_err(|e| e.to_string())?;
-        let rescaled = cosmology
-            .hubble_rescaling(AssumedCosmology::HUBBLE_SCALED)
-            .and_then(|r| r.apply(&cell))
-            .map_err(|e| format!("{id}: the cell cannot be rescaled: {e}"))?;
-        Some(rescaled)
-    } else {
-        None
-    };
+    let cell_rescaled = cell_rescaled(grid, cosmology)?;
     let header = json!({
         "format": "univ-volume-grid",
         "header_version": HEADER_VERSION,
@@ -171,6 +201,8 @@ pub fn grid_files(
         "samples": "little-endian 32-bit floats, row-major over `axes` (the last fastest); a \
                     vector field's component is the slowest index",
         "fields": fields,
+        "resampling": grid.resampling,
+        "no_data": grid.no_data,
     });
     let header_path = keys::grid_header(id);
     let header_bytes = serde_json::to_vec_pretty(&header).map_err(|e| e.to_string())?;

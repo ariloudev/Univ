@@ -1,0 +1,51 @@
+key: 01a1c30f-7cd8-7194-88b1-fe9a7faddf8a
+id: wave-stars
+versions:
+  - key: 01a1c30f-7cd8-7194-88b1-fea23d928993
+    at: 2026-11-10T01:25:34Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave: deeper Gaia stars"
+    goal: "A release holds Gaia DR3 stars to the chosen G cut with Bailer-Jones distances, tiled and checked"
+    status: planned
+  - key: 01a1c328-d208-77b0-8e1b-6a931c4b4128
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 1: deeper Gaia stars"
+    goal: "Gaia DR3 stars to G < 14 with Bailer-Jones distances inferred below ϖ/σ = 5 and set aside in ranking, four more object shards bound, and pruning followed by a change build proven by tests, merged into product/milky-way"
+    status: active
+  - key: 01a1c371-c088-71b2-a21d-8504e35095dd
+    at: 2026-11-10T03:12:54Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 1: deeper Gaia stars"
+    goal: "Gaia DR3 stars to G < 14 with Bailer-Jones distances inferred below ϖ/σ = 5 and set aside in ranking, four more object shards bound, and pruning followed by a change build proven by tests, merged into product/milky-way"
+    status: done
+blocks:
+  - key: 01a1c371-c088-71b2-a21d-8503a57e930b
+    id: wave-1-merged
+    kind: note
+    versions:
+      - key: 01a1c371-c088-71b2-a21d-850517cfba47
+        at: 2026-11-10T03:12:54Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 1 merged"
+        markdown: |-
+          `stage/milky-way-1` merged as `279db9d`, on the owner's standing approval for this session. The gate passed 13 gates and integration passed.
+
+          Two changes from the plan:
+          - **16 object shards, not 12.** One measured chunk gave 1.8 KB a star, so the owner chose 16 shards.
+          - **The full fetch takes about 14 hours**, not a few.
+
+          AC-91, AC-92 and AC-166 wait for wave 2, and AC-362 for wave 4.
+        tone: success

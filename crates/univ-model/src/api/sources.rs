@@ -21,7 +21,7 @@ pub struct SourceSummary {
     /// Its id, such as `gaia-dr3-bright`.
     pub id: String,
     pub title: String,
-    /// The scale domain its points are tiled in: `stars`, `nearby_galaxies` or `cosmic_web`.
+    /// The scale domain its points are tiled in: `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.
     pub scale_domain: String,
     /// How many of its catalogue entries the release holds.
     pub entries: u64,

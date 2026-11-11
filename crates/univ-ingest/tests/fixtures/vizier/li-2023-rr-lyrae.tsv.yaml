@@ -1,0 +1,5 @@
+source: li-2023-rr-lyrae
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F944%2F88%2Ftable5&-out=GaiaDR3%2CRA_ICRS%2CDE_ICRS%2CDist-Phot%2Ce_Dist-Phot%2CType%2Cr_EBV&-out.max=5&GaiaDR3=0..576460752303423487
+retrieved: 2026-11-10T03:46:25Z
+sha256: 60179b811dda166466235dedf872b55486aa34d84730da3ac3ec3891be69ff3b
+note: the first slice's query cut to 5 rows

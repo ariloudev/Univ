@@ -6,6 +6,8 @@
 import { type Detail, type DrawnDetail, EVERYTHING, EVERY_POINT } from "../catalogue/lod.ts";
 import { type View, pixelsAt } from "./camera.ts";
 import { type ToDraw, drawList } from "./drawList.ts";
+import { Dust } from "./dust.ts";
+import type { DustVolume } from "./dustGrid.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
@@ -14,6 +16,7 @@ import { type Masks, NO_MASKS } from "./masks.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
+import { pointSizeOf } from "./tracers.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
 /** The browser cannot draw with WebGL2. */
@@ -37,16 +40,14 @@ export interface Points {
   slice: readonly [number, number];
 }
 
-/** The diameter of a point, in device pixels. */
-const POINT_SIZE = 2;
-
 interface Drawn {
   vao: WebGLVertexArrayObject;
   buffers: WebGLBuffer[];
   centre: Vec3;
   count: number;
-  /** Which points lie inside the volume the view is culled to, where it is: the mask as last
-   * uploaded, and its buffer. */
+  /** Which points are drawn, where the catalogue marks them (inside the volume the view is
+   * culled to, and young enough of the Galaxy's tracers): the mask as last uploaded, and its
+   * buffer. */
   inside?: { mask: Uint8Array; buffer: WebGLBuffer };
 }
 
@@ -141,6 +142,8 @@ export class Renderer implements Drawer {
   /** The markers' slot of the table of colours, set for each structure's markers as drawn. */
   private readonly markerColour: WebGLUniformLocation | null;
   private readonly opacity: WebGLUniformLocation | null;
+  /** The dust map, drawn once it is given (draw-the-dust-map). */
+  private readonly dust: Dust;
 
   constructor(canvas: HTMLCanvasElement) {
     // No multisampling: the points soften their own edges, and samples multiply blending's cost.
@@ -167,12 +170,19 @@ export class Renderer implements Drawer {
     gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     // Nor sources: `a_source` beyond every mask's bits, so that nothing turned off hides them.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
-    // And every point lies inside while the view is not culled, markers always.
+    // And every point is drawn while the catalogue marks none, markers always.
     this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
     gl.vertexAttrib1f(this.insideAt, 1);
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
     gl.uniform4fv(gl.getUniformLocation(this.points.program, "u_colours"), colours);
     this.markerColour = gl.getUniformLocation(this.points.program, `u_colours[${MARKER_INDEX}]`);
+    this.dust = new Dust(gl, this.points.program, (vertex, fragment) => compile(gl, vertex, fragment).program);
+  }
+
+  /** Draws the dust map's `volume`, placed by `toGalactic` (the ICRS to galactic axes), and dims
+   * the points behind it; none, to draw no dust. */
+  setDust(volume: DustVolume | undefined, toGalactic: Mat3): void {
+    this.dust.set(volume, toGalactic);
   }
 
   private buffer(
@@ -349,9 +359,11 @@ export class Renderer implements Drawer {
     gl.clearColor(0.02, 0.027, 0.05, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     const sight = sightOf(view, toFrame, width, height);
     const frame = { axes: sight.axes, eye: sight.eye, projection: projection(view, width / height) };
+    this.dust.drawHaze(frame);
+    // Everything after the haze adds up where it crowds.
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     this.drawOutlines(frame, width, height, ratio);
     this.drawPoints(frame, sight, view.distance);
     this.drawMarkers(frame);
@@ -390,7 +402,7 @@ export class Renderer implements Drawer {
     const now = performance.now();
     for (const id of this.fades.gone(now)) this.forget(id);
     this.use(this.points, frame);
-    gl.uniform1f(this.pointSize, POINT_SIZE);
+    this.dust.usePoints();
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
@@ -411,12 +423,13 @@ export class Renderer implements Drawer {
       const domainDetail = detail.detail(batch.domain);
       this.useDetail(domainDetail);
       this.domainOpacity = detailOpacity(domainDetail, distance);
+      gl.uniform1f(this.pointSize, pointSizeOf(batch.domain));
     }
     const inside = detail.inside(batch.id);
     this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
     gl.uniform1f(this.detailAt.count, batch.count);
-    gl.uniform1f(this.opacity, (inside === undefined ? this.domainOpacity : CULLED_OPACITY) * fade);
+    gl.uniform1f(this.opacity, (detail.culled() ? CULLED_OPACITY : this.domainOpacity) * fade);
     gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
   }
@@ -458,6 +471,7 @@ export class Renderer implements Drawer {
 
   /** Lets go of everything drawn, as when the view closes. */
   dispose(): void {
+    this.dust.clear();
     for (const drawn of [...this.batches.values(), ...this.markers.values()]) this.release(drawn);
     for (const outline of this.outlines.values()) this.releaseOutline(outline);
     this.batches.clear();

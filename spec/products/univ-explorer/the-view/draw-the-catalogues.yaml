@@ -130,10 +130,10 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Explorer"
-      shall: "draw every point outside the stars domain in one colour and count in the key the points drawn of each kind of value of distance."
+      shall: "draw every point of the nearby galaxies and cosmic web domains in one colour and count in the key the points drawn of each kind of value of distance."
     criteria:
       - key: 01a1a497-e843-728a-bce8-400b9b581384
-        name: "Points outside the stars domain are drawn in one colour, whatever the kind of value of their distance."
+        name: "Points of the nearby galaxies and cosmic web domains are drawn in one colour, whatever the kind of value of their distance."
       - key: 01a1a497-e843-728a-bce8-400c71ad8ebe
         name: "The key shows that colour and counts the points of the tiles held of each kind of value: measured, estimated, inferred and reconstructed."
   - key: 01a1a8ac-052e-72b3-a33e-b33e770aeebd
@@ -168,6 +168,28 @@ requirements:
     criteria:
       - key: 01a1a497-e843-728a-bce8-40111a7d5c5f
         name: "The view names the frame whose axes it shows, the origin, the unit of its distances and the release cosmology."
+  - key: 01a1c319-7860-76e8-92ac-c5e5caae2dff
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw each point of the Galaxy tracers domain in the colour of the source of its preferred distance, larger than a star's point."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c5e61e66e5d3
+        name: "Each source of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains."
+      - key: 01a1c319-7860-76e8-92ac-c5e7f392df4f
+        name: "The key names each source of the Galaxy tracers domain with its colour and the number of its points drawn."
+      - key: 01a1c319-7860-76e8-92ac-c5e864b8c262
+        name: "A point of the Galaxy tracers domain is drawn twice the size of a point of the stars domain at the same distance."
+  - key: 01a1c319-7860-76e8-92ac-c5e9e544de53
+    statement:
+      form: ubiquitous
+      system: "Univ Explorer"
+      shall: "draw each point of the stars domain whose distance is inferred at half the opacity of a star whose distance is measured or estimated."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c5ea87f31404
+        name: "A star whose preferred distance is inferred is drawn at half the opacity of a star of the same colour whose preferred distance is measured or estimated."
+      - key: 01a1c319-7860-76e8-92ac-c5ebab7e87a4
+        name: "The key says that fainter stars have inferred distances."
 qualityAttributes:
   - key: 01a1a497-e843-728a-bce8-4012b27b645f
     name: "Univ Explorer shall draw the first points of the latest release within 3 seconds of being opened."
