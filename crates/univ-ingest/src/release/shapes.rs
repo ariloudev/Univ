@@ -26,7 +26,10 @@ use super::pointers::{self, Pointed};
 use super::sky::{REGION_ORDER, box_cells};
 use crate::crossmatch::MemberPlacement;
 use crate::source::ScaleDomain;
-use crate::structures::{Coordinates, Members, Radial, Structure, StructureGeometry};
+use crate::structures::{
+    Coordinates, EXTRAPOLATION_DEGREES, Members, RADIUS_BAND_KPC, Radial, Structure,
+    StructureGeometry,
+};
 use crate::tiles::unit_of;
 
 /// A structure's shape as placed, and its derivation.
@@ -130,12 +133,19 @@ fn coordinates_distance(at: &Coordinates, dipole: &str) -> DistanceDerivation {
 }
 
 /// How a log spiral's path is computed (record-a-researched-structure).
-pub const SPIRAL_METHOD: &str = "ln(R / R_kink) = -(beta - beta_kink) tan(psi) at each whole \
-     degree of Galactocentric azimuth beta and each end of its range, psi the pitch angle on \
-     beta's side of the kink; each point at x = R0 - R cos(beta) toward l = 0, y = R sin(beta) \
-     toward l = 90 deg and z = -Z_sun, in heliocentric galactic kpc, turned into the ICRS. An \
-     extrapolation carries the formula on for up to 90 deg of azimuth beyond each end of the \
-     fitted range, while R lies within 3 to 16 kpc: this project's choice, not the paper's";
+#[must_use]
+pub fn spiral_method() -> String {
+    let (low, high) = RADIUS_BAND_KPC;
+    format!(
+        "ln(R / R_kink) = -(beta - beta_kink) tan(psi) at each whole degree of Galactocentric \
+         azimuth beta and each end of its range, psi the pitch angle on beta's side of the kink; \
+         each point at x = R0 - R cos(beta) toward l = 0, y = R sin(beta) toward l = 90 deg and \
+         z = -Z_sun, in heliocentric galactic kpc, turned into the ICRS. An extrapolation carries \
+         the formula on for up to {EXTRAPOLATION_DEGREES} deg of azimuth beyond each end of the \
+         fitted range, while R lies within {low} to {high} kpc: this project's choice, not the \
+         paper's"
+    )
+}
 
 /// A derivation under the release cosmology.
 pub(super) fn derivation(
@@ -341,7 +351,7 @@ pub fn placed_shape(
                 distance(
                     "the arm's log-spiral parameters, the Galactic Centre's distance R0 and the \
                      Sun's height above the plane, as its paper's table and text give them",
-                    SPIRAL_METHOD,
+                    spiral_method(),
                 ),
             );
             derived.kind_of_value = Some(KindOfValue::Reconstructed);

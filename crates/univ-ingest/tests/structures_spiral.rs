@@ -278,3 +278,28 @@ fn a_spiral_arm_with_an_uncited_parameter_or_another_kind_status_or_domain_is_re
         edited(|t| t.replace("value: 5, unit: degree", "value: 60, unit: degree")).unwrap_err();
     assert!(range.contains("fitted range"), "{range}");
 }
+
+#[test]
+fn each_extrapolation_takes_every_cited_parameter_of_its_fitted_arm() {
+    // The two files of an arm are written apart; a correction to one alone would part the
+    // extrapolation from its arm.
+    for (id, s) in ARMS.iter().filter(|(id, _)| !id.ends_with("-extrapolated")) {
+        let fitted = spiral(id);
+        let twin = spiral(&format!("{id}-extrapolated"));
+        assert_eq!(fitted.scalars(), twin.scalars(), "{id}");
+        assert_eq!(fitted.pairs(), twin.pairs(), "{id}");
+        let name = s.name.replace(" (Reid 2019 model)", "");
+        let twin_name = &ARMS
+            .iter()
+            .find(|(i, _)| *i == format!("{id}-extrapolated"))
+            .unwrap()
+            .1
+            .name;
+        assert!(
+            twin_name.starts_with(&format!("{name} extrapolated")),
+            "{twin_name}"
+        );
+        assert_eq!(fitted.extent, Extent::Fitted);
+        assert_eq!(twin.extent, Extent::Extrapolated);
+    }
+}

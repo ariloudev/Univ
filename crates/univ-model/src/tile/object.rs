@@ -24,9 +24,18 @@ pub const OBJECT_KINDS: [ObjectKind; 7] = [
 /// for none or a body.
 #[must_use]
 pub fn object_kind_code(kind: Option<ObjectKind>) -> u8 {
-    kind.and_then(|k| OBJECT_KINDS.iter().position(|o| *o == k))
-        .and_then(|i| u8::try_from(i + 1).ok())
-        .unwrap_or_default()
+    // Exhaustive, so that a new kind of object cannot be written as none unnoticed; a test
+    // holds it to the order of `OBJECT_KINDS`.
+    match kind {
+        None | Some(ObjectKind::Body) => 0,
+        Some(ObjectKind::GalaxyGroup) => 1,
+        Some(ObjectKind::OpenCluster) => 2,
+        Some(ObjectKind::GlobularCluster) => 3,
+        Some(ObjectKind::ClassicalCepheid) => 4,
+        Some(ObjectKind::RrLyraeStar) => 5,
+        Some(ObjectKind::StarFormingRegion) => 6,
+        Some(ObjectKind::LuminousHotStar) => 7,
+    }
 }
 
 /// The kind of object of a version 4 code: none for 0.

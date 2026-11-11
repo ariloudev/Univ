@@ -133,7 +133,7 @@ pub const V4_POINT_BYTES: usize = 21;
 /// The largest tile a release may hold: 1 MiB, the release's quality bound.
 pub const MAX_TILE_BYTES: usize = 1_048_576;
 /// The most points a tile of any version this module writes may hold within
-/// [`MAX_TILE_BYTES`]: 49,930, a version 4 tile's, the widest points.
+/// [`MAX_TILE_BYTES`]: 49,929, a version 4 tile's, the widest points.
 pub const MAX_POINTS: usize = max_points(V4_POINT_BYTES);
 
 /// The encoding versions this module reads, oldest first; it writes the last two,
