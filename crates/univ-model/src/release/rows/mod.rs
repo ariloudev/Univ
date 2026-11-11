@@ -39,7 +39,10 @@ mod objects;
 mod shards;
 mod sources;
 
-pub use objects::{ChainRow, DesignationRow, EntryRow, MeasurementRow, NameRow, ObjectRow, PARAMS};
+pub use objects::{
+    ChainRow, DesignationRow, EntryFlagRow, EntryReferenceRow, EntryRow, MeasurementDetailRow,
+    MeasurementRow, MembershipRow, NameRow, ObjectLinkRow, ObjectRelationRow, ObjectRow, PARAMS,
+};
 pub use shards::{ObjectShardRow, ReleaseShardRow, ShardCellRow};
 pub use sources::{CatalogueError, CatalogueUncertainty, SourceReadingRow, SourceTermRow};
 
@@ -231,8 +234,17 @@ row! {
         release: u32,
         /// `merged_into`, `split_into` or `retired`.
         change: String,
-        /// JSON array of the ids that replaced it, ascending.
-        replaced_by: Json,
+    }
+}
+
+row! {
+    /// An id that replaced the id `id` of `ids_replaced`, `n` its place among them, ascending.
+    IdReplacementRow => "id_replacements", scope: Ledger, scale: Object, key: ["id", "n"],
+    indexes: [], {
+        id: u64,
+        n: u32,
+        release: u32,
+        replaced_by: u64,
     }
 }
 
@@ -428,7 +440,7 @@ row! {
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 26] = [
+pub const TABLES: [Table; 33] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -438,10 +450,17 @@ pub const TABLES: [Table; 26] = [
     ObjectRow::TABLE,
     EntryRow::TABLE,
     MeasurementRow::TABLE,
+    MeasurementDetailRow::TABLE,
+    EntryFlagRow::TABLE,
+    EntryReferenceRow::TABLE,
+    ObjectLinkRow::TABLE,
+    ObjectRelationRow::TABLE,
+    MembershipRow::TABLE,
     DesignationRow::TABLE,
     NameRow::TABLE,
     IdsIssuedRow::TABLE,
     IdReplacedRow::TABLE,
+    IdReplacementRow::TABLE,
     StructureRow::TABLE,
     ScaleDomainRow::TABLE,
     GridRow::TABLE,

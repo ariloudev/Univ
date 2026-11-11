@@ -47,6 +47,39 @@ fn declared_all(table: &str) -> (Vec<String>, Vec<String>) {
 }
 
 #[test]
+fn version_8_keeps_json_out_of_every_table_per_object_or_per_entry() {
+    assert_eq!(SCHEMA_VERSION, 8);
+    for table in &TABLES {
+        let json: Vec<&str> = table
+            .columns
+            .iter()
+            .zip(table.kinds)
+            .filter(|(_, kind)| **kind == ColumnKind::Json)
+            .map(|(column, _)| *column)
+            .collect();
+        assert!(
+            table.scale.allows_json() || json.is_empty(),
+            "{} ({}) holds JSON in {json:?}",
+            table.name,
+            table.scale.words()
+        );
+    }
+    for name in [
+        "entry_flags",
+        "entry_references",
+        "measurement_details",
+        "object_links",
+        "object_relations",
+        "memberships",
+        "id_replacements",
+    ] {
+        let table = TABLES.iter().find(|t| t.name == name).unwrap();
+        assert!(!table.scale.allows_json(), "{name}");
+        assert_eq!(table.columns, declared(name).0, "{name}");
+    }
+}
+
+#[test]
 fn every_table_names_its_scale_in_the_schema() {
     for table in &TABLES {
         let create = format!("CREATE TABLE IF NOT EXISTS {} (", table.name);
@@ -164,7 +197,6 @@ fn version_4_adds_the_source_terms_per_release() {
 
 #[test]
 fn version_7_adds_how_each_source_is_read_per_release() {
-    assert_eq!(SCHEMA_VERSION, 7);
     let columns = [
         "release",
         "source",
@@ -214,14 +246,13 @@ fn a_row_gives_its_values_in_column_order() {
         id: 5,
         release: 2,
         change: "merged_into".into(),
-        replaced_by: "[3]".into(),
     };
     let statements = super::statements::inserts(IdReplacedRow::TABLE, &[replaced.values()]);
     assert_eq!(
         statements,
         [
-            "INSERT OR IGNORE INTO ids_replaced (id, release, change, replaced_by) VALUES\n\
-          (5, 2, 'merged_into', '[3]');\n"
+            "INSERT OR IGNORE INTO ids_replaced (id, release, change) VALUES\n\
+          (5, 2, 'merged_into');\n"
         ]
     );
 }

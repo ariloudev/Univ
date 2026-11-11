@@ -8,7 +8,7 @@ use serde_json::{Value, json};
 use univ_model::api::layers::ItemVersion;
 use univ_model::valid_in;
 
-use crate::backend::{Backend, column, json_column};
+use crate::backend::{Backend, column};
 use crate::http::Request;
 use crate::problem::{Problem, ProblemType};
 use crate::releases;
@@ -90,8 +90,13 @@ async fn replaced<B: Backend>(
                     &[json!(release), held.clone()],
                 ),
                 (
-                    "SELECT id, release, replaced_by FROM ids_replaced WHERE release <= ?1 \
+                    "SELECT id, release FROM ids_replaced WHERE release <= ?1 \
                      AND id IN (SELECT value FROM json_each(?2))",
+                    &[json!(release), held.clone()],
+                ),
+                (
+                    "SELECT id, replaced_by FROM id_replacements WHERE release <= ?1 \
+                     AND id IN (SELECT value FROM json_each(?2)) ORDER BY id, n",
                     &[json!(release), held],
                 ),
             ])
@@ -100,12 +105,19 @@ async fn replaced<B: Backend>(
         for row in rows.next().unwrap_or_default() {
             present.insert(column(&row, "id")?);
         }
-        frontier = Vec::new();
+        let replaced = rows.next().unwrap_or_default();
+        let mut into: BTreeMap<u64, Vec<u64>> = BTreeMap::new();
         for row in rows.next().unwrap_or_default() {
+            into.entry(column(&row, "id")?)
+                .or_default()
+                .push(column(&row, "replaced_by")?);
+        }
+        frontier = Vec::new();
+        for row in replaced {
             let id: u64 = column(&row, "id")?;
-            let into: Vec<u64> = json_column(&row, "replaced_by")?;
-            frontier.extend(into.iter().copied().filter(|to| seen.insert(*to)));
-            changes.insert(id, (column(&row, "release")?, into));
+            let by = into.remove(&id).unwrap_or_default();
+            frontier.extend(by.iter().copied().filter(|to| seen.insert(*to)));
+            changes.insert(id, (column(&row, "release")?, by));
         }
     }
     Ok(ids

@@ -22,7 +22,7 @@ fn the_files_load_the_schema_then_each_table_in_order() {
         [
             "d1/catalogue/0000-schema.sql",
             "d1/shard-00/0000-schema.sql",
-            "d1/catalogue/0012-ids_issued-001.sql"
+            "d1/catalogue/0018-ids_issued-001.sql"
         ]
     );
     let text = String::from_utf8(files[2].1.clone()).unwrap();
@@ -42,8 +42,7 @@ fn a_table_is_split_into_parts_and_its_keys_and_numbers_checked() {
     let replaced = |id| IdReplacedRow {
         id,
         release: 1,
-        change: "retired".into(),
-        replaced_by: Json("x".repeat(20_000)),
+        change: "x".repeat(20_000),
     };
     // About 20 kB a row: 2,000 rows fill more than one 32 MiB part.
     for id in 0..2_000 {
@@ -79,8 +78,8 @@ fn a_table_is_split_into_parts_and_its_keys_and_numbers_checked() {
         parts[1..4],
         [
             "d1/catalogue/0001-releases-001.sql",
-            "d1/catalogue/0013-ids_replaced-001.sql",
-            "d1/catalogue/0013-ids_replaced-002.sql"
+            "d1/catalogue/0019-ids_replaced-001.sql",
+            "d1/catalogue/0019-ids_replaced-002.sql"
         ]
     );
     assert!(sink.files.iter().all(|(_, b)| b.len() <= MAX_FILE_BYTES));
@@ -102,8 +101,13 @@ fn a_table_is_split_into_parts_and_its_keys_and_numbers_checked() {
              finite number",
         "the first only"
     );
-    let table = &written.estimate.tables[12];
-    assert_eq!((table.table.as_str(), table.rows), ("ids_replaced", 2_001));
+    let table = written
+        .estimate
+        .tables
+        .iter()
+        .find(|t| t.table == "ids_replaced")
+        .unwrap();
+    assert_eq!(table.rows, 2_001);
 }
 
 #[test]
@@ -155,11 +159,11 @@ fn an_objects_rows_go_to_its_shard_and_the_rest_to_the_catalogue() {
         paths,
         [
             "d1/catalogue/0000-schema.sql",
-            "d1/catalogue/0011-names-001.sql",
-            "d1/catalogue/0022-object_shards-001.sql",
+            "d1/catalogue/0017-names-001.sql",
+            "d1/catalogue/0029-object_shards-001.sql",
             "d1/shard-00/0000-schema.sql",
             "d1/shard-01/0000-schema.sql",
-            "d1/shard-01/0010-designations-001.sql",
+            "d1/shard-01/0016-designations-001.sql",
         ]
     );
 }

@@ -27,6 +27,7 @@ mod coverage;
 mod d1;
 mod details;
 mod entries;
+pub(crate) mod extras;
 mod files;
 mod grids;
 mod kept;

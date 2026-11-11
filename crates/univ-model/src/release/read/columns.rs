@@ -122,16 +122,6 @@ impl<'a> Columns<'a> {
         self.required(column, s)
     }
 
-    /// A JSON column, none when NULL.
-    pub fn json_opt<T: DeserializeOwned>(&self, column: &str) -> Result<Option<T>, ReadError> {
-        self.text_opt(column)?
-            .map(|text| {
-                serde_json::from_str(text)
-                    .map_err(|e| self.error(column, format!("{text:?} does not read: {e}")))
-            })
-            .transpose()
-    }
-
     /// The term a term column names, none when NULL.
     pub fn term_opt(&self, column: &str) -> Result<Option<&'a str>, ReadError> {
         let v = self.v;

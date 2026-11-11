@@ -12,7 +12,7 @@ mod common;
 mod object_reads_support;
 mod release_fixture;
 
-use object_reads_support::{Decoded, decoded, key_of, no_duplicate_keys};
+use object_reads_support::{Decoded, decoded, key_of};
 use univ_model::api::objects::{MeasuredQuantity, MeasurementRecord};
 use univ_model::object::{NotPlacedReason, Placement};
 use univ_model::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME};
@@ -352,21 +352,17 @@ fn an_object_with_no_distance_has_a_sky_position_and_no_derived_position() {
 }
 
 #[test]
-fn candidate_links_are_written_with_no_duplicate_key() {
-    let texts = object_reads_support::link_texts();
-    assert_eq!(texts.len(), 2, "the two objects given links");
-    for text in &texts {
-        no_duplicate_keys(text).unwrap();
+fn candidate_links_are_written_as_rows_of_their_own() {
+    let mut written = object_reads_support::link_rows();
+    assert_eq!(written.len(), 2, "the two objects given links");
+    for (id, n) in &mut written {
+        n.sort_unstable();
+        assert_eq!(
+            n[..],
+            [0, 1],
+            "object {id}: one row for each of its two links, in order"
+        );
     }
-    assert!(
-        texts
-            .iter()
-            .any(|t| t.contains(r#""by":"match","method":"#)),
-        "{texts:?}"
-    );
-    // The shape written before: the tag `method` and a match's `method` in one object.
-    let old = r#"[{"reason":{"method":"match","method":"position"}}]"#;
-    assert!(no_duplicate_keys(old).is_err());
 }
 
 #[test]

@@ -142,9 +142,10 @@ fn d1_rows(
     writer.add_all(&sources.terms)?;
     writer.add_all(&sources.reading)?;
     writer.add_all(chains.rows())?;
-    let (issued, replaced) = ledger_rows(&crossed.next.ledger)?;
-    writer.add_all(&issued)?;
-    writer.add_all(&replaced)?;
+    let ledger = ledger_rows(&crossed.next.ledger)?;
+    writer.add_all(&ledger.issued)?;
+    writer.add_all(&ledger.replaced)?;
+    writer.add_all(&ledger.replacements)?;
     let (structures, bounds) =
         write_structures(&mut writer, inputs, number, release, grids, &index)?;
     writer.add_all(&domain_rows(number, inputs.tiles))?;

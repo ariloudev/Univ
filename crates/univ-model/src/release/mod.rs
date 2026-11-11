@@ -64,6 +64,15 @@
 //! to be shared alike. Univ Server formats, orders and explains an object's designations and
 //! flags by it. A database of version 6 takes version 7's table as the next publish creates it:
 //! nothing is migrated.
+//!
+//! # No JSON at scale (schema version 8)
+//!
+//! Version 8 keeps JSON out of every table whose rows grow with a release's objects
+//! (keep-json-out-of-the-tables-that-grow-with-a-releases-objects): an entry's flags and
+//! references, a measurement's details, an object's candidate links and relations, the ids that
+//! replaced an id, and the memberships of objects in structures are rows of tables of their own,
+//! and an entry's via and spectral type and a redshift's published frame are columns.
+//! `univ-ingest migrate` brings a database of version 7 to version 8 in place.
 
 pub mod cells;
 pub mod chains;
@@ -99,7 +108,7 @@ pub use statements::Statements;
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 7;
+pub const SCHEMA_VERSION: u32 = 8;
 
 /// The first schema version whose tables share rows between releases. Every later version only
 /// adds tables, which a publish creates, so a database at this version or later takes a release

@@ -32,16 +32,24 @@ fn resolve(store: &MemoryStore, id: i64, latest: i64) -> Vec<i64> {
     if present == 1 {
         return vec![id];
     }
-    let by: String = store
+    let replaced = store.int(&format!(
+        "SELECT COUNT(*) FROM ids_replaced WHERE id = {id}"
+    ));
+    assert_eq!(
+        replaced, 1,
+        "{id} is neither in release {latest} nor replaced"
+    );
+    let mut q = store
         .db
-        .query_row(
-            &format!("SELECT replaced_by FROM ids_replaced WHERE id = {id}"),
-            [],
-            |r| r.get(0),
-        )
-        .map_err(|e| format!("{id} is neither in release {latest} nor replaced: {e}"))
+        .prepare(&format!(
+            "SELECT replaced_by FROM id_replacements WHERE id = {id} ORDER BY n"
+        ))
         .unwrap();
-    let by: Vec<i64> = serde_json::from_str(&by).unwrap();
+    let by: Vec<i64> = q
+        .query_map([], |r| r.get(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
     by.into_iter()
         .flat_map(|b| resolve(store, b, latest))
         .collect()

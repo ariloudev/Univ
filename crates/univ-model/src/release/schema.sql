@@ -1,4 +1,4 @@
--- The D1 schema of Univ releases, version 7 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 8 (univ_model::release::SCHEMA_VERSION).
 --
 -- Version 3 adds source_details and structure_details and changes no table of version 2.
 -- Version 4 adds source_terms and changes no table of version 3.
@@ -8,6 +8,11 @@
 -- release_files is added, and R2 keeps each file once by its SHA-256. A database of version 5 is
 -- brought to version 6 in place, each table rebuilt with its rows valid from their release.
 -- Version 7 adds source_reading and the index names_by_object, and changes no table of version 6.
+-- Version 8 keeps JSON out of every table per object or per catalogue entry: entries' flags,
+-- references and extras, measurements' extras, objects' links and relations and the ids that
+-- replaced an id become rows and columns (entry_flags, entry_references, measurement_details,
+-- object_links, object_relations, id_replacements), and memberships is added. A database of
+-- version 7 is brought to version 8 in place by `univ-ingest migrate`.
 --
 -- Object shards (version 5). Every database, the catalogue database and each object shard, is
 -- given this whole schema, and holds only its own rows of each release: an object's rows in
@@ -182,11 +187,11 @@ CREATE TABLE IF NOT EXISTS chains (
 --   direction is its sky position, published in its preferred position entry's frame. Its
 --   native value is that of its preferred measurement: a distance's or a parallax's native
 --   value, a redshift's CMB-frame value (cmb). Its assumed cosmology is the preferred
---   distance's (measurements.extra). Its cosmology and model version are the release's.
+--   distance's (measurement_details). Its cosmology and model version are the release's.
 --   Galactic and supergalactic Cartesian positions are x, y, z rotated as univ-model rotates
 --   them (ESA 1997; Lahav et al. 2000). Its transformation chain is chains.steps of chain,
 --   filled with chain_p1 to chain_p4 and the native value.
--- - links and relations: JSON arrays, NULL when empty.
+-- - Its candidate links and relations are rows of object_links and object_relations.
 -- Scale: per object.
 CREATE TABLE IF NOT EXISTS objects (
   release INTEGER NOT NULL,
@@ -230,8 +235,6 @@ CREATE TABLE IF NOT EXISTS objects (
   runner_up_total REAL,
   runner_up_measurement REAL,
   runner_up_velocity REAL,
-  links TEXT,
-  relations TEXT,
   retired INTEGER,
   PRIMARY KEY (id, release)
 ) WITHOUT ROWID;
@@ -247,11 +250,14 @@ CREATE TABLE IF NOT EXISTS objects (
 --   dec its ICRS degrees, NULL when the native position is ICRS degrees already. Its published
 --   errors error_ra and error_dec are in error_unit (term), of kind error_kind (term), each with
 --   no uncertainty of its own and normalized to degrees.
--- - flags: JSON object, NULL when empty. extra: JSON object of what no column holds, NULL when
---   nothing: "via" (the designation it was resolved through, when not one of the object's
---   entries), "position_uncertainty" (when not held by the error columns), "spectral_type"
---   (its text as published and its kind of value, where its source gives one) and "references"
---   (the papers a researched entry's values come from: citation, doi, bibcode).
+-- - via_source and via_identifier: the designation it was resolved through, where that is none
+--   of the object's entries (via_entry NULL).
+-- - Published position errors that the error columns cannot hold are measurements of the
+--   quantities position_error_ra and position_error_dec.
+-- - spectral_type: its text as published, of kind of value spectral_type_kind (term), where its
+--   source gives one.
+-- - Its flags are rows of entry_flags, and the papers a researched entry's values come from
+--   rows of entry_references.
 -- Scale: per catalogue entry.
 CREATE TABLE IF NOT EXISTS entries (
   release INTEGER NOT NULL,
@@ -280,8 +286,10 @@ CREATE TABLE IF NOT EXISTS entries (
   error_unit INTEGER,
   error_kind INTEGER,
   group_id TEXT,
-  flags TEXT,
-  extra TEXT,
+  via_source INTEGER,
+  via_identifier TEXT,
+  spectral_type TEXT,
+  spectral_type_kind INTEGER,
   retired INTEGER,
   PRIMARY KEY (object_id, entry, release)
 ) WITHOUT ROWID;
@@ -301,8 +309,8 @@ CREATE TABLE IF NOT EXISTS entries (
 --   method (term) the dipole model.
 -- - A magnitude: kind (term) its band.
 -- - A colour index: kind (term) its two bands, such as B-V, numbered within the entry as its
---   distances are; extra holds derived_from, the two magnitude columns it was computed from,
---   where its source publishes the magnitudes and not the colour.
+--   distances are; measurement_details holds derived_from, the two magnitude columns it was
+--   computed from, where its source publishes the magnitudes and not the colour.
 -- - An age: normalized to years; native as published, such as the base-10 logarithm of the
 --   age in years (unit log_year).
 -- Scale: per catalogue entry.
@@ -333,10 +341,128 @@ CREATE TABLE IF NOT EXISTS measurements (
   cmb_minus REAL,
   cmb_plus REAL,
   cmb_level REAL,
-  extra TEXT,
+  published_frame INTEGER,
   retired INTEGER,
   PRIMARY KEY (object_id, entry, quantity, n, release)
 ) WITHOUT ROWID;
+
+-- What few measurements hold beside their values, one row for each that holds any: a
+-- distance's value as also published (also_*, a quantity of unit also_unit (term) and
+-- uncertainty also_form (term), ...) and the cosmology it assumes (assumed_hubble_constant in
+-- km/s/Mpc, assumed_omega_matter, assumed_omega_lambda); a colour index's two magnitude columns
+-- it was derived from (derived_from_first, derived_from_second).
+-- Scale: per catalogue entry.
+CREATE TABLE IF NOT EXISTS measurement_details (
+  release INTEGER NOT NULL,
+  object_id INTEGER NOT NULL,
+  entry INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  also_value REAL,
+  also_unit INTEGER,
+  also_form INTEGER,
+  also_minus REAL,
+  also_plus REAL,
+  also_level REAL,
+  assumed_hubble_constant REAL,
+  assumed_omega_matter REAL,
+  assumed_omega_lambda REAL,
+  derived_from_first TEXT,
+  derived_from_second TEXT,
+  retired INTEGER,
+  PRIMARY KEY (object_id, entry, quantity, n, release)
+) WITHOUT ROWID;
+
+-- Each flag of a catalogue entry: the source's column flag (a term) and its value as the source
+-- publishes it. Found by flag and value through entry_flags_by_value.
+-- Scale: per catalogue entry.
+CREATE TABLE IF NOT EXISTS entry_flags (
+  release INTEGER NOT NULL,
+  object_id INTEGER NOT NULL,
+  entry INTEGER NOT NULL,
+  flag INTEGER NOT NULL,
+  value TEXT NOT NULL,
+  retired INTEGER,
+  PRIMARY KEY (object_id, entry, flag, release)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS entry_flags_by_value ON entry_flags (flag, value, release);
+
+-- Each paper a researched entry's values come from, n its place in the entry's list: its
+-- citation, and its DOI and bibcode where known.
+-- Scale: per catalogue entry.
+CREATE TABLE IF NOT EXISTS entry_references (
+  release INTEGER NOT NULL,
+  object_id INTEGER NOT NULL,
+  entry INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  citation TEXT NOT NULL,
+  doi TEXT,
+  bibcode TEXT,
+  retired INTEGER,
+  PRIMARY KEY (object_id, entry, n, release)
+) WITHOUT ROWID;
+
+-- Each candidate match of an object, n its place among them: from its entry (entry_source,
+-- entry_identifier) to the other object's entry (candidate_source, candidate_identifier), for
+-- the reason resolution (term) anchor, cross_identification or match, with the columns of
+-- entries' resolutions (scheme, shared, via_source and via_identifier, separation_arcsec,
+-- difference, delta, reason_confidence) and the link's own confidence.
+-- Scale: per object.
+CREATE TABLE IF NOT EXISTS object_links (
+  release INTEGER NOT NULL,
+  object_id INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  entry_source INTEGER NOT NULL,
+  entry_identifier TEXT NOT NULL,
+  candidate_source INTEGER NOT NULL,
+  candidate_identifier TEXT NOT NULL,
+  resolution INTEGER NOT NULL,
+  scheme INTEGER,
+  shared TEXT,
+  via_source INTEGER,
+  via_identifier TEXT,
+  separation_arcsec REAL,
+  difference INTEGER,
+  delta REAL,
+  reason_confidence REAL,
+  confidence REAL NOT NULL,
+  retired INTEGER,
+  PRIMARY KEY (object_id, n, release)
+) WITHOUT ROWID;
+
+-- Each relation of an object to another, n its place among them: kind (term) from its entry
+-- (entry_source, entry_identifier) to the other object's entry (other_source,
+-- other_identifier), found by the identifier of scheme that the group's source gives.
+-- Scale: per object.
+CREATE TABLE IF NOT EXISTS object_relations (
+  release INTEGER NOT NULL,
+  object_id INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  kind INTEGER NOT NULL,
+  entry_source INTEGER NOT NULL,
+  entry_identifier TEXT NOT NULL,
+  other_source INTEGER NOT NULL,
+  other_identifier TEXT NOT NULL,
+  scheme TEXT NOT NULL,
+  identifier TEXT NOT NULL,
+  retired INTEGER,
+  PRIMARY KEY (object_id, n, release)
+) WITHOUT ROWID;
+
+-- Each object that its source's own column assigns to a researched structure: the structure's
+-- id, the source and the value of its column as published (memberships, such as a Reid et al.
+-- 2019 maser on its arm). Found by structure through memberships_by_structure.
+-- Scale: per object.
+CREATE TABLE IF NOT EXISTS memberships (
+  release INTEGER NOT NULL,
+  object_id INTEGER NOT NULL,
+  structure TEXT NOT NULL,
+  source INTEGER NOT NULL,
+  value TEXT NOT NULL,
+  retired INTEGER,
+  PRIMARY KEY (object_id, structure, release)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS memberships_by_structure ON memberships (structure, release);
 
 -- Every designation an object carries, an entry's own or one its source gives beside it.
 -- Scale: per catalogue entry.
@@ -378,9 +504,17 @@ CREATE TABLE IF NOT EXISTS ids_issued (
 CREATE TABLE IF NOT EXISTS ids_replaced (
   id INTEGER PRIMARY KEY,
   release INTEGER NOT NULL,
-  change TEXT NOT NULL,
-  replaced_by TEXT NOT NULL
+  change TEXT NOT NULL
 );
+-- The ids that replaced each id of ids_replaced, n its place among them; none for one retired.
+-- Scale: per object.
+CREATE TABLE IF NOT EXISTS id_replacements (
+  id INTEGER NOT NULL,
+  n INTEGER NOT NULL,
+  release INTEGER NOT NULL,
+  replaced_by INTEGER NOT NULL,
+  PRIMARY KEY (id, n)
+) WITHOUT ROWID;
 
 -- The cell index of bounded volume queries (univ_model::release::cells). A placed object is in
 -- the level-0 cell of its scale domain (term) that holds its position; a structure is in each
