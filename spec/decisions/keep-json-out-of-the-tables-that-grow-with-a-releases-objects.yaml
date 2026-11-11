@@ -69,7 +69,7 @@ assessments:
 consequences:
   - key: 01a1cca1-1789-7424-a53b-b6d40e4c027a
     kind: cost
-    statement: "The release schema moves to version 7, and the next release is a full build and publish."
+    statement: "The release schema moves to version 8; the releases a store holds are migrated in place, and the next release is built as a change on them."
   - key: 01a1cca1-1789-7424-a53b-b6d522e85dfa
     kind: obligation
     statement: "The gate refuses a JSON column in a table that grows with the objects, and a JSON function over a stored column outside the tables bounded by sources and structures."
