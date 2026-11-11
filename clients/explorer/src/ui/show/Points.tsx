@@ -9,6 +9,7 @@ import { Note } from "../record/parts.tsx";
 import { sentence } from "../record/wording.ts";
 import { words } from "../text.ts";
 import { allPoints, nonePoints, onlySource } from "./actions.ts";
+import { AgeChoice, type AgeState } from "./AgeChoice.tsx";
 import type { ShowChoices, ShowSource } from "./choices.ts";
 import { GroupChip, Only, Part } from "./controls.tsx";
 
@@ -18,9 +19,16 @@ interface Props {
   onApply: Apply;
 }
 
-export function Points({ choices, hidden, onApply }: Props) {
+/** The domain whose points the age choice acts on. */
+const TRACERS = "galaxy_tracers";
+
+export function Points({ choices, hidden, onApply, age }: Props & { age?: AgeState | undefined }) {
+  const all = () => {
+    onApply(allPoints(choices));
+    age?.choose(undefined);
+  };
   return (
-    <Part title="Points" onAll={() => onApply(allPoints(choices))} onNone={() => onApply(nonePoints(choices))}>
+    <Part title="Points" onAll={all} onNone={() => onApply(nonePoints(choices))}>
       <Note>By kind of value</Note>
       <div className="grid grid-cols-2 gap-1" data-testid="show-kinds">
         {KINDS.map((kind) => (
@@ -36,6 +44,7 @@ export function Points({ choices, hidden, onApply }: Props) {
       </div>
       <Sources choices={choices} hidden={hidden} onApply={onApply} />
       <Note>A catalogue is switched in every domain it is in; a domain's box switches all its points.</Note>
+      {age !== undefined && choices.domainNames.includes(TRACERS) ? <AgeChoice age={age} /> : null}
     </Part>
   );
 }

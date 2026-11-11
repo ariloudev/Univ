@@ -247,10 +247,12 @@ export interface DrawnDetail {
   share: (id: string) => number;
   detail: (domain: string) => Detail;
   inside: (id: string) => Uint8Array | undefined;
+  /** Whether the view is culled to a volume, so that the points inside it are drawn as such. */
+  culled: () => boolean;
 }
 
 /** Every point of every tile drawn, before there is a catalogue to say otherwise. */
-export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING, inside: () => undefined };
+export const EVERY_POINT: DrawnDetail = { share: () => 1, detail: () => EVERYTHING, inside: () => undefined, culled: () => false };
 
 /** How many of `points` points a share of `share` draws. */
 export const drawnOf = (points: number, share: number): number => Math.round(points * share);

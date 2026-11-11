@@ -428,7 +428,7 @@ export class Renderer implements Drawer {
     this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
     gl.uniform1f(this.detailAt.count, batch.count);
-    gl.uniform1f(this.opacity, (inside === undefined ? this.domainOpacity : CULLED_OPACITY) * fade);
+    gl.uniform1f(this.opacity, (detail.culled() ? CULLED_OPACITY : this.domainOpacity) * fade);
     gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
   }

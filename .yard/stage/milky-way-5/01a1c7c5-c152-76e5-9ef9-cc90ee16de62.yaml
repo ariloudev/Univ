@@ -219,6 +219,15 @@ blocks:
         title: "Explorer: tiles to ages"
         detail: "schemas accept log_age_code; tracer batches carry ages; star colours read only from colour codes. Done when tiles.test.ts passes."
         state: active
+      - key: 01a1c815-b98e-709a-8751-995ec0818afc
+        at: 2026-11-11T00:50:29Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: tiles to ages"
+        detail: "The manifest schema reads log_age_code; a Galaxy tracers batch carries `ages` (Float32, NaN for none) from the decoder's logAge; other domains carry none. Star colours are untouched (the decoder already separates the codes). tiles.test.ts adds the age test on the SIMULATED version 3 fixture; all 500 Vitest tests and the typecheck pass."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fefe2568066c
     id: t8-explorer-age-choice
     kind: task
@@ -232,6 +241,15 @@ blocks:
         title: "Explorer: the age choice"
         detail: "age= in the address, a Show drawer control with the share of tracers with an age, a per-point cut that hides from pointer, click and key, and All resets it. Done when the Vitest tests and the Playwright ?age=30 test pass."
         state: open
+      - key: 01a1c815-b98e-709a-8751-995fa2b06777
+        at: 2026-11-11T00:50:29Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: the age choice"
+        detail: "age= in the address, a Show drawer control with the share of tracers with an age, a per-point cut that hides from pointer, click and key, and All resets it. Done when the Vitest tests and the Playwright ?age=30 test pass."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-feff6afd914a
     id: t9-explorer-panel
     kind: task

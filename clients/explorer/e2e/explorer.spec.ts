@@ -376,6 +376,24 @@ test("shows only one catalogue from its line, every other one off, and everythin
   await expect(page).not.toHaveURL(/hide=/);
 });
 
+test("keeps the age of the Galaxy's tracers drawn in the address, across a reload, until All shows every age", async ({ page }) => {
+  await page.goto("/?age=30");
+  await expect(page.getByText(/^Drawing release \d+/)).toBeVisible();
+  await page.getByRole("button", { name: "Show", exact: true }).click();
+  const drawer = page.getByRole("complementary", { name: "Show" });
+  const young = drawer.getByRole("button", { name: "Tracers younger than 30 million years" });
+  await expect(young).toHaveAttribute("aria-pressed", "true");
+  await expect(drawer.getByTestId("show-summary")).toContainText("tracers younger than 30 million years");
+  await expect(drawer.getByTestId("show-age-share")).toContainText(/\d+ of the \d+ tracers held carry an age/);
+  await drawer.getByRole("button", { name: "Tracers younger than 10 million years" }).click();
+  await expect(page).toHaveURL(/age=10/);
+  await page.reload();
+  await expect(drawer.getByRole("button", { name: "Tracers younger than 10 million years" })).toHaveAttribute("aria-pressed", "true");
+  await drawer.getByRole("button", { name: "All points" }).click();
+  await expect(page).not.toHaveURL(/age=/);
+  await expect(drawer.getByRole("button", { name: "Tracers of any age" })).toHaveAttribute("aria-pressed", "true");
+});
+
 test("has no serious or critical accessibility violations", async ({ page }) => {
   await firstPoints(page);
   await page.getByRole("button", { name: "Structures" }).click();
