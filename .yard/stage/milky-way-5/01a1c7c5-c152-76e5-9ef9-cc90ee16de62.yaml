@@ -281,6 +281,15 @@ blocks:
         title: "Explorer: age in the panel"
         detail: "An age line in Myr with its interval, kind, source and published log. Done when objectRecordText and RecordPanel tests pass on an open-cluster record fixture."
         state: active
+      - key: 01a1c81a-aadf-75a6-bed3-15574df0c492
+        at: 2026-11-11T00:55:53Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: age in the panel"
+        detail: "objectRecordText.ageLines gives each age as “Age 21 +14 −12 Myr (68%)” and, where published as a logarithm, “log age (yr) 7.33 +0.22 −0.36, as published”, with kind and source; ObjectRecordPanel shows them in an Age part after Brightness. Hunt & Reffert 2023 gets its short name. Tests on test/openCluster.ts (ASCC 5's recorded values): objectRecordText and ObjectPanel; 513 Vitest tests pass."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-ff006a71aa5f
     id: t10-science
     kind: task
@@ -294,6 +303,15 @@ blocks:
         title: "Science check open-cluster-ages"
         detail: "A count of Hunt & Reffert clusters with an age (fail), and the count under 30 Myr (report). Done when it runs on a scratch release built from the fixtures."
         state: open
+      - key: 01a1c81a-aadf-75a6-bed3-155855319e1a
+        at: 2026-11-11T00:55:53Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Science check open-cluster-ages"
+        detail: "A count of Hunt & Reffert clusters with an age (fail), and the count under 30 Myr (report). Done when it runs on a scratch release built from the fixtures."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-ff01bace2bad
     id: t11-review
     kind: task
