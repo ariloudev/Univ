@@ -16,6 +16,7 @@ use univ_model::redshift::CmbCorrection;
 use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
 
+mod age;
 mod colour;
 mod fixes;
 mod redshift;
@@ -212,7 +213,7 @@ impl Row<'_, '_> {
             proper_motion: self.proper_motion()?.map(Box::new),
             magnitude: self.magnitude()?.map(Box::new),
             colours: self.colours()?,
-            ages: thin_vec::ThinVec::new(),
+            ages: self.ages()?,
             spectral_type: self.spectral_type().map(Box::new),
             group_id: plan
                 .group_id
