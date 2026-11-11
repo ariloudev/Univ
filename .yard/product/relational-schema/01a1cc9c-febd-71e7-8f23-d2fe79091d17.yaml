@@ -10,3 +10,12 @@ versions:
     title: "Guards and checks"
     goal: "The gate refuses JSON at scale, and every science check reads indexed rows"
     status: planned
+  - key: 01a1ccad-dfdd-72e9-a8d9-b5540498fc6e
+    at: 2026-11-11T22:15:09Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 2: the guards and checks"
+    goal: "stage/relational-schema-2 is merged: cargo xtask json and the scan guard run in the gate and every science check searches indexed rows"
+    status: planned

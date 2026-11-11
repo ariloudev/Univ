@@ -10,3 +10,12 @@ versions:
     title: "Schema and ingest"
     goal: "Release schema 7 holds flags, references, links and the masers' arms as rows, and ingest writes them"
     status: planned
+  - key: 01a1ccad-dfdd-72e9-a8d9-b553bc2cb5f8
+    at: 2026-11-11T22:15:09Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 1: the schema"
+    goal: "stage/relational-schema-1 is merged: schema 8 holds flags, references, extras, links, relations and memberships as rows, ingest writes them, reads give the same records, and migrate brings a schema-7 store to 8"
+    status: active
