@@ -10,7 +10,7 @@ const [low, mid, high] = [6.969_857_22, 7.325_891_02, 7.542_258_26];
 const years = 10 ** mid;
 
 /** ASCC 5's age, as Univ Server gives it. */
-export const ASCC_5_AGE: Measurement = {
+const ASCC_5_AGE: Measurement = {
   entry: 0,
   source: "hunt-reffert-2023",
   quantity: "age",

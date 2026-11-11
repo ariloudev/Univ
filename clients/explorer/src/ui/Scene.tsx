@@ -14,6 +14,7 @@ import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
+import type { RecordContext } from "./ObjectPanel.tsx";
 import { type Target, isChosen, targetOf } from "./letGo.ts";
 import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
@@ -80,6 +81,60 @@ function usePointSettings(world: World | undefined, domains: readonly Domain[], 
   }, [world, domains, levelOfDetail]);
 }
 
+/** What is chosen in the view of `world`, and the ways to choose and let go of an object or a
+ * structure: one let go when the other is chosen. */
+function selectionOf({
+  world,
+  structures,
+  structureChoice,
+  context,
+  chosen,
+  detail,
+  inside,
+  choose,
+  chosenAlready,
+}: {
+  world: World | undefined;
+  structures: Structures;
+  structureChoice: StructureChoice;
+  context: RecordContext;
+  chosen: Selection["chosen"];
+  detail: StructureDetail | undefined;
+  inside: Inside | undefined;
+  choose: ReturnType<typeof useChosen>["choose"];
+  chosenAlready: (target: Target) => boolean;
+}): Selection {
+  const structureId = structureChoice.structure;
+  const selection: Selection = {
+    context,
+    chosen,
+    structure: detail,
+    structureId,
+    inside,
+    approximate: structureId !== undefined && structures.drawings.get(structureId)?.approximate === true,
+    object: (id, options) => {
+      structureChoice.close();
+      choose(id, options);
+    },
+    structureById: (id) => {
+      choose(undefined);
+      structureChoice.choose(id);
+      if (world !== undefined) flyToStructure(world, structures, id);
+    },
+    structureFromList: (id) => {
+      if (chosenAlready({ structure: id })) selection.close();
+      else selection.structureById(id);
+    },
+    close: () => {
+      choose(undefined);
+      structureChoice.close();
+      // The view no longer turns and zooms about the place of what was let go.
+      world?.controller.returnToEarth();
+    },
+  };
+  return selection;
+}
+
 /** The view of `release`: the canvas, its overlay, and the rail, margins and bottom bar about it,
  * with its parts of the top bar, all in `place`; its tiles at the detail the view needs, or every one where `levelOfDetail` is
  * off. */
@@ -118,33 +173,7 @@ export function Scene({
     structure: (id) => selection.structureById(id),
     object: (id, options) => selection.object(id, options),
   });
-  const selection: Selection = {
-    context,
-    chosen,
-    structure: detail,
-    structureId,
-    inside,
-    approximate: structureId !== undefined && structures.drawings.get(structureId)?.approximate === true,
-    object: (id, options) => {
-      structureChoice.close();
-      choose(id, options);
-    },
-    structureById: (id) => {
-      choose(undefined);
-      structureChoice.choose(id);
-      if (world !== undefined) flyToStructure(world, structures, id);
-    },
-    structureFromList: (id) => {
-      if (chosenAlready({ structure: id })) selection.close();
-      else selection.structureById(id);
-    },
-    close: () => {
-      choose(undefined);
-      structureChoice.close();
-      // The view no longer turns and zooms about the place of what was let go.
-      world?.controller.returnToEarth();
-    },
-  };
+  const selection = selectionOf({ world, structures, structureChoice, context, chosen, detail, inside, choose, chosenAlready });
   return (
     <Atlas
       world={world}
