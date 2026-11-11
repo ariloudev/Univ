@@ -8,6 +8,7 @@ use crate::derive::Step;
 use crate::geometry::{Aabb, Shape};
 use crate::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME, Vec3};
 use crate::units::{Unit, scale_domain_unit};
+use crate::value::KindOfValue;
 
 /// A page of a release's structures, by id.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -235,6 +236,11 @@ pub struct Derivation {
     /// but not where it ends: those extents about the point. Its bounds stay the point's.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub extents: Option<Extents>,
+    /// The kind of value of each number of the shape, where the shape is computed rather than
+    /// published: `reconstructed` for a path computed from a model, such as a spiral arm's
+    /// log-spiral fit. Absent where the shape's numbers are the published ones placed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind_of_value: Option<KindOfValue>,
 }
 
 /// A structure's published extents along the axes of the frame they were published in, about
@@ -308,6 +314,7 @@ mod tests {
             grid: None,
             at_least: None,
             extents: None,
+            kind_of_value: None,
         };
         let text = serde_json::to_string(&derivation).unwrap();
         assert!(!text.contains("\"grid\""), "{text}");

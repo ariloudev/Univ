@@ -22,9 +22,10 @@
 //!
 //! The published distance is that of the structure's published position or the centre of its
 //! geometry; for one about the observer, its published radius; for one whose papers give no
-//! position, the distance or redshift they give it. Every structure of `structures/` lies
-//! beyond 11 Mpc (the nearest, the Local Void's deepest minimum, at about 30 Mpc) and is
-//! `cosmic_web`.
+//! position, the distance or redshift they give it. Every structure of `structures/` but the
+//! Galaxy's spiral arms lies beyond 11 Mpc (the nearest, the Local Void's deepest minimum, at
+//! about 30 Mpc) and is `cosmic_web`. The spiral arms, computed from a model of the arms'
+//! masers, are listed with the Galaxy tracers they are drawn among: `galaxy_tracers`.
 
 mod check;
 mod citation;
@@ -34,6 +35,7 @@ mod members;
 mod numbers;
 mod outline;
 mod shape;
+mod spiral;
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -52,6 +54,7 @@ pub use outline::{
     Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
 };
 pub use shape::{AxisBox, Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
+pub use spiral::{EXTRAPOLATION_DEGREES, Extent, LogSpiral, RADIUS_BAND_KPC};
 
 /// A researched structure as its file describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -214,6 +217,7 @@ impl Structure {
         }
         self.check_members()?;
         self.check_extents()?;
+        self.check_spiral()?;
         self.check_free_text()
     }
 

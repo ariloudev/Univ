@@ -40,8 +40,8 @@ use univ_model::value::{Quantity, Uncertainty};
 
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
-    AxisBox, Cited, Coordinates, Radial, Sides, SkyBox, SphereSize, Structure, StructureGeometry,
-    StructurePrimitive,
+    AxisBox, Cited, Coordinates, LogSpiral, Radial, Sides, SkyBox, SphereSize, Structure,
+    StructureGeometry, StructurePrimitive,
 };
 
 /// The samples along each side of a sky region's longitude and latitude ranges.
@@ -96,6 +96,16 @@ pub fn index_bounds(
             .bounds_in(Frame::Icrs)
             .ok_or_else(|| "its box has no bounds".to_owned())
         }
+        Some(StructureGeometry::LogSpiral(l)) => Shape::new(
+            Frame::Icrs,
+            Unit::Megaparsec,
+            Geometry::Path {
+                points: spiral_path(l)?,
+            },
+        )
+        .map_err(|e| format!("its path cannot stand: {e}"))?
+        .bounds_in(Frame::Icrs)
+        .ok_or_else(|| "its path has no bounds".to_owned()),
         None => match &structure.position {
             Some(at) => point(at, release, correction),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -133,6 +143,13 @@ pub fn centre(
             Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
         }
         Some(StructureGeometry::AxisBox(b)) => axis_box(b, release).map(|placed| placed.centre),
+        // The middle point of its path, so that its name lies on the arm.
+        Some(StructureGeometry::LogSpiral(l)) => {
+            let path = spiral_path(l)?;
+            path.get(path.len() / 2)
+                .copied()
+                .ok_or_else(|| "its path holds no point".to_owned())
+        }
         None => match &structure.position {
             Some(at) => place(at, release, correction).map(|(c, _)| c),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -446,4 +463,22 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     let max: Vec3 =
         std::array::from_fn(|k| along(hi[k]).into_iter().fold(f64::NEG_INFINITY, f64::max) + pad);
     Ok(Aabb { min, max })
+}
+
+/// A log spiral's path in the ICRS about the barycentre, in Mpc: its heliocentric galactic
+/// points turned into the ICRS, the Sun's offset from the barycentre, under 0.01 AU, left aside.
+///
+/// # Errors
+///
+/// Fails on a parameter whose unit does not convert.
+pub fn spiral_path(spiral: &LogSpiral) -> Result<Vec<Vec3>, String> {
+    let to_icrs = between(Frame::Galactic, Frame::Icrs);
+    let per_kpc = Unit::Kiloparsec
+        .factor_to(Unit::Megaparsec)
+        .map_err(|e| e.to_string())?;
+    Ok(spiral
+        .path_galactic_kpc()?
+        .into_iter()
+        .map(|p| to_icrs.apply(p).map(|c| c * per_kpc))
+        .collect())
 }

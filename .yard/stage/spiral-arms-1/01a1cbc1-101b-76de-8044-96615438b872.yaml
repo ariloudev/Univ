@@ -126,6 +126,15 @@ blocks:
         title: "T4. Reid 2019 arms as log-spiral structures"
         detail: "Structure files take a cited log_spiral; ingest computes a 1° path in heliocentric galactic kpc (R0 8.15, plane 5.5 pc below the Sun) over the fitted range, and an extrapolation up to 90° beyond each end within 3–16 kpc; 14 files from Table 2. Done when the radii at β = 0, the spans, the cuts, the frame and the refusal of an uncited parameter are tested."
         state: active
+      - key: 01a1cc02-ef1f-7301-858d-8c1d1791a499
+        at: 2026-11-11T19:08:26Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T4. Reid 2019 arms as log-spiral structures"
+        detail: "Structure files take a cited log_spiral (structures/spiral.rs); the release places it as a univ-model path in the ICRS, centred on its middle point, with a derivation naming the formula, R0 and the Sun's height and a new kind_of_value (reconstructed). 14 files from Table 2, re-read from the arXiv TeX source. Tests: radii at β = 0 (Local 8.526, Perseus 10.070, Sgr-Car 6.871 kpc), exact fitted spans, extrapolation within 90° and 3–16 kpc (Sct-Cen cut at 3 kpc, Perseus −113° to 205°), two Perseus masers on the arm and off its mirror, the placed path and its pointers, and refusals. Workspace: 1006 tests pass, clippy clean."
+        state: done
   - key: 01a1cbc1-101b-76de-8044-966690741818
     id: t5-science
     kind: task
@@ -139,6 +148,15 @@ blocks:
         title: "T5. Science checks for the new data"
         detail: "Checks in rules/science-checks.yaml: luminous hot star count, Zari distances inferred, share placed by Gaia vs Zari, 7 + 7 model arms, fitted arms within the paper's ranges. Done when they pass on the fixture release."
         state: open
+      - key: 01a1cc02-ef1f-7301-858d-8c1ef49bc311
+        at: 2026-11-11T19:08:26Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T5. Science checks for the new data"
+        detail: "Checks in rules/science-checks.yaml: luminous hot star count, Zari distances inferred, share placed by Gaia vs Zari, 7 + 7 model arms, fitted arms within the paper's ranges. Done when they pass on the fixture release."
+        state: active
   - key: 01a1cbc1-101b-76de-8044-9667872a91ba
     id: t6-review
     kind: task
@@ -363,3 +381,28 @@ blocks:
               "schema": "loft-status/2"
             }
           }
+  - key: 01a1cc02-ef1f-7301-858d-8c1c6c8ad897
+    id: arm-check
+    kind: note
+    versions:
+      - key: 01a1cc02-ef1f-7301-858d-8c1ff38c3318
+        at: 2026-11-11T19:08:26Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The model arms against their own masers"
+        markdown: |-
+          Before writing the tests, every Reid 2019 maser with a parallax better than 20% was set against the model arm it was assigned to, with the same conventions as `spiral.rs`:
+
+          | Arm | Masers | Median distance to its arm | As mirrored |
+          |---|---|---|---|
+          | Local | 27 | 0.20 kpc | 0.79 kpc |
+          | Perseus | 33 | 0.25 kpc | 0.99 kpc |
+          | Scutum (near) | 27 | 0.26 kpc | 1.45 kpc |
+          | Sagittarius (near) | 16 | 0.21 kpc | 1.39 kpc |
+          | Norma | 9 | 0.11 kpc | 2.42 kpc |
+          | Outer | 9 | 0.65 kpc | 0.93 kpc |
+
+          The medians sit at the arms' published widths (0.14–0.65 kpc), and the mirrored sense of azimuth misses them, so the sign of β, the Sun's place and the galactic axes are right. Two of those masers (NGC 7538, and G031.24−00.11 on the far side) are now a test.
+        tone: success

@@ -18,9 +18,10 @@ use univ_model::geometry::{Geometry, Primitive, Shape};
 use univ_model::position::{Frame, between};
 use univ_model::redshift::{CmbCorrection, RedshiftFrame};
 use univ_model::units::{Dimension, Unit};
+use univ_model::value::KindOfValue;
 
 use super::objects::snake;
-use super::place::{assumed, axis_box, km_s, length, place, radial, sphere_radius};
+use super::place::{assumed, axis_box, km_s, length, place, radial, sphere_radius, spiral_path};
 use super::pointers::{self, Pointed};
 use super::sky::{REGION_ORDER, box_cells};
 use crate::crossmatch::MemberPlacement;
@@ -128,6 +129,14 @@ fn coordinates_distance(at: &Coordinates, dipole: &str) -> DistanceDerivation {
     }
 }
 
+/// How a log spiral's path is computed (record-a-researched-structure).
+pub const SPIRAL_METHOD: &str = "ln(R / R_kink) = -(beta - beta_kink) tan(psi) at each whole \
+     degree of Galactocentric azimuth beta and each end of its range, psi the pitch angle on \
+     beta's side of the kink; each point at x = R0 - R cos(beta) toward l = 0, y = R sin(beta) \
+     toward l = 90 deg and z = -Z_sun, in heliocentric galactic kpc, turned into the ICRS. An \
+     extrapolation carries the formula on for up to 90 deg of azimuth beyond each end of the \
+     fitted range, while R lies within 3 to 16 kpc: this project's choice, not the paper's";
+
 /// A derivation under the release cosmology.
 pub(super) fn derivation(
     from: Vec<String>,
@@ -142,6 +151,7 @@ pub(super) fn derivation(
         grid: None,
         at_least: None,
         extents: None,
+        kind_of_value: None,
     }
 }
 
@@ -323,6 +333,20 @@ pub fn placed_shape(
             );
             let primitive = axis_box(b, p.release)?.into();
             (Geometry::Primitive { primitive }, derived)
+        }
+        Some(g @ StructureGeometry::LogSpiral(l)) => {
+            let mut derived = derivation(
+                pointed(&pointers::geometry(g)),
+                frame_chain(Some(Frame::Galactic)),
+                distance(
+                    "the arm's log-spiral parameters, the Galactic Centre's distance R0 and the \
+                     Sun's height above the plane, as its paper's table and text give them",
+                    SPIRAL_METHOD,
+                ),
+            );
+            derived.kind_of_value = Some(KindOfValue::Reconstructed);
+            let points = spiral_path(l)?;
+            (Geometry::Path { points }, derived)
         }
         None => point(s, s.position.as_ref().ok_or_else(no_position)?, p)?,
     };

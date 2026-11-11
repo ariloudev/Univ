@@ -82,6 +82,14 @@ pub fn geometry(g: &StructureGeometry) -> Vec<Pointed<'_>> {
             out
         }
         StructureGeometry::AxisBox(b) => indexed("/geometry/AxisBox", b.pairs()),
+        StructureGeometry::LogSpiral(l) => l
+            .pairs()
+            .into_iter()
+            .map(|(name, c)| {
+                let name = name.replace("[0]", "/0").replace("[1]", "/1");
+                (format!("/geometry/LogSpiral/{name}"), c)
+            })
+            .collect(),
         StructureGeometry::Members(_) => vec![],
     }
 }

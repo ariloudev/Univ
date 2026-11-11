@@ -1,0 +1,51 @@
+# Reid et al. 2019's log-spiral fit to the Scutum-Centaurus arm, carried on beyond the azimuths of its masers by this project.
+name: Scutum-Centaurus arm extrapolated (Reid 2019 model)
+alternative_names: ["Sct-Cen"]
+kind: spiral_arm_extrapolation
+status: model
+scale_domain: galaxy_tracers
+papers:
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357, Table 2 (Spiral Arm Characteristics), Section 3 and the abstract"
+geometry:
+  kind: log_spiral
+  log_spiral:
+    extent: extrapolated
+    beta_kink:
+      value: 23
+      unit: degree
+      kind: estimated
+      uncertainty: { form: none_reported }
+      cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "β_kink", cell: "23" }
+      note: "Given without an uncertainty: not solved for, but assigned, mainly at a gap in sources (Table 2's comments)."
+    r_kink:
+      { value: 4.91, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.09 },
+        cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "R_kink", cell: "4.91 ± 0.09" } }
+    pitch_inside:
+      { value: 14.1, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 1.7 },
+        cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "ψ_<", cell: "14.1 ± 1.7" } }
+    pitch_outside:
+      { value: 12.1, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 2.4 },
+        cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "ψ_>", cell: "12.1 ± 2.4" } }
+    width:
+      { value: 0.23, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.05 },
+        cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "Width", cell: "0.23 ± 0.05" } }
+    fitted:
+      - { value: 0, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "β range", cell: "0 → 104" } }
+      - { value: 104, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: reid-2019, table: "2", row: "Sct-Cen", column: "β range", cell: "0 → 104" } }
+    r0:
+      { value: 8.15, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: reid-2019, sentence: "The models assume R0 = 8.15 kpc." },
+        note: "Table 2's comments: the distance the arm fits assume, the value of the paper's fit A5 (Table 3), whose uncertainty belongs to that fit." }
+    sun_height:
+      { value: 5.5, unit: parsec, kind: estimated, uncertainty: { form: symmetric, sigma: 5.8 },
+        cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." } }
+notes: >-
+  The Scutum-Centaurus arm of Reid et al. 2019's model, its fitted log spiral carried on beyond the range of azimuth its masers cover, as far as this project's choice of extrapolation allows (see the derivation's method). Only the part within the fitted range rests on the paper's fit; the rest is this project's extrapolation of the formula, not a measurement and not the paper's own drawing, whose Figure 1 extends some arms by hand. The path is computed from the parameters of its row of Table 2, which assumes the Galactic Centre's distance given here.

@@ -430,6 +430,17 @@
                 "type": "null"
               }
             ]
+          },
+          "kind_of_value": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/KindOfValue",
+                "description": "The kind of value of each number of the shape, where the shape is computed rather than\npublished: `reconstructed` for a path computed from a model, such as a spiral arm's\nlog-spiral fit. Absent where the shape's numbers are the published ones placed."
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
