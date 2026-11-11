@@ -1,13 +1,13 @@
 #
 #   VizieR Astronomical Server vizier.idia.ac.za
-#    Date: 2026-11-10T03:46:21 [V7.6.1]
+#    Date: 2026-11-11T00:09:12 [V7.6.1]
 #   In case of problem, please report to:	cds-question@unistra.fr
 #
 #
 #Coosys	J2000:	eq_FK5 J2000
 #INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
-#INFO	request_date=2026-11-10T03:46:21	  Query execution date
-#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F673%2FA114%2Fclusters&-out=Name%2CRA_ICRS%2CDE_ICRS%2Cdist50%2Cdist16%2Cdist84%2CpmRA%2CpmDE%2CN%2CglobalPlx&-out.max=5&Type=o	  Full request URL
+#INFO	request_date=2026-11-11T00:09:12	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F673%2FA114%2Fclusters&-out=Name%2CRA_ICRS%2CDE_ICRS%2Cdist50%2Cdist16%2Cdist84%2ClogAge50%2ClogAge16%2ClogAge84%2CpmRA%2CpmDE%2CN%2CglobalPlx&-out.max=5&Type=o	  Full request URL
 #INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
 #INFO	server_software=VizieR/7.6.1	  Software version
 #INFO	publisher=CDS	  Data centre that produced the VOTable
@@ -35,16 +35,19 @@
 #Column	dist50	(F15.8)	50th percentile of maximum likelihood distance	[ucd=pos.distance]
 #Column	dist16	(F15.8)	16th percentile of maximum likelihood distance	[ucd=pos.distance]
 #Column	dist84	(F16.8)	84th percentile of maximum likelihood distance	[ucd=pos.distance]
+#Column	logAge50	(F11.8)	50th percentile of logarithm of cluster age	[ucd=time.age]
+#Column	logAge16	(F11.8)	16th percentile of logarithm of cluster age	[ucd=time.age]
+#Column	logAge84	(F11.8)	84th percentile of logarithm of cluster age	[ucd=time.age]
 #Column	pmRA	(F13.8)	Mean proper motion in right ascension multipled by cos(dec)	[ucd=pos.pm;pos.eq.ra]
 #Column	pmDE	(F12.8)	Mean proper motion in declination	[ucd=pos.pm;pos.eq.dec]
 #Column	N	(I6)	[10/153797] Number of member stars	[ucd=meta.number]
 #Column	globalPlx	(I1)	[0/1] Flag indicating clusters for which a star-by-star parallax offset correction was not possible during distance calculation	[ucd=meta.code]
-Name	RA_ICRS	DE_ICRS	dist50	dist16	dist84	pmRA	pmDE	N	globalPlx
- 	deg	deg	pc	pc	pc	mas/yr	mas/yr	 	
---------------------	---------------	---------------	---------------	---------------	----------------	-------------	------------	------	-
-1636-283            	249.85574296000	-28.39919379000	  6063.45669451	  5791.24202555	   6362.52422040	  -1.45490226	 -6.52578330	    38	0
-ADS_16795           	352.59216492000	+58.55341329000	   206.45788462	   206.28167669	    206.63439385	  18.65660390	  2.84661253	    41	0
-AH03_J0748+26.9     	117.15588690000	-26.97267949000	  3979.06488330	  3919.58056456	   4040.38251600	  -2.46548955	  3.18503456	    68	0
-ASCC_5              	 14.46908222000	+55.82917381000	  1740.98320690	  1721.68750605	   1760.71632064	  -2.40663082	 -1.91881768	    25	0
-ASCC_6              	 26.84215882000	+57.73860678000	  1501.88586403	  1497.86275470	   1505.93064289	  -0.83414476	  0.14917466	   209	0
+Name	RA_ICRS	DE_ICRS	dist50	dist16	dist84	logAge50	logAge16	logAge84	pmRA	pmDE	N	globalPlx
+ 	deg	deg	pc	pc	pc	[yr]	[yr]	[yr]	mas/yr	mas/yr	 	
+--------------------	---------------	---------------	---------------	---------------	----------------	-----------	-----------	-----------	-------------	------------	------	-
+1636-283            	249.85574296000	-28.39919379000	  6063.45669451	  5791.24202555	   6362.52422040	 8.48795652	 8.02525997	 8.89044094	  -1.45490226	 -6.52578330	    38	0
+ADS_16795           	352.59216492000	+58.55341329000	   206.45788462	   206.28167669	    206.63439385	 7.75518608	 7.38828087	 8.01615334	  18.65660390	  2.84661253	    41	0
+AH03_J0748+26.9     	117.15588690000	-26.97267949000	  3979.06488330	  3919.58056456	   4040.38251600	 8.06174040	 7.84066010	 8.30396652	  -2.46548955	  3.18503456	    68	0
+ASCC_5              	 14.46908222000	+55.82917381000	  1740.98320690	  1721.68750605	   1760.71632064	 7.32589102	 6.96985722	 7.54225826	  -2.40663082	 -1.91881768	    25	0
+ASCC_6              	 26.84215882000	+57.73860678000	  1501.88586403	  1497.86275470	   1505.93064289	 7.96103024	 7.77257586	 8.18482685	  -0.83414476	  0.14917466	   209	0
 

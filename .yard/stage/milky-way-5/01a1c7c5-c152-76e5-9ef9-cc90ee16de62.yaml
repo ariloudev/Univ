@@ -33,6 +33,15 @@ blocks:
         title: "Model: age and its units"
         detail: "Unit::Year and Unit::LogYear, entry/age.rs, CatalogueEntry.ages with serde default, MeasuredQuantity::Age. Done when the univ-model tests round-trip an age, read an old entry and refuse an age in parsecs."
         state: active
+      - key: 01a1c7e9-ab3a-71b9-b79b-155c78cb0aee
+        at: 2026-11-11T00:02:22Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Model: age and its units"
+        detail: "Unit::Year and Unit::LogYear, entry/age.rs with Age::normalize (log → years, the bounds raised), CatalogueEntry.ages with serde default, MeasuredQuantity::Age, the OpenAPI snapshot rewritten (additive). The univ-model tests pass."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fef817e96b54
     id: t2-source-ages
     kind: task
@@ -46,6 +55,15 @@ blocks:
         title: "Source definitions: normalization.ages"
         detail: "Field::Age/AgeLow/AgeHigh, AgeReading in source/normalization/age.rs. Done when tests/normalize_age_definitions.rs refuses an undeclared column, a bad probability and a wrong unit, and accepts Hunt & Reffert."
         state: open
+      - key: 01a1c7e9-ab3a-71b9-b79b-155d620aff55
+        at: 2026-11-11T00:02:22Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Source definitions: normalization.ages"
+        detail: "Field::Age/AgeLow/AgeHigh, AgeReading in source/normalization/age.rs. Done when tests/normalize_age_definitions.rs refuses an undeclared column, a bad probability and a wrong unit, and accepts Hunt & Reffert."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-fef9192a74e8
     id: t3-normalize-ages
     kind: task
@@ -178,3 +196,14 @@ blocks:
           | Issue | Found by | Fix | State |
           |---|---|---|---|
           | (none yet) | | | |
+      - key: 01a1c7e9-ab3a-71b9-b79b-155e55cdce1d
+        at: 2026-11-11T00:02:22Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test (an aged entry failed to read back) | Ages checked by their own rule: normalized in years, native in years or log years | fixed |

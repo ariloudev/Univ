@@ -15,6 +15,11 @@ cuts:
     dist16, dist50 and dist84 are the 16th, 50th and 84th percentiles of the maximum likelihood
     distance from the members' parallaxes, in pc (ReadMe). globalPlx flags clusters whose
     parallax zero point could not be corrected star by star.
+  - >-
+    logAge16, logAge50 and logAge84 are the 16th, 50th and 84th percentiles of the logarithm of
+    the cluster's age in years (VizieR's column descriptions), estimated by the paper from its
+    members' photometry. They are read as an estimated age with a 68% credible interval; the
+    extinction (AV) and the colour-magnitude diagram class are not taken.
 columns:
   - { column: Name, field: identifier, unit: dimensionless }
   - { column: RA_ICRS, field: right_ascension, unit: degree }
@@ -22,6 +27,9 @@ columns:
   - { column: dist50, field: distance, unit: parsec }
   - { column: dist16, field: distance_low, unit: parsec }
   - { column: dist84, field: distance_high, unit: parsec }
+  - { column: logAge50, field: age, unit: log_year }
+  - { column: logAge16, field: age_low, unit: log_year }
+  - { column: logAge84, field: age_high, unit: log_year }
   - { column: pmRA, field: proper_motion_ra, unit: milliarcsecond_per_year }
   - { column: pmDE, field: proper_motion_dec, unit: milliarcsecond_per_year }
   - { column: N, field: quality, unit: dimensionless }
@@ -80,3 +88,13 @@ normalization:
         percentile of maximum likelihood distance", computed from the Gaia DR3 parallaxes of the
         cluster's members (Ndist, "Number of stars used for distance calculation"). The
         percentiles are kept as published.
+  ages:
+    - value: logAge50
+      error: { credible_interval: { low: logAge16, high: logAge84, probability: 0.68 } }
+      kind_of_value: estimated
+      basis: >-
+        VizieR's column descriptions of J/A+A/673/A114/clusters (fetched 2026-11-10): logAge16,
+        logAge50 and logAge84 are the "16th percentile of logarithm of cluster age", "50th
+        percentile of logarithm of cluster age" and "84th percentile of logarithm of cluster
+        age", in [yr]. The age is a model estimate from the members' photometry, not a direct
+        measurement, so it is estimated; the percentiles are kept as published.
