@@ -130,6 +130,29 @@ describe("a tile", () => {
     expect((await batchOf(domain, tile, bytesOf(raw.hex))).colours).toBeUndefined();
   });
 
+  it("gives each point of the Galaxy's tracers the logarithm of its age, or none, and no other domain's points any", async () => {
+    // The SIMULATED domain carries ages in its version 3 tiles: read as the tracers'.
+    const domain = domainOf("simulated");
+    const tracers = { ...domain, name: "galaxy_tracers" };
+    let aged = 0;
+    for (const raw of fixtureTiles("simulated")) {
+      const tile = domain.tiles.find((t) => t.address === raw.address);
+      if (tile === undefined) throw new Error("no fixture tile");
+      const batch = await batchOf(tracers, tile, bytesOf(raw.hex));
+      const at = indexById(batch);
+      for (const p of raw.points) {
+        const age = batch.ages?.[at(p.id)];
+        if (p.log_age === undefined) expect(age).toBeNaN();
+        else {
+          expect(Math.abs((age ?? Number.NaN) - p.log_age)).toBeLessThanOrEqual(0.006);
+          aged += 1;
+        }
+      }
+      expect((await batchOf(domain, tile, bytesOf(raw.hex))).ages).toBeUndefined();
+    }
+    expect(aged).toBeGreaterThan(0);
+  });
+
   it("keeps its stars' kinds of value where its manifest lists no colour bands", async () => {
     // A tile whose points carry no colour, read as a stars tile whose manifest names no bands.
     const domain = domainOf("cosmic_web");

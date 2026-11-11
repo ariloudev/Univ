@@ -52,6 +52,8 @@ const ManifestCheck = z.looseObject({
     kinds: z.array(z.enum(["measured", "estimated", "inferred", "reconstructed"])),
     /** The bands a point's colour index may lie between, by their code less one. */
     colour_bands: z.array(z.enum(["BP-RP", "B-V"])).optional(),
+    /** The code of a point whose value is the logarithm of its age, from encoding version 3. */
+    log_age_code: z.number().int().optional(),
   }),
   sources: z.array(
     z.looseObject({ index: z.number().int(), id: z.string(), title: z.string(), citation: z.string(), credit: z.string() }),

@@ -38,6 +38,9 @@ export interface Batch {
   /** Each point's colour as red, green, blue and opacity bytes: a star's, or a tracer's source's;
    * none for the other domains, whose points are drawn by their kind of value. */
   colours?: Uint8Array | undefined;
+  /** Each point's base-10 logarithm of its age in years, NaN where it carries none, for a tile
+   * of the Galaxy tracers domain; none for the other domains. */
+  ages?: Float32Array | undefined;
   ids: Float64Array;
   /** Where the points lie. */
   extent: Extent;
@@ -173,8 +176,10 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
   // kinds' colours rather than all turning grey.
   const names = domain.manifest.encoding.colour_bands;
   const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
-  const colours = domain.name === TRACERS_DOMAIN ? tracerBytes(sources) : stars?.bytes;
-  return { tile, offsets, kinds, sources, ids, stars, colours, extent: extentOf(offsets, tile.centre) };
+  const tracers = domain.name === TRACERS_DOMAIN;
+  const colours = tracers ? tracerBytes(sources) : stars?.bytes;
+  const ages = tracers ? Float32Array.from(points, (p) => p.logAge ?? Number.NaN) : undefined;
+  return { tile, offsets, kinds, sources, ids, stars, colours, ages, extent: extentOf(offsets, tile.centre) };
 }
 
 /** Fetches, checks and decodes the tile of `tile` in `domain` of `release`. */

@@ -188,6 +188,15 @@ blocks:
         title: "Reference decoder reads version 3"
         detail: "fixtures/v2 frozen, decode.ts v3 with an age, the fixtures rewritten. Done when decode.test.ts decodes versions 1–3."
         state: active
+      - key: 01a1c814-fe3c-75aa-9527-ef4acf4c37c6
+        at: 2026-11-11T00:49:41Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Reference decoder reads version 3"
+        detail: "fixtures/v2 keeps the SIMULATED domain as version 2 wrote it; the SIMULATED domain gains log ages and the fixtures are rewritten as version 3. decode.ts reads version 3, giving `logAge` where the code is the manifest's log_age_code; code 3 is refused in a version 2 tile; the README describes versions 2 and 3. decode.test.ts: 9 tests pass."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fefd2a8e3b8e
     id: t7-explorer-tiles
     kind: task
@@ -201,6 +210,15 @@ blocks:
         title: "Explorer: tiles to ages"
         detail: "schemas accept value_codes; tracer batches carry ages; star colours read only from colour codes. Done when tiles.test.ts passes."
         state: open
+      - key: 01a1c814-fe3c-75aa-9527-ef4b3c2b4b6c
+        at: 2026-11-11T00:49:41Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Explorer: tiles to ages"
+        detail: "schemas accept log_age_code; tracer batches carry ages; star colours read only from colour codes. Done when tiles.test.ts passes."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-fefe2568066c
     id: t8-explorer-age-choice
     kind: task
