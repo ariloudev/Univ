@@ -157,6 +157,15 @@ blocks:
         title: "T5. Science checks for the new data"
         detail: "Checks in rules/science-checks.yaml: luminous hot star count, Zari distances inferred, share placed by Gaia vs Zari, 7 + 7 model arms, fitted arms within the paper's ranges. Done when they pass on the fixture release."
         state: active
+      - key: 01a1cc06-0c53-7117-bef1-c99f51bf3f16
+        at: 2026-11-11T19:11:50Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T5. Science checks for the new data"
+        detail: "Six checks in rules/science-checks.yaml: every Zari row an entry (417,535), every Zari distance inferred, a report of the sources that place the luminous hot stars, the 14 model arms as paths, the Local arm 350–390 pc from the Sun (the formula gives 376), and at most two placed masers more than 1.5 kpc from the arm they were fitted to (one expected, G012.02−00.03). The fixture release holds neither source, so each query was run on the release schema with sample rows (the Local arm at 375 pc; a maser moved 3 kpc off Perseus caught, NGC 7538 not); they judge release 15. The xtask science tests pass."
+        state: done
   - key: 01a1cbc1-101b-76de-8044-9667872a91ba
     id: t6-review
     kind: task
@@ -170,6 +179,15 @@ blocks:
         title: "T6. Wave review and gate"
         detail: "/simplify, then /code-review, findings fixed; cargo xtask check and cargo xtask integration once each and green; loft.trace.yaml linked and accepted; Yard Log closed."
         state: open
+      - key: 01a1cc06-0c53-7117-bef1-c9a003956b3e
+        at: 2026-11-11T19:11:50Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T6. Wave review and gate"
+        detail: "/simplify, then /code-review, findings fixed; cargo xtask check and cargo xtask integration once each and green; loft.trace.yaml linked and accepted; Yard Log closed."
+        state: active
   - key: 01a1cbc1-101b-76de-8044-9668ef0e493e
     id: build-issues
     kind: note

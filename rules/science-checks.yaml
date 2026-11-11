@@ -982,6 +982,154 @@ checks:
           against log10 of each age: 7.4771 for 30 Myr; 1,225 lie below logAge50 = 7.5, 31.6 Myr).
         fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10; recounted 2026-11-11"
 
+  - id: luminous-hot-stars-every-row
+    title: Every star of Zari et al. 2021's filtered sample is an entry of the release
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT count(*) FROM entries e WHERE e.release = :release
+        AND e.source = source('zari-2021-luminous-hot-stars')
+    expect: { equals: 417535 }
+    cite:
+      - paper: "Zari et al. 2021, A&A 650, A112 (VizieR J/A+A/650/A112)"
+        locator: "ReadMe, File Summary: filtered.dat, 417535 records, Filtered sample"
+        quote: "filtered.dat           442   417535   Filtered sample"
+        fetched: "http://vizier.nao.ac.jp/ftp/cats/J/A+A/650/A112/ReadMe, 2026-11-11"
+    note: >-
+      The source takes every row with no cut (sources/zari-2021-luminous-hot-stars.yaml); a row
+      left out by normalization would show here.
+
+  - id: luminous-hot-star-distances-inferred
+    title: Every astro-kinematic distance of Zari et al. 2021 is inferred
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT m.object_id FROM measurements m JOIN entries e ON e.release = m.release
+        AND e.object_id = m.object_id AND e.entry = m.entry
+        WHERE m.release = :release AND m.quantity = term('distance')
+        AND e.source = source('zari-2021-luminous-hot-stars')
+        AND m.kind_of_value != term('inferred')
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "A luminous hot star's distance is the median of its astro-kinematic distance posterior,
+          inferred, with the 16th and 84th percentiles as its bounds"
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
+    note: >-
+      Zari et al. publish no parallax error, so a posterior that also rests on a model of young
+      stars' velocities and density cannot be shown to be led by its parallax.
+
+  - id: luminous-hot-stars-placed-by
+    title: Luminous hot stars by the source that places them
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT (SELECT id FROM sources s WHERE s.release = e.release AND s.n = e.source) AS placed_by,
+        count(*) AS stars, min(o.distance_mpc) * 1e3 AS min_kpc, max(o.distance_mpc) * 1e3 AS max_kpc
+        FROM objects o JOIN entries e ON e.release = o.release AND e.object_id = o.id
+        AND e.entry = o.preferred_entry
+        WHERE o.release = :release AND o.placed = 1 AND o.kind = term('luminous_hot_star')
+        GROUP BY e.source ORDER BY 2 DESC
+    cite:
+      - paper: "univ-server specification, Normalize records"
+        locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
+        quote: >-
+          "A luminous hot star joins the object of its Gaia DR3 source by the Gaia EDR3 source id
+          its source gives, which Gaia DR3 keeps, as a published cross-identification."
+        fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
+    note: >-
+      A star brighter than G = 14 has a Gaia DR3 parallax and a Bailer-Jones distance beside its
+      astro-kinematic one; a measured or estimated distance precise enough sets the inferred one
+      aside, so the nearer stars are placed by Gaia and the farther by Zari et al.
+
+  - id: model-spiral-arms
+    title: Each of Reid et al. 2019's seven arms as a model spiral arm and an extrapolation, each a path
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT count(*) FROM structures s WHERE s.release = :release AND s.status = 'model'
+        AND s.kind IN ('spiral_arm', 'spiral_arm_extrapolation')
+        AND s.scale_domain = 'galaxy_tracers' AND s.geometry_kind = 'path'
+    expect: { equals: 14 }
+    cite:
+      - paper: "Reid et al. 2019, ApJ 885, 131"
+        locator: "Table 2 (Spiral Arm Characteristics), rows 3-kpc(N), Norma, Sct-Cen, Sgr-Car, Local, Perseus, Outer"
+        quote: "Spiral parameters from fitting log-periodic spirals for arms listed in column 1"
+        fetched: "arXiv source (LaTeX) of 1910.03357, 2026-11-11"
+
+  - id: local-arm-beside-the-sun
+    title: The model Local arm passes 0.38 kpc outside the Sun, where its formula puts it
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT min(json_extract(p.value, '$[0]') * json_extract(p.value, '$[0]')
+        + json_extract(p.value, '$[1]') * json_extract(p.value, '$[1]')
+        + json_extract(p.value, '$[2]') * json_extract(p.value, '$[2]'))
+        FROM structure_details d, json_each(d.shape, '$.geometry.points') p
+        WHERE d.release = :release AND d.id = 'reid-2019-local-arm'
+    expect: { at_least: 122500, at_most: 152100 }
+    cite:
+      - paper: "Reid et al. 2019, ApJ 885, 131"
+        locator: "Section 3, the spiral model; Table 2, row Local; Table 2's comments"
+        quote: >-
+          ln(R/R_kink) = -(beta - beta_kink) tan(psi); Local: beta_kink 9, R_kink 8.26 ± 0.05,
+          psi 11.4 ± 1.9; "The models assume R0 = 8.15 kpc."
+        fetched: "arXiv source (LaTeX) of 1910.03357, 2026-11-11"
+    note: >-
+      The squared distance from the Sun to the nearest point of the arm's path, in pc squared, as
+      the shape is stored in parsecs in the ICRS. At beta = 0 the formula gives R = 8.26 exp(9° x
+      tan 11.4°) = 8.53 kpc, 0.376 kpc beyond R0; the nearest point lies a little nearer, and
+      the bounds, 350 to 390 pc, catch a wrong unit, frame or sign, which would move it by
+      kiloparsecs.
+
+  - id: masers-on-their-model-arms
+    title: At most two placed masers more than 1.5 kpc from the model arm they were fitted to
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        WITH arm(code, id) AS (VALUES ('Loc', 'reid-2019-local-arm'),
+        ('Per', 'reid-2019-perseus-arm'), ('Out', 'reid-2019-outer-arm'),
+        ('Nor', 'reid-2019-norma-arm'), ('3kN', 'reid-2019-3-kpc-near-arm'),
+        ('SgN', 'reid-2019-sagittarius-carina-arm'), ('SgF', 'reid-2019-sagittarius-carina-arm'),
+        ('CrN', 'reid-2019-sagittarius-carina-arm'), ('ScN', 'reid-2019-scutum-centaurus-arm'),
+        ('ScF', 'reid-2019-scutum-centaurus-arm'), ('CtN', 'reid-2019-scutum-centaurus-arm')),
+        maser AS (SELECT o.id, o.x * 1e6 AS x, o.y * 1e6 AS y, o.z * 1e6 AS z, a.id AS arm
+        FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
+        JOIN arm a ON a.code = json_extract(e.flags, '$.Arm')
+        WHERE e.release = :release AND e.source = source('reid-2019-masers') AND o.placed = 1)
+        SELECT m.id FROM maser m JOIN structure_details d ON d.release = :release AND d.id = m.arm,
+        json_each(d.shape, '$.geometry.points') p
+        GROUP BY m.id HAVING min((m.x - json_extract(p.value, '$[0]')) * (m.x - json_extract(p.value, '$[0]'))
+        + (m.y - json_extract(p.value, '$[1]')) * (m.y - json_extract(p.value, '$[1]'))
+        + (m.z - json_extract(p.value, '$[2]')) * (m.z - json_extract(p.value, '$[2]'))) > 2250000
+    expect: { at_most: 2 }
+    cite:
+      - paper: "Reid et al. 2019, ApJ 885, 131"
+        locator: "Table 1 (VizieR J/ApJ/885/131/table1), column Arm; Table 2"
+        quote: >-
+          Of the 100 masers assigned to a modelled arm whose parallax is within 10% of itself, one
+          lies more than 1.5 kpc from its arm's model (G012.02-00.03, 3-kpc(N), whose parallax
+          of 0.106 ± 0.008 mas puts it beyond the Galactic Centre); the medians per arm lie
+          between 0.11 and 0.65 kpc, about the arms' widths.
+        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10; counted 2026-11-11"
+    note: >-
+      Masers are placed only by the parallax rule (a parallax within 10% of itself, no zero
+      point). The model was fitted to these masers, so a maser far from its arm means a wrong
+      sign of azimuth, a wrong frame or unit, or a wrong parameter: mirrored, a third of them
+      lie farther than 1 kpc. The 3-kpc far arm, the Outer Scutum-Centaurus arm, the connecting
+      arm and the Galactic Centre region have no model and are not checked.
+
   - id: unplaced-by-reason
     title: Unplaced objects by reason
     severity: report
