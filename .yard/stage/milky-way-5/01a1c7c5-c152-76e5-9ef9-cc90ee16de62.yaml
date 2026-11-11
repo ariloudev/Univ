@@ -414,3 +414,30 @@ blocks:
           | Plan said the manifest gains `value_codes` in place of `colour_bands` | Implementing task 5 | Kept `colour_bands` and added `log_age_code: 3`: additive, so the explorer's strict `colour_bands` enum and version 2 manifests read unchanged | changed |
           | The renderer took a tile's mask being present to mean the view is culled, which an age mask alone would have dimmed | Reading the renderer for task 8 | `DrawnDetail.culled()` says whether a volume cull is on; opacity reads it | fixed |
           | The plan's Playwright test was to draw fewer tracers at `?age=30`, but the integration fixture release holds no tracer tiles | Task 8 | The e2e test covers the address, the reload and All; drawing, picking and counting by age are proved in `catalogue/age.test.ts` on the version 3 SIMULATED tiles | changed |
+      - key: 01a1c869-4b76-702b-a77e-e876b936a3a4
+        at: 2026-11-11T02:21:46Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test | Now `Unit::normalizes_to`, which `in_unit` uses (log years → years) | fixed |
+          | `bea0412` was committed unformatted: the commit followed `;` after `cargo fmt --check` | The check's output | `eecea9e` formats and lints it | fixed |
+          | `normalization.rs` would pass 500 lines | Line count | Colour check moved to `normalization/colour.rs`, age reading to `age.rs` | fixed |
+          | `MeasurementWriter::write` passed clippy's 100 lines | clippy | Colours and ages written by their own method | fixed |
+          | Plan said `value_codes` in place of `colour_bands` | Task 5 | Kept `colour_bands`, added `log_age_code: 3` (additive) | changed |
+          | The renderer read a mask's presence as "culled" | Task 8 | `DrawnDetail.culled()` | fixed |
+          | The plan's e2e test could not show fewer tracers: the integration release has no tracer tiles | Task 8 | e2e covers address, reload and All; drawing/picking/counting in `catalogue/age.test.ts` | changed |
+          | /simplify: colour and log age were two Options on a point | Simplification, efficiency and altitude reviewers | One `value: Option<PointValue>`; `TwoValues` gone, `TileError::ValueCode`, `NO_VALUE`; DomainPoint keeps its size | fixed |
+          | /simplify: copied uncertainty transform, unit special case, probability check, chip button, constants, a committed tsbuildinfo, per-frame scans, recull on age change | Reuse, efficiency reviewers | `Uncertainty::through`, `Unit::normalizes_to`, `ErrorColumns::check_probability`, `Chip`, `TRACERS_DOMAIN`, `.gitignore`, running totals, kept cull mask, no ages array where none | fixed |
+          | /simplify: rename `inside` to `drawn` end to end; merge `ages` into `colours` to save 8 B an entry | Altitude, efficiency | Skipped: reaches the shader and the cull tests, or changes the model's meaning; comments updated | skipped |
+          | /code-review: ages in years would fail `ages-normalized-to-years` (normalized value and unit NULL when unchanged) | Code review | `coalesce` with the native value and unit | fixed |
+          | /code-review: an age ≤ 0 in years would give −inf and fail the tile build | Code review | `log_age_of` takes the first finite log age | fixed |
+          | /code-review: a bad age interval left the whole cluster out | Code review | The age alone is left out; a test moves logAge16 above logAge50 (release 14 lost no row: 6,818 kept) | fixed |
+          | /code-review: the TS decoder took the age code from the manifest | Code review | Fixed at 3, a manifest naming another is refused, with a test | fixed |
+          | /code-review: "preferred age" is the first age, unranked | Code review | Documented: Hunt & Reffert is the only source of ages | documented |
+          | /code-review: a cluster within ~1% of a cut may fall either side (tile holds log age to 0.01, as the spec allows) | Code review | Documented at `withAge` | accepted |
+          | /code-review: age totals kept beside per-tile counts | Code review | Kept: the totals follow the catalogue's own tally pattern and spare a per-frame scan (the efficiency review's ask) | disputed |
