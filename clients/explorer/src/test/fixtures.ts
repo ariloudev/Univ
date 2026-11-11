@@ -22,7 +22,14 @@ export const manifestOf = (domain: string): ExplorerManifest =>
 export interface FixtureTile {
   address: string;
   hex: string;
-  points: { position: [number, number, number]; id: number; kind: string; colour?: [number, ColourBands] }[];
+  points: {
+    position: [number, number, number];
+    id: number;
+    kind: string;
+    colour?: [number, ColourBands];
+    /** The base-10 logarithm of its age in years before rounding, where it carries one. */
+    log_age?: number;
+  }[];
 }
 
 /** The tiles of `domain`, with the points each holds. */

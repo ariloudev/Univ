@@ -36,6 +36,11 @@ pub enum Unit {
     /// Green & Rix 2023, as the Edenhofer et al. 2024 dust map gives its
     /// density: its line integral is that extinction, which no other unit measures.
     ExtinctionZgr23PerParsec,
+    /// A year, the unit an age is normalized to.
+    Year,
+    /// The base-10 logarithm of a time in years, as catalogues publish cluster ages: a logarithm,
+    /// which no factor turns into years.
+    LogYear,
 }
 
 /// What a unit measures; units convert only within one dimension.
@@ -53,6 +58,10 @@ pub enum Dimension {
     /// Extinction per unit length in the extinction scale of Zhang, Green & Rix 2023, which no
     /// other scale converts to without a cited relation.
     ExtinctionZgr23Density,
+    Time,
+    /// The base-10 logarithm of a time in years, kept apart from time: it converts to years by
+    /// a power of ten, never by a factor.
+    LogTime,
 }
 
 /// A conversion that cannot be made.
@@ -81,6 +90,8 @@ impl Unit {
             Self::Magnitude => Dimension::Magnitude,
             Self::Dimensionless => Dimension::Dimensionless,
             Self::ExtinctionZgr23PerParsec => Dimension::ExtinctionZgr23Density,
+            Self::Year => Dimension::Time,
+            Self::LogYear => Dimension::LogTime,
         }
     }
 
@@ -102,8 +113,17 @@ impl Unit {
             | Self::MegaparsecOverH
             | Self::Magnitude
             | Self::Dimensionless
-            | Self::ExtinctionZgr23PerParsec => 1.0,
+            | Self::ExtinctionZgr23PerParsec
+            | Self::Year
+            | Self::LogYear => 1.0,
         }
+    }
+
+    /// Whether a value in this unit is normalized to `to`: by a factor within one dimension, or,
+    /// for the logarithm of a time in years, to years by a power of ten.
+    #[must_use]
+    pub fn normalizes_to(self, to: Self) -> bool {
+        self.dimension() == to.dimension() || (self == Self::LogYear && to == Self::Year)
     }
 
     /// The factor that turns a value in this unit into one in `to`.

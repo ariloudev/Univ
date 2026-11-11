@@ -11,8 +11,9 @@ pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
-    CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading, ErrorColumns,
-    MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading, SpectralTypeReading,
+    AgeReading, CatalogueError, Coded, ColourReading, ComovingVelocity, DistanceReading,
+    ErrorColumns, MethodCodes, Normalization, Published, RedshiftCodes, RedshiftReading,
+    SpectralTypeReading,
 };
 pub use rules::{
     Condition, DistanceOverride, FixAction, KindOverride, LeftOutReason, MAX_FIXES, Rule,
@@ -114,6 +115,11 @@ pub enum Field {
     /// A colour index, or its error, as published; read as `normalization.colours` names it.
     ColourIndex,
     ColourIndexError,
+    /// A star cluster's age, in years or as the base-10 logarithm of years, and the lower and
+    /// upper bounds of its credible interval; read as `normalization.ages` names them.
+    Age,
+    AgeLow,
+    AgeHigh,
     /// A magnitude read only to derive a colour index from, as `normalization.colours` names it.
     ColourMagnitude,
     /// A spectral type as published; read as `normalization.spectral_type` names it.

@@ -6,20 +6,29 @@ import type { ReactNode } from "react";
 import type { Apply, Group, Hidden } from "../hidden.ts";
 import { Chooser, Section } from "../record/parts.tsx";
 
-/** A group's toggle drawn as a chip: filled while it is on, hollow and dashed while off, and
- * pressed or not for assistive technology. */
-export function GroupChip({ group, name, label, hidden, onApply, children }: { group: Group; name: string; label: string; hidden: Hidden; onApply: Apply; children: (on: boolean) => ReactNode }) {
-  const on = !hidden[group].has(name);
+/** A toggle drawn as a chip: filled while it is on, hollow and dashed while off, and pressed or
+ * not for assistive technology. */
+export function Chip({ on, label, onClick, children }: { on: boolean; label: string; onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       aria-pressed={on}
       aria-label={label}
-      onClick={() => onApply([{ group, name, shown: !on }])}
+      onClick={onClick}
       className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-px text-xs ${on ? "border-edge bg-raised" : "border-dashed border-neat/60 text-dim"}`}
     >
-      {children(on)}
+      {children}
     </button>
+  );
+}
+
+/** A group's toggle drawn as a chip. */
+export function GroupChip({ group, name, label, hidden, onApply, children }: { group: Group; name: string; label: string; hidden: Hidden; onApply: Apply; children: (on: boolean) => ReactNode }) {
+  const on = !hidden[group].has(name);
+  return (
+    <Chip on={on} label={label} onClick={() => onApply([{ group, name, shown: !on }])}>
+      {children(on)}
+    </Chip>
   );
 }
 

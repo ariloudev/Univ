@@ -98,6 +98,7 @@ pub fn bare(src: &str, id: &str) -> CatalogueEntry {
         proper_motion: None,
         magnitude: None,
         colours: thin_vec::ThinVec::new(),
+        ages: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,

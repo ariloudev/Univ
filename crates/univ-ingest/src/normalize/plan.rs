@@ -13,9 +13,11 @@ use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+mod age;
 mod colour;
 mod fixes;
 
+pub(super) use age::AgePlan;
 pub(super) use colour::{ColourPlan, SpectralTypePlan};
 pub(super) use fixes::{FixEffect, FixPlan};
 
@@ -129,6 +131,7 @@ pub(super) struct Plan {
     pub proper_motion: Option<(Col, Col)>,
     pub magnitude: Option<Col>,
     pub colours: Vec<ColourPlan>,
+    pub ages: Vec<AgePlan>,
     /// The column of a spectral type, and its kind of value.
     pub spectral_type: Option<SpectralTypePlan>,
     pub group_id: Option<usize>,
@@ -435,6 +438,7 @@ impl Plan {
                 .iter()
                 .map(|x| r.colour(x))
                 .collect::<Result<_, _>>()?,
+            ages: n.ages.iter().map(|a| r.age(a)).collect::<Result<_, _>>()?,
             spectral_type: r.spectral_type()?,
             group_id: r.field(Field::GroupId)?.map(|c| c.index),
             supergalactic: r.supergalactic()?,

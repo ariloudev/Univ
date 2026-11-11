@@ -76,6 +76,18 @@ requirements:
         name: "A colour index keeps the uncertainty its source publishes, and one published without an uncertainty is marked as having none reported."
       - key: 01a1a6e4-22e1-765d-b404-01f5d5a8d638
         name: "A colour index computed from two magnitudes a source publishes, such as the Gaia Catalogue of Nearby Stars' BP and RP, is derived and names the two magnitudes it was computed from."
+  - key: 01a1c7c5-a164-7706-ad2c-c82d69fadcb8
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "keep each age a source publishes for a star cluster, with the logarithm of the age as published."
+    criteria:
+      - key: 01a1c7c5-a164-7706-ad2c-c82eaf9e36dd
+        name: "Hunt & Reffert 2023's 50th percentile of the logarithm of an open cluster's age is kept as an estimated age in years, with its 16th and 84th percentiles as a 68% credible interval."
+      - key: 01a1c7c5-a164-7706-ad2c-c82fc742d77b
+        name: "An age keeps its native value, the base-10 logarithm of the age in years as its source publishes it, beside its normalized value in years."
+      - key: 01a1c7c5-a164-7706-ad2c-c830ff27afdf
+        name: "An open cluster whose source publishes no age has none, and is not given one."
   - key: 01a1a6e4-22e1-765d-b404-01f6f668422b
     statement:
       form: ubiquitous

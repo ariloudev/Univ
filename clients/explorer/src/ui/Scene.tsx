@@ -14,9 +14,13 @@ import { useChosen } from "./useChosen.ts";
 import { type Structures, flyToStructure, useStructures } from "./useStructures.ts";
 import { volumeOf } from "../scene/volume.ts";
 import { useRecordContext } from "./useRecordContext.ts";
+import type { RecordContext } from "./ObjectPanel.tsx";
 import { type Target, isChosen, targetOf } from "./letGo.ts";
 import { type Inside, type StructureChoice, useStructureChoice } from "./inside.ts";
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
+import { type AgeCut, logAgeOf, useAgeCut } from "./age.ts";
+import type { AgeState } from "./show/AgeChoice.tsx";
+import type { AgesHeld } from "../catalogue/catalogue.ts";
 
 /** The structure `choice` names, and the cull to its volume, where it has one
  * (see-the-structures): `world` culled to it while the choice says, and flown to once it is read
@@ -49,17 +53,86 @@ function useCulledStructure(
   return { detail, inside: volume === undefined ? undefined : { on: inside, approximate: volume.approximate, set: setInside } };
 }
 
-/** Applies what is hidden of the points and the level of detail to `world`'s catalogue. */
-function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, levelOfDetail: boolean): void {
+/** The age choice the Show drawer offers, once `world` is made: the tracers it holds read as
+ * each frame is drawn. */
+const NO_AGES: AgesHeld = { tracers: 0, aged: 0 };
+function ageState(world: World | undefined, cut: AgeCut, choose: (cut: AgeCut) => void): AgeState | undefined {
+  if (world === undefined) return undefined;
+  return { cut, choose, frame: world.frame, held: () => world.catalogue?.agesHeld() ?? NO_AGES };
+}
+
+/** Applies what is hidden of the points, the age of the tracers drawn and the level of detail to
+ * `world`'s catalogue. */
+function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, age: AgeCut, levelOfDetail: boolean): void {
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
   const { domain, source, kind } = hidden;
   useEffect(() => {
     if (world !== undefined) hide(world, { domain, source, kind }, domains);
   }, [world, domains, domain, source, kind]);
+  // `domains` is read once the catalogue is made, so that it starts as the choice stands.
+  useEffect(() => {
+    if (world === undefined) return;
+    world.catalogue?.setAgeCut(logAgeOf(age));
+    world.controller.invalidate();
+  }, [world, domains, age]);
   // `domains` is read once the catalogue is made, so that it starts as the switch stands.
   useEffect(() => {
     world?.catalogue?.setLevelOfDetail(levelOfDetail);
   }, [world, domains, levelOfDetail]);
+}
+
+/** What is chosen in the view of `world`, and the ways to choose and let go of an object or a
+ * structure: one let go when the other is chosen. */
+function selectionOf({
+  world,
+  structures,
+  structureChoice,
+  context,
+  chosen,
+  detail,
+  inside,
+  choose,
+  chosenAlready,
+}: {
+  world: World | undefined;
+  structures: Structures;
+  structureChoice: StructureChoice;
+  context: RecordContext;
+  chosen: Selection["chosen"];
+  detail: StructureDetail | undefined;
+  inside: Inside | undefined;
+  choose: ReturnType<typeof useChosen>["choose"];
+  chosenAlready: (target: Target) => boolean;
+}): Selection {
+  const structureId = structureChoice.structure;
+  const selection: Selection = {
+    context,
+    chosen,
+    structure: detail,
+    structureId,
+    inside,
+    approximate: structureId !== undefined && structures.drawings.get(structureId)?.approximate === true,
+    object: (id, options) => {
+      structureChoice.close();
+      choose(id, options);
+    },
+    structureById: (id) => {
+      choose(undefined);
+      structureChoice.choose(id);
+      if (world !== undefined) flyToStructure(world, structures, id);
+    },
+    structureFromList: (id) => {
+      if (chosenAlready({ structure: id })) selection.close();
+      else selection.structureById(id);
+    },
+    close: () => {
+      choose(undefined);
+      structureChoice.close();
+      // The view no longer turns and zooms about the place of what was let go.
+      world?.controller.returnToEarth();
+    },
+  };
+  return selection;
 }
 
 /** The view of `release`: the canvas, its overlay, and the rail, margins and bottom bar about it,
@@ -89,7 +162,8 @@ export function Scene({
   /** Whether `target` is what is chosen, though its record is still being read. */
   const chosenAlready = (target: Target) => isChosen(target, { object: chosenId, structure: structureId });
   const [hidden, apply] = useHidden();
-  usePointSettings(world, domains, hidden, levelOfDetail);
+  const [age, chooseAge] = useAgeCut();
+  usePointSettings(world, domains, hidden, age, levelOfDetail);
   const outlines = useOutlines();
   const dust = useDustMap(release, world, rotations);
   const structures = useStructures(release, world, rotations, structureId, hidden.structure, outlines[0]);
@@ -99,33 +173,7 @@ export function Scene({
     structure: (id) => selection.structureById(id),
     object: (id, options) => selection.object(id, options),
   });
-  const selection: Selection = {
-    context,
-    chosen,
-    structure: detail,
-    structureId,
-    inside,
-    approximate: structureId !== undefined && structures.drawings.get(structureId)?.approximate === true,
-    object: (id, options) => {
-      structureChoice.close();
-      choose(id, options);
-    },
-    structureById: (id) => {
-      choose(undefined);
-      structureChoice.choose(id);
-      if (world !== undefined) flyToStructure(world, structures, id);
-    },
-    structureFromList: (id) => {
-      if (chosenAlready({ structure: id })) selection.close();
-      else selection.structureById(id);
-    },
-    close: () => {
-      choose(undefined);
-      structureChoice.close();
-      // The view no longer turns and zooms about the place of what was let go.
-      world?.controller.returnToEarth();
-    },
-  };
+  const selection = selectionOf({ world, structures, structureChoice, context, chosen, detail, inside, choose, chosenAlready });
   return (
     <Atlas
       world={world}
@@ -134,7 +182,7 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onApply: apply, dust }}
+      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge) }}
       outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">

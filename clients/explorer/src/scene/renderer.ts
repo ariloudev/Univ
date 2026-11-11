@@ -45,8 +45,9 @@ interface Drawn {
   buffers: WebGLBuffer[];
   centre: Vec3;
   count: number;
-  /** Which points lie inside the volume the view is culled to, where it is: the mask as last
-   * uploaded, and its buffer. */
+  /** Which points are drawn, where the catalogue marks them (inside the volume the view is
+   * culled to, and young enough of the Galaxy's tracers): the mask as last uploaded, and its
+   * buffer. */
   inside?: { mask: Uint8Array; buffer: WebGLBuffer };
 }
 
@@ -169,7 +170,7 @@ export class Renderer implements Drawer {
     gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     // Nor sources: `a_source` beyond every mask's bits, so that nothing turned off hides them.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
-    // And every point lies inside while the view is not culled, markers always.
+    // And every point is drawn while the catalogue marks none, markers always.
     this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
     gl.vertexAttrib1f(this.insideAt, 1);
     const colours = new Float32Array([...KIND_COLOURS, STRUCTURE_COLOUR].flat());
@@ -428,7 +429,7 @@ export class Renderer implements Drawer {
     this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
     gl.uniform1f(this.detailAt.count, batch.count);
-    gl.uniform1f(this.opacity, (inside === undefined ? this.domainOpacity : CULLED_OPACITY) * fade);
+    gl.uniform1f(this.opacity, (detail.culled() ? CULLED_OPACITY : this.domainOpacity) * fade);
     gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
   }

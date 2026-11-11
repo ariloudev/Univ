@@ -7,6 +7,7 @@ import { ANDROMEDA, BETELGEUSE, UNTYPED_STAR } from "../test/objects.ts";
 import { ANDROMEDA_GROUPED, HIP_32754, HIP_32754_SOURCES, M42 } from "../test/records.ts";
 import { manifestOf } from "../test/fixtures.ts";
 import { R12_HIP_32754, R12_M31 } from "../test/records/index.ts";
+import { OPEN_CLUSTER } from "../test/openCluster.ts";
 import { NO_CONTEXT, ObjectPanel, type RecordContext } from "./ObjectPanel.tsx";
 
 const close = () => undefined;
@@ -295,6 +296,14 @@ describe("the chosen object's record panel", () => {
     // Gaia EDR3's number repeats Gaia DR3's, and the crossmatch's HIP 32754 the heading: neither is
     // given again.
     expect(screen.getByRole("region", { name: "The chosen object" }).querySelector("p")?.textContent).toBe("Gaia DR3 1000166358456525568 · object 17");
+  });
+
+  it("gives an open cluster's age in its own part, and none for an object without one", () => {
+    panel(OPEN_CLUSTER);
+    const age = screen.getByTestId("record-age");
+    expect(age.textContent).toContain("Age");
+    expect(age.textContent).toContain("21 +14 −12 Myr (68%)");
+    expect(age.textContent).toContain("7.33 +0.22 −0.36, as published");
   });
 
   it("gives each value on a line of label, value with its source's short name, and its kind's mark", () => {

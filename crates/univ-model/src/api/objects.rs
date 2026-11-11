@@ -165,6 +165,8 @@ pub enum MeasuredQuantity {
     Magnitude,
     /// A colour index between the two bands `band` names, such as `B-V`.
     ColourIndex,
+    /// An age, in years, such as a star cluster's.
+    Age,
     /// Supergalactic Cartesian velocity components (Lahav et al. 2000 axes).
     SupergalacticVelocityX,
     SupergalacticVelocityY,

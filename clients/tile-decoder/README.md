@@ -24,9 +24,10 @@ The fixtures in `fixtures/` are JSON:
 - `<domain>.manifest.json` is a tile manifest exactly as Univ Ingest writes it.
 - `<domain>.tiles.json` holds that domain's tiles in hexadecimal, as the Rust encoder wrote them.
   Beside each point it gives the position before quantization, the object id, the source, the
-  kind of value, and the colour index before rounding with its bands, or `null`.
-- `v1/` keeps the SIMULATED domain as encoding version 1 wrote it, before version 2: it is never
-  rewritten, so the decoder keeps reading the tiles of releases built before version 2.
+  kind of value, and the colour index before rounding with its bands, or `null`, and, where the
+  point carries one, the base-10 logarithm of its age in years before rounding (`log_age`).
+- `v1/` and `v2/` keep the SIMULATED domain as encoding versions 1 and 2 wrote it: they are
+  never rewritten, so the decoder keeps reading the tiles of releases built before version 3.
 
 The fixtures cover the three scale domains of Univ Ingest's fixture release, which is real
 data, and one SIMULATED domain (`simulated.*`) with several levels, two sources and every kind
@@ -59,10 +60,13 @@ const points = decodeTile(bytes, node, manifest);
     with its title, citation and required credit.
   - `kind`: the kind of value of that distance, one of `measured`, `estimated`, `inferred` or
     `reconstructed`.
-  - `colour`, in a version 2 tile where the point's object has one: `{ index, bands }`, its
+  - `colour`, in a version 2 or 3 tile where the point carries one: `{ index, bands }`, its
     colour index in magnitudes to the hundredth and the bands it lies between, `BP-RP` or
     `B-V`. Absent in a version 1 tile and for a point with none.
-- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2]`.
+  - `logAge`, in a version 3 tile where the point carries one in place of a colour index (an
+    open cluster of the Galaxy tracers domain): the base-10 logarithm of its age in years, to
+    the hundredth. Absent before version 3 and for a point with none.
+- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2, 3]`.
 
 `decodeTile` throws an `Error` in these cases:
 
@@ -98,6 +102,20 @@ Every number is little-endian, with no alignment or padding. A tile of `n` point
 | 48 + 16n | n × u8 | Each point's index in `manifest.encoding.kinds` |
 
 The step is `edge / 65536`. A coordinate stored as `q` decodes to `min + (q + 0.5) * step`.
+
+## Encoding versions 2 and 3
+
+Version 2 has the version field 2 and two columns more, so a tile of `n` points is
+`48 + 20 n` bytes; version 3 has the version field 3 and the same columns:
+
+| Offset | Type | Field |
+|---|---|---|
+| 48 + 17n | n × i16 | Each point's value in hundredths; −32768 for none |
+| 48 + 19n | n × u8 | Its code: 0 for none, else 1 + an index in `manifest.encoding.colour_bands` for a colour index in magnitudes, or, from version 3, `manifest.encoding.log_age_code` (3) for the base-10 logarithm of an age in years |
+
+A value decodes to the number held over 100, within 0.005 of the value it was built from. A
+value of −32768 with a code other than 0, or the other way round, is refused, and so is code 3
+in a version 2 tile.
 
 The Rust encoder and reference decoder are in `crates/univ-model/src/tile/`.
 `univ_model::tile::format::layout` gives the same layout as data, for Univ Server's tile format

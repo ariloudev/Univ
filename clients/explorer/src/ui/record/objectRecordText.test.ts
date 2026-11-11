@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { R12_DRACO, R12_ERASS, R12_GROUP, R12_HIP_32754, R12_M31, R12_NGC, R12_SDSS } from "../../test/records/index.ts";
 import { figures } from "../../scene/format.ts";
+import { OPEN_CLUSTER } from "../../test/openCluster.ts";
 import { sourceShort } from "./names.ts";
-import { brightnessLines, cataloguesText, distanceView, drawnColourOf, hasProperMotion, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
+import { ageLines, brightnessLines, cataloguesText, distanceView, drawnColourOf, hasProperMotion, motionLines, objectLede, velocityView } from "./objectRecordText.ts";
 
 const name = (id: string) => sourceShort(id);
 
@@ -108,5 +109,15 @@ describe("the object panel's catalogues", () => {
       detail: "DESI DR1 12, Karachentsev 2013, OpenNGC, 2MPZ, WISE × SuperCOSMOS, 2M++, 2MRS, Cosmicflows-4, McConnachie 2012.",
     });
     expect(cataloguesText(R12_ERASS, name)).toEqual({ title: "In 1 catalogue", detail: "eRASS1." });
+  });
+});
+
+describe("the object panel's age", () => {
+  it("gives an open cluster's age in millions of years with its interval, kind and source, and its logarithm as published", () => {
+    expect(ageLines(OPEN_CLUSTER, name).map((l) => `${l.label} | ${l.value} | ${l.source} | ${l.kind}`)).toEqual([
+      "Age | 21 +14 −12 Myr (68%) | Hunt & Reffert 2023 | estimated",
+      "log age (yr) | 7.33 +0.22 −0.36, as published | Hunt & Reffert 2023 | estimated",
+    ]);
+    expect(ageLines(R12_HIP_32754, name)).toEqual([]);
   });
 });

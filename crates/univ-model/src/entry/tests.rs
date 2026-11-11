@@ -67,6 +67,7 @@ fn entry() -> CatalogueEntry {
             value: value(0.797, Unit::Magnitude, Unit::Magnitude),
         })),
         colours: thin_vec::ThinVec::new(),
+        ages: thin_vec::ThinVec::new(),
         spectral_type: None,
         group_id: None,
         supergalactic_velocity: None,
@@ -159,4 +160,43 @@ fn a_colour_index_is_in_magnitudes_and_a_spectral_type_is_never_blank() {
         kind: KindOfValue::Measured,
     }));
     assert_eq!(e.check(), Err(EntryError::Blank("spectral type")));
+}
+
+#[test]
+fn an_age_reads_back_and_an_entry_without_ages_still_reads() {
+    let interval = Uncertainty::CredibleInterval {
+        minus: 0.3,
+        plus: 0.2,
+        probability: 0.68,
+    };
+    let native = Quantity::new(7.3, Unit::LogYear, interval).unwrap();
+    let mut aged = entry();
+    aged.ages = thin_vec::thin_vec![Age::normalize(native, KindOfValue::Estimated).unwrap()];
+    let yaml = serde_norway::to_string(&aged).unwrap();
+    assert_eq!(
+        serde_norway::from_str::<CatalogueEntry>(&yaml).unwrap(),
+        aged
+    );
+
+    // An entry normalized before ages were read has no `ages` field.
+    let old = serde_norway::to_string(&entry()).unwrap();
+    assert!(old.contains("ages: []\n"));
+    let old = old.replace("ages: []\n", "");
+    assert!(!old.contains("ages:"));
+    assert_eq!(
+        serde_norway::from_str::<CatalogueEntry>(&old)
+            .unwrap()
+            .ages
+            .len(),
+        0
+    );
+}
+
+#[test]
+fn an_age_normalized_to_anything_but_years_is_refused() {
+    let mut wrong = entry();
+    wrong.ages = thin_vec::thin_vec![Age {
+        value: value(2.5e7, Unit::Parsec, Unit::Parsec),
+    }];
+    assert_eq!(wrong.check(), Err(EntryError::Unit("age", Unit::Parsec)));
 }

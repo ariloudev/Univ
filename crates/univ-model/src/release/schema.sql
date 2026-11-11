@@ -275,7 +275,8 @@ CREATE TABLE IF NOT EXISTS entries (
 
 -- Every measurement of every entry, its native value beside its normalized one. quantity
 -- (term) is distance, redshift, parallax, velocity, proper_motion_ra, proper_motion_dec,
--- magnitude, supergalactic_velocity_x, _y or _z; n its place among the entry's values of it.
+-- magnitude, colour_index, age, supergalactic_velocity_x, _y or _z; n its place among the
+-- entry's values of it.
 --
 -- - native_value, native_unit (term) and native_form, ... as published; value, unit (term) and
 --   form, ... normalized, NULL when the native ones unchanged.
@@ -289,6 +290,8 @@ CREATE TABLE IF NOT EXISTS entries (
 -- - A colour index: kind (term) its two bands, such as B-V, numbered within the entry as its
 --   distances are; extra holds derived_from, the two magnitude columns it was computed from,
 --   where its source publishes the magnitudes and not the colour.
+-- - An age: normalized to years; native as published, such as the base-10 logarithm of the
+--   age in years (unit log_year).
 CREATE TABLE IF NOT EXISTS measurements (
   release INTEGER NOT NULL,
   object_id INTEGER NOT NULL,

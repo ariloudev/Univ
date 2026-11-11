@@ -679,6 +679,15 @@
             "minItems": 4,
             "type": "array"
           },
+          "log_age_code": {
+            "description": "The code of a point whose value is the base-10 logarithm of its age in years; absent\nbefore version 3.",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "max_tile_bytes": {
             "minimum": 0,
             "type": "integer"
@@ -748,6 +757,15 @@
               "$ref": "#/components/schemas/KindOfValue"
             },
             "type": "array"
+          },
+          "log_age_code": {
+            "description": "The code of a point whose value is the base-10 logarithm of its age in years; none before\nversion 3.",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "max_points": {
             "minimum": 0,
@@ -2482,6 +2500,7 @@
           "proper_motion_dec",
           "magnitude",
           "colour_index",
+          "age",
           "supergalactic_velocity_x",
           "supergalactic_velocity_y",
           "supergalactic_velocity_z"
@@ -6042,7 +6061,9 @@
           "megaparsec_over_h",
           "magnitude",
           "dimensionless",
-          "extinction_zgr23_per_parsec"
+          "extinction_zgr23_per_parsec",
+          "year",
+          "log_year"
         ],
         "type": "string"
       },

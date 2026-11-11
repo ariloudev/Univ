@@ -7,6 +7,7 @@ import { Chooser } from "../record/parts.tsx";
 import { SwitchBox } from "../SwitchBox.tsx";
 import type { DustState } from "../useDustMap.ts";
 import { everything } from "./actions.ts";
+import type { AgeState } from "./AgeChoice.tsx";
 import { type ShowChoices, type Tally, anyOff, summaryOf } from "./choices.ts";
 import { Points } from "./Points.tsx";
 import { Structures } from "./Structures.tsx";
@@ -17,28 +18,39 @@ export interface ShowPanelProps {
   onApply: Apply;
   /** The dust map's switch, where the view has one (draw-the-dust-map). */
   dust?: DustState | undefined;
+  /** The age below which the Galaxy's tracers are drawn, where the view offers it. */
+  age?: AgeState | undefined;
 }
 
 const of = ({ on, of: all }: Tally, what: string) => `${on} of ${all} ${what}`;
 
-export function ShowPanel({ choices, hidden, onApply, dust }: ShowPanelProps) {
+export function ShowPanel({ choices, hidden, onApply, dust, age }: ShowPanelProps) {
   const sum = summaryOf(choices, hidden);
+  const young = age?.cut;
   return (
     <div className="space-y-3">
       <div>
         <h2 className="font-serif text-base">Show</h2>
         <p className="text-xs text-dim" data-testid="show-summary">
-          Points: {of(sum.domains, "domains")}, {of(sum.sources, "catalogues")}, {of(sum.kinds, "kinds")}. Structures: {of(sum.structures, "kinds")}.
-          {anyOff(sum) ? (
+          Points: {of(sum.domains, "domains")}, {of(sum.sources, "catalogues")}, {of(sum.kinds, "kinds")}
+          {young === undefined ? "" : `, tracers younger than ${young} million years`}. Structures: {of(sum.structures, "kinds")}.
+          {anyOff(sum) || young !== undefined ? (
             <>
               {" "}
-              <Chooser onClick={() => onApply(everything(hidden))}>Show everything</Chooser>
+              <Chooser
+                onClick={() => {
+                  onApply(everything(hidden));
+                  age?.choose(undefined);
+                }}
+              >
+                Show everything
+              </Chooser>
             </>
           ) : null}
         </p>
       </div>
       <div data-testid="show" className="space-y-3">
-        <Points choices={choices} hidden={hidden} onApply={onApply} />
+        <Points choices={choices} hidden={hidden} onApply={onApply} age={age} />
         <Structures choices={choices} hidden={hidden} onApply={onApply} />
         {dust === undefined ? null : <DustSwitch dust={dust} />}
       </div>

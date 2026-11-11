@@ -132,7 +132,7 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
     // AC-132.
     let Decoded { pairs } = decoded();
     let mut redshifts = 0;
-    let mut colours = 0;
+    let (mut colours, mut ages) = (0, 0);
     for (o, r) in pairs {
         let mut count = 0;
         for (e, entry) in (0u32..).zip(&o.object.entries) {
@@ -208,11 +208,21 @@ fn every_measurement_has_its_native_value_unit_uncertainty_kind_and_source() {
                 colours += 1;
                 count += 1;
             }
+            for (n, a) in (0u32..).zip(&entry.ages) {
+                let m = find(&r.measurements, e, MeasuredQuantity::Age, n);
+                check(m, &a.value.native, &a.value.normalized, a.value.kind);
+                ages += 1;
+                count += 1;
+            }
         }
         assert_eq!(r.measurements.len(), count, "{}", o.id.get());
     }
     assert!(redshifts > 0);
     assert!(colours > 0, "the fixture release reads colour indices back");
+    assert!(
+        ages > 0,
+        "the fixture release reads the open clusters' ages back"
+    );
 }
 
 #[test]

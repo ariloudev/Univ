@@ -27,7 +27,7 @@ use univ_ingest::tiles::{BuiltDomain, DomainPoint, assign, build_domain, name_of
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::ObjectId;
 use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
-use univ_model::tile::{COLOUR_BANDS, ColourBands, KINDS, PointColour, decode};
+use univ_model::tile::{COLOUR_BANDS, ColourBands, KINDS, PointColour, PointValue, decode};
 use univ_model::value::KindOfValue;
 
 /// The variable that asks the test to rewrite the files.
@@ -69,6 +69,9 @@ struct Expected {
     kind: KindOfValue,
     /// Its colour index before rounding, and its bands; none where it has none.
     colour: Option<(f64, ColourBands)>,
+    /// The base-10 logarithm of its age in years before rounding, where it carries one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    log_age: Option<f64>,
 }
 
 /// A domain's built tiles, the points they were built from and the ids of their sources.
@@ -116,11 +119,16 @@ fn simulated() -> Domain {
             source: n % 2,
             sky_source: n % 2,
             kind: KINDS[usize::from(n) % KINDS.len()],
-            // Every third point has none; the rest alternate between the bands.
-            colour: (n % 3 != 0).then(|| PointColour {
-                index: f64::from(n) / 17.0 - 0.4,
-                bands: COLOUR_BANDS[usize::from(n) % COLOUR_BANDS.len()],
-            }),
+            // Every third point has no colour; the rest alternate between the bands. Of the
+            // points without a colour, every other carries a log age in years in its place.
+            value: if n % 3 != 0 {
+                Some(PointValue::Colour(PointColour {
+                    index: f64::from(n) / 17.0 - 0.4,
+                    bands: COLOUR_BANDS[usize::from(n) % COLOUR_BANDS.len()],
+                }))
+            } else {
+                (n % 6 == 0).then(|| PointValue::LogAge(6.5 + f64::from(n) / 25.0))
+            },
         })
         .collect();
     let sources = [source_id("gaia-dr3-bright"), source_id("hipparcos-2007")];
@@ -159,7 +167,11 @@ fn tiles_file(d: &Domain) -> String {
             position: built.position,
             source: d.sources[usize::from(built.source)].clone(),
             kind: built.kind,
-            colour: built.colour.map(|c| (c.index, c.bands)),
+            colour: built
+                .value
+                .and_then(PointValue::colour)
+                .map(|c| (c.index, c.bands)),
+            log_age: built.value.and_then(PointValue::log_age),
         }
     };
     let tiles = d
