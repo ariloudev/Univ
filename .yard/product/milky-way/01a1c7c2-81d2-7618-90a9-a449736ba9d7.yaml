@@ -59,3 +59,64 @@ blocks:
 
           Correction: the plan and the report's citation said 1,225 under 30 Myr. That was the count under logAge50 = 7.5 (31.6 Myr) from the first test plot; under 30 Myr it is 1,169. Fixed in `46a424b`.
         tone: success
+  - key: 01a1cb5a-f1c1-716a-b0b0-30e3f9796771
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1cb5a-f1c1-716a-b0b0-30e447755481
+        at: 2026-11-11T16:04:57Z
+        revision: 31
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        view: publish
+        note: "Publish sequence 9 (`cd13bbf`), state root `cf70fa83…1f97`, after `d400625` merged product/milky-way into develop. It allocated 80 labels for waves 1–5's Requirements, criteria, Components and decisions, up to AC-725, CMP-71 and ADR-37. `loft verify`, `loft fmt --check` and `loft check --fail-on warning` pass."
+        recorded:
+          commit: "cd13bbf24138d45dd6517b4543815e746225a445"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-11T16:04:57Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 71,
+              "constraint": 8,
+              "criterion": 725,
+              "decision": 37,
+              "feature": 44,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 195
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "cd13bbf24138d45dd6517b4543815e746225a445",
+                "removed": [],
+                "revision": "cd13bbf24138d45dd6517b4543815e746225a445"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 9,
+                "publishedAt": "2026-11-11T16:04:40Z",
+                "stateRoot": "cf70fa83262810b6be6b9d3dc0bdaf3eb5ebafd0c12af53ce73a6e813aba1f97"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
