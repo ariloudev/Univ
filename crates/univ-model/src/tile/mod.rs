@@ -86,7 +86,7 @@ use thiserror::Error;
 
 pub use read::decode;
 pub use value::{
-    COLOUR_BANDS, ColourBands, LOG_AGE_CODE, NO_COLOUR, PointColour, has_age, has_colour,
+    COLOUR_BANDS, ColourBands, LOG_AGE_CODE, NO_VALUE, PointColour, PointValue, has_age, has_colour,
 };
 
 use value::hundredths;
@@ -231,11 +231,8 @@ pub struct TilePoint {
     pub id: ObjectId,
     pub source: u16,
     pub kind: KindOfValue,
-    /// The colour index chosen for its object, if it has one.
-    pub colour: Option<PointColour>,
-    /// The base-10 logarithm of its object's preferred age in years, if it carries one in place
-    /// of a colour index.
-    pub log_age: Option<f64>,
+    /// The colour index chosen for its object, or the log of its age, if it carries one.
+    pub value: Option<PointValue>,
 }
 
 /// A decoded point: its position at the centre of its quantization step, the step it was
@@ -247,10 +244,9 @@ pub struct DecodedPoint {
     pub id: ObjectId,
     pub source: u16,
     pub kind: KindOfValue,
-    /// Its colour index to the hundredth of a magnitude; none in a version 1 tile.
-    pub colour: Option<PointColour>,
-    /// The base-10 logarithm of its age in years to the hundredth; none before version 3.
-    pub log_age: Option<f64>,
+    /// Its colour index, or from version 3 its log age, to the hundredth; none in a version 1
+    /// tile.
+    pub value: Option<PointValue>,
 }
 
 /// A decoded tile: its node and its points, in the order stored.
@@ -298,7 +294,7 @@ pub enum TileError {
         "point {point} has the value code {code}, which the tile's version does not define or \
          its value contradicts"
     )]
-    Colour { point: usize, code: u8 },
+    ValueCode { point: usize, code: u8 },
     #[error(
         "object {id}'s colour index {index} lies beyond the -327.67 to 327.67 magnitudes a tile \
          holds"
@@ -306,8 +302,6 @@ pub enum TileError {
     ColourRange { id: ObjectId, index: f64 },
     #[error("object {id}'s log age {log_age} lies beyond the -327.67 to 327.67 a tile holds")]
     AgeRange { id: ObjectId, log_age: f64 },
-    #[error("object {id} carries both a colour index and an age, where a tile holds one")]
-    TwoValues { id: ObjectId },
 }
 
 /// The kinds of value of version 1, each coded as its index.
@@ -350,8 +344,8 @@ fn quantize(p: f64, min: f64, step: f64) -> u16 {
 /// # Errors
 ///
 /// Fails on a node that cannot stand (a child cube may halve below a normal step), more points
-/// than [`MAX_POINTS`], a point outside the node or not finite, a colour index or an age beyond
-/// what a tile holds, or a point with both.
+/// than [`MAX_POINTS`], a point outside the node or not finite, or a colour index or an age
+/// beyond what a tile holds.
 pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError> {
     let node = NodeBox::new(node.min, node.edge)?;
     let n = points.len();
@@ -394,20 +388,19 @@ pub fn encode(node: &NodeBox, points: &[TilePoint]) -> Result<Vec<u8>, TileError
     bytes.extend(points.iter().map(|p| kind_code(p.kind)));
     let mut codes = Vec::with_capacity(n);
     for p in points {
-        let (held, code) = match (p.colour, p.log_age) {
-            (None, None) => (NO_COLOUR, 0),
-            (Some(c), None) => (
-                hundredths(c.index).ok_or(TileError::ColourRange {
-                    id: p.id,
-                    index: c.index,
-                })?,
-                c.bands.code(),
-            ),
-            (None, Some(log_age)) => (
-                hundredths(log_age).ok_or(TileError::AgeRange { id: p.id, log_age })?,
-                LOG_AGE_CODE,
-            ),
-            (Some(_), Some(_)) => return Err(TileError::TwoValues { id: p.id }),
+        let (held, code) = match p.value {
+            None => (NO_VALUE, 0),
+            Some(v) => {
+                let (number, code) = v.coded();
+                let held = hundredths(number).ok_or(match v {
+                    PointValue::Colour(c) => TileError::ColourRange {
+                        id: p.id,
+                        index: c.index,
+                    },
+                    PointValue::LogAge(log_age) => TileError::AgeRange { id: p.id, log_age },
+                })?;
+                (held, code)
+            }
         };
         bytes.extend_from_slice(&held.to_le_bytes());
         codes.push(code);

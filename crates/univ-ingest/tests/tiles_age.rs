@@ -16,7 +16,7 @@ use std::collections::BTreeMap;
 use release_fixture::{cross, fixture_with, tiles};
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::tiles::{assign, log_age_of};
-use univ_model::tile::decode;
+use univ_model::tile::{PointValue, decode};
 
 #[test]
 fn an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none() {
@@ -34,11 +34,11 @@ fn an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none() {
     let (mut with_age, mut without_age) = (0, 0);
     for p in tracers {
         if let Some(log_age) = ages[&p.id.get()] {
-            assert_eq!(p.log_age, Some(log_age));
-            assert_eq!(p.colour, None, "a tracer with an age carries no colour");
+            // An age in the place of its colour.
+            assert_eq!(p.value, Some(PointValue::LogAge(log_age)));
             with_age += 1;
         } else {
-            assert_eq!(p.log_age, None);
+            assert_eq!(p.value.and_then(PointValue::log_age), None);
             without_age += 1;
         }
     }
@@ -50,7 +50,10 @@ fn an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none() {
     for (domain, points) in &assigned.domains {
         if *domain != ScaleDomain::GalaxyTracers {
             assert!(
-                points.points.iter().all(|p| p.log_age.is_none()),
+                points
+                    .points
+                    .iter()
+                    .all(|p| p.value.and_then(PointValue::log_age).is_none()),
                 "{domain:?}"
             );
         }
@@ -66,7 +69,7 @@ fn an_open_cluster_point_carries_its_log_age_and_an_ageless_tracer_none() {
     for node in &domain.nodes {
         for p in decode(&node.tile).unwrap().points {
             let built = ages[&p.id.get()];
-            match (built, p.log_age) {
+            match (built, p.value.and_then(PointValue::log_age)) {
                 (Some(b), Some(d)) => {
                     assert!((b - d).abs() < 0.01, "{b} decoded as {d}");
                     decoded += 1;

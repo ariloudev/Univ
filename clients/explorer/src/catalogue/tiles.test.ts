@@ -140,8 +140,10 @@ describe("a tile", () => {
       if (tile === undefined) throw new Error("no fixture tile");
       const batch = await batchOf(tracers, tile, bytesOf(raw.hex));
       const at = indexById(batch);
+      // A tile none of whose points carries an age has no ages at all.
+      if (raw.points.every((p) => p.log_age === undefined)) expect(batch.ages).toBeUndefined();
       for (const p of raw.points) {
-        const age = batch.ages?.[at(p.id)];
+        const age = batch.ages?.[at(p.id)] ?? Number.NaN;
         if (p.log_age === undefined) expect(age).toBeNaN();
         else {
           expect(Math.abs((age ?? Number.NaN) - p.log_age)).toBeLessThanOrEqual(0.006);

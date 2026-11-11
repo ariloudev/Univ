@@ -312,6 +312,15 @@ blocks:
         title: "Science check open-cluster-ages"
         detail: "A count of Hunt & Reffert clusters with an age (fail), and the count under 30 Myr (report). Done when it runs on a scratch release built from the fixtures."
         state: active
+      - key: 01a1c81c-504d-7366-973f-6c086cccb936
+        at: 2026-11-11T00:57:41Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Science check open-cluster-ages"
+        detail: "`ages-normalized-to-years` (fail): every age is in years from years or log years. `open-cluster-ages` (report): ages by source, with the counts under 100, 30 and 10 Myr, cited to tonight's VizieR counts (2,794 / 1,225 / 405 of 6,818). The terms are read by subquery so that releases without ages pass. A new xtask test runs both from the repository's file against the fixture release."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-ff01bace2bad
     id: t11-review
     kind: task
@@ -325,6 +334,15 @@ blocks:
         title: "Review, gate, trace and close"
         detail: "/simplify and /code-review with fixes; cargo xtask check and integration once each; trace linked and accepted; Yard Log closed; merged into product/milky-way."
         state: open
+      - key: 01a1c81c-504d-7366-973f-6c09d7690b63
+        at: 2026-11-11T00:57:41Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Review, gate, trace and close"
+        detail: "/simplify and /code-review with fixes; cargo xtask check and integration once each; trace linked and accepted; Yard Log closed; merged into product/milky-way."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-ff022c24ed78
     id: build-issues
     kind: note

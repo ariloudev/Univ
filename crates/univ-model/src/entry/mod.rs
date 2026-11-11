@@ -384,13 +384,7 @@ impl CatalogueEntry {
             in_unit("colour index", &c.value, Unit::Magnitude)?;
         }
         for a in &self.ages {
-            // An age is published in years or as their logarithm, normalized to years.
-            let native = a.value.native.unit;
-            if a.value.normalized.unit != Unit::Year
-                || !matches!(native, Unit::Year | Unit::LogYear)
-            {
-                return Err(EntryError::Unit("age", a.value.normalized.unit));
-            }
+            in_unit("age", &a.value, Unit::Year)?;
         }
         if let Some(sg) = &self.supergalactic_velocity {
             for v in [&sg.x, &sg.y, &sg.z] {

@@ -18,11 +18,10 @@ fn tile(n: u32) -> (NodeBox, Vec<u8>) {
                 id: ObjectId::new(u64::from(k) * 7_919).unwrap(),
                 source: u16::try_from(k % 3).unwrap(),
                 kind: KINDS[usize::try_from(k % 4).unwrap()],
-                log_age: None,
-                colour: (k % 2 == 0).then_some(PointColour {
+                value: (k % 2 == 0).then_some(PointValue::Colour(PointColour {
                     index: 0.65,
                     bands: ColourBands::BpRp,
-                }),
+                })),
             }
         })
         .collect();

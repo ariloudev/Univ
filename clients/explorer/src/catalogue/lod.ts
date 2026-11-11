@@ -241,8 +241,10 @@ export function detailOf(levels: Levels, onsets: readonly number[]): Detail {
 }
 
 /** What the renderer reads of level of detail: the share of each tile's points, its first, it
- * may draw, by the tile's id, and each domain's detail, by its name; and, where the view is
- * culled to a structure's volume, which of a tile's points lie inside it (see-the-structures). */
+ * may draw, by the tile's id, and each domain's detail, by its name; and which of a tile's points
+ * are drawn, where the catalogue marks them: those inside the volume the view is culled to
+ * (see-the-structures) and, of the Galaxy's tracers, younger than the age chosen
+ * (choose-what-is-drawn). */
 export interface DrawnDetail {
   share: (id: string) => number;
   detail: (domain: string) => Detail;

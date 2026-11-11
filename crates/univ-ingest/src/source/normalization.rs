@@ -422,11 +422,7 @@ fn check_distance<'a>(
         .chain(d.also_published.iter().flat_map(|p| &p.error))
         .collect();
     for e in &errors {
-        if let ErrorColumns::CredibleInterval { probability, .. } = e
-            && !(*probability > 0.0 && *probability <= 1.0)
-        {
-            return Err(problem(at, "gives a probability outside (0, 1]"));
-        }
+        e.check_probability(at)?;
     }
     if table.unit(&d.value) == Some(Unit::Magnitude) && d.measure != Measure::Luminosity {
         return Err(problem(
@@ -453,6 +449,18 @@ pub(super) fn blank(field: &str, value: &str) -> Result<(), Problem> {
 }
 
 impl ErrorColumns {
+    /// Refuses a credible interval whose probability lies outside (0, 1].
+    pub(super) fn check_probability(&self, at: &str) -> Result<(), Problem> {
+        match self {
+            Self::CredibleInterval { probability, .. }
+                if !(*probability > 0.0 && *probability <= 1.0) =>
+            {
+                Err(problem(at, "gives a probability outside (0, 1]"))
+            }
+            _ => Ok(()),
+        }
+    }
+
     /// The columns the error is read from.
     #[must_use]
     pub fn columns(&self) -> Vec<&str> {

@@ -2,8 +2,10 @@
 // than 100, 30 or 10 million years, with the share of the tracers held that carry an age, so that
 // the reader knows which it acts on.
 
-import { AGE_CUTS, type AgeCut, type AgesHeld } from "../age.ts";
+import type { AgesHeld } from "../../catalogue/catalogue.ts";
+import { AGE_CUTS, type AgeCut } from "../age.ts";
 import { Note } from "../record/parts.tsx";
+import { Chip } from "./controls.tsx";
 import { type Store, useStore } from "../store.ts";
 
 /** The age chosen, the way to choose another, and the tracers held, read as each frame is drawn. */
@@ -27,21 +29,16 @@ export function AgeChoice({ age }: { age: AgeState }) {
     <div data-testid="show-age" className="space-y-1">
       <Note>The Galaxy's tracers by age, in millions of years</Note>
       <div role="group" aria-label="The Galaxy's tracers by age" className="flex gap-1">
-        {OPTIONS.map(({ cut, label }) => {
-          const on = cut === age.cut;
-          return (
-            <button
-              key={label}
-              type="button"
-              aria-pressed={on}
-              aria-label={cut === undefined ? "Tracers of any age" : `Tracers younger than ${cut} million years`}
-              onClick={() => age.choose(cut)}
-              className={`rounded-full border px-2 py-px text-xs ${on ? "border-edge bg-raised" : "border-dashed border-neat/60 text-dim"}`}
-            >
-              {label}
-            </button>
-          );
-        })}
+        {OPTIONS.map(({ cut, label }) => (
+          <Chip
+            key={label}
+            on={cut === age.cut}
+            label={cut === undefined ? "Tracers of any age" : `Tracers younger than ${cut} million years`}
+            onClick={() => age.choose(cut)}
+          >
+            {label}
+          </Chip>
+        ))}
       </div>
       <p data-testid="show-age-share" className="text-xs text-dim">
         {aged.toLocaleString("en-GB")} of the {tracers.toLocaleString("en-GB")} tracers held carry an age: the choice acts on

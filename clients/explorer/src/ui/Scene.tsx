@@ -19,6 +19,7 @@ import { type Inside, type StructureChoice, useStructureChoice } from "./inside.
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 import { type AgeCut, logAgeOf, useAgeCut } from "./age.ts";
 import type { AgeState } from "./show/AgeChoice.tsx";
+import type { AgesHeld } from "../catalogue/catalogue.ts";
 
 /** The structure `choice` names, and the cull to its volume, where it has one
  * (see-the-structures): `world` culled to it while the choice says, and flown to once it is read
@@ -53,7 +54,7 @@ function useCulledStructure(
 
 /** The age choice the Show drawer offers, once `world` is made: the tracers it holds read as
  * each frame is drawn. */
-const NO_AGES = { tracers: 0, aged: 0 };
+const NO_AGES: AgesHeld = { tracers: 0, aged: 0 };
 function ageState(world: World | undefined, cut: AgeCut, choose: (cut: AgeCut) => void): AgeState | undefined {
   if (world === undefined) return undefined;
   return { cut, choose, frame: world.frame, held: () => world.catalogue?.agesHeld() ?? NO_AGES };

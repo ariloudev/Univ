@@ -2,6 +2,7 @@
 // marks, and one table of the sources, each once, with a column for each scale domain.
 
 import { KINDS, POINT_CSS } from "../../scene/kinds.ts";
+import { TRACERS_DOMAIN } from "../../scene/tracers.ts";
 import { figures } from "../../scene/format.ts";
 import type { Apply, Hidden } from "../hidden.ts";
 import { Mark } from "../Mark.tsx";
@@ -18,9 +19,6 @@ interface Props {
   hidden: Hidden;
   onApply: Apply;
 }
-
-/** The domain whose points the age choice acts on. */
-const TRACERS = "galaxy_tracers";
 
 export function Points({ choices, hidden, onApply, age }: Props & { age?: AgeState | undefined }) {
   const all = () => {
@@ -44,7 +42,7 @@ export function Points({ choices, hidden, onApply, age }: Props & { age?: AgeSta
       </div>
       <Sources choices={choices} hidden={hidden} onApply={onApply} />
       <Note>A catalogue is switched in every domain it is in; a domain's box switches all its points.</Note>
-      {age !== undefined && choices.domainNames.includes(TRACERS) ? <AgeChoice age={age} /> : null}
+      {age !== undefined && choices.domainNames.includes(TRACERS_DOMAIN) ? <AgeChoice age={age} /> : null}
     </Part>
   );
 }

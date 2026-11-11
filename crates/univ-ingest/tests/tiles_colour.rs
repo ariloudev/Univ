@@ -34,7 +34,6 @@ fn object(entries: Vec<(&str, Vec<ColourIndex>)>) -> Object {
         .into_iter()
         .map(|(source, colours)| CatalogueEntry {
             colours: colours.into(),
-            ages: thin_vec::ThinVec::new(),
             ..bare(source, "1")
         })
         .collect();

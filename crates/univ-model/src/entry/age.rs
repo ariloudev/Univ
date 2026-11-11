@@ -3,7 +3,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::units::Unit;
-use crate::value::{KindOfValue, Quantity, Uncertainty, Value, ValueError};
+#[cfg(test)]
+use crate::value::Uncertainty;
+use crate::value::{KindOfValue, Quantity, Value, ValueError};
 
 /// An age, normalized to years, its native value as the source publishes it, such as the
 /// base-10 logarithm of the age in years Hunt & Reffert 2023 give.
@@ -26,34 +28,9 @@ impl Age {
                 value: Value::normalize(native, Unit::Year, kind)?,
             });
         }
-        let x = native.value;
-        let years = 10_f64.powf(x);
-        let below = |minus: f64| years - 10_f64.powf(x - minus);
-        let above = |plus: f64| 10_f64.powf(x + plus) - years;
-        let uncertainty = match native.uncertainty {
-            Uncertainty::Symmetric { sigma } => Uncertainty::Asymmetric {
-                minus: below(sigma),
-                plus: above(sigma),
-            },
-            Uncertainty::Asymmetric { minus, plus } => Uncertainty::Asymmetric {
-                minus: below(minus),
-                plus: above(plus),
-            },
-            Uncertainty::Interval { minus, plus } => Uncertainty::Interval {
-                minus: below(minus),
-                plus: above(plus),
-            },
-            Uncertainty::CredibleInterval {
-                minus,
-                plus,
-                probability,
-            } => Uncertainty::CredibleInterval {
-                minus: below(minus),
-                plus: above(plus),
-                probability,
-            },
-            other => other,
-        };
+        let years = |log: f64| 10_f64.powf(log);
+        let uncertainty = native.uncertainty.through(native.value, years);
+        let years = years(native.value);
         Ok(Self {
             value: Value {
                 native,

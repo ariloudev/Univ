@@ -2,7 +2,7 @@
 //! chosen Hubble constant, and a length from one Hubble constant to another.
 
 use crate::units::{Dimension, Unit};
-use crate::value::{Quantity, Uncertainty, positive};
+use crate::value::{Quantity, positive};
 
 use super::DistanceError;
 
@@ -22,35 +22,9 @@ pub fn from_modulus(modulus: &Quantity) -> Result<Quantity, DistanceError> {
     }
     let parsecs = |mu: f64| 10f64.powf(mu / 5.0 + 1.0);
     let distance = parsecs(modulus.value);
-    let uncertainty = match modulus.uncertainty {
-        // A symmetric error in μ is an asymmetric one in distance: μ ± σ spans
-        // d·10^(−σ/5) to d·10^(+σ/5) exactly, wider on the far side.
-        Uncertainty::Symmetric { sigma } => Uncertainty::Asymmetric {
-            minus: distance - parsecs(modulus.value - sigma),
-            plus: parsecs(modulus.value + sigma) - distance,
-        },
-        Uncertainty::Asymmetric { minus, plus } => Uncertainty::Asymmetric {
-            minus: distance - parsecs(modulus.value - minus),
-            plus: parsecs(modulus.value + plus) - distance,
-        },
-        // A stated interval's bounds map through the monotonic function as bounds.
-        Uncertainty::Interval { minus, plus } => Uncertainty::Interval {
-            minus: distance - parsecs(modulus.value - minus),
-            plus: parsecs(modulus.value + plus) - distance,
-        },
-        // Quantiles of a posterior map through a monotonic function unchanged (Bailer-Jones et
-        // al. 2021, abstract), so the interval's bounds are converted, not its widths.
-        Uncertainty::CredibleInterval {
-            minus,
-            plus,
-            probability,
-        } => Uncertainty::CredibleInterval {
-            minus: distance - parsecs(modulus.value - minus),
-            plus: parsecs(modulus.value + plus) - distance,
-            probability,
-        },
-        other => other,
-    };
+    // A symmetric error in μ is an asymmetric one in distance: μ ± σ spans d·10^(−σ/5) to
+    // d·10^(+σ/5) exactly, wider on the far side.
+    let uncertainty = modulus.uncertainty.through(modulus.value, parsecs);
     Ok(Quantity::new(distance, Unit::Parsec, uncertainty)?)
 }
 
@@ -112,6 +86,7 @@ pub(super) fn checked(hubble_constant: f64) -> Result<f64, DistanceError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::value::Uncertainty;
 
     fn quantity(value: f64, unit: Unit, uncertainty: Uncertainty) -> Quantity {
         Quantity::new(value, unit, uncertainty).unwrap()

@@ -3,7 +3,7 @@
 // clusters trace the spiral arms (Hunt & Reffert 2023's ages), which the clusters of every age
 // fill in.
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { setInAddress } from "./address.ts";
 
@@ -27,12 +27,5 @@ export const logAgeOf = (cut: AgeCut): number | undefined => (cut === undefined 
 export function useAgeCut(): [AgeCut, (cut: AgeCut) => void] {
   const [cut, setCut] = useState<AgeCut>(() => ageInAddress(location.search));
   useEffect(() => setInAddress({ age: cut === undefined ? undefined : String(cut) }), [cut]);
-  const choose = useCallback((next: AgeCut) => setCut(next), []);
-  return [cut, choose];
-}
-
-/** The Galaxy's tracers held, and of them those that carry an age. */
-export interface AgesHeld {
-  tracers: number;
-  aged: number;
+  return [cut, setCut];
 }

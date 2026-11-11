@@ -59,10 +59,14 @@ const nodeOf = (manifest: TileManifest, address: string): ManifestNode => {
   return node;
 };
 
-/** Every tile of every fixture, with its manifest and node. */
-const everyTile = fixtures.flatMap((f) =>
-  f.tiles.map((t) => ({ fixture: f.name, manifest: f.manifest, node: nodeOf(f.manifest, t.address), tile: t })),
-);
+/** Every tile of `fixtures`, with its manifest and node, each named with `prefix`. */
+const tilesOf = (of: Fixture[], prefix = '') =>
+  of.flatMap((f) =>
+    f.tiles.map((t) => ({ fixture: `${prefix}${f.name}`, manifest: f.manifest, node: nodeOf(f.manifest, t.address), tile: t })),
+  );
+
+/** Every tile of every fixture of the current encoding. */
+const everyTile = tilesOf(fixtures);
 
 test('the fixtures hold every domain of the fixture release, a simulated one, and every node', () => {
   assert.deepEqual(
@@ -135,9 +139,7 @@ test('the decoder decodes tiles of encoding versions 1, 2 and 3', () => {
 });
 
 /** Every tile of the version 2 fixtures, kept as they were written. */
-const everyVersion2Tile = version2.flatMap((f) =>
-  f.tiles.map((t) => ({ fixture: `v2/${f.name}`, manifest: f.manifest, node: nodeOf(f.manifest, t.address), tile: t })),
-);
+const everyVersion2Tile = tilesOf(version2, 'v2/');
 
 test('each decoded point of a version 2 or 3 tile gives its colour index and bands, or that it has none', () => {
   let coloured = 0;

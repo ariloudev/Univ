@@ -317,8 +317,7 @@ pub fn build_domain(
                     id: p.id,
                     source: p.source,
                     kind: p.kind,
-                    colour: p.colour,
-                    log_age: p.log_age,
+                    value: p.value,
                 }
             })
             .collect();

@@ -242,7 +242,7 @@ export function decodeTile(
       if ((held === NO_COLOUR) !== (band === 0)) {
         fail(`point ${k} has the value code ${band}, which its value contradicts`);
       }
-      if (band !== 0 && band === ageCode) {
+      if (band === ageCode) {
         logAge = held / 100;
       } else if (band !== 0) {
         const bands =

@@ -119,6 +119,13 @@ impl Unit {
         }
     }
 
+    /// Whether a value in this unit is normalized to `to`: by a factor within one dimension, or,
+    /// for the logarithm of a time in years, to years by a power of ten.
+    #[must_use]
+    pub fn normalizes_to(self, to: Self) -> bool {
+        self.dimension() == to.dimension() || (self == Self::LogYear && to == Self::Year)
+    }
+
     /// The factor that turns a value in this unit into one in `to`.
     ///
     /// # Errors

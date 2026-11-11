@@ -90,6 +90,42 @@ impl Uncertainty {
         }
     }
 
+    /// The same uncertainty of the value `x` carried through the increasing function `f`, for
+    /// the value `f(x)`: each bound mapped through `f` exactly, so that a symmetric error becomes
+    /// an asymmetric one, wider on the side where `f` grows faster. Quantiles of a posterior map
+    /// through a monotonic function unchanged (Bailer-Jones et al. 2021, abstract), so a credible
+    /// interval's bounds are converted, not its widths; a stated interval's bounds likewise.
+    #[must_use]
+    pub fn through(self, x: f64, f: impl Fn(f64) -> f64) -> Self {
+        let y = f(x);
+        let below = |minus: f64| y - f(x - minus);
+        let above = |plus: f64| f(x + plus) - y;
+        match self {
+            Self::Symmetric { sigma } => Self::Asymmetric {
+                minus: below(sigma),
+                plus: above(sigma),
+            },
+            Self::Asymmetric { minus, plus } => Self::Asymmetric {
+                minus: below(minus),
+                plus: above(plus),
+            },
+            Self::Interval { minus, plus } => Self::Interval {
+                minus: below(minus),
+                plus: above(plus),
+            },
+            Self::CredibleInterval {
+                minus,
+                plus,
+                probability,
+            } => Self::CredibleInterval {
+                minus: below(minus),
+                plus: above(plus),
+                probability,
+            },
+            other => other,
+        }
+    }
+
     fn check(self) -> Result<(), ValueError> {
         let error = |x: f64| {
             if x.is_finite() && x >= 0.0 {

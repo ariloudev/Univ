@@ -73,11 +73,14 @@ describe("the Galaxy's tracers by age", () => {
     for (const b of batches) {
       const drawn = catalogue.drawnPoints(b);
       const marked = catalogue.inside(b.tile.id);
+      // A tile with no age keeps all its points.
+      if (b.ages === undefined) kept += b.ids.length;
       b.ages?.forEach((age, i) => {
         // NaN, no age, is drawn.
         const young = !(age >= BELOW_30_MYR);
         expect(drawn(i)).toBe(young);
-        expect(marked?.[i]).toBe(young ? 1 : 0);
+        // A tile none of whose points is cut keeps no mask: every point is drawn.
+        expect(marked?.[i] ?? 1).toBe(young ? 1 : 0);
         if (young) kept += 1;
         else old += 1;
       });

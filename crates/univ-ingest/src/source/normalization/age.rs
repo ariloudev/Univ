@@ -28,10 +28,8 @@ pub(super) fn check<'a>(
     a: &'a AgeReading,
 ) -> Result<Vec<&'a str>, Problem> {
     blank(&format!("{at}.basis"), &a.basis)?;
-    if let Some(ErrorColumns::CredibleInterval { probability, .. }) = &a.error
-        && !(*probability > 0.0 && *probability <= 1.0)
-    {
-        return Err(problem(at, "gives a probability outside (0, 1]"));
+    if let Some(e) = &a.error {
+        e.check_probability(at)?;
     }
     let mut read = vec![a.value.as_str()];
     read.extend(a.error.iter().flat_map(ErrorColumns::columns));
@@ -39,7 +37,7 @@ pub(super) fn check<'a>(
         table.known(at, name)?;
     }
     let unit = table.unit(&a.value);
-    if !matches!(unit, Some(Unit::Year | Unit::LogYear)) {
+    if !unit.is_some_and(|u| u.normalizes_to(Unit::Year)) {
         return Err(problem(
             at,
             format!(

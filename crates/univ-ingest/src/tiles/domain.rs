@@ -13,7 +13,7 @@ use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::object::{MeasurementRef, Object, ObjectKind};
 use univ_model::position::{Frame, Vec3};
-use univ_model::tile::{ColourBands, PointColour};
+use univ_model::tile::{ColourBands, PointColour, PointValue};
 use univ_model::units::{Unit, scale_domain_unit};
 use univ_model::value::KindOfValue;
 
@@ -94,11 +94,10 @@ pub struct DomainPoint {
     pub sky_source: u16,
     /// The kind of value of its preferred distance measurement.
     pub kind: KindOfValue,
-    /// The colour index chosen for it, if its entries give one and it carries no age.
-    pub colour: Option<PointColour>,
     /// The base-10 logarithm of its preferred age in years, for a point of the Galaxy tracers
-    /// domain whose entries give one.
-    pub log_age: Option<f64>,
+    /// domain whose entries give one; else the colour index chosen for it, if its entries give
+    /// one.
+    pub value: Option<PointValue>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -126,8 +125,7 @@ struct Placed {
     distance: usize,
     sky: usize,
     kind: KindOfValue,
-    colour: Option<PointColour>,
-    log_age: Option<f64>,
+    value: Option<PointValue>,
 }
 
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
@@ -253,11 +251,13 @@ pub fn assign(
             definitions[distance].scale_domain,
             position.distance().value,
         );
-        let log_age = if domain == ScaleDomain::GalaxyTracers {
-            log_age_of(&o.object)
+        // A Galaxy tracer carries its age where it has one, in the place of its colour.
+        let age = if domain == ScaleDomain::GalaxyTracers {
+            log_age_of(&o.object).map(PointValue::LogAge)
         } else {
             None
         };
+        let value = age.or_else(|| colour_of(&o.object).map(PointValue::Colour));
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))
             .map_err(|_| TilesError::NotFinite(id))?;
@@ -272,13 +272,7 @@ pub fn assign(
             distance,
             sky,
             kind,
-            // A Galaxy tracer carries its age where it has one, in the place of its colour.
-            log_age,
-            colour: if log_age.is_some() {
-                None
-            } else {
-                colour_of(&o.object)
-            },
+            value,
         });
     }
     let mut domains = BTreeMap::new();
@@ -321,8 +315,7 @@ fn intern(
             source: distance,
             sky_source: sky,
             kind: p.kind,
-            colour: p.colour,
-            log_age: p.log_age,
+            value: p.value,
         });
     }
     Ok(interned)

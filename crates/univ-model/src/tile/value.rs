@@ -12,7 +12,7 @@ pub const fn has_colour(version: u16) -> bool {
 }
 
 /// The value a version 2 or 3 point holds when it has none.
-pub const NO_COLOUR: i16 = i16::MIN;
+pub const NO_VALUE: i16 = i16::MIN;
 
 /// The two bands a colour index lies between.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -63,14 +63,50 @@ pub struct PointColour {
     pub bands: ColourBands,
 }
 
+/// What a point carries in its value's place: a colour index, or from version 3 the base-10
+/// logarithm of its object's age in years.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum PointValue {
+    Colour(PointColour),
+    LogAge(f64),
+}
+
+impl PointValue {
+    /// The colour index, if the value is one.
+    #[must_use]
+    pub const fn colour(self) -> Option<PointColour> {
+        match self {
+            Self::Colour(c) => Some(c),
+            Self::LogAge(_) => None,
+        }
+    }
+
+    /// The log age, if the value is one.
+    #[must_use]
+    pub const fn log_age(self) -> Option<f64> {
+        match self {
+            Self::LogAge(a) => Some(a),
+            Self::Colour(_) => None,
+        }
+    }
+
+    /// The number held, before it is rounded to hundredths, and its code.
+    pub(super) const fn coded(self) -> (f64, u8) {
+        match self {
+            Self::Colour(c) => (c.index, c.bands.code()),
+            Self::LogAge(a) => (a, LOG_AGE_CODE),
+        }
+    }
+}
+
 /// A colour index, or a log age, in hundredths, if a tile can hold it.
 #[expect(
     clippy::cast_possible_truncation,
-    reason = "the value is checked to lie within i16's range, above NO_COLOUR, before the cast"
+    reason = "the value is checked to lie within i16's range, above NO_VALUE, before the cast"
 )]
 pub(super) fn hundredths(index: f64) -> Option<i16> {
     let h = (index * 100.0).round();
-    (h.is_finite() && h > f64::from(NO_COLOUR) && h <= f64::from(i16::MAX)).then_some(h as i16)
+    (h.is_finite() && h > f64::from(NO_VALUE) && h <= f64::from(i16::MAX)).then_some(h as i16)
 }
 
 /// Whether tiles of `version` may carry an age in place of a colour index: from version 3 on.
@@ -89,22 +125,19 @@ pub(super) fn point_value(
     version: u16,
     held: i16,
     code: u8,
-) -> Result<(Option<PointColour>, Option<f64>), TileError> {
-    let refused = TileError::Colour { point, code };
+) -> Result<Option<PointValue>, TileError> {
+    let refused = TileError::ValueCode { point, code };
     let value = f64::from(held) / 100.0;
     match (held, code) {
-        (NO_COLOUR, 0) => Ok((None, None)),
-        (NO_COLOUR, _) | (_, 0) => Err(refused),
-        (_, LOG_AGE_CODE) if has_age(version) => Ok((None, Some(value))),
+        (NO_VALUE, 0) => Ok(None),
+        (NO_VALUE, _) | (_, 0) => Err(refused),
+        (_, LOG_AGE_CODE) if has_age(version) => Ok(Some(PointValue::LogAge(value))),
         (_, c) => ColourBands::of_code(c)
             .map(|bands| {
-                (
-                    Some(PointColour {
-                        index: value,
-                        bands,
-                    }),
-                    None,
-                )
+                Some(PointValue::Colour(PointColour {
+                    index: value,
+                    bands,
+                }))
             })
             .ok_or(refused),
     }

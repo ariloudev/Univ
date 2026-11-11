@@ -98,12 +98,12 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
         let [code] = array(bytes, kinds + k)?;
         let kind = kind_of_code(code).ok_or(TileError::Kind { point: k, code })?;
         let position = [0, 1, 2].map(|i| min[i] + (f64::from(quantized[i]) + 0.5) * step);
-        let (colour, log_age) = if has_colour(version) {
+        let value = if has_colour(version) {
             let held = i16::from_le_bytes(array(bytes, colours + 2 * k)?);
             let [code] = array(bytes, bands + k)?;
             point_value(k, version, held, code)?
         } else {
-            (None, None)
+            None
         };
         points.push(DecodedPoint {
             position,
@@ -111,8 +111,7 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
             id,
             source,
             kind,
-            colour,
-            log_age,
+            value,
         });
     }
     Ok(Tile {
