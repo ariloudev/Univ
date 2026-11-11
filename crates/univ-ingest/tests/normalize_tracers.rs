@@ -170,4 +170,8 @@ fn a_luminous_hot_star_keeps_its_parallax_with_none_reported_and_its_zero_point_
     assert_eq!(parallax.native.uncertainty, Uncertainty::NoneReported);
     assert_eq!(e.flags.get("ZeroPoint").unwrap(), "-0.0447489992");
     assert_eq!(e.flags.get("Probv1").unwrap(), "1.0000000000");
+    // No distance is derived from it: the star's one distance is the inferred astro-kinematic
+    // one.
+    assert_eq!(e.distances.len(), 1);
+    assert_eq!(e.distances[0].kind_of_value, KindOfValue::Inferred);
 }

@@ -11,10 +11,10 @@ mod common;
 use std::sync::LazyLock;
 
 use common::workspace;
-use univ_ingest::release::{Placing, placed_shape};
+use univ_ingest::release::{Placing, placed_shape, placements, structure_rows};
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::structures::{
-    EXTRAPOLATION_DEGREES, Extent, LogSpiral, RADIUS_BAND_KPC, Status, Structure,
+    Cited, EXTRAPOLATION_DEGREES, Extent, Locator, LogSpiral, RADIUS_BAND_KPC, Status, Structure,
     StructureGeometry, StructureKind, read_all_named,
 };
 use univ_model::derive::{Release, Transformation};
@@ -81,12 +81,36 @@ fn each_arm_of_table_2_is_a_model_spiral_arm_and_an_extrapolation_among_the_gala
         assert_eq!(s.scale_domain, ScaleDomain::GalaxyTracers, "{id}");
         assert!(s.name.contains("(Reid 2019 model)"), "{id}: {}", s.name);
         assert_eq!(s.geometry_kind(), Some("path"), "{id}");
-        // Every arm assumes the Galactic Centre's distance of Table 2.
+        // Every arm assumes the Galactic Centre's distance of Table 2, and the Sun's height of
+        // the abstract, each quoted.
         assert_eq!(
             (l.r0.value(), l.r0.unit()),
             (8.15, Unit::Kiloparsec),
             "{id}"
         );
+        assert_eq!(
+            (l.sun_height.value(), l.sun_height.unit()),
+            (5.5, Unit::Parsec),
+            "{id}"
+        );
+        for c in [&l.r0, &l.sun_height] {
+            assert_eq!(c.cite.paper, "reid-2019", "{id}");
+            assert!(matches!(c.cite.locator, Locator::Sentence { .. }), "{id}");
+        }
+        // The arm's own parameters are its row of Table 2.
+        let table: Vec<&Cited> = [&l.beta_kink, &l.r_kink, &l.pitch_inside, &l.pitch_outside]
+            .into_iter()
+            .chain([&l.width])
+            .chain(&l.fitted)
+            .collect();
+        for c in table {
+            assert_eq!(c.cite.paper, "reid-2019", "{id}");
+            assert!(
+                matches!(&c.cite.locator, Locator::Table { number, .. } if number == "2"),
+                "{id}: {:?}",
+                c.cite.locator
+            );
+        }
     }
 }
 
@@ -301,5 +325,28 @@ fn each_extrapolation_takes_every_cited_parameter_of_its_fitted_arm() {
         );
         assert_eq!(fitted.extent, Extent::Fitted);
         assert_eq!(twin.extent, Extent::Extrapolated);
+    }
+}
+
+#[test]
+fn a_model_arm_is_listed_with_the_status_model_in_the_galaxy_tracers() {
+    // read-a-structure: a structure computed from a published model has the status model.
+    let (release, correction) = (
+        Release::planck_2018(),
+        CmbCorrection::new(DipoleModel::Planck2018),
+    );
+    let placing = Placing {
+        release: &release,
+        correction: &correction,
+        dipole: "planck2018".to_owned(),
+    };
+    let placed = placements(&ARMS, &[], &placing, &std::collections::BTreeMap::new()).unwrap();
+    let (rows, _) = structure_rows(1, &placed).unwrap();
+    assert_eq!(rows.len(), 14);
+    for row in &rows {
+        assert_eq!(row.status, "model", "{}", row.id);
+        assert_eq!(row.scale_domain, "galaxy_tracers", "{}", row.id);
+        assert_eq!(row.geometry_kind.as_deref(), Some("path"), "{}", row.id);
+        assert!(row.centre_x.is_some(), "{}", row.id);
     }
 }

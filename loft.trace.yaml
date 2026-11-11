@@ -242,7 +242,31 @@ links:
         body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object"
-        body: ac7f29f8f6c70aae4dd8bee8496f09785c011a6bdb6d241bcf426291a2aad1e1
+        body: 2f540c2471db123234828755c6e6af27ea2a22e849b7ff9e9f3cacf94cc8334f
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c912e8e751fd
+    reviewed: 52014ce5113c6797812ce5b338df0b10ab54013a3e3d9e9e726989b3d00e463b
+    tests:
+      - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
+        name: "the_luminous_hot_stars_are_every_row_of_zari_2021s_filtered_sample"
+        body: c1e9f1ba3586d89f5e9a44048b9083cdd0aa4c0bd27c9cd19b8c0d0141f97cd7
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c913b7dc47c4
+    reviewed: 669f8e9d38ea7cd46ad19624eddcb7f311a18689fe26bdee92841cf119fb4b1c
+    tests:
+      - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
+        name: "the_luminous_hot_stars_are_every_row_of_zari_2021s_filtered_sample"
+        body: c1e9f1ba3586d89f5e9a44048b9083cdd0aa4c0bd27c9cd19b8c0d0141f97cd7
+      - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
+        name: "a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object"
+        body: 2f540c2471db123234828755c6e6af27ea2a22e849b7ff9e9f3cacf94cc8334f
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c914edbba15b
+    reviewed: 6e3307f0eb36563a4d11f5ff9cb47a69bda784f239ece82b9cd39d96bfb96f27
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "each_arm_of_table_2_is_a_model_spiral_arm_and_an_extrapolation_among_the_galaxy_tracers"
+        body: a92d4d98f2ebf589dee3e4b3e9181ec7f9275630782f306664124addcea02125
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "a_spiral_arm_with_an_uncited_parameter_or_another_kind_status_or_domain_is_refused"
+        body: 9ea5c35213f4d5e4c7aefabf5effce50e3d5a237318431289ab0f3669d75caf3
   - node: 01a19f22-2ad9-716e-876f-18463a5dce5c
     reviewed: 814e7461a598ef1428907f53c73d0af791172f6a799ea9f189754719766b46db
     tests:
@@ -892,11 +916,11 @@ links:
         name: "an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside"
         body: a9afdb9466da29e7d196888f615c1b9bf29a55f3fe862ebed9d631320e87d267
   - node: 01a1c319-7860-76e8-92ac-c609c99b51a3
-    reviewed: 89723449372c76755819394bedba210cc6d83b6518e782d461d38865582dc310
+    reviewed: 63700834c6c3cdbbe02c5fa8e53216c310e7fa62a41097407b2d247843da9ed0
     tests:
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object"
-        body: ac7f29f8f6c70aae4dd8bee8496f09785c011a6bdb6d241bcf426291a2aad1e1
+        body: 2f540c2471db123234828755c6e6af27ea2a22e849b7ff9e9f3cacf94cc8334f
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_without_a_kind_or_another_source_with_one_is_refused"
         body: 9d202913bc88db5f5c6b35d8e8f8481e08535c87a048f3282cf87defee4887a1
@@ -946,8 +970,35 @@ links:
     reviewed: 6d642e3aa45b0fd0e914e0813ac60c3c013747b0ffb183fe09d156ad53812d33
     tests:
       - file: "crates/univ-ingest/tests/release_tracers.rs"
-        name: "a_cepheid_and_an_rr_lyrae_star_join_the_gaia_star_their_source_names"
-        body: f283fd9fe44ebad3c9c6f80e72876f6928998fffc661554766b5e3ccc01077ef
+        name: "a_cepheid_an_rr_lyrae_star_and_a_luminous_hot_star_join_the_gaia_star_their_source_names"
+        body: 2062e51ecdeced7b1c01a8d186ee4b07196ff1e39f173878939fa98fea68d348
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c915da03062a
+    reviewed: ee930772efe5ea3c1541ebf3badb673cefd9dbb0e8bacd0793e5b51500973098
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_tracers.rs"
+        name: "a_luminous_hot_star_keeps_its_astro_kinematic_distance_as_inferred_with_its_percentiles"
+        body: a6a2d9d8c0d006fc1925d12f4e6112becdc52d0fbab902a9f612502c89aa75fd
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c9166100490e
+    reviewed: dd85c2b48f8b905c6a373efe94245fff764c92e10e06b80e0f90c30f194a05bf
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_tracers.rs"
+        name: "a_luminous_hot_star_keeps_its_parallax_with_none_reported_and_its_zero_point_as_published"
+        body: ed678333e91b05421e4743ddacbdcc27e5bd37acadb6d9ca73341688de58f332
+  - node: 01a1cbb8-8e6a-70ed-b03e-1a63154cca1c
+    reviewed: e2500d41cc23c23b71ed05bc56c8b1bd4490c86d4dc4928daf702e997a6dadcb
+    tests:
+      - file: "crates/univ-ingest/tests/normalize_tracers.rs"
+        name: "a_luminous_hot_star_keeps_its_parallax_with_none_reported_and_its_zero_point_as_published"
+        body: ed678333e91b05421e4743ddacbdcc27e5bd37acadb6d9ca73341688de58f332
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91738518715
+    reviewed: 9ecba560e4a0695724bdbd7aaf77f646981e2d9e8eae051e8478b3d1a02c98c9
+    tests:
+      - file: "crates/univ-ingest/tests/release_tracers.rs"
+        name: "a_cepheid_an_rr_lyrae_star_and_a_luminous_hot_star_join_the_gaia_star_their_source_names"
+        body: 2062e51ecdeced7b1c01a8d186ee4b07196ff1e39f173878939fa98fea68d348
+      - file: "crates/univ-ingest/tests/ranking_parallax.rs"
+        name: "a_luminous_hot_star_is_placed_by_its_gaia_parallax_before_its_inferred_distance"
+        body: 1301c7ba1bdac16c57f7e8214cf1df68c5890ea6302c7a058811685e661d27da
   - node: 01a19f22-2ad9-716e-876f-187cf88a2254
     reviewed: add8e24c470b97fbc83bca5e65c152e361f002377e3cdeaef04479098482e4d9
     tests:
@@ -1029,6 +1080,60 @@ links:
       - file: "crates/univ-ingest/tests/outlines_dense.rs"
         name: "a_dense_place_off_the_grid_is_recorded_with_why_and_counted"
         body: 6f82156a0e31361a291c9ebee792a5e63f990310afe669ecbe3c0c5b3fde64e8
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5
+    reviewed: 63c7baac620f23442f19cb241da4035f36d56b2f90991ce748ee52151ef58367
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "each_arm_of_table_2_is_a_model_spiral_arm_and_an_extrapolation_among_the_galaxy_tracers"
+        body: a92d4d98f2ebf589dee3e4b3e9181ec7f9275630782f306664124addcea02125
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "each_extrapolation_takes_every_cited_parameter_of_its_fitted_arm"
+        body: 09e016affefd2bf810bbe59b8a383093f77e682e7a0893413f0ff64a5e19acae
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91a110700f5
+    reviewed: 34bb63a78b628aeed19ef1c265c9c3c3f711cb256c45209ab8eebcfd30b3c196
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "each_arm_of_table_2_is_a_model_spiral_arm_and_an_extrapolation_among_the_galaxy_tracers"
+        body: a92d4d98f2ebf589dee3e4b3e9181ec7f9275630782f306664124addcea02125
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91b11550e21
+    reviewed: f3850a48f8748628cbe5ad745e65021a7f748b27b52bb7d1cdedf615ce4fef09
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "the_formula_gives_the_radii_of_the_arms_toward_the_sun"
+        body: 6fba47ec3bb4e4a10084f19f6fd858f2275e8c61db1afe78cc550649aa05cfa3
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7
+    reviewed: 31b4da57786353454ba6b6d23488e39b15e02f5c7b39f8d5a6aa313155d8e0a1
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "the_masers_an_arm_was_fitted_to_lie_on_it_in_the_galactic_frame"
+        body: 754a47b8f91997a0608e90954943ff07f19eb9a409073c6bf92b4e6a3ecf7aab
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91d880c4cef
+    reviewed: 0612daff8f8b3a378af146d2c4862f2bd822b03349dd20d0ba7ff4784d965d89
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "a_spiral_arm_spans_its_fitted_azimuths_and_no_more"
+        body: 324b4fce5087e2586a445ae2eaf885001281958e4a5f0e6e8d288a0227503cd4
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91edb14b44d
+    reviewed: 044d9eb66abd055e29df485d6b6612a2308cd17e758db7b773b2bedaff39ef14
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "an_extrapolation_runs_on_up_to_90_degrees_while_its_radius_lies_within_3_to_16_kpc"
+        body: efa970c576a5b5a7a04974d940b2ff99903250987ef39071c356b3b5d6c60bcc
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c91f12de3fd5
+    reviewed: 70090b6a353ef1ca63355889b621b8c86fbd6fae01c9e70922894fca7c1e682c
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "a_spiral_arms_path_is_placed_in_the_icrs_as_a_reconstructed_path_with_its_derivation"
+        body: 54484327a37ca23c6d8e877ff5d0e646005fa92038fb2a5ced96575b239721d4
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c92011bf8744
+    reviewed: aeddf9fea260d421f6e09b4a0c7ead2ad197f082fc94120832e1bb4d1acc6012
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "each_arm_of_table_2_is_a_model_spiral_arm_and_an_extrapolation_among_the_galaxy_tracers"
+        body: a92d4d98f2ebf589dee3e4b3e9181ec7f9275630782f306664124addcea02125
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "a_spiral_arm_with_an_uncited_parameter_or_another_kind_status_or_domain_is_refused"
+        body: 9ea5c35213f4d5e4c7aefabf5effce50e3d5a237318431289ab0f3669d75caf3
   - node: 01a1a825-fb4e-702c-a84f-bf7366dc3a34
     reviewed: 405cdce50b930b43cf822bf8eaba6ff1793488c6548c2b10c23faaf9b1b362be
     tests:
@@ -1961,7 +2066,7 @@ links:
         body: c47733a4de68266bc3e93003da6ccf21ac93582082c80fc3012d8d8581a532e7
       - file: "crates/univ-model/src/tile/age_tests.rs"
         name: "version_3_round_trips_every_value_code_in_20_bytes_a_point"
-        body: 325ce4275290283ef608fd911baa5b86e26e6bc7346eec73249115033ef55da2
+        body: 00504739637429429b0116d6b6d4731163f5621759e15ca9851a2d35fee27c82
   - node: 01a1c7c5-a164-7706-ad2c-c833a68083c3
     reviewed: af2420b18471ca4f018ff6989b51fe5cf888ad18ce6c1f3a240493955549e4d8
     tests:
@@ -1976,13 +2081,34 @@ links:
         body: c47733a4de68266bc3e93003da6ccf21ac93582082c80fc3012d8d8581a532e7
       - file: "crates/univ-model/src/tile/age_tests.rs"
         name: "version_3_round_trips_every_value_code_in_20_bytes_a_point"
-        body: 325ce4275290283ef608fd911baa5b86e26e6bc7346eec73249115033ef55da2
+        body: 00504739637429429b0116d6b6d4731163f5621759e15ca9851a2d35fee27c82
   - node: 01a1c7c5-a164-7706-ad2c-c835f5afc589
     reviewed: b0d98347f3830815276524ec0dce3a7e16d4a9e2a31ad822fb4ed61756d25e88
     tests:
       - file: "crates/univ-model/src/tile/age_tests.rs"
         name: "version_3_round_trips_every_value_code_in_20_bytes_a_point"
-        body: 325ce4275290283ef608fd911baa5b86e26e6bc7346eec73249115033ef55da2
+        body: 00504739637429429b0116d6b6d4731163f5621759e15ca9851a2d35fee27c82
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c92237c8477b
+    reviewed: 266334048cfa25bafea1704000ed0da7e66d6c8457db34ebab76f3b6a151b150
+    tests:
+      - file: "crates/univ-model/src/tile/age_tests.rs"
+        name: "version_4_adds_each_points_kind_of_object_after_version_3s_columns"
+        body: dae8a3d66ef35095f2374382e6ed43003a91325adf061e3627b18acb3d18e89e
+      - file: "crates/univ-model/src/tile/format_tests.rs"
+        name: "version_4_describes_the_kind_of_object_column_after_version_3s"
+        body: e3e78a0c50dd4257f1b7ef1185dfd23f8a691542e9b4656484fb7778689de745
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c92376902d6e
+    reviewed: 2110039348a03167a663ee8ff3c37bbdcf44a8be4b87f9b0b645b22924312b59
+    tests:
+      - file: "crates/univ-model/src/tile/age_tests.rs"
+        name: "every_kind_of_object_round_trips_and_a_code_beyond_them_is_refused"
+        body: ba87ade991d8d85729659f1dd1fc66f0e6f34c4b92181d2aca3025d39012663c
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c9246ed5d932
+    reviewed: a37e0f1523cd593eefba8dc15138b5b91b24f140a11e908b3dc5804153d5d1d5
+    tests:
+      - file: "crates/univ-ingest/tests/release_tracers.rs"
+        name: "the_tracers_tiles_take_version_4_with_each_points_kind_and_other_domains_keep_version_3"
+        body: 8902b3333890a9493de059e1a2da064d0410097eb3c7f8c70cd603ac14bae046
   - node: 01a19f23-636f-72bd-b194-153527b1bfc8
     reviewed: 01b394cf56e3be520717d6e3aedd5bd7dec4a53014e5dc281727ae06d8e532fd
     tests:
@@ -1997,10 +2123,10 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "every_tile_stays_within_one_mebibyte_under_the_repository_rules"
-        body: 97054eee1aea2463e0d6acf88b853377b74621513cd155de18215f9c75e27d2b
+        body: efb77307fd3673db7d93279fc73d23a3d746ff84a5d209bed946734c5bd9bfed
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it"
-        body: 2d1c4f79556bab2eb54888f998c4289e78c59d48e21efa346180e237a637d893
+        body: 4660ab937b4b2408a69fb833df151480b8e523d0e893e649123925656214f94f
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "rules_that_would_allow_a_tile_beyond_one_mebibyte_are_refused"
         body: d3bdfc9365ed5a74de896467288f68c278cadedd37776184429da230ae01b9c6
@@ -2805,6 +2931,12 @@ links:
       - file: "crates/univ-api/src/structures_tests.rs"
         name: "a_structure_outlined_from_a_reconstruction_has_the_kind_of_value_reconstructed"
         body: 40bd7aa8a4491f933abc9e1b0e34cbb2a1fad94209e593a41c78bdff9ed7817b
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c926b85b11d1
+    reviewed: 8f4b16952e9cc4e3a629148a589593b7bd31d093646689e4d50d164dc04142ae
+    tests:
+      - file: "crates/univ-ingest/tests/structures_spiral.rs"
+        name: "a_model_arm_is_listed_with_the_status_model_in_the_galaxy_tracers"
+        body: f16b0f8169d03649ee283717b2decd946e2089aed02fb459ae662ba520833202
   - node: 01a19f1e-d177-716d-b124-3d359cc582f4
     reviewed: a2f1271fe4e9039f5bf79216be0ac8d95c8a4084e8479481cd153ce28b412201
     tests:
@@ -2894,7 +3026,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
+        body: 003665bd2ae786358fb7dcfdb10bdfe70e78d7d3b1c5ea819b08849bd191385d
       - file: "crates/univ-api/src/bulk_tests.rs"
         name: "a_tile_manifest_is_served_from_the_bucket_as_published"
         body: 2b3e4d5572ef0c41f71fd18e8f6fb98df44624c593f596e458ee3dd10b340bd6
@@ -2903,7 +3035,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
+        body: 003665bd2ae786358fb7dcfdb10bdfe70e78d7d3b1c5ea819b08849bd191385d
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -2912,7 +3044,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
+        body: 003665bd2ae786358fb7dcfdb10bdfe70e78d7d3b1c5ea819b08849bd191385d
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -2921,7 +3053,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
+        body: 003665bd2ae786358fb7dcfdb10bdfe70e78d7d3b1c5ea819b08849bd191385d
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -2930,7 +3062,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
+        body: 003665bd2ae786358fb7dcfdb10bdfe70e78d7d3b1c5ea819b08849bd191385d
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -2939,7 +3071,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 2acf3ba4806dfafc2b0444a2f6e3d9527884ac7065e1e3e10b9177ab087c951a
+        body: 003665bd2ae786358fb7dcfdb10bdfe70e78d7d3b1c5ea819b08849bd191385d
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -3836,7 +3968,7 @@ links:
         body: 69605ce4b6f56c772a842db7b96ec064168ca2c23054d29489db7b69ed7de97c
       - file: "crates/univ-server/tests/e2e.rs"
         name: "the_tile_format_describes_each_encoding_the_release_uses"
-        body: 23ee80f8bcb48909773b8ce96d7a3c070819fe0d2109343af82b9dadb9fe186c
+        body: 484738509f2991864e66de8fbf5fa002aa438a622754633312914184bfe96839
   - node: 01a19f20-8e6c-7039-b16f-ac0273b5ac3b
     reviewed: e34bfd89a87b28a32e7d67f7cc019ff1e2426961b90b938eee299c2800c601c3
     tests:
@@ -3856,11 +3988,11 @@ links:
         name: "AC-284: a tile of an encoding version the decoder does not know fails naming the version"
         body: 0ba51e9026976bd28d8639f9efbff7f64de1389bd3c7c1fe65f9404f7ad16b23
   - node: 01a1a6e4-22e1-765d-b404-01feaa3330ef
-    reviewed: 00eb1cc8b4336a9865df864aedff5dda676befeebc34914c2e42e5c991f77cad
+    reviewed: 102cbd2569fd2cffdbbddd61dfdd06fa027a0ecd6cfc799319cc9c5da9deefcc
     tests:
       - file: "clients/tile-decoder/decode.test.ts"
-        name: "the decoder decodes tiles of encoding versions 1, 2 and 3"
-        body: 866ff36b53ec2457aa7962e4a443a52f70b4c447a8e9da9c53e0c65f176254d1
+        name: "the decoder decodes tiles of encoding versions 1, 2, 3 and 4"
+        body: 2e764c6231517685452043752e1695838e58b2ddf7a2ff9f6edda9b125078bad
       - file: "crates/univ-model/src/tile/tests.rs"
         name: "a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours"
         body: ad2c71868ca94fcadde0711e39133d5e00e524853a96352cf8a5e248157f0e47
@@ -3879,6 +4011,15 @@ links:
       - file: "clients/tile-decoder/decode.test.ts"
         name: "the age code is refused in a version 2 tile"
         body: 1916edd2996cc471d780c3db87dd0f3e18cf74353aa1e9a025baf289ff729965
+  - node: 01a1cbb8-4b9e-71c0-8bbe-c92530ad0b85
+    reviewed: c2ec1184e9e74135ce4b3640655fffcff4a6119eb9b3cfd2275047865b35882d
+    tests:
+      - file: "clients/tile-decoder/decode.test.ts"
+        name: "each decoded point of a version 4 tile gives its kind of object, or that it has none"
+        body: 3a007263f5db288ec5bc8a8c9f90bc597e0ecf657c808487774fccb9c87634ce
+      - file: "crates/univ-api/src/bulk_tests.rs"
+        name: "the_tile_format_describes_version_4_beside_version_3_when_a_domain_uses_it"
+        body: 8e6e8ef9a276d2cfc10fdb478a2b59a1385dc26953a0d590ff89a3200caa6276
   - node: 01a19f20-8e6c-7039-b16f-ac0782b8bf64
     reviewed: cd3d5c598eb5768886cce5b75d25023538b1c09c500dc8d51e4db468635f4520
     tests:
