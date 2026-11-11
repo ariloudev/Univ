@@ -15,9 +15,9 @@ requirements:
       shall: "build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects."
     criteria:
       - key: 01a19f23-636f-72bd-b194-152c99726521
-        name: "Each scale domain has its own root: stars in parsecs, nearby galaxies and cosmic web in megaparsecs."
+        name: "Each scale domain has its own root: stars and Galaxy tracers in parsecs, nearby galaxies and cosmic web in megaparsecs."
       - key: 01a19f23-636f-72bd-b194-152dec6f0f74
-        name: "Each object belongs to one scale domain: stars where the source definition of the catalogue entry that holds its preferred distance names stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the distance came from."
+        name: "Each object belongs to one scale domain: Galaxy tracers where any of its catalogue entries comes from a source whose definition names Galaxy tracers, otherwise stars where the source definition of the catalogue entry that holds its preferred distance names stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the distance came from."
       - key: 01a19f23-636f-72bd-b194-152e3b4f79ee
         name: "A node is split when it holds more points than the release's split threshold, down to the release's maximum depth."
       - key: 01a19f23-636f-72bd-b194-152f904380b9
@@ -46,6 +46,20 @@ requirements:
         name: "A point whose object has no colour index carries none, which no colour index encodes."
       - key: 01a1a6e4-22e1-765d-b404-01fd633d5f44
         name: "A colour index is encoded within 0.01 magnitudes of the value it was built from."
+  - key: 01a1c7c5-a164-7706-ad2c-c831082f4d41
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "encode, from encoding version 3, the age of each point of the Galaxy tracers domain where its object has one, in the place a star's colour index takes."
+    criteria:
+      - key: 01a1c7c5-a164-7706-ad2c-c832997484e0
+        name: "A point of the Galaxy tracers domain carries the base-10 logarithm of its object's preferred age in years where it has one, coded apart from both colour indices."
+      - key: 01a1c7c5-a164-7706-ad2c-c833a68083c3
+        name: "A point of the Galaxy tracers domain whose object has no age carries none, which no age encodes."
+      - key: 01a1c7c5-a164-7706-ad2c-c834de8aedd4
+        name: "An age is encoded within 0.01 of the logarithm it was built from."
+      - key: 01a1c7c5-a164-7706-ad2c-c835f5afc589
+        name: "A version 3 point takes the same bytes as a version 2 point."
   - key: 01a19f23-636f-72bd-b194-1534af285ad4
     statement:
       form: ubiquitous

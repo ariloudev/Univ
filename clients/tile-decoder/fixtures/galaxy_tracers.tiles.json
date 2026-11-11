@@ -1,0 +1,5 @@
+{
+  "about": "Tiles of Univ Ingest's fixture release, real data, as the Rust encoder writes them, with each point's position before quantization. Checked against what ingest builds by univ-ingest's test tile_decoder_fixtures; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test tile_decoder_fixtures rewrites them.",
+  "scale_domain": "galaxy_tracers",
+  "tiles": []
+}

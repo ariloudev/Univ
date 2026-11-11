@@ -28,6 +28,8 @@ requirements:
       - key: 01a19f20-8e6c-7039-b16f-ac04fdc1fabe
         name: "A tile with an encoding version the decoder does not know fails with an error that names the version."
       - key: 01a1a6e4-22e1-765d-b404-01feaa3330ef
-        name: "The decoder decodes tiles of encoding versions 1 and 2."
+        name: "The decoder decodes tiles of encoding versions 1, 2 and 3."
       - key: 01a1a6e4-22e1-765d-b404-01ff442efb73
         name: "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none."
+      - key: 01a1c7c5-a164-7706-ad2c-c83691223195
+        name: "Each decoded point of a version 3 tile gives its colour index and the bands it is between, or the base-10 logarithm of its age in years, or that it has neither."

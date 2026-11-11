@@ -1,0 +1,5 @@
+source: edenhofer-2024-dust
+url: https://zenodo.org/records/8187943/files/mean_and_std_healpix.fits
+retrieved: 2026-11-10T07:07:21Z
+sha256: 6139cc09cb1fbdd5fcb4d217098f31e144e008f1802d3d17debd751bde772029
+note: the first 4096 bytes of the first file, cut from the whole copy fetched then, whose MD5 matched the record's

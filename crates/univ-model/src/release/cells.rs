@@ -40,14 +40,17 @@ pub enum CellSpace {
     NearbyGalaxies,
     CosmicWeb,
     Structures,
+    GalaxyTracers,
 }
 
-/// Every cell space, in the order a release's manifest lists them.
-pub const SPACES: [CellSpace; 4] = [
+/// Every cell space, in the order a release's manifest lists them: Galaxy tracers, added for
+/// release 13, last, so that every earlier space keeps its place in the packing order.
+pub const SPACES: [CellSpace; 5] = [
     CellSpace::Stars,
     CellSpace::NearbyGalaxies,
     CellSpace::CosmicWeb,
     CellSpace::Structures,
+    CellSpace::GalaxyTracers,
 ];
 
 /// A cell's indices along x, y and z.
@@ -104,14 +107,16 @@ impl CellSpace {
             Self::NearbyGalaxies => "nearby_galaxies",
             Self::CosmicWeb => "cosmic_web",
             Self::Structures => "structures",
+            Self::GalaxyTracers => "galaxy_tracers",
         }
     }
 
-    /// The symbol of its unit: `pc` for stars, `Mpc` otherwise.
+    /// The symbol of its unit, the scale domain's ([`crate::units::scale_domain_unit`]): `pc`
+    /// for stars and Galaxy tracers, `Mpc` otherwise.
     #[must_use]
     pub fn unit(self) -> &'static str {
-        match self {
-            Self::Stars => "pc",
+        match crate::units::scale_domain_unit(self.name()) {
+            crate::units::Unit::Parsec => "pc",
             _ => "Mpc",
         }
     }
@@ -122,6 +127,8 @@ impl CellSpace {
         match self {
             Self::Stars | Self::CosmicWeb | Self::Structures => 10.0,
             Self::NearbyGalaxies => 1.0,
+            // Some 150,000 tracers spread over the whole Galaxy: cells ten times a star's.
+            Self::GalaxyTracers => 100.0,
         }
     }
 

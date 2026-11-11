@@ -28,6 +28,12 @@
 // A colour index decodes to its value over 100, within 0.005 magnitudes of the value it was
 // built from. A point with -32768 and a code other than 0, or the other way round, is refused.
 //
+// Version 3 has the version field 3 and the same 48 + 20 n bytes. Its last two columns hold a
+// point's value and the code of what it is: 1 + an index into encoding.colour_bands for a
+// colour index, as in version 2, or encoding.log_age_code (3) for the base-10 logarithm of an
+// age in years, in hundredths, within 0.005 of the value it was built from. The age code is
+// refused in a version 2 tile.
+//
 // A coordinate decodes to the centre of its step: min + (q + 0.5) * step, with step the
 // node's edge over encoding.steps_per_edge (65,536), the step its level states. It lies
 // within half a step of the position the tile was built from.
@@ -78,6 +84,9 @@ export interface ManifestEncoding {
   kinds: KindOfValue[];
   /** The colour bands of version 2, coded by their index plus one; absent before version 2. */
   colour_bands?: ColourBands[];
+  /** The code of a point whose value is the base-10 logarithm of its age in years; absent
+   * before version 3. */
+  log_age_code?: number;
 }
 
 /** The two bands a colour index lies between. */
@@ -111,6 +120,9 @@ export interface DecodedPoint {
   kind: KindOfValue;
   /** Its colour index in magnitudes and the bands it lies between; none in a version 1 tile. */
   colour?: { index: number; bands: ColourBands } | undefined;
+  /** The base-10 logarithm of its age in years, where it carries one in place of a colour
+   * index; none before version 3. */
+  logAge?: number | undefined;
 }
 
 const MAGIC = [0x55, 0x56, 0x54, 0x4c]; // "UVTL"
@@ -118,12 +130,14 @@ const HEADER_BYTES = 48;
 /** The bytes a point of version 1 takes; version 2's columns follow version 1's. */
 const V1_POINT_BYTES = 17;
 /** The bytes a point takes, by encoding version: the versions this decoder knows. */
-const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20 };
+const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20, 3: 20 };
 
 /** The encoding versions this decoder knows. */
 export const VERSIONS: readonly number[] = Object.keys(POINT_BYTES).map(Number);
-/** The colour index a version 2 point holds when it has none. */
+/** The value a version 2 or 3 point holds when it has none. */
 const NO_COLOUR = -32_768;
+/** The code of a version 3 point whose value is the base-10 logarithm of its age in years. */
+const LOG_AGE_CODE = 3;
 const MAX_TILE_BYTES = 1_048_576;
 const STEPS = 65_536;
 const TWO_32 = 4_294_967_296;
@@ -205,6 +219,12 @@ export function decodeTile(
   const colourColumn = HEADER_BYTES + V1_POINT_BYTES * n;
   const bandsColumn = colourColumn + 2 * n;
   const bandNames = manifest.encoding.colour_bands ?? [];
+  // Version 3 codes a log age apart from the colour bands, as LOG_AGE_CODE, which its manifest
+  // repeats: one that names another code is refused, so that no colour is read as an age.
+  const ageCode = version >= 3 ? LOG_AGE_CODE : undefined;
+  if (ageCode !== undefined && manifest.encoding.log_age_code !== ageCode) {
+    fail(`the manifest gives the log age code ${manifest.encoding.log_age_code}, not the ${ageCode} of version ${version}`);
+  }
   const points: DecodedPoint[] = new Array(n);
   for (let k = 0; k < n; k++) {
     const at = HEADER_BYTES + 6 * k;
@@ -220,20 +240,23 @@ export function decodeTile(
     const code = view.getUint8(kindColumn + k);
     const kind = kinds[code] ?? fail(`point ${k} has the kind of value ${code}, which the manifest does not list`);
     let colour: DecodedPoint['colour'];
+    let logAge: DecodedPoint['logAge'];
     if (version >= 2) {
       const held = view.getInt16(colourColumn + 2 * k, true);
       // Within the tile: its length was checked against its count above.
       const band = bytes[bandsColumn + k] ?? 0;
       if ((held === NO_COLOUR) !== (band === 0)) {
-        fail(`point ${k} has the colour bands code ${band}, which its colour index contradicts`);
+        fail(`point ${k} has the value code ${band}, which its value contradicts`);
       }
-      if (band !== 0) {
+      if (band === ageCode) {
+        logAge = held / 100;
+      } else if (band !== 0) {
         const bands =
-          bandNames[band - 1] ?? fail(`point ${k} has the colour bands code ${band}, which the manifest does not list`);
+          bandNames[band - 1] ?? fail(`point ${k} has the value code ${band}, which the manifest does not list`);
         colour = { index: held / 100, bands };
       }
     }
-    // Every point has the same properties, colour among them, so they share one shape.
+    // Every point has the same properties, colour and age among them, so they share one shape.
     points[k] = {
       x: coordinate(0),
       y: coordinate(1),
@@ -242,6 +265,7 @@ export function decodeTile(
       source,
       kind,
       colour,
+      logAge,
     };
   }
   return points;

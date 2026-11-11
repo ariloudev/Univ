@@ -13,16 +13,18 @@ use univ_model::redshift::RedshiftFrame;
 use univ_model::units::{Dimension, Unit};
 use univ_model::value::KindOfValue;
 
+mod age;
 mod colour;
 mod fixes;
 
+pub(super) use age::AgePlan;
 pub(super) use colour::{ColourPlan, SpectralTypePlan};
 pub(super) use fixes::{FixEffect, FixPlan};
 
 use super::NormalizeError;
 use crate::source::{
     Coded, ComovingVelocity, Condition, DistanceReading, ErrorColumns, Field, FixAction,
-    LeftOutReason, MAX_FIXES, RedshiftReading, Rule, ScaleDomain, SourceDefinition,
+    LeftOutReason, MAX_FIXES, RedshiftReading, Rule, SourceDefinition,
 };
 
 /// The fixes, by index, that changed a row: a bit each, so a definition has at most
@@ -129,6 +131,7 @@ pub(super) struct Plan {
     pub proper_motion: Option<(Col, Col)>,
     pub magnitude: Option<Col>,
     pub colours: Vec<ColourPlan>,
+    pub ages: Vec<AgePlan>,
     /// The column of a spectral type, and its kind of value.
     pub spectral_type: Option<SpectralTypePlan>,
     pub group_id: Option<usize>,
@@ -435,6 +438,7 @@ impl Plan {
                 .iter()
                 .map(|x| r.colour(x))
                 .collect::<Result<_, _>>()?,
+            ages: n.ages.iter().map(|a| r.age(a)).collect::<Result<_, _>>()?,
             spectral_type: r.spectral_type()?,
             group_id: r.field(Field::GroupId)?.map(|c| c.index),
             supergalactic: r.supergalactic()?,
@@ -457,11 +461,8 @@ impl Plan {
                 .collect::<Result<_, _>>()?,
             fixes,
             leaving,
-            distance_unit: if definition.scale_domain == ScaleDomain::Stars {
-                Unit::Parsec
-            } else {
-                Unit::Megaparsec
-            },
+            // The unit of the source's scale domain: parsecs for stars and the Galaxy's tracers.
+            distance_unit: crate::tiles::unit_of(definition.scale_domain),
         })
     }
 }

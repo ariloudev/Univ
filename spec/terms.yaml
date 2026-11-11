@@ -1,6 +1,9 @@
 - key: 01a19f1e-d177-716d-b124-3d5520df63a6
   name: "API key"
   definition: "A secret the owner issues that lets a client write layers and read its own private layers."
+- key: 01a1c319-7860-76e8-92ac-c618055b700e
+  name: "Galaxy tracer"
+  definition: "An object that traces the structure of the Milky Way farther than a magnitude-limited sample of stars shows it: an open or globular cluster, a classical Cepheid, an RR Lyrae star or the star-forming region of a maser."
 - key: 01a19f1e-d177-716d-b124-3d4224766d24
   name: "catalogue entry"
   definition: "One row of one source, as that source identifies it."
@@ -60,7 +63,7 @@
   definition: "The cosmological model a release derives distances under: Planck 2018 unless the release names another."
 - key: 01a19f1e-d177-716d-b124-3d4a0a1729ef
   name: "scale domain"
-  definition: "A range of scales with its own octree and unit: stars, nearby galaxies or cosmic web."
+  definition: "A set of placed objects with its own octree and unit: stars, Galaxy tracers, nearby galaxies or cosmic web."
 - key: 01a19f1e-d177-716d-b124-3d4066093457
   name: "source"
   definition: "One catalogue, survey table, grid or paper that a release draws on, with its citation and terms of use."

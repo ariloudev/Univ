@@ -1,0 +1,64 @@
+key: 01a1c319-7860-76e8-92ac-c5caacb7a3e3
+slug: give-the-galaxys-tracers-a-scale-domain
+title: "Give the Galaxy's tracers a scale domain of their own"
+context: "Each octree level keeps an even random sample of its points. About 150,000 tracers among 16.8 million stars would keep about 150 points at the stars root, so the structure they trace would show only once the view comes close."
+state:
+  kind: accepted
+  selectedOption: 01a1c319-7860-76e8-92ac-c5cd6b955c17
+  outcome: "Galaxy tracers form a fourth scale domain in parsecs, with its own octree and switch, and an object with any entry from a tracer source is a point of it."
+drivers:
+  - key: 01a1c319-7860-76e8-92ac-c5cb5a0d9ec9
+    kind: local
+    label: "Seen from afar"
+    statement: "The tracers show at the scale of the whole Galaxy."
+  - key: 01a1c319-7860-76e8-92ac-c5ccfd637659
+    kind: local
+    label: "One sampling rule"
+    statement: "Every octree samples its points by the same rule."
+options:
+  - key: 01a1c319-7860-76e8-92ac-c5cd6b955c17
+    title: "Own scale domain"
+    description: "A Galaxy tracers scale domain with its own octree, root, listing and switch."
+  - key: 01a1c319-7860-76e8-92ac-c5ce274c6e04
+    title: "Tracers first in stars"
+    description: "Keep tracers in the stars domain, kept by each node before its random sample."
+  - key: 01a1c319-7860-76e8-92ac-c5cf255d648a
+    title: "Stars as they are"
+    description: "Keep tracers in the stars domain with no special treatment."
+assessments:
+  - option: 01a1c319-7860-76e8-92ac-c5cd6b955c17
+    driver: 01a1c319-7860-76e8-92ac-c5cb5a0d9ec9
+    rating: supports
+    rationale: "its root holds 16,384 of about 150,000 tracers"
+  - option: 01a1c319-7860-76e8-92ac-c5cd6b955c17
+    driver: 01a1c319-7860-76e8-92ac-c5ccfd637659
+    rating: supports
+    rationale: "the octree is built as every other"
+  - option: 01a1c319-7860-76e8-92ac-c5ce274c6e04
+    driver: 01a1c319-7860-76e8-92ac-c5cb5a0d9ec9
+    rating: neutral
+    rationale: "they show at the root, but the RR Lyrae alone overfill it"
+  - option: 01a1c319-7860-76e8-92ac-c5ce274c6e04
+    driver: 01a1c319-7860-76e8-92ac-c5ccfd637659
+    rating: conflicts
+    rationale: "the even sample gains an exception"
+  - option: 01a1c319-7860-76e8-92ac-c5cf255d648a
+    driver: 01a1c319-7860-76e8-92ac-c5cb5a0d9ec9
+    rating: conflicts
+    rationale: "about 150 tracers at the root"
+  - option: 01a1c319-7860-76e8-92ac-c5cf255d648a
+    driver: 01a1c319-7860-76e8-92ac-c5ccfd637659
+    rating: supports
+    rationale: "nothing changes"
+consequences:
+  - key: 01a1c319-7860-76e8-92ac-c5d0f7d2b5a2
+    kind: cost
+    statement: "univ-model, the tile builder, Univ Server's listing of scale domains and the explorer's Show drawer each gain a fourth scale domain."
+  - key: 01a1c319-7860-76e8-92ac-c5d1229b103f
+    kind: benefit
+    statement: "The tracers can be turned on and off apart from the stars, and drawn in colours of their own."
+subjects:
+  - role: outcome
+    node: 01a19f23-636f-72bd-b194-152b36f5a5b5
+  - role: outcome
+    node: 01a1c319-7860-76e8-92ac-c5e5caae2dff

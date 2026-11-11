@@ -86,6 +86,14 @@ too_uncertain_basis: >-
   fractional uncertainty above 1"): a distance more uncertain than itself places the object
   nowhere in particular along its line of sight, so the object is kept for look-ups with its sky
   position and given no three-dimensional position.
+prior_led_parallax_ratio: 5.0
+prior_led_parallax_basis: >-
+  Pipeline choice. A parallax below five times its error has a fractional error above 0.2, where
+  the distance Bailer-Jones et al. 2021 (AJ 161, 147) infer from it rests increasingly on their
+  prior, a model of the Galaxy, rather than on the parallax; a Gaia DR3 source's
+  parallax_over_error is that ratio. The source definition of the Bailer-Jones distances marks
+  those distances inferred, and a test holds its bound to this ratio. A 1% random sample of Gaia
+  DR3 drawn on 2026-11-10 gives 4.6% of the sources brighter than G = 14 below the ratio.
 parallax_max_fractional_error: 0.1
 parallax_basis: >-
   Pipeline choice following Bailer-Jones 2015 (PASP 127, 994): inverting a parallax is a fair

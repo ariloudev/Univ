@@ -3,9 +3,10 @@ slug: take-nearby-and-bright-gaia-stars
 title: "Take Gaia's nearby and bright stars, not the whole catalogue"
 context: "Gaia DR3 holds about 1.8 billion sources, far beyond what one release in D1 can hold."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a19f25-5955-701e-b3cf-de1478456b10
   outcome: "Stars come from the Gaia Catalogue of Nearby Stars, Gaia DR3 bright stars with Bailer-Jones 2021 distances, and the Hipparcos new reduction."
+  successor: 01a1c319-7860-76e8-92ac-c5da24c9d23c
 drivers:
   - key: 01a19f25-5955-701e-b3cf-de1268848a67
     kind: local

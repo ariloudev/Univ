@@ -2,6 +2,7 @@
 // marks, and one table of the sources, each once, with a column for each scale domain.
 
 import { KINDS, POINT_CSS } from "../../scene/kinds.ts";
+import { TRACERS_DOMAIN } from "../../scene/tracers.ts";
 import { figures } from "../../scene/format.ts";
 import type { Apply, Hidden } from "../hidden.ts";
 import { Mark } from "../Mark.tsx";
@@ -9,6 +10,7 @@ import { Note } from "../record/parts.tsx";
 import { sentence } from "../record/wording.ts";
 import { words } from "../text.ts";
 import { allPoints, nonePoints, onlySource } from "./actions.ts";
+import { AgeChoice, type AgeState } from "./AgeChoice.tsx";
 import type { ShowChoices, ShowSource } from "./choices.ts";
 import { GroupChip, Only, Part } from "./controls.tsx";
 
@@ -18,9 +20,13 @@ interface Props {
   onApply: Apply;
 }
 
-export function Points({ choices, hidden, onApply }: Props) {
+export function Points({ choices, hidden, onApply, age }: Props & { age?: AgeState | undefined }) {
+  const all = () => {
+    onApply(allPoints(choices));
+    age?.choose(undefined);
+  };
   return (
-    <Part title="Points" onAll={() => onApply(allPoints(choices))} onNone={() => onApply(nonePoints(choices))}>
+    <Part title="Points" onAll={all} onNone={() => onApply(nonePoints(choices))}>
       <Note>By kind of value</Note>
       <div className="grid grid-cols-2 gap-1" data-testid="show-kinds">
         {KINDS.map((kind) => (
@@ -36,6 +42,7 @@ export function Points({ choices, hidden, onApply }: Props) {
       </div>
       <Sources choices={choices} hidden={hidden} onApply={onApply} />
       <Note>A catalogue is switched in every domain it is in; a domain's box switches all its points.</Note>
+      {age !== undefined && choices.domainNames.includes(TRACERS_DOMAIN) ? <AgeChoice age={age} /> : null}
     </Part>
   );
 }
@@ -45,7 +52,7 @@ export function Points({ choices, hidden, onApply }: Props) {
 export const pointsText = (n: number): string => (n < 1e3 ? String(n) : n < 999_500 ? `${figures(n / 1e3)}k` : `${figures(n / 1e6)}M`);
 
 /** A domain's name in its narrow column's head; its full name labels the column's switch. */
-const COLUMN_NAMES: Readonly<Record<string, string>> = { stars: "Stars", nearby_galaxies: "Nearby", cosmic_web: "Web" };
+const COLUMN_NAMES: Readonly<Record<string, string>> = { stars: "Stars", galaxy_tracers: "Tracers", nearby_galaxies: "Nearby", cosmic_web: "Web" };
 const columnName = (name: string) => COLUMN_NAMES[name] ?? sentence(words(name));
 
 /** The sources in one table, a column for each domain headed by its switch and its points. */

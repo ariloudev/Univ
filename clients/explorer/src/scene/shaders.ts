@@ -2,7 +2,9 @@
 // eye, each batch by its centre's offset from the eye and its own small offsets.
 
 import { LEVELS } from "../catalogue/lod.ts";
-import { KINDS } from "./kinds.ts";
+import { DIMMING, STAR_STEPS } from "./dustGrid.ts";
+import { DUST_COLUMN } from "./dustShaders.ts";
+import { KINDS, MARKER_INDEX } from "./kinds.ts";
 
 /** The colours of the kinds of value and, after them, of structures' markers. */
 const COLOURS = KINDS.length + 1;
@@ -32,6 +34,7 @@ uniform float u_cumulative[${LEVELS}];
 uniform vec2 u_slice;
 uniform float u_count;
 out vec4 v_colour;
+${DUST_COLUMN}
 // Whether a point of this rank is needed at distance d from the eye: below the share of the
 // domain the view needs there, the root's share at once and each level's in proportion.
 bool needed(float rank, float d) {
@@ -61,7 +64,10 @@ void main() {
   gl_PointSize = u_size;
   // A point with its own colour, a star, is drawn in it; any other in its kind's.
   vec4 base = a_colour.a > 0.0 ? a_colour : u_colours[int(a_kind)];
-  v_colour = base * vec4(1.0, 1.0, 1.0, u_opacity);
+  // Dimmed by the dust between the eye and the point, none where the point is before it; a
+  // structure's marker shown whatever lies before it.
+  float seen = kind == ${MARKER_INDEX}u ? 1.0 : exp(-${DIMMING.toFixed(3)} * dustColumn(place, ${STAR_STEPS}));
+  v_colour = base * vec4(1.0, 1.0, 1.0, u_opacity * seen);
 }`;
 
 export const POINT_FRAGMENT = `#version 300 es

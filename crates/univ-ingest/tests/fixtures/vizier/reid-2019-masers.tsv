@@ -1,0 +1,48 @@
+#
+#   VizieR Astronomical Server vizier.idia.ac.za
+#    Date: 2026-11-10T03:46:26 [V7.6.1]
+#   In case of problem, please report to:	cds-question@unistra.fr
+#
+#
+#Coosys	J2000:	eq_FK5 J2000
+#INFO	service_protocol=ASU	  IVOID of the protocol through which the data was retrieved
+#INFO	request_date=2026-11-10T03:46:26	  Query execution date
+#INFO	request=https://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FApJ%2F885%2F131%2Ftable1&-out=Name%2COName%2Cplx%2Ce_plx%2CpmE%2CpmN%2CArm&-out.add=_RAJ%2C_DEJ&-out.max=5	  Full request URL
+#INFO	contact=cds-question@unistra.fr	  Email or URL to contact publisher
+#INFO	server_software=VizieR/7.6.1	  Software version
+#INFO	publisher=CDS	  Data centre that produced the VOTable
+
+#RESOURCE=yCat_18850131
+#Name: J/ApJ/885/131
+#Title: ~200 high-mass SFR plx & proper motion with VLBI (Reid+, 2019)
+#INFO	ivoid=ivo://cds.vizier/j/apj/885/131	    IVOID of underlying data collection
+#INFO	data_ivoid=ivo://cds.vizier/j/apj/885/131	    IVOID of underlying data collection
+#INFO	creator=Reid M.J.	    First author or institution
+#INFO	cites=bibcode:2019ApJ...885..131R	    Article or Data origin sources
+#INFO	journal=ApJ	    Journal name
+#INFO	original_date=2019	    Year of the article publication
+#INFO	reference_url=https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJ/885/131	    Dataset landing page
+#INFO	citation=doi:10.26093/cds/vizier.18850131	    Dataset identifier that can be used for citation
+#INFO	publication_date=2022-09-30	    Date of first publication in the data centre
+#INFO	rights_uri=https://cds.unistra.fr/vizier-org/licences_vizier.html	    Licence URI
+#Table	J_ApJ_885_131_table1:
+#Name: J/ApJ/885/131/table1
+#Title: Parallaxes & proper motions of high-mass star forming regions
+#Column	_RAJ2000	(F13.9)	Right ascension (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.ra]
+#Column	_DEJ2000	(F13.9)	Declination (FK5, Equinox=J2000.0) (computed by VizieR, not part of the original data. The format may include more digits than the original data because of internal accuracy requirements in VizieR and across other CDS services)	[ucd=pos.eq.dec]
+#Column	Name	(A13)	Source name	[ucd=meta.id;meta.main]
+#Column	OName	(a15)	Other name	[ucd=meta.id]
+#Column	plx	(F6.3)	[0.04/2.43] Trigonometric Parallax (1)	[ucd=pos.parallax.trig]
+#Column	e_plx	(F6.3)	[0.005/0.2] Uncertainty in plx	[ucd=stat.error;pos.parallax]
+#Column	pmE	(F6.2)	[-6.9/3.13] Eastward Proper Motion (2)	[ucd=pos.pm]
+#Column	pmN	(F6.2)	[-9.36/2.67] Northward Proper Motion (3)	[ucd=pos.pm]
+#Column	Arm	(A3)	Spiral arm designator (4)	[ucd=src.morph.param]
+_RAJ2000	_DEJ2000	Name	OName	plx	e_plx	pmE	pmN	Arm
+deg	deg	 	 	mas	mas	mas/yr	mas/yr	
+-------------	-------------	-------------	---------------	------	------	------	------	---
+197.820380000	-62.765280000	G305.20+00.01	               	 0.250	 0.050	 -6.90	 -0.52	CtN
+253.019490000	-46.142890000	G339.88-01.25	               	 0.480	 0.080	 -1.60	 -1.90	CtN
+260.016816667	-38.975255556	G348.70-01.04	               	 0.296	 0.026	 -0.73	 -2.83	CtN
+260.227504167	-35.752394444	G351.44+00.65	NGC6334        	 0.752	 0.069	  0.31	 -2.17	CrN
+265.856712222	-29.654875278	G359.13+00.03	               	 0.165	 0.031	 -3.98	 -6.50	GC
+

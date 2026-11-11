@@ -1,0 +1,118 @@
+key: 01a1c7c1-7725-74a6-bd5c-532c6d392837
+id: spiral-arms
+versions:
+  - key: 01a1c7c1-7725-74a6-bd5c-532f5b22cdb9
+    at: 2026-11-10T23:18:27Z
+    revision: 23
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Spiral arms: look into it"
+    goal: "What it takes to make the Milky Way's spiral arms visible is known, tested on real data, and the owner has chosen what the arms wave builds. (Planned rather than active, because release-13 stays active until the owner decides on the prunes.)"
+    status: planned
+  - key: 01a1c7c2-81d2-7618-90a9-a44bb94653ac
+    at: 2026-11-10T23:19:35Z
+    revision: 25
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Spiral arms: look into it"
+    goal: "What it takes to make the Milky Way's spiral arms visible is known, tested on real data, and the owner has chosen what the arms wave builds"
+    status: done
+blocks:
+  - key: 01a1c7c1-7725-74a6-bd5c-532de65da796
+    id: spiral-arms-findings
+    kind: note
+    versions:
+      - key: 01a1c7c1-7725-74a6-bd5c-533026ce40b3
+        at: 2026-11-10T23:18:27Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Why release 13 shows no arms, and what does"
+        markdown: |-
+          ## Why no arms show now
+
+          | Cause | Evidence |
+          |---|---|
+          | The G < 14 stars are mostly older disk stars, and they are concentrated within 1–2 kpc | Old stars have left the arms they formed in. Of the inferred-distance stars, only 23.6% lie within 3 kpc |
+          | The point shader adds brightness (`blendFunc(SRC_ALPHA, ONE)`, `scene/renderer.ts:365`) | Millions of overlapping stars around the Sun saturate to white |
+          | The clusters drawn are of every age | All 6,818 Hunt & Reffert clusters fill a smooth disk |
+
+          ## Tested tonight: young clusters alone show arm segments
+
+          We already ingest Hunt & Reffert 2023 (J/A+A/673/A114), but not its `logAge16/50/84` columns. Counts by age from VizieR (IDIA mirror):
+
+          | Age cut (logAge50) | Clusters | Within 3 kpc | Median distance |
+          |---|---|---|---|
+          | < 10 Myr | 405 | 370 | 1.15 kpc |
+          | < 30 Myr | 1,225 | 1,013 | 1.76 kpc |
+          | < 100 Myr | 2,794 | 2,269 | 1.90 kpc |
+          | all | 6,818 | | |
+
+          A top-down plot of the clusters under 30 Myr shows three segments: the Local Arm through the Sun, Sagittarius–Carina about 1.5–2 kpc toward the Galactic centre, and Perseus about 2–3 kpc outward toward l ≈ 120–140°. With all clusters, the same plot is a smooth disk. The plot was sent in the session.
+
+          ## Other material, with sources
+
+          - **Gaia DR3's OBA sample** (`gaiadr3.gold_sample_oba_stars`; Gaia Collaboration, Creevey et al. 2023, A&A 674, A39).
+            - It holds 3,023,388 rows, counted by an archive job on 2026-11-10.
+            - Hot young stars like these trace the arms in the Gaia-based maps (Poggio et al. 2021, A&A 651, A104; Gaia Collaboration, Drimmel et al. 2023, A&A 674, A37).
+            - How many have good parallaxes or G < 14 is still unknown: ESA aborted the cross-match counts tonight, as it did during the ingest.
+            - It is a new source of about 3 M rows, fetched in chunks like gaia-dr3-bright.
+          - **Model arms** (Reid et al. 2019, ApJ 885, 131).
+            - The paper publishes a log-spiral fit for each arm, fitted to the masers we already hold, and our maser rows already carry their `Arm` assignment.
+            - Drawn as lines, these would show the whole Galaxy, including the far side where we have no tracers.
+            - They are a model, so they are labelled reconstructed, never observed.
+            - Needs: a `spiral_arm` structure kind; structure files taking the `path` geometry (univ-model and the explorer already draw paths); and a colour in `scene/kinds.ts`.
+          - **Rendering.** A density or tone-mapped mode for the stars would stop the region around the Sun saturating. This is explorer work only. On its own it brings out no arms, since the stars don't trace them.
+        tone: info
+  - key: 01a1c7c1-7725-74a6-bd5c-532e588ddea1
+    id: spiral-arms-scope
+    kind: question
+    versions:
+      - key: 01a1c7c1-7725-74a6-bd5c-5331e1064325
+        at: 2026-11-10T23:18:27Z
+        revision: 23
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        prompt: "What should the spiral-arms wave build?"
+        header: "Arms wave"
+        context: "Each option is independent. After your choice, I write the spec change and a wave plan on a new stage branch, pre-approved as for the earlier waves. A new release then needs a full ingest, which waits for your word as before."
+        options:
+          - label: "Young clusters by age"
+            detail: "Take Hunt & Reffert's logAge16/50/84 as estimated ages, and let the explorer show only clusters younger than a chosen age (default 30 Myr). This uses data we already fetch and is proven by tonight's plot. It shows the arm segments within about 3 kpc. Recommended: the smallest change with the clearest result."
+            recommended: true
+          - label: "Model arms (Reid 2019)"
+            detail: "Draw the Reid et al. 2019 log-spiral arm fits as structures labelled reconstructed. They show all of the Galaxy's major arms, including beyond our data, so the young tracers can be compared with them. Needs a spiral_arm kind and path geometry in structure files. Recommended alongside the young clusters."
+            recommended: true
+          - label: "Gaia OBA stars"
+            detail: "Add Gaia DR3's OBA golden sample (3.0 M stars) as a young-star tracer source. It gives the densest arm map, reaching several kpc, and is the population the Gaia arm maps used. It is the costliest option: a new 3 M-row fetch from ESA (overloaded tonight), distances from Bailer-Jones, and more shards. Better as a second wave."
+          - label: "Density rendering"
+            detail: "Add a tone-mapped density mode for the stars so the region around the Sun stops saturating to white. It helps every view but shows no arms by itself. Explorer only."
+        multiple: true
+    responses:
+      - key: 01a1c7c2-5d33-71ff-bcc0-2570af601c82
+        at: 2026-11-10T23:19:26Z
+        revision: 24
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "Young clusters by age"
+  - key: 01a1c7c2-81d2-7618-90a9-a4487c8189e9
+    id: decision-arms-young-clusters
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a1c7c2-81d2-7618-90a9-a44ad34c8c18
+        at: 2026-11-10T23:19:35Z
+        revision: 25
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "The arms wave adds the young open clusters by age, and nothing else"
+        consequence: "Wave 5 (stage/milky-way-5) keeps Hunt & Reffert's logAge16/50/84 as estimated cluster ages and gives the explorer a filter that shows only clusters younger than a chosen age. Model arms, Gaia OBA stars and density rendering stay out of scope. A release that carries the ages needs a full ingest, which waits for the owner's word."
+        question: 01a1c7c1-7725-74a6-bd5c-532e588ddea1

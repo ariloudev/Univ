@@ -8,7 +8,7 @@ import { figures, lightYears, pcUnit, shortDistance } from "../../scene/format.t
 import type { StarColourIndex } from "../../scene/starColour.ts";
 import { toMpc } from "../../scene/units.ts";
 import { colourIndices, drawnColourIndex, publishedTypes } from "../starText.ts";
-import { bandsText, words } from "../text.ts";
+import { KIND_NOUNS, bandsText, words } from "../text.ts";
 import type { DotRow } from "./charts.tsx";
 import { counted, sentence, shortWithUncertainty, spread, withArticle } from "./wording.ts";
 
@@ -43,6 +43,9 @@ function nounOf(record: ObjectRecord): string {
     const n = membersOf(record).length;
     return n === 0 ? "galaxy group" : `group of ${n.toLocaleString("en-GB")} galaxies`;
   }
+  // A tracer is what its source names it, before the type its Gaia star's entry may give.
+  const kind = KIND_NOUNS[record.kind];
+  if (kind !== undefined) return kind;
   const type = publishedTypes(record).find((t) => /^[OBAFGKM]/i.test(t.text));
   if (type !== undefined) return `${type.text.charAt(0).toUpperCase()}-type star`;
   return NOUNS[record.entries[0]?.source ?? ""] ?? "object";
@@ -206,6 +209,28 @@ export function brightnessLines(record: ObjectRecord, name: Namer): LineData[] {
   const colours = colourIndices(record).map((m) => ({ label: bandsText(m.band ?? "colour"), value: shortValue(m.native), source: name(m.source), kind: m.kind_of_value }));
   const types = publishedTypes(record).map((t) => ({ label: "Type", value: t.text, source: name(t.source), kind: t.kind }));
   return [...firstOf(magnitudes), ...firstOf(colours), ...types];
+}
+
+/** The share of the posterior a credible interval holds, as a percentage, where it says one. */
+const heldText = (m: Measurement): string => {
+  const p = (m.normalized ?? m.native).uncertainty?.probability;
+  return p === undefined ? "" : ` (${figures(p * 100, 2)}%)`;
+};
+
+/** The ages of the object (read-an-object): each in millions of years with its uncertainty, and
+ * the base-10 logarithm of the age in years as its source publishes it, where it publishes one. */
+export function ageLines(record: ObjectRecord, name: Namer): LineData[] {
+  return record.measurements
+    .filter((m) => m.quantity === "age")
+    .flatMap((m) => {
+      const years = m.normalized ?? m.native;
+      const source = name(m.source);
+      const kind = m.kind_of_value;
+      const age = { label: "Age", value: `${shortWithUncertainty(figures(years.value / 1e6, 2), years.uncertainty, 1e-6)} Myr${heldText(m)}`, source, kind };
+      if (m.native.unit !== "log_year") return [age];
+      const published = shortWithUncertainty(m.native.value.toFixed(2), m.native.uncertainty);
+      return [age, { label: "log age (yr)", value: `${published}, as published`, source, kind }];
+    });
 }
 
 /** The colour index the view draws the star by, where it has one. */

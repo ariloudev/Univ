@@ -1,0 +1,372 @@
+key: 01a1c326-9fb1-74c5-bf75-4dab4e957722
+id: plan-build
+versions:
+  - key: 01a1c326-9fb1-74c5-bf75-4daefc1d1e9c
+    at: 2026-11-10T01:50:50Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Plan the build"
+    goal: "The owner has approved a wave plan for release 13 whose pruning is shown safe for additive releases"
+    status: active
+  - key: 01a1c328-d208-77b0-8e1b-6a92f9e8a1f4
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Plan the build"
+    goal: "The owner has approved a wave plan for release 13 whose pruning is shown safe for additive releases"
+    status: done
+blocks:
+  - key: 01a1c326-9fb1-74c5-bf75-4dac364ab7d8
+    id: pruning-and-additive-releases
+    kind: note
+    versions:
+      - key: 01a1c326-9fb1-74c5-bf75-4daf56e3f5ff
+        at: 2026-11-10T01:50:50Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Does pruning break additive releases?"
+        markdown: |-
+          **Short answer: no, by its design and its code.** Two paths are untested, though, and the real store needs a snapshot before the first prune.
+
+          ### What I read
+          `crates/univ-ingest/src/publish/prune.rs`, `publish/cap.rs`, `release/packing.rs`, `release/placing.rs`, `release/mod.rs` (how a change build starts), `tests/prune.rs` and `tests/shared_rows.rs`, and the local D1 catalogue's `releases`, `release_shards` and `shard_cells`.
+
+          ### Why additive releases survive a prune
+          | Concern | What the code does | Evidence |
+          |---|---|---|
+          | Rows shared with a kept release | Deletes only rows valid in *n* and in no kept release: valid in *n*, `release >` the last kept one before it, `retired ≤` the first kept one after it | `pruned_rows()`; test `pruning_a_release_between_two_kept_deletes_only_the_rows_it_alone_held` |
+          | Files shared by SHA-256 | Deletes only R2 keys that no unpruned release maps, nor any publish journal part way through | `held_elsewhere()`, `journaled_elsewhere()`; test `a_file_a_release_part_way_through_publishing_holds_is_not_pruned` |
+          | The next change build | Reads the state's row index of `latest` (`state/`), never an earlier release's build folder. Prune touches no state | `release/mod.rs` `row_index(state, …)`; `prune()` takes only the build output, journals and the store |
+          | Ids | The id ledger is never pruned, so retired ids still resolve | test `pruning_deletes_the_files_and_rows_and_keeps_the_release_listed_and_its_ids_resolving` |
+          | The 10 GB cap check | Counts rows valid in unpruned releases, not file size, so a prune frees room for the next publish | `publish/cap.rs` `others_bytes()` |
+          | Pruning `latest` | Refused | test `the_release_latest_points_to_is_not_pruned` |
+
+          ### What release 13 does to the shards
+          The local catalogue shows **every star cell in shard 0**, beside cosmic-web and nearby-galaxy cells, and shard 0 at its 4.5 GB budget. Placement is sticky: a cell stays in its shard. A shard that outgrows its budget gives up its *last* cells, which move to the last or a new shard. Release 13 grows shard 0 by about 15 GB of stars, so shard 0 will hand most of its cells to the new shards 8–11.
+
+          Those moved cells' unchanged rows are written again into their new shard. Release 13 is then larger than a purely additive change: the 15 GB of new stars plus up to about 4.5 GB of moved rows. Release 12's copies stay in shard 0 until 12 is pruned. This is the case the 4.5 GB budget under the 10 GB cap exists for: shard 0 then holds about 4.5 GB valid in 12 plus at most 4.5 GB valid in 13.
+
+          ### Gaps
+          1. **No test prunes and then builds the next change.** No test covers prune *n*−2 and *n*−1, then build and publish *n*+1 as a change, with the reads of *n* and *n*+1 equal to a from-scratch build.
+          2. **No test prunes across a cell that moved shards.** No test has release *n* move a cell to a new shard and then prunes *n*−1, checking that the old shard's copies go and the new shard's stay.
+          3. **No snapshot before the first prune.** The real store has never been pruned since rows became shared. `cp -c`, an APFS clone, takes copy-on-write snapshots of `.cache/univ-ingest/wrangler` and `state` in seconds and costs little disk.
+          4. **SQLite files don't shrink after a prune.** There is no `VACUUM`. Freed pages are reused by later inserts, so the cap is fine, but the files on disk stay their size. Size checks after a prune read `page_count − freelist_count`, not file size.
+
+          ### What I add to the plan
+          - Wave 1 adds tests for gaps 1 and 2 (`tests/prune_then_change.rs`) before any real prune.
+          - Before pruning 10 and 11:
+            - Clone the store and the state.
+            - Record the fingerprints of release 12 (`cargo xtask science 12 --store`) and the answers to 1,000 random lookups.
+          - After each prune:
+            - The same science run and lookups must match exactly.
+            - Ids retired in 10 still resolve.
+            - On any difference, restore the clone and stop.
+          - Prune 12 only after 13 is published, checked and benched, with the same guard.
+        tone: warning
+  - key: 01a1c326-d843-77e9-8e93-9c235a719739
+    id: plan-29-plan-crystalline-hopping-yeti-01a1c326-9fb1-74c5-bf75-4dab4e957722
+    kind: plan
+    versions:
+      - key: 01a1c326-d843-77e9-8e93-9c24645b69ee
+        at: 2026-11-10T01:51:05Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build plan: a deeper Milky Way (release 13)"
+        markdown: |
+          # Build plan: a deeper Milky Way (release 13)
+
+          ## Context
+
+          The owner asked how many more Milky Way stars a release can hold and for a much more detailed
+          Milky Way. Spec commit `85b25e9` on `product/milky-way` settles what gets built:
+          - Gaia DR3 stars to G < 14, about 16.8M sources with their Bailer-Jones distances.
+          - A Bailer-Jones distance whose parallax is below 5× its error becomes **inferred**. The star is
+            still placed, and the explorer draws it at half opacity.
+          - Five tracer catalogues in a fourth scale domain, **Galaxy tracers**: Hunt & Reffert open
+            clusters, Baumgardt & Vasiliev globulars, Skowron Cepheids, Li RR Lyrae and Reid masers.
+          - The Edenhofer 2024 dust map, resampled to a 250³ grid of 10 pc cells and drawn as a
+            ray-marched volume.
+
+          This work spans ingest, univ-model, the server and the explorer, and has more than eight tasks.
+          So it runs as **four waves**: `stage/milky-way-1` … `-4`, each cut from `product/milky-way`, then
+          a release stage. Each wave plans its own branch in its own Yard Log, ends with `/simplify` and
+          `/code-review` (findings fixed), then one `cargo xtask check` and `cargo xtask integration`, and
+          waits for the owner's word to merge.
+
+          **Capacity finding.** Release 12's estimates per object shard are 4.50 GB × 7 and 0.77 GB, all
+          against the 4.5 GB per-release budget (`RELEASE_BUDGET_BYTES`, science check `d1-budget`). The
+          stars will add about 15 GB, so wave 1 binds four more object shards (12 × 4.5 = 54 GB).
+
+          ## Wave 1: deeper Gaia stars and inferred distances (`stage/milky-way-1`)
+
+          Criteria met: the G < 14 and parallax-carrying criteria of the release 13 sources Requirement,
+          the whole Bailer-Jones inferred Requirement in `normalize-records`, and the inferred set-aside
+          criterion in `choose-the-preferred-measurement`.
+
+          1. **Ratio in the ranking rule.**
+             - Add `prior_led_parallax_ratio: 5` with its basis to `rules/ranking.yaml`, and a field for it
+               in `RankingRules` (`crates/univ-ingest/src/ranking/rules.rs:15`), checked > 0.
+             - Test: `ranking_rules` refuses a missing or non-positive ratio.
+          2. **Bailer-Jones rows marked inferred.**
+             - `sources/bailer-jones-2021.yaml` selects `g.parallax` and `g.parallax_error`.
+             - Extend `source/rules.rs` `Condition` so a rule tests whether `parallax` is below a ratio
+               times `parallax_error`, the ratio taken from the ranking rule at plan time
+               (`normalize/plan.rs:332`). A blank or non-positive parallax also matches.
+             - The existing `KindOverride` applies `inferred` to both distance readings.
+             - Tests: a new `normalize_bailer_jones_kind.rs` covers ϖ/σ = 4.9, 5.0 and 7, ϖ ≤ 0 and a
+               blank parallax, against a recorded `gaia-archive` fixture row set.
+          3. **Ranking set-aside.**
+             - In `ranking/distance.rs` `remaining()` (:199), drop inferred geometric or indicator
+               candidates when a measured or estimated geometric, primary or secondary candidate exists.
+             - Record the comparison in `Decided` (`univ-model/src/object/preferred.rs:103`).
+             - Tests: added to `ranking_parallax.rs`, including that an inferred Bailer-Jones distance still
+               wins when it is the only candidate.
+          4. **G < 14 queries.**
+             - `sources/gaia-dr3-bright.yaml` and the Bailer-Jones query cut at G < 14, in 768 chunks of
+               about 22,000 rows, under the 50k anonymous cap.
+             - Measure `count:` live once, in the background, and record it in `cuts`.
+             - Rename the source title to "Gaia DR3 stars (G < 14)". The id stays, so object ids hold.
+          5. **Four more object shards.**
+             - Add `OBJECTS_8` … `OBJECTS_11` in `wrangler.toml` and `crates/univ-server/wrangler.toml`.
+             - Wherever the shard count is fixed in code (`univ-api/src/shards.rs`, the Release publisher),
+               the build plan names it.
+             - Test: an e2e routing test reads an object from shard 11 in the fixture state.
+          6. **Pruning tests.** `tests/prune_then_change.rs`, cases (a) and (b) of the Pruning section, on
+             the memory store.
+          7. **Measure before the full ingest.**
+             - Build one chunk (about 22k stars) into a scratch release and read its `d1_estimate`, to
+               confirm the bytes per star behind the 15 GB estimate.
+             - Add a science check `inferred-share-of-gaia-stars`: the inferred share of Bailer-Jones
+               distances below G < 14 lies within 3–8%, citing the 2026-11-10 sample (4.6%).
+
+          ## Wave 2: Galaxy tracers domain and tracer sources (`stage/milky-way-2`)
+
+          Criteria met: the tracer criteria of the sources Requirement, the tracer Requirement in
+          `normalize-records`, the scale-domain criteria in `build-octree-tiles`, and the listing
+          criterion in `fetch-a-tile-manifest`.
+
+          1. **The domain itself.**
+             - Add `GalaxyTracers` to `ScaleDomain` (`univ-ingest/src/source/mod.rs:258`) and to
+               `CellSpace`/`SPACES` (`univ-model/src/release/cells.rs:38`), with a 100 pc edge.
+             - Append it to `DOMAINS` (`tiles/domain.rs:22`) as RNG stream 3. Appending leaves the existing
+               domains' tiles byte-identical; a test asserts the stars tiles' SHA-256 is unchanged.
+             - Make `scale_domain_unit` (`univ-model/src/units.rs:117`) give pc, add arms to `unit_symbol`
+               and `name_of`, and handle the new domain in the unit test in `normalize/plan.rs:460`.
+          2. **Membership.**
+             - `domain_of` (`tiles/domain.rs:37`) and `release/objects.rs:199` put an object in Galaxy
+               tracers when any of its entries comes from a source of that domain. This needs the object's
+               entry sources passed to `assign()` (:176).
+             - Tests: added to `tiles*.rs`: a Cepheid joined to a Gaia star lands in tracers, and a plain
+               star stays in stars.
+          3. **Five source definitions** (`Access::VizierTsv`), each with recorded fixtures under
+             `tests/fixtures/vizier/` and its terms judged in the definition:
+             - `hunt-reffert-2023`, `baumgardt-vasiliev-2021`, `skowron-2025-cepheids`, `li-2023-rr-lyrae`
+               and `reid-2019-masers`.
+             - The kind of object is a constant flag `tracer` from the definition. The pulsation type is a
+               column flag with cited meanings.
+             - Distances carry kind, method and kind of value as the criteria say. A maser parallax is
+               measured, and becomes a distance through the existing parallax rule.
+             - Skowron and Li join `gaia-source-id` in `rules/matching.yaml:70`.
+             - Check that Baumgardt & Vasiliev is on VizieR first; if not, use `Access::Files` from the
+               author's site.
+          4. **Server and decoder.**
+             - `univ-api` `query/objects.rs:86` covers the new space.
+             - The `/v1/scale-domains` test holds four domains.
+             - Regenerate the tile-decoder fixtures (`UPDATE_FIXTURES=1`, `tile_decoder_fixtures.rs`) with a
+               tracers manifest.
+          5. **Explorer plumbing.** Only enough to show the new domain: `api/schemas.ts`, `Points.tsx`
+             `COLUMN_NAMES`, `choices.ts` and `test/fixtures.ts`. Drawing comes in wave 4.
+          6. **Science checks.**
+             - `counts-by-scale-domain` lists the tracers.
+             - New `tracers-in-tracer-domain`: every object with a tracer entry is in the domain.
+             - New `cepheids-joined-to-gaia`: the share of Skowron Cepheids joined by source id.
+
+          ## Wave 3: dust map grids (`stage/milky-way-3`)
+
+          Criteria met: the dust source criterion and every criterion of *Resample the dust map*. Univ
+          Server serves the grids through the existing volume grid routes.
+
+          1. **Source definition.**
+             - `sources/edenhofer-2024.yaml` with `Access::Files` from Zenodo record 10658339, the mean
+               and standard deviation files of the 1.25 kpc map only (not the 122 GB record).
+             - Read and quote the licence there, and record the digests.
+             - Confirm the file layout (FITS or HDF5, ring or nested ordering) at the start of the task. Use
+               `fits.rs` if it is FITS; otherwise add a minimal reader.
+          2. **HEALPix ring and nested helpers.** Extend `univ-model/src/healpix.rs` with `ang2pix` for
+             Nside 256 in the file's ordering. Tests: known pixel centres.
+          3. **Resampler** (`grids/edenhofer.rs`).
+             - Galactic Cartesian cube of 250³ cells of 10 pc. Each cell takes the mean of the voxel centres
+               it holds, else the value at its centre.
+             - The distance bins are 516, logarithmic from 69 to 1,250 pc.
+             - Cells outside 69–1,250 pc are NaN.
+             - Tests: a cropped fixture of a few pixels and bins; cells under 69 pc are NaN; two runs give
+               an identical SHA-256.
+          4. **No-data marker.**
+             - Add `no_data: NaN` to `GridGeometry` or `Field` (`univ-model/src/grid.rs`) and to the header
+               JSON (`HEADER_VERSION` 2; version 1 is still read), and serve it in `univ-api/src/grids.rs`
+               `header`.
+             - Add the dust ids to `release/grids.rs` `is_grid` and `read`. Make `outlines_on` skip grids
+               with no structures to outline.
+          5. **Tests.** Added to `release_grids.rs`, plus an e2e test on `/v1/grids/{dust}` and its
+             header.
+
+          ## Wave 4: explorer drawing (`stage/milky-way-4`)
+
+          Criteria met: the tracer colour and size Requirement and the inferred-opacity Requirement in
+          *Draw the catalogues*, every criterion of *Draw the dust map*, and the single-colour change for
+          the galaxy domains.
+
+          1. **Tracer colours and size.**
+             - Give each tracer source a colour in `scene/kinds.ts`, distinct from the star temperatures and
+               `POINT_COLOUR`, through `u_colours` keyed by source.
+             - Draw tracer points at twice `POINT_SIZE` (a per-domain `u_size` in `renderer.ts` `draw()`).
+             - The key (`ui/Panels.tsx` `Key`) lists each tracer source with its colour and count.
+             - Tests: Vitest on the colour table and the key, and a fixture world with a tracers domain.
+          2. **Inferred stars at half opacity.**
+             - In `scene/shaders.ts`, halve alpha when `a_kind` is inferred in the stars domain.
+             - The key says that fainter stars have inferred distances.
+             - Tests: a shader-uniform unit test and a key text test.
+          3. **Dust volume.**
+             - A new `scene/dust.ts` fetches `/v1/grids`, finds the Edenhofer mean grid, decodes it and
+               uploads it as an R16F `TEXTURE_3D` (about 31 MB). It is fetched once per release, on first
+               turn-on.
+             - The galactic-to-ICRS rotation comes from the manifest.
+             - Two parts:
+               - A volume pass in `draw()` before the points: front-to-back ray-march over the cube, adding a
+                 faint dust colour with opacity rising with density; NaN cells add nothing.
+               - A per-point attenuation in the point vertex shader: march from the eye to the star through
+                 the texture and dim the star by the dust crossed. A star in front of the dust is
+                 untouched; the march is skipped when the ray misses the cube.
+             - The key entry gives source, unit and "reconstructed".
+             - Tests:
+               - Vitest on the grid decode (NaN kept) and on the cube's placement and rotation.
+               - A Playwright test: the switch draws it, the address keeps `dust=1`, and a failed fetch
+                 turns it off with the message.
+               - Frame time is checked by hand with the dust on.
+          4. **Switch.** `ui/show/ShowPanel.tsx` gets a dust switch through `useAddressSwitch`, like
+             `gridSwitch.ts`, off by default, with the error shown beside it.
+
+          ## Pruning
+
+          Release 13 is published beside release 12, which is what the 4.5 GB per-release budget is for.
+          **Today's state** (read from the local D1 `releases` table): releases 10, 11 and 12 are
+          published and none is pruned, and `latest` → 12. The build output holds 38 GB for release 10,
+          2.7 GB for 11, 1.1 GB for 12, and old builds of releases 5 (3.3 GB) and 9 (3.5 GB) that the
+          release list no longer names.
+
+          **Safety for additive releases** (Yard note *Does pruning break additive releases?*). By its code
+          and tests, pruning deletes only the rows and files that no unpruned release holds. The next
+          change build reads only `state/`, the cap counts logical rows, and ids keep resolving. Two paths
+          are untested, so wave 1 adds `crates/univ-ingest/tests/prune_then_change.rs`:
+          - (a) Publish 1–3, prune 1 and 2, build and publish 4 as a change. The reads of 3 and 4 equal
+            those of a from-scratch build, and 4 writes only its change.
+          - (b) Release *n* moves a cell to a new shard, because a tight budget makes its shard give it up,
+            and then *n*−1 is pruned. The old shard's copies go, the new shard's stay, and every read of
+            *n* is unchanged.
+
+          **The guard around every real prune:**
+          1. First, take APFS clones (`cp -c -R`) of `.cache/univ-ingest/wrangler` and
+             `.cache/univ-ingest/state` into `.cache/univ-ingest/snapshots/before-prune-<n>/`.
+          2. Record release 12's science run (`cargo xtask science … --store`, fingerprints included) and
+             the answers to 1,000 random lookups.
+          3. After the prune, the same run and lookups must match exactly, and ids retired in 10 must still
+             resolve. On any difference, restore the clone and stop.
+          4. Stop only servers I started, by PID, before pruning (Wrangler local is serial). If the owner's
+             explore is running, ask first.
+          5. Size checks read `page_count − freelist_count`, since there is no `VACUUM` and files don't
+             shrink.
+          6. Delete the clones only once the owner says so.
+
+          **What release 13 does to the shards.**
+          - Every star cell is in shard 0, which is at budget.
+          - Sticky placement makes shard 0 give up its last cells to the new shards 8–11. Their unchanged
+            rows are written again, up to about 4.5 GB beside the 15 GB of new stars.
+          - Release 12's copies stay in shard 0 until 12 is pruned: about 4.5 GB + 4.5 GB, within the 10 GB
+            cap, which is what the budget is for.
+          - Wave 1, task 6 confirms it on the one-chunk scratch build by reading which cells move.
+
+          **Before release 13 is built** (in the same ask as the full ingest):
+          1. With the guard, run `univ-ingest prune 10`, then `univ-ingest prune 11`. This deletes their R2 files and the D1
+             rows valid only in them, keeps the id ledger, and frees about 41 GB of local builds.
+          2. Afterwards:
+             - `releases` lists 10 and 11 with `pruned_at`.
+             - `latest` → 12.
+             - `cargo xtask science` on 12 with `--store` passes, since its chain's builds are gone.
+             - A lookup of an id retired in 10 still resolves.
+          3. For the builds of 5 and 9:
+             - If the state directory records them, prune them the same way.
+             - If not, report it to the owner, who decides whether to delete the folders by hand. They
+               are not mine to remove.
+
+          **After release 13 is published, checked and benched:**
+          1. With the same guard, release 13's reads before and after must match, and prune release 12, so
+             that the store holds one release.
+          2. Re-read each shard's database size and `d1_estimate`, record them in the release stage's
+             note, and run `cargo xtask bench lookup` again on the pruned store.
+
+          ## Release 13 (after the waves are merged)
+
+          - Ask the owner before the full ingest (standing rule), together with pruning 10 and 11.
+          - Then fetch in the background:
+            - Gaia G < 14 and Bailer-Jones: about 1,500 chunk jobs, a few hours.
+            - The five VizieR tracers.
+            - The two Edenhofer files.
+          - Build, `cargo xtask science` (with the new checks), publish locally, then
+            `cargo xtask bench lookup` (QA-2) and `cargo xtask bench first-points` (3 s).
+          - Look at it through `cargo xtask explore` and send screenshots.
+
+          ## Verification
+
+          - Each wave runs focused tests between tasks (`cargo test -p <crate> <filter>`, clippy,
+            `pnpm check`), links each new test to its criterion in `loft.trace.yaml`
+            (`loft reconcile --accept`), and records a `trace` view.
+          - Each wave ends with the full gate and integration.
+          - Release 13 end to end:
+            - Science checks green, including `d1-budget` on 12 shards.
+            - After pruning, each shard's database is under its 10 GB cap and `releases` lists 10, 11
+              and 12 as pruned.
+            - Lookup p95 under 200 ms and first points under 3 s.
+            - In the explorer: tracers visible from 30 kpc, inferred stars fainter and hideable by ○, and
+              the dust volume dimming the stars behind the Orion clouds.
+        planMode: true
+    responses:
+      - key: 01a1c328-9440-7145-8e2b-e8cd58e62df9
+        at: 2026-11-10T01:52:58Z
+        revision: 15
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: approved
+  - key: 01a1c328-d208-77b0-8e1b-6a8e10370056
+    id: plan-produced
+    kind: note
+    versions:
+      - key: 01a1c328-d208-77b0-8e1b-6a91fb0d8104
+        at: 2026-11-10T01:53:14Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "The approved build plan"
+        markdown: |-
+          The owner approved the plan (`/Users/admin/.claude/plans/crystalline-hopping-yeti.md`), which has four waves and a release stage:
+
+          ```mermaid
+          flowchart LR
+            W1["W1 deeper Gaia stars,\ninferred distances,\n4 shards, prune tests"] --> W2["W2 Galaxy tracers\ndomain and 5 sources"]
+            W2 --> W3["W3 dust map grids"]
+            W3 --> W4["W4 explorer drawing"]
+            W4 --> R["Release 13:\nprune 10, 11 under guard,\nfull ingest, publish,\nprune 12"]
+          ```
+
+          Each wave runs on `stage/milky-way-<n>`, cut from `product/milky-way`, with its own Yard Log. Each ends with `/simplify`, `/code-review`, the full gate and integration, and merges when the owner says so. The full ingest and the first prune wait for the owner's approval.
+        tone: success

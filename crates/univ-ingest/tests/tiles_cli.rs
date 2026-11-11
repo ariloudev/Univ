@@ -40,7 +40,7 @@ fn tiling(definitions: &Path, cache: &Path, state: &Path, out: &Path) -> std::pr
 }
 
 /// The directory name of each scale domain, in the order of their manifests.
-fn domains() -> [&'static str; 3] {
+fn domains() -> [&'static str; 4] {
     DOMAINS.map(name_of)
 }
 
@@ -120,13 +120,16 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
     for line in [
         // M81's 2MRS redshift alone is about 600% uncertain: it is not placed, and in no tile.
         "Z Step cross-match: positions: 16 placed of 25\n",
-        "Z Stage tiles: 3 items\n",
+        "Z Stage tiles: 4 items\n",
         "Z Step tiles: stars: 1 nodes, 1 points, largest tile 68 bytes\n",
         "Z Step tiles: nearby galaxies: 1 nodes, 9 points, largest tile 228 bytes\n",
         "Z Step tiles: cosmic web: 1 nodes, 6 points, largest tile 168 bytes\n",
+        // No fixture source names Galaxy tracers yet: its domain is listed, empty.
+        "Z Step tiles: galaxy tracers: 0 nodes, 0 points, largest tile 0 bytes\n",
         "Z tiles: 1 stars nodes, 1 stars points, 68 stars largest tile bytes, 1 nearby galaxies \
          nodes, 9 nearby galaxies points, 228 nearby galaxies largest tile bytes, 1 cosmic web \
-         nodes, 6 cosmic web points, 168 cosmic web largest tile bytes, 9 unplaced objects in no \
+         nodes, 6 cosmic web points, 168 cosmic web largest tile bytes, 0 galaxy tracers nodes, 0 \
+         galaxy tracers points, 0 galaxy tracers largest tile bytes, 9 unplaced objects in no \
          tile\n",
         "Z Stage tiles done: 1 stars nodes, ",
         "Z Stopped at tiles: tiles only; no release was asked for\n",
@@ -137,7 +140,11 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
         .into_iter()
         .map(|d| check_domain(out.path(), d))
         .collect();
-    assert_eq!(points, [1, 9, 6], "the 16 placed objects, each in one tile");
+    assert_eq!(
+        points,
+        [1, 9, 6, 0],
+        "the 16 placed objects, each in one tile"
+    );
 
     // The same run again, from a fresh state, writes the same bytes.
     let (again, out_again) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());

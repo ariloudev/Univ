@@ -495,7 +495,7 @@
             "type": "string"
           },
           "scale_domain": {
-            "description": "The scale domain it is tiled in: `stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "The scale domain it is tiled in: `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "unit": {
@@ -679,6 +679,15 @@
             "minItems": 4,
             "type": "array"
           },
+          "log_age_code": {
+            "description": "The code of a point whose value is the base-10 logarithm of its age in years; absent\nbefore version 3.",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "max_tile_bytes": {
             "minimum": 0,
             "type": "integer"
@@ -748,6 +757,15 @@
               "$ref": "#/components/schemas/KindOfValue"
             },
             "type": "array"
+          },
+          "log_age_code": {
+            "description": "The code of a point whose value is the base-10 logarithm of its age in years; none before\nversion 3.",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "max_points": {
             "minimum": 0,
@@ -2482,6 +2500,7 @@
           "proper_motion_dec",
           "magnitude",
           "colour_index",
+          "age",
           "supergalactic_velocity_x",
           "supergalactic_velocity_y",
           "supergalactic_velocity_z"
@@ -3033,7 +3052,12 @@
         "description": "What an object's sources list it as.",
         "enum": [
           "body",
-          "galaxy_group"
+          "galaxy_group",
+          "open_cluster",
+          "globular_cluster",
+          "classical_cepheid",
+          "rr_lyrae_star",
+          "star_forming_region"
         ],
         "type": "string"
       },
@@ -4420,7 +4444,7 @@
             "type": "string"
           },
           "name": {
-            "description": "`stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "`stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "nodes": {
@@ -4800,7 +4824,7 @@
             "type": "string"
           },
           "scale_domain": {
-            "description": "The scale domain its points are tiled in: `stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "The scale domain its points are tiled in: `stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "title": {
@@ -5231,7 +5255,7 @@
             "$ref": "#/components/schemas/Sampling"
           },
           "scale_domain": {
-            "description": "`stars`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "`stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "sources": {
@@ -6036,7 +6060,10 @@
           "megaparsec",
           "megaparsec_over_h",
           "magnitude",
-          "dimensionless"
+          "dimensionless",
+          "extinction_zgr23_per_parsec",
+          "year",
+          "log_year"
         ],
         "type": "string"
       },

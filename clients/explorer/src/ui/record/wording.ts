@@ -49,7 +49,9 @@ export function shortWithUncertainty(v: string, u: Uncertainty | undefined, k = 
 export const sentence = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
 /** `noun` with its article: "an" before a vowel sound, a capital letter such as F named included. */
-export const withArticle = (noun: string): string => `${/^([aeiou]|[AEFHILMNORSX]-)/i.test(noun) ? "an" : "a"} ${noun}`;
+/** `noun` after "a" or "an" by its sound: "an" before a vowel, a letter named with one ("an
+ * F-type star") or "RR" ("an RR Lyrae star"). */
+export const withArticle = (noun: string): string => `${/^([aeiou]|[AEFHILMNORSX]-|RR )/i.test(noun) ? "an" : "a"} ${noun}`;
 
 /** `n` and its noun, singular for one. */
 export const counted = (n: number, singular: string, plural = `${singular}s`): string => `${n.toLocaleString("en-GB")} ${n === 1 ? singular : plural}`;

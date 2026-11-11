@@ -1,0 +1,43 @@
+key: 01a1c319-7860-76e8-92ac-c5eca76feea8
+slug: draw-the-dust-map
+name: "Draw the dust map"
+body: |
+  Showing the dust about the Sun, the Local Bubble, the Radcliffe wave and the molecular clouds, as
+  a translucent volume among the stars, from the mean dust density grid of the Edenhofer et al.
+  2024 dust map that Univ Server serves.
+realizes:
+  - 01a1a497-e843-728a-bce8-3fcf940bdac0
+  - 01a1a497-e843-728a-bce8-3fd0d4f9d2a1
+requirements:
+  - key: 01a1c319-7860-76e8-92ac-c5edd3803528
+    statement:
+      form: state_driven
+      while: "the person has turned the dust map on"
+      system: "Univ Explorer"
+      shall: "draw the release's mean dust density grid as a translucent volume about the Sun, its opacity along each line of sight rising with the density it crosses."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c5ee13abaee8
+        name: "The Show drawer holds a switch for the dust map, off when the view opens on an address that does not turn it on."
+      - key: 01a1c319-7860-76e8-92ac-c5efac2d49c1
+        name: "The page's address keeps the dust map turned on, so that a reload or a shared link keeps it on."
+      - key: 01a1c319-7860-76e8-92ac-c5f0e43e42f5
+        name: "The volume lies at the grid's position and orientation, turned from galactic Cartesian parsecs into the axes the view is drawn in, so that the dust lies among the stars about it."
+      - key: 01a1c319-7860-76e8-92ac-c5f17f0c7842
+        name: "A cell that marks no data adds nothing to the volume."
+      - key: 01a1c319-7860-76e8-92ac-c5f2b6cadee8
+        name: "A star behind dust along a line of sight is dimmed by the dust between it and the eye, and a star in front of the dust is not."
+      - key: 01a1c319-7860-76e8-92ac-c5f307a24b13
+        name: "The key names the dust map's source and unit, and says that its values are reconstructed."
+      - key: 01a1c319-7860-76e8-92ac-c5f48c67d88a
+        name: "The grid is fetched once a release, when the dust map is first turned on."
+  - key: 01a1c319-7860-76e8-92ac-c5f5e6c656f0
+    statement:
+      form: unwanted
+      if: "the dust map's grid cannot be fetched or does not decode"
+      system: "Univ Explorer"
+      shall: "keep drawing the points, turn the dust map off and say why beside its switch."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c5f62e251c2d
+        name: "The message names the grid and the error."
+      - key: 01a1c319-7860-76e8-92ac-c5f7fb8144d4
+        name: "The points held stay drawn."

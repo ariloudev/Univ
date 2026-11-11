@@ -97,3 +97,23 @@ requirements:
         name: "The photometric redshift sources are 2MPZ and WISE × SuperCOSMOS photometric redshifts."
       - key: 01a1a931-2c8a-73a8-91f2-5902c9bf1383
         name: "The quasars of DESI DR1 and SDSS DR17 are taken beside their galaxies."
+  - key: 01a1c319-7860-76e8-92ac-c5f854eb67f1
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "provide a source definition for each source that release 13 adds or widens, to show the Milky Way in depth."
+    criteria:
+      - key: 01a1c319-7860-76e8-92ac-c5f9f47eb4b7
+        name: "The Gaia DR3 stars and the Bailer-Jones 2021 distances take every Gaia DR3 source with a G magnitude below 14."
+      - key: 01a1c319-7860-76e8-92ac-c5fae6ebd0d3
+        name: "The Bailer-Jones 2021 distances carry, as published, the Gaia DR3 ratio of the parallax to its error of each source they give a distance to."
+      - key: 01a1c319-7860-76e8-92ac-c5fb497eb9df
+        name: "The star cluster sources are Hunt & Reffert 2023 open clusters and Baumgardt & Vasiliev 2021 globular clusters."
+      - key: 01a1c319-7860-76e8-92ac-c5fc305bf6e9
+        name: "The variable star sources are Skowron 2025 classical Cepheids and Li 2023 RR Lyrae."
+      - key: 01a1c319-7860-76e8-92ac-c5fda2de7bf8
+        name: "The star-forming region source is Reid 2019 maser parallaxes."
+      - key: 01a1c319-7860-76e8-92ac-c5fe0e6a94b9
+        name: "The dust source is the Edenhofer 2024 dust map."
+      - key: 01a1c319-7860-76e8-92ac-c5ff9e1131e1
+        name: "Each source of a Galaxy tracer names the Galaxy tracers scale domain."

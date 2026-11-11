@@ -1,0 +1,55 @@
+key: 01a1c328-d208-77b0-8e1b-6a8fb68ad9c1
+id: wave-explorer
+versions:
+  - key: 01a1c328-d208-77b0-8e1b-6a96cd4999cc
+    at: 2026-11-10T01:53:14Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 4: explorer drawing"
+    goal: "The explorer draws tracers by source colour at twice size, inferred stars at half opacity and the dust map as a ray-marched volume, merged into product/milky-way"
+    status: planned
+  - key: 01a1c46c-ca0a-71f6-9aa9-d47f71b11b42
+    at: 2026-11-10T07:47:06Z
+    revision: 19
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 4: explorer drawing"
+    goal: "The explorer colours the Galaxy's tracers by kind, draws stars with only an inferred distance apart, and ray-marches the dust map among the stars, merged into product/milky-way"
+    status: active
+  - key: 01a1c4a1-56d2-715c-bf0e-06174cd81fe2
+    at: 2026-11-10T08:44:30Z
+    revision: 20
+    by:
+      host: claude-code
+      session: "918a7610-2359-46e7-a590-437534c76364"
+    title: "Wave 4: explorer drawing"
+    goal: "The explorer colours the Galaxy's tracers by kind, draws stars with only an inferred distance apart, and ray-marches the dust map among the stars, merged into product/milky-way"
+    status: done
+blocks:
+  - key: 01a1c4a1-56d2-715c-bf0e-06146ce5e0f7
+    id: wave-4-merged
+    kind: note
+    versions:
+      - key: 01a1c4a1-56d2-715c-bf0e-0616ed539a93
+        at: 2026-11-10T08:44:30Z
+        revision: 20
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Wave 4 merged"
+        markdown: |-
+          `stage/milky-way-4` merged as `95f073c`. The gate passed 13 gates and integration passed (23 Playwright tests).
+
+          **Built:**
+          - **Tracers:** a colour for each of the domain's seven sources (69 tracers take the distance of a matched Gaia star, so the two Gaia sources are among them), twice a star's size, counted by source and kind of value in the key.
+          - **Inferred stars:** half as opaque, and the key says so with their number.
+          - **Dust map:** a switch in the Show drawer kept in the address; the grid fetched once a release and coarsened to 125³ half floats; a brown haze ray-marched about one step a cell; each star dimmed by the dust column before it, structure markers not; a key with source, unit, reconstructed and citation.
+          - `UNIV_LOCAL_STATE` runs serve, explore and the benches on another local state.
+
+          **Found by the preview release:** the ingest normalized the dust map, a FITS file, as a table of rows, which would have stopped release 13; fixed in `b0f88fc` before the full run. The screenshots also showed two tracer colours each shared by two sources; fixed.
+
+          **Screenshots:** sent to the owner from a preview of 1 in 48 of the G < 14 stars; the dust lies in the plane about a cleared Local Bubble.
+        tone: success

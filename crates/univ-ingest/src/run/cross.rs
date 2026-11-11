@@ -41,7 +41,9 @@ fn basis(
             _ => None,
         })
         .collect();
-    Basis::read(&options.repository.join("rules"), &dirs)
+    let mut basis = Basis::read(&options.repository.join("rules"), &dirs)?;
+    basis.matching = basis.matching.with_object_kinds(definitions);
+    Ok(basis)
 }
 
 /// Cross-matches the entries of `normalized` under the repository's rules, the release

@@ -1,0 +1,5 @@
+source: hunt-reffert-2023
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F673%2FA114%2Fclusters&-out=Name%2CRA_ICRS%2CDE_ICRS%2Cdist50%2Cdist16%2Cdist84%2ClogAge50%2ClogAge16%2ClogAge84%2CpmRA%2CpmDE%2CN%2CglobalPlx&-out.max=5&Type=o
+retrieved: 2026-11-11T00:09:15Z
+sha256: 711fa049dea53b42cf74d907f7485636d90f970d9fb33448747d7e3bbf15062f
+note: the first chunk's query cut to 5 rows

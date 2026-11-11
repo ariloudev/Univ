@@ -52,12 +52,13 @@ fn the_manifest_states_the_encoding_version_and_each_levels_step() {
     let built = stars(&uniform(3_000, 700.0, 4), &rules(500, 250, 5, 1));
     let json: serde_json::Value = serde_json::from_slice(&built.json).unwrap();
     assert_eq!(json["format"], "univ-tile-manifest");
-    assert_eq!(json["encoding"]["version"], 2);
+    assert_eq!(json["encoding"]["version"], 3);
     assert_eq!(json["encoding"]["point_bytes"], 20);
     assert_eq!(
         json["encoding"]["colour_bands"],
         serde_json::json!(["BP-RP", "B-V"])
     );
+    assert_eq!(json["encoding"]["log_age_code"], 3);
     assert_eq!(json["encoding"]["steps_per_edge"], 65_536);
     let root_edge = built.nodes[0].bounds.edge();
     let levels = json["levels"].as_array().unwrap();

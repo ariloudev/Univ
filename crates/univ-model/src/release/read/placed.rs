@@ -14,9 +14,6 @@ use crate::release::chains::expand;
 use crate::units::Unit;
 use crate::value::Quantity;
 
-/// The scale domain whose positions are in parsecs; every other one's are in megaparsecs.
-const STARS: &str = "stars";
-
 /// The object's preferred sky position, none when it has none.
 pub(super) fn sky(c: &Columns<'_>) -> Result<Option<SkyPositionRecord>, ReadError> {
     let Some(ra) = c.real_opt("ra")? else {
@@ -135,11 +132,8 @@ pub(super) fn derived(
         .map_err(|e| c.error("chain", format!("chain {chain_id} does not read: {e}")))?;
 
     let scale_domain = c.term("scale_domain")?;
-    let unit = if scale_domain == STARS {
-        Unit::Parsec
-    } else {
-        Unit::Megaparsec
-    };
+    // The scale domain's unit: parsecs for stars and the Galaxy's tracers.
+    let unit = crate::units::scale_domain_unit(scale_domain);
     let factor = Unit::Megaparsec
         .factor_to(unit)
         .map_err(|e| c.error("scale_domain", e))?;

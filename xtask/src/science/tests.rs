@@ -282,3 +282,38 @@ fn a_release_written_as_a_change_is_loaded_whole_through_its_parent() {
         "{refused}"
     );
 }
+
+#[test]
+fn the_age_checks_of_the_repository_run_against_the_fixture_release() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
+    let text = std::fs::read_to_string(root.join("rules/science-checks.yaml")).unwrap();
+    // Each check's block of the repository's file, from its id to the next check.
+    let block = |id: &str| {
+        let start = text.find(&format!("  - id: {id}\n")).unwrap();
+        let rest = &text[start + 1..];
+        let end = rest.find("\n  - id: ").map_or(rest.len(), |e| e + 1);
+        text[start..=start + end].to_owned()
+    };
+    let dir = tempfile::tempdir().unwrap();
+    build(dir.path());
+    let rules = dir.path().join("checks.yaml");
+    let body = format!(
+        "checks:\n{}{}",
+        block("ages-normalized-to-years"),
+        block("open-cluster-ages")
+    );
+    std::fs::write(&rules, body).unwrap();
+    let args = [
+        dir.path().to_string_lossy().into_owned(),
+        "--rules".to_owned(),
+        rules.to_string_lossy().into_owned(),
+    ];
+    let mut out = Vec::new();
+    let passed = science(dir.path(), &args, &mut out).unwrap();
+    let out = String::from_utf8(out).unwrap();
+    assert!(passed, "{out}");
+    assert!(
+        out.contains("2 checks: 1 PASS, 0 FAIL, 0 CONCERN, 1 INFO"),
+        "{out}"
+    );
+}

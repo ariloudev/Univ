@@ -1,24 +1,29 @@
 id: gaia-dr3-bright
-title: "Gaia DR3 bright stars (G < 10)"
+title: "Gaia DR3 stars (G < 14)"
 provider: gaia-archive
 access:
   method: tap
-  # 482,106 rows (measured 2026-11-03) in 16 chunks of about 30,000, well under the ESA archive's
-  # silent 50,000-row anonymous cap.
+  # About 16.8 million rows (a 1% sample of 2026-11-10; the count is under cuts) in 768 chunks of
+  # about 22,000, well under the ESA archive's silent 50,000-row anonymous cap. Until release 12
+  # the cut was G < 10: 482,106 rows (measured 2026-11-03) in 16 chunks.
   query: >-
     SELECT g.source_id, g.ra, g.dec, g.ra_error, g.dec_error, g.parallax, g.parallax_error,
     g.pmra, g.pmdec, g.radial_velocity, g.radial_velocity_error, g.phot_g_mean_mag, g.bp_rp,
     a.spectraltype_esphs FROM gaiadr3.gaia_source AS g
     LEFT OUTER JOIN gaiadr3.astrophysical_parameters AS a ON a.source_id = g.source_id
-    WHERE g.phot_g_mean_mag < 10 AND MOD(g.random_index, {chunks}) = {chunk}
-  chunks: 16
-  count: "SELECT COUNT(*) AS n FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < 10"
+    WHERE g.phot_g_mean_mag < 14 AND MOD(g.random_index, {chunks}) = {chunk}
+  chunks: 768
+  count: "SELECT COUNT(*) AS n FROM gaiadr3.gaia_source WHERE phot_g_mean_mag < 14"
   # Each chunk runs as a job. On 2026-11-04 a chunk with the astrophysical_parameters join
   # outlasted the synchronous endpoint's request (over three minutes, on both mirrors), while the
   # same chunk as a job at ESA completed in 11 s; without the join, a synchronous chunk took 4 s.
   run: async
 cuts:
-  - "phot_g_mean_mag < 10 (PROVISIONAL: the owner is deciding the magnitude limit). Measured 2026-11-03: 482,106 rows."
+  - >-
+    phot_g_mean_mag < 14, the owner's choice of 2026-11-10 (decision: take Gaia DR3 stars to G < 14,
+    with the Galaxy's tracers). Measured 2026-11-10 by COUNT(*) as an archive job: 16,844,156 rows,
+    about 21,900 a chunk. A 1% random sample (random_index < 18,117,098) of the same day gave
+    16.84 million. Until release 12 the cut was G < 10: 482,106 rows, measured 2026-11-03.
   - "Rows with no G magnitude are excluded by the cut. These are gaia_source rows, not stars: duplicates and spurious bright sources are not removed."
   - "Gaia is incomplete at the bright end (the brightest EDR3/DR3 source is at G = 1.73, and bright stars are missing at G < 7), so the bright end is a lower bound on the true sky counts."
   - >-

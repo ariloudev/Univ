@@ -1,0 +1,9 @@
+source: baumgardt-vasiliev-2021
+url: https://people.smp.uq.edu.au/HolgerBaumgardt/globular/orbits_table.txt
+retrieved: 2026-11-10T06:11:02Z
+sha256: f6ca9c5277f143f59a3586c2a769ccde412905f20ecdfa830cd3a9780cb409a6
+note: >-
+  Five rows of the prepared file baumgardt-vasiliev-2021.csv.gz that
+  scripts/prepare-baumgardt-globulars.py made from the orbits table (SHA-256 c95a0855…4bda3) on
+  2026-11-10, with its header: NGC 104 (47 Tuc), NGC 5139 (omega Cen), NGC 6121 (M4, the nearest),
+  Whiting 1 and Pal 4 (far halo clusters).

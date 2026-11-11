@@ -13,11 +13,13 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use simulated::tiles::{Lcg, context, object, point, rules, stars, uniform};
 use simulated::{entry, with_distance, with_parallax};
+use univ_ingest::crossmatch::ReleaseObject;
 use univ_ingest::tiles::{BuiltDomain, NEARBY_GALAXIES_DEPTH_MPC, build};
 use univ_model::cosmology::Cosmology;
 use univ_model::distance::{DistanceKind, Method};
 use univ_model::ids::ObjectId;
 use univ_model::object::MeasurementRef;
+use univ_model::object::ObjectKind;
 use univ_model::position::dot;
 use univ_model::tile::decode;
 
@@ -38,8 +40,14 @@ fn decoded_ids(domain: &BuiltDomain) -> BTreeMap<String, Vec<ObjectId>> {
         .collect()
 }
 
-/// SIMULATED: a Gaia star at 10 mas, a nearby galaxy at 50 kpc, a Cosmicflows galaxy at 80 Mpc
-/// and a 2MRS galaxy with no distance, which cannot be placed.
+/// `o` as matching leaves one of the Galaxy's tracers: of the kind its tracer source names.
+fn tracer(mut o: ReleaseObject, kind: ObjectKind) -> ReleaseObject {
+    o.object.kind = kind;
+    o
+}
+
+/// SIMULATED: a Gaia star at 10 mas, a nearby galaxy at 50 kpc, a Cosmicflows galaxy at 80 Mpc,
+/// an open cluster at 2 kpc, and a 2MRS galaxy with no distance, which cannot be placed.
 fn release_objects() -> Vec<univ_ingest::crossmatch::ReleaseObject> {
     let star = with_parallax(entry("gaia-dr3-bright", "star", 10.0, 20.0), 10.0, 0.01);
     let lmc = with_distance(
@@ -61,11 +69,21 @@ fn release_objects() -> Vec<univ_ingest::crossmatch::ReleaseObject> {
         entry: e.designation.clone(),
         index: 0,
     };
+    let cluster = with_distance(
+        entry("hunt-reffert-2023", "cluster", 83.8, -5.4),
+        0.002,
+        Some(0.0001),
+        (DistanceKind::Geometric, Method::TrigonometricParallax),
+    );
     vec![
         object(4, vec![entry("twomrs", "lost", 30.0, 30.0)], None),
         object(1, vec![star.clone()], Some(parallax(&star))),
         object(2, vec![lmc.clone()], Some(distance(&lmc))),
         object(3, vec![far.clone()], Some(distance(&far))),
+        tracer(
+            object(5, vec![cluster.clone()], Some(distance(&cluster))),
+            ObjectKind::OpenCluster,
+        ),
     ]
 }
 
@@ -83,11 +101,15 @@ fn each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs()
         .iter()
         .map(|d| d.manifest.scale_domain.as_ref())
         .collect();
-    assert_eq!(names, ["stars", "nearby_galaxies", "cosmic_web"]);
+    assert_eq!(
+        names,
+        ["stars", "nearby_galaxies", "cosmic_web", "galaxy_tracers"]
+    );
     for (domain, unit, id, radius) in [
         (0, "pc", 1, 100.0),
         (1, "Mpc", 2, 0.050),
         (2, "Mpc", 3, 80.0),
+        (3, "pc", 5, 2_000.0),
     ] {
         let d = &built.domains[domain];
         assert_eq!(d.manifest.unit, unit);
@@ -173,6 +195,7 @@ fn an_object_s_scale_domain_follows_its_placed_distance_and_a_star_stays_a_star(
     assert_eq!(ids(0), [4], "stars");
     assert_eq!(ids(1), [1, 2], "nearby galaxies");
     assert_eq!(ids(2), [3], "cosmic web");
+    assert!(built.domains[3].nodes.is_empty(), "no tracer");
     assert!((NEARBY_GALAXIES_DEPTH_MPC - 11.0).abs() < 1e-12);
     // The point keeps the source of its distance, credited in its domain's manifest.
     let nearby = &built.domains[1].manifest;
@@ -409,4 +432,41 @@ fn the_source_table_says_whether_each_source_gave_points_their_distance_or_posit
         source_roles(&[galaxy, other]),
         expected("distance_and_position")
     );
+}
+
+#[test]
+fn an_object_with_a_tracer_entry_is_in_galaxy_tracers_whichever_entry_places_it() {
+    // SIMULATED: a Cepheid joined to its Gaia star, placed by the star's parallax, is in Galaxy
+    // tracers; the same star without the tracer's entry stays in stars.
+    let star = with_parallax(entry("gaia-dr3-bright", "s", 120.0, -30.0), 0.5, 0.01);
+    let cepheid = with_distance(
+        entry("skowron-2025-cepheids", "s", 120.0, -30.0),
+        0.002,
+        Some(0.0002),
+        CEPHEIDS,
+    );
+    let parallax = Some(MeasurementRef::Parallax {
+        entry: star.designation.clone(),
+    });
+    let objects = vec![
+        tracer(
+            object(1, vec![star.clone(), cepheid], parallax.clone()),
+            ObjectKind::ClassicalCepheid,
+        ),
+        object(2, vec![star], parallax),
+    ];
+    let rules = rules(100, 50, 8, 7);
+    let (cosmology, definitions) = (Cosmology::planck_2018(), common::read_sources());
+    let built = build(&objects, &context(&rules, &cosmology, &definitions)).unwrap();
+    let ids = |name: &str| -> Vec<u64> {
+        built
+            .domains
+            .iter()
+            .filter(|d| d.manifest.scale_domain == name)
+            .flat_map(|d| decoded_ids(d).into_values().flatten())
+            .map(ObjectId::get)
+            .collect()
+    };
+    assert_eq!(ids("galaxy_tracers"), [1]);
+    assert_eq!(ids("stars"), [2]);
 }

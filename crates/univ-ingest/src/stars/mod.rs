@@ -284,6 +284,7 @@ impl StarFile {
             proper_motion: None,
             magnitude: None,
             colours: thin_vec::thin_vec![],
+            ages: thin_vec::ThinVec::new(),
             spectral_type: None,
             group_id: None,
             supergalactic_velocity: None,

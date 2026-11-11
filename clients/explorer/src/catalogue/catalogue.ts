@@ -22,8 +22,10 @@ import {
   rankOf,
   treeOf,
 } from "./lod.ts";
-import { KINDS } from "../scene/kinds.ts";
+import type { Rgba } from "../scene/drawing.ts";
+import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
+import { TRACERS_DOMAIN, tracerColour } from "../scene/tracers.ts";
 import { type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
 
@@ -58,6 +60,20 @@ export type Credit = ManifestSource & { domain: string };
 /** The sources `domain`'s points may name: one more than its manifest's highest index. */
 const sourcesOf = (domain: Domain): number => Math.max(0, ...domain.manifest.sources.map((s) => s.index)) + 1;
 
+/** The Galaxy's tracers held, and of them those that carry an age. */
+export interface AgesHeld {
+  tracers: number;
+  aged: number;
+}
+
+/** A source of the Galaxy's tracers in the key: its colour and its points drawn. */
+export interface TracerLine {
+  id: string;
+  title: string;
+  colour: Rgba;
+  points: number;
+}
+
 /** A batch's points counted by kind of value, source and whether coloured, so that what is
  * turned off is counted out by cell rather than point by point; and, where the view is culled
  * to a volume, which of them lie inside it, and those counted alone. */
@@ -68,11 +84,35 @@ interface Histogram {
   all: Uint32Array;
   /** The points counted: every one, or those inside the volume the view is culled to. */
   cells: Uint32Array;
-  /** Which points lie inside the volume the view is culled to, 1 inside; none where it is not. */
+  /** Which points lie inside the volume the view is culled to, 1 inside; none where it is not:
+   * kept so that a new age is applied without testing every point against the volume again. */
+  culled: Uint8Array | undefined;
+  /** Which points are drawn, 1 drawn: those inside the volume the view is culled to and, of the
+   * Galaxy's tracers, younger than the age chosen; none where neither applies. */
   inside: Uint8Array | undefined;
-  /** Whether the view is culled and no point lies inside. */
+  /** Whether no point is drawn by `inside`. */
   empty: boolean;
+  /** The points that carry an age. */
+  aged: number;
 }
+
+/** `mask`, or every point of `batch` where it is none, with each point whose log age is at or
+ * above `maxLogAge` left out; `mask` itself where no point has an age or no age is chosen. A
+ * tile holds a log age to the hundredth (build-octree-tiles), so a cluster within about 1% of
+ * the age chosen may fall on either side of it; the science report counts the ages as published. */
+function withAge(batch: Batch, mask: Uint8Array | undefined, maxLogAge: number | undefined): Uint8Array | undefined {
+  const ages = batch.ages;
+  if (maxLogAge === undefined || ages === undefined || !ages.some((age) => age >= maxLogAge)) return mask;
+  const kept = mask === undefined ? new Uint8Array(ages.length).fill(1) : mask.slice();
+  // NaN, no age, is never at or above the age: such a point is drawn as its other groups say.
+  ages.forEach((age, i) => {
+    if (age >= maxLogAge) kept[i] = 0;
+  });
+  return kept;
+}
+
+/** The points of `batch` that carry an age. */
+const agedIn = (batch: Batch): number => (batch.ages === undefined ? 0 : batch.ages.reduce((n, age) => (Number.isNaN(age) ? n : n + 1), 0));
 
 /** `batch`'s points counted by cell, its domain having `sources` sources: only those `inside`
  * marks, where it marks any. */
@@ -117,8 +157,13 @@ export class Catalogue implements DrawnDetail {
   private viewedFocal = 0;
   /** Points drawn outside the stars domain of each kind of value, by its index in `KINDS`. */
   readonly kinds = [0, 0, 0, 0];
-  /** Stars drawn in the colour of their colour index, and in grey for want of one. */
-  readonly stars = { coloured: 0, grey: 0 };
+  /** Stars drawn in the colour of their colour index, and in grey for want of one; and of them,
+   * those whose preferred distance is inferred, drawn half as opaque. */
+  readonly stars = { coloured: 0, grey: 0, inferred: 0 };
+  /** The Galaxy's tracers drawn, by their source's index in the domain's manifest. */
+  private readonly tracerPoints: number[] = [];
+  /** The Galaxy's tracers drawn of each kind of value, by its index in `KINDS`. */
+  readonly tracerKinds = [0, 0, 0, 0];
   /** The points counted of each domain. */
   private readonly domainPoints = new Map<string, number>();
   /** Each drawn tile's points by cell, and which lie inside the volume the view is culled to, by
@@ -128,6 +173,11 @@ export class Catalogue implements DrawnDetail {
   private masks: Masks = NO_MASKS;
   /** The volume the view is culled to, if it is (see-the-structures). */
   private cull: Volume | undefined;
+  /** The Galaxy's tracers held, and of them those that carry an age. */
+  private readonly ages: AgesHeld = { tracers: 0, aged: 0 };
+  /** The base-10 logarithm of the age in years at or above which a tracer is not drawn, if an
+   * age is chosen (choose-what-is-drawn). */
+  private maxLogAge: number | undefined;
   /** Tiles that failed their SHA-256 or did not decode. */
   failed = 0;
   /** Tiles that could not be read, after `ATTEMPTS` tries. */
@@ -323,6 +373,10 @@ export class Catalogue implements DrawnDetail {
     this.kept.delete(id);
     this.keptPoints -= batch.tile.points;
     this.tally(batch, -1);
+    if (batch.tile.domain === TRACERS_DOMAIN) {
+      this.ages.tracers -= batch.ids.length;
+      this.ages.aged -= this.histograms.get(id)?.aged ?? 0;
+    }
     this.histograms.delete(id);
     this.events.onDrop(batch);
   }
@@ -357,17 +411,35 @@ export class Catalogue implements DrawnDetail {
     const { sources, cells } = histogram;
     cells.forEach((n, at) => {
       const kind = Math.floor(at / 2 / sources);
-      if (n === 0 || !isPointShown(this.masks, domain, Math.floor(at / 2) % sources, kind)) return;
-      this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
+      const source = Math.floor(at / 2) % sources;
+      if (n === 0 || !isPointShown(this.masks, domain, source, kind)) return;
+      if (domain === TRACERS_DOMAIN) this.countTracer(source, kind, by * n);
+      else this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
       this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * n);
     });
   }
 
   /** Counts `n` points into the stars' colours, or into their kind of value. */
   private count(star: boolean, kind: number, coloured: boolean, n: number): void {
-    if (!star) this.kinds[kind] = (this.kinds[kind] ?? 0) + n;
-    else if (coloured) this.stars.coloured += n;
+    if (!star) {
+      this.kinds[kind] = (this.kinds[kind] ?? 0) + n;
+      return;
+    }
+    if (coloured) this.stars.coloured += n;
     else this.stars.grey += n;
+    if (kind === KIND_INDEX.inferred) this.stars.inferred += n;
+  }
+
+  /** Counts `n` tracers of `source` and `kind` (their indices). */
+  private countTracer(source: number, kind: number, n: number): void {
+    this.tracerPoints[source] = (this.tracerPoints[source] ?? 0) + n;
+    this.tracerKinds[kind] = (this.tracerKinds[kind] ?? 0) + n;
+  }
+
+  /** Each source of the Galaxy's tracers, its colour and its points drawn. */
+  tracers(): TracerLine[] {
+    const sources = this.domains.get(TRACERS_DOMAIN)?.manifest.sources ?? [];
+    return sources.map((s) => ({ id: s.id, title: s.title, colour: tracerColour(s.index), points: this.tracerPoints[s.index] ?? 0 }));
   }
 
   /** Counts again, once, every drawn point that `masks` leaves on (choose-what-is-drawn). */
@@ -381,28 +453,63 @@ export class Catalogue implements DrawnDetail {
     this.kinds.fill(0);
     this.stars.coloured = 0;
     this.stars.grey = 0;
+    this.stars.inferred = 0;
+    this.tracerPoints.length = 0;
+    this.tracerKinds.fill(0);
     this.domainPoints.clear();
     for (const batch of [...this.drawn.values(), ...this.kept.values()]) this.tally(batch, 1);
     this.events.onChange();
   }
 
-  /** Which points of the tile `id` lie inside the volume the view is culled to; none where it is
-   * not culled, or the tile is not held. */
+  /** Which points of the tile `id` are drawn, inside the volume the view is culled to and young
+   * enough; none where neither applies, or the tile is not held. */
   inside(id: string): Uint8Array | undefined {
     return this.histograms.get(id)?.inside;
   }
 
-  /** Counts `batch`'s points by cell, and marks which lie inside the volume the view is culled
-   * to, if it is, counting those alone: every point is counted once, when it is read. */
-  private measure(batch: Batch): void {
+  /** Whether the view is culled to a volume, and its points drawn as such. */
+  culled(): boolean {
+    return this.cull !== undefined;
+  }
+
+  /** Draws only the Galaxy's tracers younger than `maxLogAge`, the base-10 logarithm of an age
+   * in years, or of any age where it is none (choose-what-is-drawn): those not drawn are not
+   * picked nor counted either. */
+  setAgeCut(maxLogAge: number | undefined): void {
+    if (maxLogAge === this.maxLogAge) return;
+    this.maxLogAge = maxLogAge;
+    for (const batch of [...this.drawn.values(), ...this.kept.values()]) if (batch.ages !== undefined) this.measure(batch, false);
+    this.recount();
+  }
+
+  /** The Galaxy's tracers held, and of them those that carry an age. */
+  agesHeld(): AgesHeld {
+    return { ...this.ages };
+  }
+
+  /** Counts `batch`'s points by cell, and marks which are drawn, inside the volume the view is
+   * culled to, if it is, and young enough, counting those alone: every point is counted once,
+   * when it is read. With `recull` off, the points inside the volume are those marked before. */
+  private measure(batch: Batch, recull = true): void {
     const id = batch.tile.id;
     const domain = this.domains.get(batch.tile.domain);
     if (domain === undefined) return;
     const sources = sourcesOf(domain);
-    const all = this.histograms.get(id)?.all ?? cellsOf(batch, sources);
-    const inside = this.cull === undefined ? undefined : insideOf(this.cull, batch.tile.centre, batch.offsets, batch.extent);
+    const held = this.histograms.get(id);
+    const all = held?.all ?? cellsOf(batch, sources);
+    const culled = !recull
+      ? held?.culled
+      : this.cull === undefined
+        ? undefined
+        : insideOf(this.cull, batch.tile.centre, batch.offsets, batch.extent);
+    const inside = withAge(batch, culled, this.maxLogAge);
     const cells = inside === undefined ? all : cellsOf(batch, sources, inside);
-    this.histograms.set(id, { sources, all, cells, inside, empty: inside !== undefined && !inside.includes(1) });
+    const aged = held?.aged ?? agedIn(batch);
+    if (held === undefined && batch.tile.domain === TRACERS_DOMAIN) {
+      this.ages.tracers += batch.ids.length;
+      this.ages.aged += aged;
+    }
+    this.histograms.set(id, { sources, all, culled, cells, inside, empty: inside !== undefined && !inside.includes(1), aged });
   }
 
   /** Culls the view to `volume`, or no longer where it is none (see-the-structures): the points
