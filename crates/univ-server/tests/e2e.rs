@@ -298,8 +298,8 @@ fn the_grids_are_listed_and_an_unknown_grid_answers_404() {
 fn the_tile_format_describes_each_encoding_the_release_uses() {
     let format = json(get("/v1/tile-format"));
     assert_eq!(format["release"], 2);
-    // The fixture releases are built by today's ingest, which writes encoding version 2.
-    assert_eq!(format["encodings"][0]["version"], 2);
+    // The fixture releases are built by today's ingest, which writes encoding version 3.
+    assert_eq!(format["encodings"][0]["version"], 3);
     assert_eq!(
         format["encodings"][0]["colour_bands"],
         serde_json::json!(["BP-RP", "B-V"])
@@ -329,11 +329,12 @@ fn a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_en
         for source in m["sources"].as_array().unwrap() {
             assert!(source["credit"].is_string(), "{name}: {source}");
         }
-        assert_eq!(m["encoding"]["version"], 2);
+        assert_eq!(m["encoding"]["version"], 3);
         assert_eq!(
             m["encoding"]["colour_bands"],
             serde_json::json!(["BP-RP", "B-V"])
         );
+        assert_eq!(m["encoding"]["log_age_code"], 3, "{name}");
         for level in m["levels"].as_array().unwrap() {
             assert!(level["step"].as_f64().unwrap() > 0.0);
         }
