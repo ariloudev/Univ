@@ -9,6 +9,7 @@ import type { DustState } from "../useDustMap.ts";
 import { everything } from "./actions.ts";
 import type { AgeState } from "./AgeChoice.tsx";
 import { type ShowChoices, type Tally, anyOff, summaryOf } from "./choices.ts";
+import type { TracerKinds } from "./ObjectKinds.tsx";
 import { Points } from "./Points.tsx";
 import { Structures } from "./Structures.tsx";
 
@@ -20,11 +21,13 @@ export interface ShowPanelProps {
   dust?: DustState | undefined;
   /** The age below which the Galaxy's tracers are drawn, where the view offers it. */
   age?: AgeState | undefined;
+  /** The Galaxy's tracers drawn by kind of object, once the view draws any. */
+  tracers?: TracerKinds | undefined;
 }
 
 const of = ({ on, of: all }: Tally, what: string) => `${on} of ${all} ${what}`;
 
-export function ShowPanel({ choices, hidden, onApply, dust, age }: ShowPanelProps) {
+export function ShowPanel({ choices, hidden, onApply, dust, age, tracers }: ShowPanelProps) {
   const sum = summaryOf(choices, hidden);
   const young = age?.cut;
   return (
@@ -33,6 +36,7 @@ export function ShowPanel({ choices, hidden, onApply, dust, age }: ShowPanelProp
         <h2 className="font-serif text-base">Show</h2>
         <p className="text-xs text-dim" data-testid="show-summary">
           Points: {of(sum.domains, "domains")}, {of(sum.sources, "catalogues")}, {of(sum.kinds, "kinds")}
+          {sum.objects.of === 0 ? "" : `, ${of(sum.objects, "kinds of object")}`}
           {young === undefined ? "" : `, tracers younger than ${young} million years`}. Structures: {of(sum.structures, "kinds")}.
           {anyOff(sum) || young !== undefined ? (
             <>
@@ -50,7 +54,7 @@ export function ShowPanel({ choices, hidden, onApply, dust, age }: ShowPanelProp
         </p>
       </div>
       <div data-testid="show" className="space-y-3">
-        <Points choices={choices} hidden={hidden} onApply={onApply} age={age} />
+        <Points choices={choices} hidden={hidden} onApply={onApply} age={age} tracers={tracers} />
         <Structures choices={choices} hidden={hidden} onApply={onApply} />
         {dust === undefined ? null : <DustSwitch dust={dust} />}
       </div>

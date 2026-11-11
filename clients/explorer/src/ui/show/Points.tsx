@@ -1,5 +1,6 @@
 // The Show drawer's points (choose-what-is-drawn): the kinds of value as toggles with the key's
-// marks, and one table of the sources, each once, with a column for each scale domain.
+// marks, one table of the sources, each once, with a column for each scale domain, and the
+// Galaxy tracers' kinds of object.
 
 import { KINDS, POINT_CSS } from "../../scene/kinds.ts";
 import { TRACERS_DOMAIN } from "../../scene/tracers.ts";
@@ -13,6 +14,7 @@ import { allPoints, nonePoints, onlySource } from "./actions.ts";
 import { AgeChoice, type AgeState } from "./AgeChoice.tsx";
 import type { ShowChoices, ShowSource } from "./choices.ts";
 import { GroupChip, Only, Part } from "./controls.tsx";
+import { ObjectKinds, type TracerKinds } from "./ObjectKinds.tsx";
 
 interface Props {
   choices: ShowChoices;
@@ -20,7 +22,7 @@ interface Props {
   onApply: Apply;
 }
 
-export function Points({ choices, hidden, onApply, age }: Props & { age?: AgeState | undefined }) {
+export function Points({ choices, hidden, onApply, age, tracers }: Props & { age?: AgeState | undefined; tracers?: TracerKinds | undefined }) {
   const all = () => {
     onApply(allPoints(choices));
     age?.choose(undefined);
@@ -42,6 +44,9 @@ export function Points({ choices, hidden, onApply, age }: Props & { age?: AgeSta
       </div>
       <Sources choices={choices} hidden={hidden} onApply={onApply} />
       <Note>A catalogue is switched in every domain it is in; a domain's box switches all its points.</Note>
+      {tracers !== undefined && choices.objectKinds.length > 0 ? (
+        <ObjectKinds kinds={choices.objectKinds} tracers={tracers} hidden={hidden} onApply={onApply} />
+      ) : null}
       {age !== undefined && choices.domainNames.includes(TRACERS_DOMAIN) ? <AgeChoice age={age} /> : null}
     </Part>
   );

@@ -17,11 +17,12 @@ export const onlySource = (id: string, choices: ShowChoices): Change[] => [
 export const onlyKind = (kind: string, choices: ShowChoices): Change[] =>
   choices.structureKinds.map((name) => ({ group: "structure", name, shown: name === kind }));
 
-/** Every domain, source and kind of value on. */
+/** Every domain, source, kind of value and kind of object on. */
 export const allPoints = (choices: ShowChoices): Change[] => [
   ...every("domain", choices.domainNames, true),
   ...every("source", choices.sourceIds, true),
   ...every("kind", KINDS, true),
+  ...every("object", choices.objectKinds, true),
 ];
 
 /** Every domain off, so no point is drawn, the sources' switches as they are. */

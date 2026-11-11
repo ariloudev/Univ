@@ -56,10 +56,10 @@ describe("what the Show drawer offers", () => {
   it("sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers", () => {
     const choices = choicesOf(domains, STRUCTURES);
     const all = summaryOf(choices, NOTHING_HIDDEN);
-    expect(all).toEqual({ domains: { on: 3, of: 3 }, sources: { on: 6, of: 6 }, kinds: { on: 4, of: 4 }, structures: { on: 5, of: 5 } });
+    expect(all).toEqual({ domains: { on: 3, of: 3 }, sources: { on: 6, of: 6 }, kinds: { on: 4, of: 4 }, objects: { on: 0, of: 0 }, structures: { on: 5, of: 5 } });
     expect(anyOff(all)).toBe(false);
     const hidden = hiddenInAddress("?hide=domain:stars,source:twomrs,source:gone,kind:inferred,structure:void,structure:wall");
-    expect(summaryOf(choices, hidden)).toEqual({ domains: { on: 2, of: 3 }, sources: { on: 5, of: 6 }, kinds: { on: 3, of: 4 }, structures: { on: 3, of: 5 } });
+    expect(summaryOf(choices, hidden)).toEqual({ domains: { on: 2, of: 3 }, sources: { on: 5, of: 6 }, kinds: { on: 3, of: 4 }, objects: { on: 0, of: 0 }, structures: { on: 3, of: 5 } });
     // A name this release does not offer turns nothing it offers off.
     expect(anyOff(summaryOf(choices, hiddenInAddress("?hide=source:gone,structure:ring")))).toBe(false);
   });

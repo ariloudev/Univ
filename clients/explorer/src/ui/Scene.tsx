@@ -20,6 +20,7 @@ import { type Inside, type StructureChoice, useStructureChoice } from "./inside.
 import { type World, cull, hide, useWorld } from "./useWorld.ts";
 import { type AgeCut, logAgeOf, useAgeCut } from "./age.ts";
 import type { AgeState } from "./show/AgeChoice.tsx";
+import type { TracerKinds } from "./show/ObjectKinds.tsx";
 import type { AgesHeld } from "../catalogue/catalogue.ts";
 
 /** The structure `choice` names, and the cull to its volume, where it has one
@@ -59,6 +60,12 @@ const NO_AGES: AgesHeld = { tracers: 0, aged: 0 };
 function ageState(world: World | undefined, cut: AgeCut, choose: (cut: AgeCut) => void): AgeState | undefined {
   if (world === undefined) return undefined;
   return { cut, choose, frame: world.frame, held: () => world.catalogue?.agesHeld() ?? NO_AGES };
+}
+
+/** The Galaxy's tracers drawn by kind of object, once there is a view. */
+function tracerKinds(world: World | undefined): TracerKinds | undefined {
+  if (world === undefined) return undefined;
+  return { frame: world.frame, lines: () => world.catalogue?.tracers() ?? [] };
 }
 
 /** Applies what is hidden of the points, the age of the tracers drawn and the level of detail to
@@ -182,7 +189,7 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge) }}
+      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge), tracers: tracerKinds(world) }}
       outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">
