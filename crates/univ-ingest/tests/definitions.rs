@@ -2,8 +2,9 @@
 
 mod common;
 
-use common::sources_dir;
-use univ_ingest::source::{RedistributionStatus, ScaleDomain, read_all};
+use common::{sources_dir, workspace};
+use univ_ingest::source::{RedistributionStatus, ScaleDomain, check_structures, read_all};
+use univ_ingest::structures::read_all_named;
 
 /// The sources by id, with their scale domains: those of the first release, the Cosmicflows-4
 /// galaxies added for the second, the Hipparcos spectral types added for the eighth, and the
@@ -77,4 +78,26 @@ fn no_source_is_forbidden() {
             d.id
         );
     }
+}
+
+#[test]
+fn every_membership_names_a_structure_of_the_repository() {
+    let definitions = read_all(&sources_dir()).unwrap();
+    let structures = read_all_named(&workspace().join("structures")).unwrap();
+    check_structures(&definitions, structures.iter().map(|(id, _)| id.as_str()))
+        .unwrap_or_else(|e| panic!("{e}"));
+    let masers = definitions
+        .iter()
+        .find(|d| d.id.as_str() == "reid-2019-masers")
+        .unwrap();
+    // The eleven codes of Reid et al. 2019's Table 1 on the seven arms of their Table 2.
+    let named: std::collections::BTreeSet<&str> = masers.memberships[0]
+        .structures
+        .values()
+        .map(String::as_str)
+        .collect();
+    assert_eq!(
+        (masers.memberships[0].structures.len(), named.len()),
+        (11, 7)
+    );
 }

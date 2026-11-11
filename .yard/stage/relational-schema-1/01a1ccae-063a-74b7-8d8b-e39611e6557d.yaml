@@ -86,6 +86,15 @@ blocks:
         title: "T3. Ingest writes the rows and the masers' memberships"
         detail: "Writers in release/entries.rs and objects.rs (done with T2); source definitions' memberships, refused for unknown structures; reid-2019-masers.yaml mapped. Size projected from a release-15 shard before T5. Done when the ingest tests pass."
         state: active
+      - key: 01a1ccfd-3e6a-709a-86c9-17c4c8b49cd6
+        at: 2026-11-11T23:41:51Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T3. Ingest writes the rows and the masers' memberships"
+        detail: "Writers done with T2. A source definition's `memberships` (a flag column with cited meanings, its citation, value → structure id) is checked on read (column taken as a flag and explained, values among its meanings, cited) and against the release's structures before a build writes anything. reid-2019-masers.yaml maps Table 1's eleven arm codes to Table 2's seven arms; GC, Con, 3kF, OSC and LoS name none. Tests: source_reading (3 new), definitions (repository's memberships name its structures), release_tracers (CtN×3 on Sct-Cen, CrN on Sgr-Car, GC on none, with source and code). Size projected from a release-15 shard: see the note."
+        state: done
   - key: 01a1ccae-063a-74b7-8d8b-e39a4f29fe35
     id: t4-reads
     kind: task
@@ -121,6 +130,15 @@ blocks:
         title: "T5. migrate brings a schema-7 store to 8 in place"
         detail: "JSON parsed in Rust into rows, tables rebuilt without the columns, schema_version 8; idempotent. Done when the round-trip, twice-run and already-8 tests pass."
         state: open
+      - key: 01a1ccfd-3e6a-709a-86c9-17c5ab0195f5
+        at: 2026-11-11T23:41:51Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T5. migrate brings a schema-7 store to 8 in place"
+        detail: "JSON parsed in Rust into rows, tables rebuilt without the columns, schema_version 8; idempotent. Done when the round-trip, twice-run and already-8 tests pass."
+        state: active
   - key: 01a1ccae-063a-74b7-8d8b-e39cb5d5267d
     id: t6-review
     kind: task
@@ -179,3 +197,27 @@ blocks:
           | The D1 tests named files by table number; six new tables shift them | `release::d1::tests` | numbers updated; the estimate found by table name | fixed |
           | `shared_rows_tests` named velocity by term id 37, which the regenerated fixture renumbers | the test | looks the term up by name | fixed |
           | `rules/science-checks.yaml` still reads `entries.flags`/`extra` (:104, :274, :347, :392, :414, :431, :452, :1109) | grep | rewritten in wave 2, T9; no test runs them on a store meanwhile | open |
+  - key: 01a1ccfd-3e6a-709a-86c9-17c3eb04b0b7
+    id: size-projection
+    kind: note
+    versions:
+      - key: 01a1ccfd-3e6a-709a-86c9-17c6462369d9
+        at: 2026-11-11T23:41:51Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Size of schema 8, projected from one release-15 shard"
+        markdown: |-
+          Built in a scratch database from shard `18e5840c…` (3.17 GB, 5.79 M entries), opened immutable, read only.
+
+          | | Bytes |
+          |---|---|
+          | `entries` table today | 681 MB |
+          | JSON gone: `flags` 78.3 MB (2.25 M entries) + `extra` 35.0 MB (0.71 M) | −113 MB |
+          | `entry_flags`: 3.47 M rows, 40 flag names as terms: table 90.5 MB + `entry_flags_by_value` 76.2 MB | +167 MB |
+          | spectral type text as a column | +0.75 MB |
+          | **Net** | **≈ +55 MB a shard (≈ 2%), ≈ 0.9 GB over 16** |
+
+          Well inside the 4.5 GB per-shard budget; T5 goes ahead. The few links, relations, references and measurement details are rows of no size that matters.
+        tone: success

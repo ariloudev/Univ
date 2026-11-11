@@ -11,12 +11,14 @@ use univ_model::ids::{Designation, SourceId};
 use univ_model::object::{CandidateLink, LineOfSight, Relation, Resolution};
 use univ_model::release::UncertaintyColumns;
 use univ_model::release::rows::{
-    EntryFlagRow, EntryReferenceRow, IdReplacementRow, MeasurementDetailRow, ObjectLinkRow,
-    ObjectRelationRow,
+    EntryFlagRow, EntryReferenceRow, IdReplacementRow, MeasurementDetailRow, MembershipRow,
+    ObjectLinkRow, ObjectRelationRow,
 };
 use univ_model::value::Quantity;
 
 use super::entries::{Numbering, small};
+use crate::source::Membership;
+use univ_model::object::ObjectEntry;
 
 /// What numbers the codes of a release's rows: its terms by name, and its sources by id.
 pub trait Codes {
@@ -269,6 +271,40 @@ pub fn relation_rows(
             })
         })
         .collect()
+}
+
+/// The rows of object `object_id`'s memberships: each structure that a flag value of one of its
+/// entries names, through `memberships` of the entry's source. A structure two entries name is
+/// one membership, the first entry's.
+pub fn membership_rows<'m>(
+    codes: &mut impl Codes,
+    object_id: u64,
+    entries: &[ObjectEntry],
+    memberships: impl Fn(&SourceId) -> &'m [Membership],
+) -> Vec<MembershipRow> {
+    let mut rows: Vec<MembershipRow> = Vec::new();
+    for e in entries {
+        let source = &e.entry.designation.source;
+        for m in memberships(source) {
+            let Some(value) = e.entry.flags.get(&m.column) else {
+                continue;
+            };
+            let Some(structure) = m.structure(value) else {
+                continue;
+            };
+            if rows.iter().any(|r| r.structure == structure) {
+                continue;
+            }
+            rows.push(MembershipRow {
+                release: codes.release(),
+                object_id,
+                structure: structure.to_owned(),
+                source: codes.source(source),
+                value: value.to_owned(),
+            });
+        }
+    }
+    rows
 }
 
 /// The rows of the ids that replaced id `id` in `release`, ascending.

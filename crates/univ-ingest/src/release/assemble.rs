@@ -328,6 +328,7 @@ pub fn write_release(
     watch: Watch<'_>,
 ) -> Result<Written, String> {
     let previous = before.kept;
+    inputs.check()?;
     let mut sink = DirSink::new(dir, watch)?;
     let recorded = rules(inputs, &mut sink)?;
     watch.step(format!("rules: {} files", recorded.len()));

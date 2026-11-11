@@ -28,8 +28,9 @@ use univ_model::value::Quantity;
 
 use super::d1::D1Writer;
 use super::entries::{Measurements, Numbering, entry_number, small, write_entry};
-use super::extras::{link_rows, relation_rows, replacement_rows};
+use super::extras::{link_rows, membership_rows, relation_rows, replacement_rows};
 use crate::crossmatch::ReleaseObject;
+use crate::source::Membership;
 use crate::source::{ScaleDomain, SourceDefinition};
 use crate::tiles::{domain_of, name_of};
 
@@ -85,6 +86,7 @@ pub struct ObjectWriter<'a> {
     pub counts: ObjectCounts,
     cosmology: &'a Cosmology,
     domains: HashMap<&'a SourceId, ScaleDomain>,
+    memberships: HashMap<&'a SourceId, &'a [Membership]>,
 }
 
 /// A preferred measurement as (entry, quantity, n).
@@ -146,6 +148,11 @@ impl<'a> ObjectWriter<'a> {
                 .iter()
                 .map(|d| (&d.id, d.scale_domain))
                 .collect(),
+            memberships: definitions
+                .iter()
+                .filter(|d| !d.memberships.is_empty())
+                .map(|d| (&d.id, d.memberships.as_slice()))
+                .collect(),
         }
     }
 
@@ -181,6 +188,11 @@ impl<'a> ObjectWriter<'a> {
                 .entry(e.entry.designation.source.clone())
                 .or_default() += 1;
         }
+        let memberships = &self.memberships;
+        let members = membership_rows(&mut self.numbering, id, &object.entries, |source| {
+            memberships.get(source).copied().unwrap_or_default()
+        });
+        w.add_all(&members)?;
         let release = self.numbering.release;
         let designations: BTreeSet<&Designation> = object.designations().collect();
         for d in designations {
