@@ -65,6 +65,8 @@ interface AtlasProps {
   show: ShowPanelProps;
   /** The structures' outlines' switch, which the structures drawn follow. */
   outlines: Switch;
+  /** Opens the arms view, where the view offers it (see-the-galaxys-arms-face-on). */
+  onArms?: (() => void) | undefined;
   /** The view: its canvas and what is drawn over it. */
   children: ReactNode;
 }
@@ -106,7 +108,7 @@ export function AtlasPage({ start, end, slot, children }: { start: ReactNode; en
  * line; the record on the right while something is chosen; the bottom bar of scale, key and
  * credits; and, in the top bar, the eye's distance, the axes and the search. Below 1,024 pixels a
  * drawer and the record open over the view. */
-export function Atlas({ world, release, cosmology, place, structures, selection, show, outlines, children }: AtlasProps) {
+export function Atlas({ world, release, cosmology, place, structures, selection, show, outlines, onArms, children }: AtlasProps) {
   const { drawer, onDrawer } = place;
   const key = chosenKey(selection);
   const grid = useGrid();
@@ -123,6 +125,7 @@ export function Atlas({ world, release, cosmology, place, structures, selection,
           onEarth={() => {
             world?.controller.returnToEarth();
           }}
+          onArms={onArms}
         />
         {drawer === undefined || world === undefined ? null : (
           <Drawer name={drawer} world={world} cosmology={cosmology} structures={structures} selection={selection} show={show} />

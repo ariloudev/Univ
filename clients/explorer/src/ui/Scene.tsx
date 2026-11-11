@@ -191,6 +191,7 @@ export function Scene({
       selection={selection}
       show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge), tracers: tracerKinds(world) }}
       outlines={outlines}
+      onArms={world === undefined ? undefined : () => world.controller.armsView()}
     >
       <div className="absolute inset-0 overflow-hidden">
         <canvas

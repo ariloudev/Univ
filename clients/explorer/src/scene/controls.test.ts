@@ -53,6 +53,18 @@ describe("the mouse", () => {
     expect(between(view, to, 0.5).distance).toBeCloseTo(10);
   });
 
+  it("turns the eye as it flies, the short way round, toward the direction it was sent", () => {
+    const from: View = { ...view, yaw: 3, pitch: 0.2 };
+    const to: View = { ...view, yaw: -3, pitch: Math.PI / 2 };
+    const end = between(from, to, 1);
+    expect(Math.cos(end.yaw - to.yaw)).toBeCloseTo(1);
+    expect(end.pitch).toBeCloseTo(Math.PI / 2);
+    // Halfway: the yaw past ±π, not back through 0.
+    const half = between(from, to, 0.5);
+    expect(Math.abs(Math.cos(half.yaw) + 1)).toBeLessThan(0.01);
+    expect(half.pitch).toBeCloseTo((0.2 + Math.PI / 2) / 2);
+  });
+
   it("views a thing from a twentieth of its distance, or from its size", () => {
     expect(viewingDistance(100)).toBeCloseTo(5);
     expect(viewingDistance(1e-5)).toBe(1e-6);

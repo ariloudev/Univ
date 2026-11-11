@@ -138,6 +138,15 @@ blocks:
         title: "T10. Pole-safe camera and the arms view's camera"
         detail: "eyeAxes defined at the pole; armsView() looks from the north Galactic pole, focus 4.075 kpc toward l = 0, every arm point in view, flies or jumps; a control beside return to Earth. Done when Vitest covers the projection."
         state: active
+      - key: 01a1cc4d-20b2-755d-8eae-462aeb708cef
+        at: 2026-11-11T20:29:29Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T10. Pole-safe camera and the arms view's camera"
+        detail: "eyeAxes takes its right as [−sin yaw, cos yaw, 0], the same as before off the pole and defined at it; flights now turn the eye too, the short way round; scene/armsView.ts places the focus 4.075 kpc toward l = 0 (half Reid 2019's cited R0) and the eye above the north Galactic pole, far enough that every point within 16 kpc of the Galactic Centre is in view on wide and tall screens; the controller flies there in galactic axes, or jumps for reduced motion; an Arms control sits beside Return to Earth. Vitest covers the projection (Sun above the centre, l = 90° to the right), the pole, the flight and the rail."
+        state: done
   - key: 01a1cc40-7464-702e-9bcc-90420851c255
     id: t11-view
     kind: task
@@ -151,6 +160,15 @@ blocks:
         title: "T11. Arms view groups and address"
         detail: "Choosing the view sets the groups and view=arms; opening ?view=arms applies them; a turn, pan or zoom drops it. Done when Vitest and a Playwright test with axe pass."
         state: open
+      - key: 01a1cc4d-20b2-755d-8eae-462bac54e214
+        at: 2026-11-11T20:29:29Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11. Arms view groups and address"
+        detail: "Choosing the view sets the groups and view=arms; opening ?view=arms applies them; a turn, pan or zoom drops it. Done when Vitest and a Playwright test with axe pass."
+        state: active
   - key: 01a1cc40-7464-702e-9bcc-9043d023100c
     id: t12-review
     kind: task

@@ -2,6 +2,7 @@
 // flights, the chosen axes, and one drawing for each animation frame that needs one.
 
 import type { Rotations } from "../api/schemas.ts";
+import { armsView } from "./armsView.ts";
 import { type View, eyeOf } from "./camera.ts";
 import { type Sight, sightOf } from "./frustum.ts";
 import { FLIGHT_MS, between, pan, turn, viewingDistance, zoom } from "./controls.ts";
@@ -134,10 +135,26 @@ export class Controller {
 
   /** Flies to `focus`, seen from `distance`, or moves there at once for reduced motion. */
   flyTo(focus: Vec3, distance: number): void {
-    const to = { ...this.view, focus, distance };
+    this.flyToView({ ...this.view, focus, distance });
+  }
+
+  /** Flies to the arms view (see-the-galaxys-arms-face-on) in galactic axes, or moves there at
+   * once for reduced motion; whether the release's rotations allow it. */
+  armsView(): boolean {
+    const frame = frameOf("galactic", this.rotations);
+    if (frame === undefined) return false;
+    if (this.axes !== "galactic") this.setAxes("galactic");
+    const { width, height } = this.around.size();
+    this.flyToView(armsView(frame.toFrame, height > 0 ? width / height : 1));
+    return true;
+  }
+
+  /** Flies to `to`, or moves there at once for reduced motion. */
+  private flyToView(to: View): void {
     // Already there, or on the way: a flight begun again would only start over.
     const heading = this.flight?.to ?? this.view;
-    if (heading.distance === distance && heading.focus.every((c, i) => c === focus[i])) return;
+    const same = heading.distance === to.distance && heading.yaw === to.yaw && heading.pitch === to.pitch;
+    if (same && heading.focus.every((c, i) => c === to.focus[i])) return;
     if (this.around.reducedMotion()) {
       this.steer(to);
       return;

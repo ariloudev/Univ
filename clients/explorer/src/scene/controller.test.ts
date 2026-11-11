@@ -208,4 +208,29 @@ describe("the controller", () => {
     expect(controller.axes).toBe("galactic");
     expect(controller.frame.basis).toContain("Hipparcos");
   });
+
+  it("flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known", () => {
+    const { controller, advance } = setup();
+    controller.setAxes("supergalactic");
+    expect(controller.armsView()).toBe(true);
+    expect(controller.axes).toBe("galactic");
+    controller.tick();
+    expect(controller.flying).toBe(true);
+    advance(FLIGHT_MS);
+    controller.tick();
+    expect(controller.view.pitch).toBeCloseTo(Math.PI / 2);
+    expect(controller.view.yaw).toBeCloseTo(0);
+    const reduced = setup(true).controller;
+    reduced.armsView();
+    expect(reduced.flying).toBe(false);
+    expect(reduced.view.pitch).toBe(Math.PI / 2);
+    // Dragging up or down from the pole tilts the view away from it.
+    reduced.turn(0, 40);
+    expect(reduced.view.pitch).toBeLessThan(Math.PI / 2);
+    reduced.armsView();
+    reduced.turn(0, -40);
+    expect(reduced.view.pitch).toBeLessThan(Math.PI / 2);
+    const unrotated = new Controller({ draw: () => undefined, setLines: () => undefined }, { size: () => ({ width: 1, height: 1, ratio: 1 }), now: () => 0, reducedMotion: () => true });
+    expect(unrotated.armsView()).toBe(false);
+  });
 });
