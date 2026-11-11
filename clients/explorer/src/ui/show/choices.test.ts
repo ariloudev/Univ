@@ -48,9 +48,10 @@ describe("what the Show drawer offers", () => {
 
   it("keeps each kind of structure's family with its colour, every kind with a colour in one family", () => {
     const kinds = STRUCTURE_FAMILIES.flatMap((f) => f.kinds);
-    expect(kinds).toHaveLength(13);
-    expect(new Set(kinds).size).toBe(13);
-    expect(STRUCTURE_FAMILIES.map((f) => f.family)).toEqual(["denser", "emptier", "walls and threads", "distant arcs and groups", "flows"]);
+    expect(kinds).toHaveLength(15);
+    expect(new Set(kinds).size).toBe(15);
+    expect(STRUCTURE_FAMILIES.map((f) => f.family)).toEqual(["denser", "emptier", "walls and threads", "distant arcs and groups", "flows", "the Galaxy's arms"]);
+    expect(STRUCTURE_FAMILIES.at(-1)?.kinds).toEqual(["spiral_arm", "spiral_arm_extrapolation"]);
   });
 
   it("sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers", () => {

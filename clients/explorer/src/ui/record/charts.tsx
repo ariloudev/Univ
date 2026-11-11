@@ -40,9 +40,20 @@ function Axis({ ticks, x, y, top, unit }: { ticks: readonly number[]; x: (v: num
   );
 }
 
-/** A dot with the panel's ring about it, filled, or open, its ring dotted where `dotted`. */
-export function Dot({ cx, cy, colour, open = false, dotted = false }: { cx: number; cy: number; colour: string; open?: boolean; dotted?: boolean }) {
-  return <circle cx={cx} cy={cy} r={4.5} fill={open ? PANEL : colour} stroke={open ? colour : PANEL} strokeWidth={2} strokeDasharray={dotted ? "1.8 1.8" : undefined} />;
+/** The radius of a dot. */
+const DOT_R = 4.5;
+
+/** A dot with the panel's ring about it, filled, or open, its ring dotted where `dotted`; open
+ * with its left half filled where `half`. */
+export function Dot({ cx, cy, colour, open = false, dotted = false, half = false }: { cx: number; cy: number; colour: string; open?: boolean; dotted?: boolean; half?: boolean }) {
+  const ring = <circle cx={cx} cy={cy} r={DOT_R} fill={open || half ? PANEL : colour} stroke={open || half ? colour : PANEL} strokeWidth={2} strokeDasharray={dotted ? "1.8 1.8" : undefined} />;
+  if (!half) return ring;
+  return (
+    <g data-half="">
+      {ring}
+      <path d={`M ${cx} ${cy - DOT_R} A ${DOT_R} ${DOT_R} 0 0 0 ${cx} ${cy + DOT_R} Z`} fill={colour} />
+    </g>
+  );
 }
 
 /** One measurement of a dot plot: its label, value and uncertainty, and whether it is the one

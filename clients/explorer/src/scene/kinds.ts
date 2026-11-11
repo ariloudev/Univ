@@ -60,15 +60,18 @@ export const STRUCTURE_COLOUR: Rgba = [1, 0.55, 0.35, 0.9];
 
 /** The families the Show drawer groups the kinds of structure in (choose-what-is-drawn), in
  * its order; a kind of none of them is shown under "other". */
-const FAMILIES = ["denser", "emptier", "walls and threads", "distant arcs and groups", "flows"] as const;
+const FAMILIES = ["denser", "emptier", "walls and threads", "distant arcs and groups", "flows", "the Galaxy's arms"] as const;
 
 /** Each kind of structure's colour for its outline and markers (see-the-structures), apart from
  * one another, from the points' blue and from the chosen structure's white, and the family the
  * Show drawer lists it in: violets for what is emptier than its surroundings and for the
  * repellers, oranges and reds for what is denser, greens for walls and filaments, yellows for
- * the quasar and burst structures of the distant universe and for a basin of attraction, and
- * magentas for the attractors and the shells. */
-const STRUCTURE_KINDS: Readonly<Record<string, { rgb: readonly [number, number, number]; family: (typeof FAMILIES)[number] }>> = {
+ * the quasar and burst structures of the distant universe and for a basin of attraction,
+ * magentas for the attractors and the shells, and a pale gold for the Galaxy's model arms, apart
+ * from the tracers' colours they lie over. A `faint` kind, a model arm's extrapolation, is drawn
+ * fainter than its arm and beneath every other outline, so that the fitted range stands out
+ * along it. */
+const STRUCTURE_KINDS: Readonly<Record<string, { rgb: readonly [number, number, number]; family: (typeof FAMILIES)[number]; faint?: true }>> = {
   void: { rgb: [0.62, 0.45, 1], family: "emptier" },
   repeller: { rgb: [0.8, 0.35, 1], family: "flows" },
   attractor: { rgb: [1, 0.25, 0.95], family: "flows" },
@@ -82,7 +85,12 @@ const STRUCTURE_KINDS: Readonly<Record<string, { rgb: readonly [number, number, 
   ring: { rgb: [0.85, 1, 0.5], family: "distant arcs and groups" },
   arc: { rgb: [0.7, 0.85, 0.15], family: "distant arcs and groups" },
   shell: { rgb: [1, 0.5, 0.78], family: "denser" },
+  spiral_arm: { rgb: [1, 0.88, 0.55], family: "the Galaxy's arms" },
+  spiral_arm_extrapolation: { rgb: [1, 0.88, 0.55], family: "the Galaxy's arms", faint: true },
 };
+
+/** Whether `kind` of structure is drawn faint, beneath every other outline. */
+export const drawnBeneath = (kind: string): boolean => STRUCTURE_KINDS[kind]?.faint === true;
 
 /** The families of the kinds of structure, each with its kinds, in the Show drawer's order. */
 export const STRUCTURE_FAMILIES: readonly { family: string; kinds: readonly string[] }[] = FAMILIES.map((family) => ({
@@ -106,14 +114,15 @@ export const FLOW_PIXELS = 24;
 export const FLOW_LINE_WIDTH = 2.5;
 
 /** How opaque a structure's outline and markers are drawn, and fainter where it is drawn by its
- * bounding box, marked approximate. */
+ * bounding box, marked approximate, or is of a faint kind. */
 const STRUCTURE_OPACITY = 0.9;
 const APPROXIMATE_OPACITY = 0.3;
 
-/** The colour `kind` of structure is drawn in, fainter where it is drawn `approximate`. */
+/** The colour `kind` of structure is drawn in, fainter where it is drawn `approximate` or the
+ * kind is faint. */
 export function structureColour(kind: string, approximate: boolean): Rgba {
   const [r, g, b] = STRUCTURE_KINDS[kind]?.rgb ?? STRUCTURE_COLOUR;
-  return [r, g, b, approximate ? APPROXIMATE_OPACITY : STRUCTURE_OPACITY];
+  return [r, g, b, approximate || drawnBeneath(kind) ? APPROXIMATE_OPACITY : STRUCTURE_OPACITY];
 }
 
 /** `kind` of structure's colour for CSS, as the panel of what is drawn shows it. */

@@ -63,6 +63,8 @@ interface Outline extends Drawn {
   fades: number;
   /** Its symbol, drawn at a fixed size on the view about its centre, where it has one. */
   symbol: (Drawn & Omit<FixedSymbol, "offsets">) | undefined;
+  /** Whether it is drawn before the others, beneath them. */
+  beneath: boolean;
 }
 
 /** The eye's axes, place and projection for one frame. */
@@ -357,7 +359,8 @@ export class Renderer implements Drawer {
     if (lines === undefined) return;
     const { symbol: fixed } = lines;
     const symbol = fixed === undefined ? undefined : { ...this.uploadLines(lines.centre, fixed.offsets), pixels: fixed.pixels, maxWidth: fixed.maxWidth };
-    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets, lines.neighbours), colour: lines.colour, fades: fadesOf(lines), symbol });
+    const beneath = lines.beneath === true;
+    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets, lines.neighbours), colour: lines.colour, fades: fadesOf(lines), symbol, beneath });
   }
 
   /** Draws the view on a canvas `width` × `height` device pixels, `ratio` of them to a CSS pixel. */
@@ -383,15 +386,23 @@ export class Renderer implements Drawer {
     this.gl.uniform1f(this.lineScale, 1);
     // The fade's bounds are CSS pixels, so many device pixels each.
     this.gl.uniform2f(this.lineFade.range, FADE.gone * ratio, FADE.full * ratio);
-    for (const [name, outline] of this.outlines) {
-      if (this.hiddenNames.has(name)) continue;
-      this.gl.uniform1f(this.lineFade.on, outline.fades);
-      const style = structureStyle(outline.colour, name === this.chosen);
-      this.gl.uniform4f(this.lineColour, ...style.colour);
-      this.gl.uniform1f(this.lineWidth, style.lineWidth);
-      if (outline.count > 0) this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
-      this.drawSymbol(frame, outline, style.lineWidth, height);
+    // The outlines drawn beneath the others first, then the rest.
+    for (const beneath of [true, false]) {
+      for (const [name, outline] of this.outlines) {
+        if (outline.beneath === beneath) this.drawOutline(frame, name, outline, height);
+      }
     }
+  }
+
+  /** The outline drawn under `name`, unless it is turned off, and its symbol. */
+  private drawOutline(frame: Frame, name: string, outline: Outline, height: number): void {
+    if (this.hiddenNames.has(name)) return;
+    this.gl.uniform1f(this.lineFade.on, outline.fades);
+    const style = structureStyle(outline.colour, name === this.chosen);
+    this.gl.uniform4f(this.lineColour, ...style.colour);
+    this.gl.uniform1f(this.lineWidth, style.lineWidth);
+    if (outline.count > 0) this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
+    this.drawSymbol(frame, outline, style.lineWidth, height);
   }
 
   /** An outline's symbol, if it has one, at its fixed size on a view `height` pixels high, in

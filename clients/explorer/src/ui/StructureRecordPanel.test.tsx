@@ -149,4 +149,21 @@ describe("a structure whose record the panel cannot read", () => {
     );
     expect(screen.getByTestId("record-drawn").textContent).toContain("Drawn as a point in icrs.");
   });
+
+  it("say above its values that a model arm is a model and whose, and of its extrapolation how little rests on the fit", () => {
+    const papers = [{ id: "reid-2019", reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131" }];
+    const arm: StructureDetail = { ...LOCAL_VOID, id: "reid-2019-perseus-arm", name: "Perseus arm (Reid 2019 model)", kind: "spiral_arm", status: "model", scale_domain: "galaxy_tracers", record: { papers } };
+    const { rerender } = render(<StructureRecordPanel detail={arm} approximate={false} onClose={() => undefined} />);
+    const model = screen.getByTestId("structure-model");
+    expect(model.textContent).toBe("A model, not an outline of what was observed: computed from the model of Reid et al. 2019.");
+    expect(model.compareDocumentPosition(screen.getByTestId("record-drawn")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByTestId("structure-extrapolation")).toBeNull();
+    rerender(<StructureRecordPanel detail={{ ...arm, id: "x", kind: "spiral_arm_extrapolation" }} approximate={false} onClose={() => undefined} />);
+    const note = screen.getByTestId("structure-extrapolation").textContent ?? "";
+    expect(note).toContain("Only the stretch along its arm's fitted range rests on the paper's fit");
+    expect(note).toContain("carries the fitted formula on beyond the data it was fitted to");
+    // An observed structure says neither.
+    rerender(<StructureRecordPanel detail={LOCAL_VOID} approximate={false} onClose={() => undefined} />);
+    expect(screen.queryByTestId("structure-model")).toBeNull();
+  });
 });

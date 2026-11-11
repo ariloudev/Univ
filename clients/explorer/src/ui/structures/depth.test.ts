@@ -52,7 +52,10 @@ describe("the depth index's rows (see-the-structures)", () => {
 });
 
 describe("a structure's distance in words (see-the-structures)", () => {
-  it("is in whole megaparsecs below 1,000 Mpc, and in gigaparsecs to three figures from there", () => {
+  it("is in kiloparsecs to three figures below 1 Mpc, whole megaparsecs below 1,000 Mpc, and gigaparsecs to three figures from there", () => {
+    expect(distanceText(0.001_853)).toBe("1.85 kpc");
+    expect(distanceText(0.0244)).toBe("24.4 kpc");
+    expect(distanceText(0.7832)).toBe("783 kpc");
     expect(distanceText(11.4)).toBe("11 Mpc");
     expect(distanceText(226.4)).toBe("226 Mpc");
     expect(distanceText(999.6)).toBe("1,000 Mpc");
@@ -63,30 +66,34 @@ describe("a structure's distance in words (see-the-structures)", () => {
 
   it("reads \"around us\" for a structure centred on Earth, and \"not placed\" for one with no placed shape", () => {
     expect(distanceText(0)).toBe("around us");
+    // A model arm a kiloparsec or two away is not around us.
+    expect(distanceText(0.0012)).toBe("1.2 kpc");
     expect(distanceText(undefined)).toBe("not placed");
   });
 });
 
 describe("the depth axis (see-the-structures)", () => {
-  it("runs logarithmically from 10 Mpc to 10 Gpc", () => {
-    expect(depthX(10, 300)).toBe(0);
-    expect(depthX(100, 300)).toBeCloseTo(100);
-    expect(depthX(1000, 300)).toBeCloseTo(200);
-    expect(depthX(10_000, 300)).toBe(300);
+  it("runs logarithmically from 1 kpc to 10 Gpc", () => {
+    expect(depthX(0.001, 700)).toBe(0);
+    expect(depthX(0.01, 700)).toBeCloseTo(100);
+    expect(depthX(1, 700)).toBeCloseTo(300);
+    expect(depthX(1000, 700)).toBeCloseTo(600);
+    expect(depthX(10_000, 700)).toBe(700);
   });
 
   it("holds a structure nearer or farther than its ends at its ends", () => {
-    expect(depthX(0, 300)).toBe(0);
-    expect(depthX(2, 300)).toBe(0);
-    expect(depthX(40_000, 300)).toBe(300);
+    expect(depthX(0, 700)).toBe(0);
+    expect(depthX(0.0002, 700)).toBe(0);
+    expect(depthX(40_000, 700)).toBe(700);
   });
 });
 
 describe("the depth index's headings (see-the-structures)", () => {
-  it("group the rows within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, nearest first under each", () => {
-    const rows = [row("Far", 5580), row("Unplaced", undefined), row("Near", 36), row("Nearest", 11), row("Middle", 226), row("Beyond", 1038)];
+  it("group the rows within 30 kpc, from 30 kpc to 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, nearest first under each", () => {
+    const rows = [row("Far", 5580), row("Unplaced", undefined), row("Near", 36), row("Nearest", 11), row("Middle", 226), row("Beyond", 1038), row("Arm", 0.0041), row("Andromeda", 0.78)];
     expect(banded(rows).map((b) => [b.heading, b.rows.map((r) => r.name)])).toEqual([
-      ["Within 100 Mpc", ["Nearest", "Near"]],
+      ["Within 30 kpc", ["Arm"]],
+      ["30 kpc to 100 Mpc", ["Andromeda", "Nearest", "Near"]],
       ["100 Mpc to 1 Gpc", ["Middle"]],
       ["1 to 10 Gpc", ["Beyond", "Far"]],
       ["Not placed", ["Unplaced"]],
@@ -94,7 +101,7 @@ describe("the depth index's headings (see-the-structures)", () => {
   });
 
   it("leave out a heading that holds no row", () => {
-    expect(banded([row("Near", 36)]).map((b) => b.heading)).toEqual(["Within 100 Mpc"]);
+    expect(banded([row("Near", 36)]).map((b) => b.heading)).toEqual(["30 kpc to 100 Mpc"]);
   });
 
   it("order by name, A to Z, when asked", () => {

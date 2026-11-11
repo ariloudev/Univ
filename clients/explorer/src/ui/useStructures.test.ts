@@ -44,6 +44,15 @@ describe("drawing a structure", () => {
     expect([...(markers?.offsets ?? [])]).toEqual([0, 0, 0]);
   });
 
+  it("draws a model arm's extrapolation beneath the other outlines, fainter than its arm", () => {
+    const segments: [number, number, number][] = [[10, 1, 0], [10, 2, 0]];
+    const arm = rendered({ ...drawing({ segments, markers: [] }), kind: "spiral_arm" }).lines;
+    const extrapolation = rendered({ ...drawing({ segments, markers: [] }), kind: "spiral_arm_extrapolation" }).lines;
+    expect(arm?.beneath).toBe(false);
+    expect(extrapolation?.beneath).toBe(true);
+    expect(extrapolation?.colour[3] ?? 1).toBeLessThan(arm?.colour[3] ?? 0);
+  });
+
   it("names an attractor or a repeller below its symbol, and any other structure on its centre", () => {
     const plain = drawing({ segments: [], markers: [[10, 0, 0]] });
     const flow = { ...plain, id: "f", kind: "repeller", symbol: [[1, 0, 0] as [number, number, number]] };

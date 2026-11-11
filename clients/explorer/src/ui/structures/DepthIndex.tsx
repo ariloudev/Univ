@@ -12,13 +12,13 @@ const TRACK = 12;
 const TICKS = DEPTH_TICKS.map((t) => ({ ...t, x: depthX(t.mpc, AXIS) }));
 
 /** The mark of how a structure is known: filled where observed, open for a statistical claim,
- * open and dotted where reconstructed; in `colour`. A structure known in no way is marked in the
+ * open and dotted where reconstructed, half filled for a model; in `colour`. A structure known in no way is marked in the
  * dim of the text, which no legend entry claims. */
 function Known({ known, colour, cx, cy }: { known: Known | undefined; colour: string; cx: number; cy: number }) {
   if (known === undefined) return <Dot cx={cx} cy={cy} colour="var(--color-dim)" />;
   return (
     <g data-known={known}>
-      <Dot cx={cx} cy={cy} colour={colour} open={known !== "observed"} dotted={known === "reconstructed"} />
+      <Dot cx={cx} cy={cy} colour={colour} open={known !== "observed" && known !== "model"} dotted={known === "reconstructed"} half={known === "model"} />
     </g>
   );
 }

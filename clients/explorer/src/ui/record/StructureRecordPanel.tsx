@@ -18,9 +18,11 @@ import {
   type MemberView,
   type SizeGroup,
   disputedBy,
+  extrapolationText,
   flowText,
   matchedText,
   measureLines,
+  modelText,
   papersOf,
   skyView,
   structureLede,
@@ -86,6 +88,7 @@ function ReadStructure({
       full={() => <FullStructureRecord s={s} approximate={approximate} />}
     >
       {disputed.length === 0 ? null : <Disputed by={disputed} />}
+      <Model s={s} />
       {cull}
       <Depth band={parts.band} members={parts.members} />
       <Sky s={s} />
@@ -178,6 +181,20 @@ function Drawn({ detail, approximate }: { detail: StructureDetail; approximate: 
       )}
       {flow === undefined ? null : <Note testid="structure-flow">{flow}</Note>}
     </Section>
+  );
+}
+
+/** That it is a model, and whose, above its values; and for a model arm's extrapolation, how
+ * little of it rests on the fit. */
+function Model({ s }: { s: StructureRecord }) {
+  const model = modelText(s);
+  const extrapolation = extrapolationText(s.kind);
+  if (model === undefined && extrapolation === undefined) return null;
+  return (
+    <div className="space-y-1" data-testid="structure-model">
+      {model === undefined ? null : <p className="font-semibold">{model}</p>}
+      {extrapolation === undefined ? null : <Note testid="structure-extrapolation">{extrapolation}</Note>}
+    </div>
   );
 }
 
