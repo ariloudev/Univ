@@ -95,6 +95,15 @@ blocks:
         title: "Normalize ages"
         detail: "plan/age.rs and row/age.rs; native log, normalized years, a credible interval. Done when tests/normalize_ages.rs passes on the re-recorded fixture."
         state: active
+      - key: 01a1c7fa-da0a-77a3-8a5e-8767c042bba5
+        at: 2026-11-11T00:21:08Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Normalize ages"
+        detail: "plan/age.rs (AgePlan) and row/age.rs read each age through the row's quantity reader and Age::normalize. tests/normalize_ages.rs passes: ASCC_5 keeps log age 7.326 (6.970–7.542) as published and about 21.2 Myr in years, estimated; a blank log age gives none."
+        state: done
   - key: 01a1c7d6-7f64-73ec-b7c0-fefa3d22e53a
     id: t4-hr-release
     kind: task
@@ -108,6 +117,15 @@ blocks:
         title: "Hunt & Reffert definition and release rows"
         detail: "Columns logAge16/50/84, normalization.ages with a quoted basis, the age push in release/entries.rs. Done when release_tracers reads an age measurement back."
         state: open
+      - key: 01a1c7fa-da0a-77a3-8a5e-87683db5f63a
+        at: 2026-11-11T00:21:08Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Hunt & Reffert definition and release rows"
+        detail: "The definition is in already (task 2). The age push in release/entries.rs. Done when release_tracers reads an age measurement back."
+        state: active
   - key: 01a1c7d6-7f64-73ec-b7c0-fefbd0552a16
     id: t5-tile-v3
     kind: task
@@ -225,3 +243,16 @@ blocks:
           | Issue | Found by | Fix | State |
           |---|---|---|---|
           | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test (an aged entry failed to read back) | Ages checked by their own rule: normalized in years, native in years or log years | fixed |
+      - key: 01a1c7fa-da0a-77a3-8a5e-8769955aa770
+        at: 2026-11-11T00:21:08Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "918a7610-2359-46e7-a590-437534c76364"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | The entry check's `in_unit` requires the native unit to share the normalized unit's dimension, which a log age never does | Task 1 test (an aged entry failed to read back) | Ages checked by their own rule: normalized in years, native in years or log years | fixed |
+          | `bea0412` was committed unformatted: the commit followed `;` after `cargo fmt --check`, not its exit status | The check's output, after the commit | `eecea9e` formats and lints it; commits since then chain on the check's status | fixed |
+          | `normalization.rs` would pass 500 lines with the age reading | Line count before the edit | The colour check moved to `source/normalization/colour.rs`, the age reading to `age.rs` (465 lines now) | fixed |
