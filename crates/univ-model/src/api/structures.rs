@@ -87,7 +87,7 @@ pub struct StructureDetail {
     pub id: String,
     pub name: String,
     pub kind: String,
-    /// `observed`, `reconstructed` or `statistical_claim`: how the structure is known.
+    /// `observed`, `reconstructed`, `statistical_claim` or `model`: how the structure is known.
     pub status: String,
     pub scale_domain: String,
     /// The structure as its researched file records it, verbatim: each published number with

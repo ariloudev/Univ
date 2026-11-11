@@ -1,0 +1,133 @@
+key: 01a1cbc1-101b-76de-8044-96615438b872
+id: data
+versions:
+  - key: 01a1cbc1-101b-76de-8044-96697f79253e
+    at: 2026-11-11T17:56:29Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Data: tracers, tiles and model arms"
+    goal: "Univ Ingest normalizes Zari 2021's luminous hot stars, writes tile encoding 4 for the tracers, and computes the Reid 2019 arms as model structures, with the gate and integration green"
+    status: active
+blocks:
+  - key: 01a1cbc1-101b-76de-8044-966242bc9a87
+    id: t1-kinds
+    kind: task
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-966a3698bbed
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T1. Kinds and status in the model and contract"
+        detail: "ObjectKind::LuminousHotStar (a tracer), StructureKind spiral_arm and spiral_arm_extrapolation, Status model, through univ-model, ingest, the OpenAPI document, the tracers-name-their-kind science check and the explorer's kind nouns. Done when enum round-trip tests and the OpenAPI checks pass."
+        state: open
+      - key: 01a1cbc1-1e56-77e9-b559-f68f64270161
+        at: 2026-11-11T17:56:33Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T1. Kinds and status in the model and contract"
+        detail: "ObjectKind::LuminousHotStar (a tracer), StructureKind spiral_arm and spiral_arm_extrapolation, Status model, through univ-model, ingest, the OpenAPI document, the tracers-name-their-kind science check and the explorer's kind nouns. Done when enum round-trip tests and the OpenAPI checks pass."
+        state: active
+      - key: 01a1cbc5-7cf0-7481-9bd7-5721f594e023
+        at: 2026-11-11T18:01:19Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T1. Kinds and status in the model and contract"
+        detail: "ObjectKind::LuminousHotStar (a tracer), StructureKind spiral_arm and spiral_arm_extrapolation, Status model, through univ-model, ingest, the OpenAPI document, the tracers-name-their-kind science check and the explorer's kind nouns. Done: univ-model tests (165), source_tracer_kinds, the OpenAPI snapshot rewritten (additions only), clippy clean."
+        state: done
+  - key: 01a1cbc1-101b-76de-8044-966335a24362
+    id: t2-zari
+    kind: task
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-966bea987028
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T2. Zari 2021 source"
+        detail: "sources/zari-2021-luminous-hot-stars.yaml sliced by GaiaEDR3, inferred astro-kinematic distances with 16th/84th bounds, parallax kept with no error and no distance derived, joined to Gaia DR3 by source id. Done when normalize_tracers and release_tracers tests on a recorded fixture pass."
+        state: open
+      - key: 01a1cbc5-7cf0-7481-9bd7-5722ff29995c
+        at: 2026-11-11T18:01:19Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T2. Zari 2021 source"
+        detail: "sources/zari-2021-luminous-hot-stars.yaml sliced by GaiaEDR3, inferred astro-kinematic distances with 16th/84th bounds, parallax kept with no error and no distance derived, joined to Gaia DR3 by source id. Done when normalize_tracers and release_tracers tests on a recorded fixture pass."
+        state: active
+  - key: 01a1cbc1-101b-76de-8044-9664466cf541
+    id: t3-tiles
+    kind: task
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-966ca13761d1
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T3. Tile encoding 4 for the tracers"
+        detail: "Version 4 adds a kind-of-object column (0 none, else 1 + index into object_kinds), written for galaxy_tracers only; the reference decoder and its fixtures read it. Done when the v4 round-trip, the no-kind point, the unchanged v3 domains and the decoder fixtures pass."
+        state: open
+  - key: 01a1cbc1-101b-76de-8044-9665c6e113cd
+    id: t4-arms
+    kind: task
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-966d7fb00bf7
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T4. Reid 2019 arms as log-spiral structures"
+        detail: "Structure files take a cited log_spiral; ingest computes a 1° path in heliocentric galactic kpc (R0 8.15, plane 5.5 pc below the Sun) over the fitted range, and an extrapolation up to 90° beyond each end within 3–16 kpc; 14 files from Table 2. Done when the radii at β = 0, the spans, the cuts, the frame and the refusal of an uncited parameter are tested."
+        state: open
+  - key: 01a1cbc1-101b-76de-8044-966690741818
+    id: t5-science
+    kind: task
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-966e90f36893
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T5. Science checks for the new data"
+        detail: "Checks in rules/science-checks.yaml: luminous hot star count, Zari distances inferred, share placed by Gaia vs Zari, 7 + 7 model arms, fitted arms within the paper's ranges. Done when they pass on the fixture release."
+        state: open
+  - key: 01a1cbc1-101b-76de-8044-9667872a91ba
+    id: t6-review
+    kind: task
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-966ff708d5f8
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T6. Wave review and gate"
+        detail: "/simplify, then /code-review, findings fixed; cargo xtask check and cargo xtask integration once each and green; loft.trace.yaml linked and accepted; Yard Log closed."
+        state: open
+  - key: 01a1cbc1-101b-76de-8044-9668ef0e493e
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1cbc1-101b-76de-8044-967042c934f0
+        at: 2026-11-11T17:56:29Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | (none yet) | | | |

@@ -755,7 +755,7 @@ checks:
     cite: *domains
 
   - id: tracers-name-their-kind
-    title: Every object with a tracer source's entry is an open or globular cluster, a classical Cepheid, an RR Lyrae star or a star-forming region
+    title: Every object with a tracer source's entry is an open or globular cluster, a classical Cepheid, an RR Lyrae star, a star-forming region or a luminous hot star
     severity: fail
     select:
       kind: query
@@ -763,14 +763,15 @@ checks:
         SELECT DISTINCT o.id FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
         WHERE e.release = :release AND e.source IN (SELECT n FROM sources WHERE release = :release AND scale_domain = 'galaxy_tracers')
         AND o.kind NOT IN (SELECT id FROM terms WHERE release = :release AND term IN ('open_cluster',
-        'globular_cluster', 'classical_cepheid', 'rr_lyrae_star', 'star_forming_region'))
+        'globular_cluster', 'classical_cepheid', 'rr_lyrae_star', 'star_forming_region',
+        'luminous_hot_star'))
     expect: { equals: 0 }
     cite:
       - paper: "univ-server specification, Normalize records"
         locator: "spec/products/univ-ingest/normalization/normalize-records.yaml"
         quote: >-
           "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical
-          Cepheid, RR Lyrae star or star-forming region."
+          Cepheid, RR Lyrae star, star-forming region or luminous hot star."
         fetched: "this repository, spec/products/univ-ingest/normalization/normalize-records.yaml"
 
   - id: ages-normalized-to-years

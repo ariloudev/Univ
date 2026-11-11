@@ -3057,7 +3057,8 @@
           "globular_cluster",
           "classical_cepheid",
           "rr_lyrae_star",
-          "star_forming_region"
+          "star_forming_region",
+          "luminous_hot_star"
         ],
         "type": "string"
       },
@@ -4967,7 +4968,7 @@
             ]
           },
           "status": {
-            "description": "`observed`, `reconstructed` or `statistical_claim`: how the structure is known.",
+            "description": "`observed`, `reconstructed`, `statistical_claim` or `model`: how the structure is known.",
             "type": "string"
           }
         },

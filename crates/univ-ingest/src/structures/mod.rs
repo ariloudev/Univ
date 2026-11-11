@@ -109,6 +109,10 @@ pub enum StructureKind {
     Attractor,
     /// A claimed concentration of tracers, such as gamma-ray bursts, at one redshift.
     Overdensity,
+    /// A spiral arm of the Galaxy over the range of azimuth its published fit covers.
+    SpiralArm,
+    /// A spiral arm's fitted formula carried on beyond the range its fit covers.
+    SpiralArmExtrapolation,
 }
 
 /// How the structure is known.
@@ -121,6 +125,8 @@ pub enum Status {
     Reconstructed,
     /// Claimed from the clustering statistics of sparse tracers; its significance is debated.
     StatisticalClaim,
+    /// Computed from a published model, such as a log-spiral fit to an arm's tracers.
+    Model,
 }
 
 /// A paper a structure file cites.
