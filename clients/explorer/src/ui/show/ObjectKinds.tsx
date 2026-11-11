@@ -25,17 +25,21 @@ export function ObjectKinds({ tracers, hidden, onApply }: { tracers: TracerKinds
     <>
       <Note>The Galaxy's tracers by kind of object, with their points drawn</Note>
       <div className="grid grid-cols-2 gap-1" data-testid="show-objects">
-        {lines.map((line) => (
-          <GroupChip key={line.id} group="object" name={line.id} label={line.title} hidden={hidden} onApply={onApply}>
-            {(on) => (
-              <>
-                <Swatch colour={css(line.colour)} hollow={!on} small />
-                <span className="truncate">{line.title}</span>
-                <span className="ml-auto text-dim">{line.points.toLocaleString("en-GB")}</span>
-              </>
-            )}
-          </GroupChip>
-        ))}
+        {lines.map((line) => {
+          const points = line.points.toLocaleString("en-GB");
+          return (
+            // Named with its count, as it shows it.
+            <GroupChip key={line.id} group="object" name={line.id} label={`${line.title} ${points} drawn`} hidden={hidden} onApply={onApply}>
+              {(on) => (
+                <>
+                  <Swatch colour={css(line.colour)} hollow={!on} small />
+                  <span className="truncate">{line.title}</span>{" "}
+                  <span className="ml-auto text-dim">{points}</span>
+                </>
+              )}
+            </GroupChip>
+          );
+        })}
       </div>
     </>
   );

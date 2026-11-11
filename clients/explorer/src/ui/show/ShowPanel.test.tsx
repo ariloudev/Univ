@@ -175,14 +175,14 @@ describe("the Show drawer's dust map", () => {
     const onApply = vi.fn();
     render(<ShowPanel choices={withTracers} hidden={hiddenInAddress("?hide=object:open_cluster")} onApply={onApply} tracers={tracers} />);
     const chips = within(screen.getByTestId("show-objects")).getAllByRole("button");
-    expect(chips.map((c) => c.textContent)).toEqual(lines.map((l) => `${l.title}${l.points.toLocaleString("en-GB")}`));
-    expect(pressed("Open clusters")).toBe("false");
-    expect(pressed("Luminous hot stars")).toBe("true");
+    expect(chips.map((c) => c.textContent)).toEqual(lines.map((l) => `${l.title} ${l.points.toLocaleString("en-GB")}`));
+    expect(pressed("Open clusters 2,000 drawn")).toBe("false");
+    expect(pressed("Luminous hot stars 1,000 drawn")).toBe("true");
     const probe = document.createElement("span");
     probe.style.background = css(tracerColour(1));
     expect((chips[0]?.querySelector("span") as HTMLElement).style.background).toBe(probe.style.background);
     expect(screen.getByTestId("show-summary").textContent).toContain("5 of 6 kinds of object");
-    await userEvent.click(screen.getByRole("button", { name: "Luminous hot stars" }));
+    await userEvent.click(screen.getByRole("button", { name: "Luminous hot stars 1,000 drawn" }));
     expect(onApply).toHaveBeenCalledWith([{ group: "object", name: "luminous_hot_star", shown: false }]);
   });
 

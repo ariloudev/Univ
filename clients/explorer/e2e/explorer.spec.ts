@@ -245,7 +245,7 @@ test("lists the structures outward from Earth, under headings, each on one axis,
   const distances = labels.map(mpc).filter((d) => d !== undefined);
   expect(distances.length).toBeGreaterThan(0);
   expect(distances).toEqual([...distances].sort((a, b) => a - b));
-  await expect(list.getByRole("heading", { level: 3 }).first()).toHaveText(/^(Within 100 Mpc|100 Mpc to 1 Gpc|1 to 10 Gpc|Not placed)\d+$/);
+  await expect(list.getByRole("heading", { level: 3 }).first()).toHaveText(/^(Within 30 kpc|30 kpc to 100 Mpc|100 Mpc to 1 Gpc|1 to 10 Gpc|Not placed)\d+$/);
   expect(await page.getByTestId("depth-track").count()).toBe(total);
   // From the find box: only the voids, counted out of all.
   await find.fill("void");
@@ -402,7 +402,7 @@ test("has no serious or critical accessibility violations", async ({ page }) => 
   await page.getByRole("button", { name: "Show", exact: true }).click();
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-  expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  expect(serious.map((v) => `${v.id}: ${v.help}: ${v.nodes.map((n) => n.html).join(" ")}`)).toEqual([]);
 });
 
 /** Whether two boxes overlap by more than a pixel. */
@@ -582,7 +582,7 @@ test("opens the arms view beside Return to Earth: the young tracers and the arms
   await expect(drawer.getByRole("button", { name: "Tracers younger than 30 million years" })).toHaveAttribute("aria-pressed", "true");
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-  expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  expect(serious.map((v) => `${v.id}: ${v.help}: ${v.nodes.map((n) => n.html).join(" ")}`)).toEqual([]);
   // A drag turns the view away from the pole: out of the address, what is drawn left as it is.
   const box = await page.locator("canvas").boundingBox();
   if (box === null) throw new Error("no canvas");

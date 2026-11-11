@@ -4727,7 +4727,7 @@ links:
         body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
-        body: 0c93e4084024a8af2c80a4cd8182a872c552aa0066ccf855c2920b81a1267326
+        body: b029659320936cef40e73b8265234900aba595f60253806faf732649b16fb230
       - file: "clients/explorer/src/ui/show/choices.test.ts"
         name: "offers the kinds of object of the Galaxy's tracers only where their tiles give each point's kind"
         body: cb5b74b357787f42227d57da9d6502c2a9d571aba8354cfa3b620a34c4463347
@@ -4736,7 +4736,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
-        body: 0c93e4084024a8af2c80a4cd8182a872c552aa0066ccf855c2920b81a1267326
+        body: b029659320936cef40e73b8265234900aba595f60253806faf732649b16fb230
   - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
     reviewed: a305dafb5da2bdd558a29351e46dc2a71f745cf604150f5baad2a228784b2c65
     tests:
@@ -4814,7 +4814,7 @@ links:
         body: 29d0c1d6897963253f2352f38e364f7e2ceff303d1d602e901ae33a0917fcd35
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
-        body: 0c93e4084024a8af2c80a4cd8182a872c552aa0066ccf855c2920b81a1267326
+        body: b029659320936cef40e73b8265234900aba595f60253806faf732649b16fb230
   - node: 01a1bcf9-343a-712a-a28c-75049b84e0eb
     reviewed: 105c1bca89abcde5f6d38331efba9fd8b8a1bfd9a2097fb52e747d66610ffca0
     tests:
@@ -5540,7 +5540,7 @@ links:
         body: 31d9ee634d7d3d536e60d3156ca2df9c45036f14c3ae552dd26e30d460165027
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-4b9e-71c0-8bbe-c9001874842a
     reviewed: ba9c48477acfc37d69d1a19a18780e0a67b8e37318428be24242e7794d7f339e
     tests:
@@ -5597,7 +5597,7 @@ links:
         body: 33af611cad84029444cd725f8776a948bf996df56071ca3d7d19e65c431845ac
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
     reviewed: e966f8461372113a48646f7e4aab632e03cbc8bb315cf9349a518dd36745a608
     tests:
@@ -5606,7 +5606,7 @@ links:
         body: b3a5bf0df95212a78fce1b834193854c470a6d29eadf211e24aff1919b47bc09
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664
     reviewed: 0c8a3730b93494da479eeab20e52b7fc4c73c8619903536b8cc5e58e2a0b7365
     tests:
@@ -5615,7 +5615,7 @@ links:
         body: b3a5bf0df95212a78fce1b834193854c470a6d29eadf211e24aff1919b47bc09
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1
     reviewed: 921840aa20a9509b1ed8ae9dc4b355ff2419d5cfa412eb8e028aedd481756c89
     tests:
@@ -5624,7 +5624,7 @@ links:
         body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90a7548931b
     reviewed: ba0bd538fbd04380fa6d9fc2dd2ec03a0984f3c9b65992853a190d121fda367a
     tests:
@@ -5645,7 +5645,7 @@ links:
         body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2
     reviewed: 7444c82685e2d7179a096e0d043ee95b492563b6ec0e5631ee8a948339526ccc
     tests:
@@ -5669,7 +5669,7 @@ links:
         body: f2effe8ec4c89d4ceba39443e0aa3afe3a266d323aab3fb02d87955d270d4851
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 4ff239b9983031104b97ce0563e3d12840b9041e696e4de95f60cdb7649653df
+        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
   - node: 01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8
     reviewed: ad3e5881d1a178741689df2eb2d24fbb591bf62e9e85d546f8a4d978ce25dc41
     tests:
@@ -6443,7 +6443,7 @@ links:
         body: 954a4e939f68cda6dfa4d7a00829d30fd4d4b2f1e6c165cd3b1afce82f4eee5f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-094a-7307-be66-e7859f3c18c9
     reviewed: bc1c530c48f572a597a225c29f1b7f3f2bdee36447629b92dae4d3a2d9023dae
     tests:
@@ -6458,7 +6458,7 @@ links:
         body: 954a4e939f68cda6dfa4d7a00829d30fd4d4b2f1e6c165cd3b1afce82f4eee5f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-094a-7307-be66-e7862a633a0c
     reviewed: 96f911335598a803d0672a185fd78ae20c8c42e3cc4e944230ee54d537ca51b6
     tests:
@@ -6494,7 +6494,7 @@ links:
         body: 0721b91ab52627c7975c3e52455b7be78220546b99d445d04e288fbfcc697336
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-094a-7307-be66-e789414bdf63
     reviewed: 53abf7ccb55a05c17b6b190cf1d07fc127ba5b704dda3ab4371375e84e9d496c
     tests:
@@ -6515,7 +6515,7 @@ links:
         body: 44d55945e8abdb75ad9dad8a6ec1a5c93f8e7abe9c8095f669e121db937f92c1
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-094a-7307-be66-e78bb3c7f814
     reviewed: 79d05220fdd58ac79938eebb369a32f51da9f5a7395eb8d77b2d01b2c4771b6b
     tests:
@@ -6533,7 +6533,7 @@ links:
         body: 48582bf5bc596f5f2e59da3dfa725f4607a13fe6e4fba2e3458699fbb5d5671c
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-46e4-76f7-bee6-bda8fefa62ad
     reviewed: 494c00533f92cca766acdbb198f5f41e44aba69c90c298b89083583cbff6e57d
     tests:
@@ -6542,7 +6542,7 @@ links:
         body: 48582bf5bc596f5f2e59da3dfa725f4607a13fe6e4fba2e3458699fbb5d5671c
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-094a-7307-be66-e78c9329851d
     reviewed: 1b840d1852d9cf7bdea1590643cb1fbc1918b5e7f0a0bc590c202a9e049add0f
     tests:
@@ -6551,7 +6551,7 @@ links:
         body: 630a55b5fd9447b0512c462e886b970c280b383b6c9453c0fcfecf425249574f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c278-094a-7307-be66-e78dcc50c90f
     reviewed: 752dfffe54c9f0c10bd994d63f038a6a29307915248c6efcfdc4f0b9ef5b0d00
     tests:
@@ -6581,7 +6581,7 @@ links:
         body: a17c2e6448ce175ede259608b521a25d58a30fe41d638e67c2bc19ec0b6bb17a
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lists the structures outward from Earth, under headings, each on one axis, and narrows them from the find box, kept across a reload"
-        body: fed43980eb1f451bcb41feb883bb08d51a8ac7a3168bb9e15b5d498d8722e45f
+        body: 52a800e0a21f2c8dbdedb774c018bb7c0a336ef2ccd55252501d6498918f5239
   - node: 01a1c2a8-c234-72f0-adea-08f063f64c50
     reviewed: f6390e11ca0fa56816066bb588068706d42d967da7a9d973d22a695a65e3970b
     tests:
