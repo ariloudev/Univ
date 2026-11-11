@@ -11,9 +11,10 @@ use std::mem::size_of;
 use serde::Serialize;
 
 use super::{
-    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAGIC, MAX_TILE_BYTES, STEPS,
-    has_age, has_colour, max_points, point_bytes,
+    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAGIC, MAX_TILE_BYTES,
+    OBJECT_KINDS, STEPS, has_age, has_colour, has_object_kind, max_points, point_bytes,
 };
+use crate::object::ObjectKind;
 use crate::value::KindOfValue;
 
 /// The type of a field's elements, every number little-endian and unaligned.
@@ -119,6 +120,9 @@ pub struct EncodingLayout {
     /// version 3.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub log_age_code: Option<u8>,
+    /// The kinds of object, coded by their index plus one, 0 coding none; none before version 4.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub object_kinds: Vec<ObjectKind>,
     /// How a quantized position becomes a position in the manifest's frame and unit.
     pub dequantization: String,
     /// What a decoder refuses.
@@ -240,7 +244,7 @@ fn points_v1() -> [Spec; 4] {
 }
 
 /// The point fields of `version`, in order: version 1's, then version 2's colour, or version
-/// 3's value, after them.
+/// 3's value, after them, and version 4's kind of object last.
 fn points_of(version: u16) -> Vec<Spec> {
     let mut fields = points_v1().to_vec();
     if has_age(version) {
@@ -290,6 +294,17 @@ fn points_of(version: u16) -> Vec<Spec> {
                     .to_owned(),
             ),
         ]);
+    }
+    if has_object_kind(version) {
+        fields.push((
+            "object_kind",
+            FieldType::U8,
+            1,
+            None,
+            "the kind of object the point is: 1 plus its index in object_kinds, which the \
+             manifest's encoding.object_kinds repeats; 0 for one body, which names no kind"
+                .to_owned(),
+        ));
     }
     fields
 }
@@ -350,6 +365,9 @@ fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
              other than 0, or 0 with another colour index",
         );
     }
+    if has_object_kind(version) {
+        refusals.push("a kind of object code beyond 1 plus the last index in object_kinds");
+    }
     EncodingLayout {
         version: u32::from(version),
         byte_order: "little-endian, unaligned, unpadded".to_owned(),
@@ -368,6 +386,11 @@ fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
             Vec::new()
         },
         log_age_code: has_age(version).then_some(LOG_AGE_CODE),
+        object_kinds: if has_object_kind(version) {
+            OBJECT_KINDS.to_vec()
+        } else {
+            Vec::new()
+        },
         dequantization: format!(
             "step = node_edge / {STEPS}, the step of the node's level in the manifest; each \
              coordinate decodes to the centre of its step, node_min + (q + 0.5) * step, within \

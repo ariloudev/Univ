@@ -2,8 +2,9 @@
 
 use super::value::point_value;
 use super::{
-    DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, NodeBox, Tile, TileError, V1_POINT_BYTES,
-    has_colour, kind_of_code, max_points, point_bytes,
+    DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, NodeBox, POINT_BYTES, Tile, TileError,
+    V1_POINT_BYTES, has_colour, has_object_kind, kind_of_code, max_points, object_kind_of_code,
+    point_bytes,
 };
 use crate::ids::ObjectId;
 
@@ -22,14 +23,15 @@ fn f64_at(bytes: &[u8], at: usize) -> Result<f64, TileError> {
     array(bytes, at).map(f64::from_le_bytes)
 }
 
-/// Decodes a tile of a version this decoder knows (1, 2 or 3) into its node and points.
+/// Decodes a tile of a version this decoder knows (1 to 4) into its node and points.
 ///
 /// # Errors
 ///
 /// Fails, never panicking, on another magic or an unknown version (named), both read before the
 /// size, a reserved field that is not zero, a length other than its count gives or beyond [`MAX_TILE_BYTES`], a node that
 /// cannot stand, an object id outside 1 to 2^53 − 1, an unknown kind of value, or, from version
-/// 2, a value code the version does not define or one its value contradicts.
+/// 2, a value code the version does not define or one its value contradicts, or, from version
+/// 4, a kind of object code beyond the encoding's kinds of object.
 pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
     let magic: [u8; 4] = array(bytes, 0)?;
     if magic != MAGIC {
@@ -86,6 +88,7 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
         HEADER_BYTES + V1_POINT_BYTES * n,
         HEADER_BYTES + (V1_POINT_BYTES + 2) * n,
     );
+    let objects = HEADER_BYTES + POINT_BYTES * n;
     let mut points = Vec::with_capacity(n);
     for k in 0..n {
         let mut quantized = [0u16; 3];
@@ -105,6 +108,12 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
         } else {
             None
         };
+        let object = if has_object_kind(version) {
+            let [code] = array(bytes, objects + k)?;
+            object_kind_of_code(code).map_err(|code| TileError::ObjectKind { point: k, code })?
+        } else {
+            None
+        };
         points.push(DecodedPoint {
             position,
             quantized,
@@ -112,6 +121,7 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
             source,
             kind,
             value,
+            object,
         });
     }
     Ok(Tile {

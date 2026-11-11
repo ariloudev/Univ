@@ -34,6 +34,14 @@
 // age in years, in hundredths, within 0.005 of the value it was built from. The age code is
 // refused in a version 2 tile.
 //
+// Version 4 has the version field 4, and a tile of n points is 48 + 21 n bytes: version 3's
+// columns, then
+//
+//   48+20n  n u8     each point's kind of object: 0 for none, else 1 + an index into
+//                    encoding.object_kinds
+//
+// Only the Galaxy tracers' tiles take version 4; a code beyond object_kinds is refused.
+//
 // A coordinate decodes to the centre of its step: min + (q + 0.5) * step, with step the
 // node's edge over encoding.steps_per_edge (65,536), the step its level states. It lies
 // within half a step of the position the tile was built from.
@@ -87,7 +95,19 @@ export interface ManifestEncoding {
   /** The code of a point whose value is the base-10 logarithm of its age in years; absent
    * before version 3. */
   log_age_code?: number;
+  /** The kinds of object of version 4, coded by their index plus one; absent before version 4. */
+  object_kinds?: ObjectKind[];
 }
+
+/** What a Galaxy tracer is, as its source names it. */
+export type ObjectKind =
+  | 'galaxy_group'
+  | 'open_cluster'
+  | 'globular_cluster'
+  | 'classical_cepheid'
+  | 'rr_lyrae_star'
+  | 'star_forming_region'
+  | 'luminous_hot_star';
 
 /** The two bands a colour index lies between. */
 export type ColourBands = 'BP-RP' | 'B-V';
@@ -123,6 +143,8 @@ export interface DecodedPoint {
   /** The base-10 logarithm of its age in years, where it carries one in place of a colour
    * index; none before version 3. */
   logAge?: number | undefined;
+  /** Its object's kind, from version 4; none for one body or in an older tile. */
+  objectKind?: ObjectKind | undefined;
 }
 
 const MAGIC = [0x55, 0x56, 0x54, 0x4c]; // "UVTL"
@@ -130,7 +152,7 @@ const HEADER_BYTES = 48;
 /** The bytes a point of version 1 takes; version 2's columns follow version 1's. */
 const V1_POINT_BYTES = 17;
 /** The bytes a point takes, by encoding version: the versions this decoder knows. */
-const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20, 3: 20 };
+const POINT_BYTES: Readonly<Record<number, number>> = { 1: V1_POINT_BYTES, 2: 20, 3: 20, 4: 21 };
 
 /** The encoding versions this decoder knows. */
 export const VERSIONS: readonly number[] = Object.keys(POINT_BYTES).map(Number);
@@ -154,7 +176,8 @@ const fail = (message: string): never => {
  * Throws an `Error` on another magic, an encoding version it does not know (naming it, read
  * before the size), a reserved field that is not zero, a size other than the tile's count or
  * the node's byte size gives, a header whose node is not `node`, an object id outside 1 to
- * 2^53 - 1, or a source or kind of value the manifest does not list.
+ * 2^53 - 1, or a source, kind of value or, from version 4, kind of object the manifest does not
+ * list.
  */
 export function decodeTile(
   bytes: Uint8Array,
@@ -225,6 +248,12 @@ export function decodeTile(
   if (ageCode !== undefined && manifest.encoding.log_age_code !== ageCode) {
     fail(`the manifest gives the log age code ${manifest.encoding.log_age_code}, not the ${ageCode} of version ${version}`);
   }
+  // Version 4's kind of object follows version 3's columns.
+  const objectColumn = HEADER_BYTES + 20 * n;
+  const objectKinds = manifest.encoding.object_kinds ?? [];
+  if (version >= 4 && objectKinds.length === 0) {
+    fail(`the manifest of a version ${version} tile lists no kinds of object`);
+  }
   const points: DecodedPoint[] = new Array(n);
   for (let k = 0; k < n; k++) {
     const at = HEADER_BYTES + 6 * k;
@@ -256,7 +285,17 @@ export function decodeTile(
         colour = { index: held / 100, bands };
       }
     }
-    // Every point has the same properties, colour and age among them, so they share one shape.
+    let objectKind: DecodedPoint['objectKind'];
+    if (version >= 4) {
+      const object = bytes[objectColumn + k] ?? 0;
+      if (object !== 0) {
+        objectKind =
+          objectKinds[object - 1] ??
+          fail(`point ${k} has the kind of object code ${object}, which the manifest does not list`);
+      }
+    }
+    // Every point has the same properties, colour, age and kind of object among them, so they
+    // share one shape.
     points[k] = {
       x: coordinate(0),
       y: coordinate(1),
@@ -266,6 +305,7 @@ export function decodeTile(
       kind,
       colour,
       logAge,
+      objectKind,
     };
   }
   return points;

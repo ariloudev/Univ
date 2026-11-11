@@ -12,10 +12,12 @@ mod common;
 mod release_fixture;
 mod simulated;
 
-use release_fixture::{build_next, cross, fixture_with, loaded, terms};
+use release_fixture::{build_next, cross, fixture_with, loaded, terms, tiles};
 use simulated::{bare, designation, entry, matching_rules};
 use univ_ingest::matching::match_entries;
+use univ_ingest::source::ScaleDomain;
 use univ_model::object::ObjectKind;
+use univ_model::tile::decode;
 
 /// The recorded tracer sources and the kind of object each names.
 const TRACERS: [(&str, &str); 6] = [
@@ -137,4 +139,42 @@ fn a_globular_cluster_joins_the_openngc_object_of_the_same_cluster_by_position()
     let m = match_entries(&rules, vec![cluster, named]);
     assert_eq!(m.objects.len(), 1, "one cluster");
     assert_eq!(m.objects[0].kind, ObjectKind::GlobularCluster);
+}
+
+#[test]
+fn the_tracers_tiles_take_version_4_with_each_points_kind_and_other_domains_keep_version_3() {
+    // build-octree-tiles: the Galaxy tracers' tiles carry each point's kind of object; every
+    // other scale domain's keep version 3, so their files stay as they were.
+    let fixture = fixture_with(&TRACERS.map(|(id, _)| id));
+    let crossed = cross(&fixture);
+    let built = tiles(&fixture, &crossed);
+    let mut kinds = std::collections::BTreeSet::new();
+    for domain in &built.domains {
+        let tracers = domain.domain == ScaleDomain::GalaxyTracers;
+        let version = if tracers { 4 } else { 3 };
+        assert_eq!(
+            domain.manifest.encoding.version, version,
+            "{:?}",
+            domain.domain
+        );
+        assert_eq!(
+            domain.manifest.encoding.object_kinds.is_some(),
+            tracers,
+            "{:?}",
+            domain.domain
+        );
+        for node in &domain.nodes {
+            let tile = decode(&node.tile).unwrap();
+            assert_eq!(tile.version, version);
+            for p in &tile.points {
+                if tracers {
+                    kinds.insert(format!("{:?}", p.object.unwrap()));
+                } else {
+                    assert_eq!(p.object, None);
+                }
+            }
+        }
+    }
+    // Every tracer source's kind is drawn among the placed points.
+    assert_eq!(kinds.len(), TRACERS.len(), "{kinds:?}");
 }

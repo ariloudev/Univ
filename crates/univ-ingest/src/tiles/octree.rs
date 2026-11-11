@@ -3,7 +3,7 @@
 
 use rand_chacha::ChaCha20Rng;
 use rand_chacha::rand_core::{Rng, SeedableRng};
-use univ_model::tile::{MAX_POINTS, NodeBox, TileError, tile_bytes};
+use univ_model::tile::{HEADER_BYTES, NodeBox, TileError, max_points};
 
 use super::TilesError;
 use super::domain::DomainPoint;
@@ -123,10 +123,11 @@ struct Pending {
 ///
 /// # Errors
 ///
-/// Fails when a leaf at the maximum depth holds more points than a tile within 1 MiB can,
-/// naming it.
+/// Fails when a leaf at the maximum depth holds more points than a tile of `point_bytes` a
+/// point, the domain's encoding's, can within 1 MiB, naming it.
 pub fn build(
     domain: &str,
+    point_bytes: usize,
     points: &[DomainPoint],
     root: NodeBox,
     rules: &TileRules,
@@ -160,12 +161,12 @@ pub fn build(
         {
             let n = members.len();
             let Some(largest) = largest.filter(|_| inner(n)) else {
-                if n > MAX_POINTS {
+                if n > max_points(point_bytes) {
                     return Err(TilesError::TileTooLarge {
                         domain: domain.to_owned(),
                         address,
                         points: n,
-                        bytes: tile_bytes(n),
+                        bytes: HEADER_BYTES + point_bytes * n,
                     });
                 }
                 tree.nodes.push(Node {

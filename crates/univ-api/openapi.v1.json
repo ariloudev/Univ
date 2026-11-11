@@ -692,6 +692,18 @@
             "minimum": 0,
             "type": "integer"
           },
+          "object_kinds": {
+            "description": "The kinds of object, coded by their index plus one, 0 coding none; absent before\nversion 4.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectKind"
+            },
+            "maxItems": 7,
+            "minItems": 7,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "point_bytes": {
             "minimum": 0,
             "type": "integer"
@@ -774,6 +786,13 @@
           "max_tile_bytes": {
             "minimum": 0,
             "type": "integer"
+          },
+          "object_kinds": {
+            "description": "The kinds of object, coded by their index plus one, 0 coding none; none before version 4.",
+            "items": {
+              "$ref": "#/components/schemas/ObjectKind"
+            },
+            "type": "array"
           },
           "point_bytes": {
             "description": "The bytes each point takes: the point fields' bytes together.",

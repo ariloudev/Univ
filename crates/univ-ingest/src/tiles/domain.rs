@@ -98,6 +98,9 @@ pub struct DomainPoint {
     /// domain whose entries give one; else the colour index chosen for it, if its entries give
     /// one.
     pub value: Option<PointValue>,
+    /// Its object's kind, for a point of the Galaxy tracers domain, whose tiles carry it; none
+    /// elsewhere and for one body.
+    pub object: Option<ObjectKind>,
 }
 
 /// A scale domain's points, in increasing id, and the sources they index.
@@ -126,6 +129,7 @@ struct Placed {
     sky: usize,
     kind: KindOfValue,
     value: Option<PointValue>,
+    object: Option<ObjectKind>,
 }
 
 /// The colour index chosen for `object` (build-octree-tiles): a BP−RP its sources publish
@@ -266,6 +270,9 @@ pub fn assign(
             None
         };
         let value = age.or_else(|| colour_of(&o.object).map(PointValue::Colour));
+        // A Galaxy tracer carries its kind of object too (build-octree-tiles, version 4).
+        let object = (domain == ScaleDomain::GalaxyTracers && o.object.kind != ObjectKind::Body)
+            .then_some(o.object.kind);
         let factor = Unit::Megaparsec
             .factor_to(unit_of(domain))
             .map_err(|_| TilesError::NotFinite(id))?;
@@ -281,6 +288,7 @@ pub fn assign(
             sky,
             kind,
             value,
+            object,
         });
     }
     let mut domains = BTreeMap::new();
@@ -324,6 +332,7 @@ fn intern(
             sky_source: sky,
             kind: p.kind,
             value: p.value,
+            object: p.object,
         });
     }
     Ok(interned)

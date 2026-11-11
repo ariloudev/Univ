@@ -95,6 +95,15 @@ blocks:
         title: "T3. Tile encoding 4 for the tracers"
         detail: "Version 4 adds a kind-of-object column (0 none, else 1 + index into object_kinds), written for galaxy_tracers only; the reference decoder and its fixtures read it. Done when the v4 round-trip, the no-kind point, the unchanged v3 domains and the decoder fixtures pass."
         state: active
+      - key: 01a1cbed-7513-7201-8b68-48128f07dbd1
+        at: 2026-11-11T18:44:59Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T3. Tile encoding 4 for the tracers"
+        detail: "univ-model writes versions 3 (BASE_VERSION) and 4 (VERSION) and reads 1–4; version 4 adds a u8 kind-of-object column (0 none, else 1 + index into OBJECT_KINDS), described by format::layout and the manifest's TRACERS_ENCODING. Ingest writes 4 for galaxy_tracers only; the octree's full-leaf limit follows the domain's point size. TypeScript decoder, README and fixtures carry version 4 (a SIMULATED tracers fixture; the real fixture release has no tracers). Rewriting the fixtures changed only the tracers' files. Tests: v4 round-trip and refusal, layout, per-domain versions in a built release; decoder 12/12; explorer 513/513."
+        state: done
   - key: 01a1cbc1-101b-76de-8044-9665c6e113cd
     id: t4-arms
     kind: task
@@ -108,6 +117,15 @@ blocks:
         title: "T4. Reid 2019 arms as log-spiral structures"
         detail: "Structure files take a cited log_spiral; ingest computes a 1° path in heliocentric galactic kpc (R0 8.15, plane 5.5 pc below the Sun) over the fitted range, and an extrapolation up to 90° beyond each end within 3–16 kpc; 14 files from Table 2. Done when the radii at β = 0, the spans, the cuts, the frame and the refusal of an uncited parameter are tested."
         state: open
+      - key: 01a1cbed-7513-7201-8b68-4813991efd26
+        at: 2026-11-11T18:44:59Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T4. Reid 2019 arms as log-spiral structures"
+        detail: "Structure files take a cited log_spiral; ingest computes a 1° path in heliocentric galactic kpc (R0 8.15, plane 5.5 pc below the Sun) over the fitted range, and an extrapolation up to 90° beyond each end within 3–16 kpc; 14 files from Table 2. Done when the radii at β = 0, the spans, the cuts, the frame and the refusal of an uncited parameter are tested."
+        state: active
   - key: 01a1cbc1-101b-76de-8044-966690741818
     id: t5-science
     kind: task
@@ -149,6 +167,20 @@ blocks:
           | Issue | Found by | Fix | State |
           |---|---|---|---|
           | (none yet) | | | |
+      - key: 01a1cbed-7513-7201-8b68-48148da802d1
+        at: 2026-11-11T18:44:59Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | Spec called Zari's parallax zero point a measured value; it is computed by the Lindegren et al. 2021 recipe | Reading the source while writing T2 | Criterion and decision reworded (zero point kept as published; prior models young stars' velocities and density) | fixed, `c659e45` |
+          | `MAX_POINTS` became version 4's (49,929), so the octree would refuse a stars leaf that fits a version 3 tile | `tiles_encoding` test | The octree takes the domain's point size; the global rules check keeps the stricter bound | fixed |
+          | The fixture release holds no Galaxy tracers, so the decoder fixtures carried no version 4 tile | Rewriting the fixtures changed only a manifest | A SIMULATED tracers fixture domain, every kind of object and some none | fixed |
+          | `tile/mod.rs` reached 502 lines | `cargo xtask lines` | Kind-of-object codes split into `tile/object.rs` | fixed |
   - key: 01a1cbd4-4647-75ee-9e7e-bf9ce7cc6c69
     id: spec-change-zari-wording
     kind: loft
