@@ -19,3 +19,26 @@ versions:
     title: "Wave 2: the guards and checks"
     goal: "stage/relational-schema-2 is merged: cargo xtask json and the scan guard run in the gate and every science check searches indexed rows"
     status: planned
+  - key: 01a1cf12-64c1-74fc-88bb-d9cb2021d825
+    at: 2026-11-12T09:24:11Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 2: the guards and checks"
+    goal: "stage/relational-schema-2 is merged: cargo xtask json and the scan guard run in the gate and every science check searches indexed rows"
+    status: done
+blocks:
+  - key: 01a1cf12-64c1-74fc-88bb-d9c85c372dbc
+    id: d-merge-wave-2
+    kind: decision
+    number: 6
+    versions:
+      - key: 01a1cf12-64c1-74fc-88bb-d9ccc6ac85c6
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Wave 2 merged"
+        consequence: "stage/relational-schema-2 is merged into product/relational-schema as ca1be6f: `cargo xtask json` runs in the gate, and every science check runs under the bytecode scan guard, on rows. Release 16 and deleting the schema-7 copies and the scratch databases are approved with it."

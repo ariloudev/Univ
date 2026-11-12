@@ -126,6 +126,20 @@ blocks:
           | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
           | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | to fix with wave 2 | open |
           | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+      - key: 01a1cf12-64c1-74fc-88bb-d9cdd5b540b4
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
   - key: 01a1cd7b-0d70-7108-8940-0ef4a88c731e
     id: store-migrated
     kind: note
@@ -139,3 +153,47 @@ blocks:
         title: "The real store is at schema 8"
         markdown: "Release 15's local D1 and state are migrated and swapped in; the old ones are kept beside them until you say they can go. Release 16 (memberships) waits for your word, and the science checks still read the old JSON columns until wave 2 rewrites them."
         tone: success
+  - key: 01a1cf12-64c1-74fc-88bb-d9c98acae6af
+    id: s5-delete-old
+    kind: task
+    versions:
+      - key: 01a1cf12-64c1-74fc-88bb-d9ce15cd858e
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Delete the schema-7 copies and the scratch databases"
+        detail: "Approved by the owner: wrangler-schema7 (43 GB), state-schema7 (45 GB), target/science/r15-schema8.sqlite (54 GB), .cache/univ-ingest/schema8 (18 MB)."
+        state: active
+      - key: 01a1cf13-3e54-732d-82dd-e820746831b5
+        at: 2026-11-12T09:25:07Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Delete the schema-7 copies and the scratch databases"
+        detail: "Deleted wrangler-schema7, state-schema7, .cache/univ-ingest/schema8 and target/science/r15-schema8.sqlite; 90 GB freed on disk (the rest were blocks the APFS clones shared)."
+        state: done
+  - key: 01a1cf12-64c1-74fc-88bb-d9ca80b2fda4
+    id: s6-release-16
+    kind: task
+    versions:
+      - key: 01a1cf12-64c1-74fc-88bb-d9cf71e4c5d4
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build release 16, publish to a clone, run the science checks, swap"
+        detail: "A change on migrated release 15 adding the masers' memberships."
+        state: open
+      - key: 01a1cf13-3e54-732d-82dd-e8212cf61088
+        at: 2026-11-12T09:25:07Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build release 16, publish to a clone, run the science checks, swap"
+        detail: "A change on migrated release 15 adding the masers' memberships, from ca1be6f: `.cache/univ-ingest/r16/run.sh` clones the state, builds offline, publishes to a clone of the local D1 and runs the science checks there."
+        state: active
