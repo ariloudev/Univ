@@ -1,8 +1,10 @@
 //! What refuses a publish before anything is uploaded: the release already published, pruned
 //! or older than `latest`'s; more object shards than Univ Server binds; a database of an older
-//! schema version; or a parent latest does not point to. The CON-3 cap is checked in `cap`.
+//! schema version, or one holding the JSON schema 8 keeps as rows; or a parent latest does not
+//! point to. The CON-3 cap is checked in `cap`.
 
-use univ_model::release::{ReleaseManifest, SHARED_ROWS_SINCE};
+use univ_model::release::shards::Database;
+use univ_model::release::{ReleaseManifest, SCHEMA_7_JSON_HELD, SHARED_ROWS_SINCE};
 
 use super::check::{Tables, published_status, schema_version};
 use super::upload::record_published;
@@ -62,8 +64,30 @@ pub(super) fn older_schema(
                 needs,
             }));
         }
+        json_at_scale(store, manifest.release, *database)?;
     }
     Ok(())
+}
+
+/// Refuses release `number` when `database` holds a JSON column of schema 7 that schema 8
+/// keeps as rows ([`SCHEMA_7_JSON_HELD`]): its rows would not load, and `univ-ingest migrate`
+/// moves them.
+fn json_at_scale(store: &mut dyn Store, number: u32, database: Database) -> Result<(), Refused> {
+    let rows = store
+        .query(database, SCHEMA_7_JSON_HELD)
+        .map_err(Refused::Query)?;
+    match rows
+        .first()
+        .and_then(|r| r.get("held"))
+        .and_then(serde_json::Value::as_str)
+    {
+        Some(column) => Err(Refused::Error(PublishError::JsonAtScale {
+            number,
+            database: database.to_string(),
+            column: column.to_owned(),
+        })),
+        None => Ok(()),
+    }
 }
 
 /// Why publishing was refused before anything was uploaded.

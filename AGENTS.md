@@ -57,9 +57,12 @@ Run them from this directory.
   its dev server on port 5318. It installs Playwright's Chromium where it is missing; without
   pnpm it skips the explorer's tests and says so. Wrangler's log is `target/integration/wrangler.log`.
 - `univ-ingest migrate` brings a local D1 and R2 of schema 5 under shared rows in place (a publish
-  does it first too), and `univ-ingest reindex` makes the state's row index and numbering of the
-  latest release again from the local D1: a store published before rows were shared is migrated,
-  then reindexed, before the next build.
+  does it first too), then moves the JSON that schema 7 kept in tables per object and per entry
+  into the rows of schema 8, in place on the local D1's own files of the state `--persist-to`
+  names, vacuuming each, and reindexes the state from it. No Worker may have that state open: it
+  is given an APFS clone of the real state, swapped in once migrated. A publish, `serve`,
+  `explore` and the benches refuse a store still holding that JSON. `univ-ingest reindex` makes
+  the state's row index and numbering of the latest release again from the local D1.
 - `cargo xtask serve` runs Univ Server under `wrangler dev` on the real local state,
   `.cache/univ-ingest/wrangler`, where `univ-ingest publish` puts releases. It first creates any
   table of univ-model's release schema that state lacks (a release built before the schema grew

@@ -59,7 +59,7 @@ fn structure(i: usize, bytes: usize) -> Vec<SqlValue> {
             ("release", _) => SqlValue::Integer(1),
             ("id", _) => SqlValue::from(format!("structure-{i:05}")),
             ("record", _) => SqlValue::from("r".repeat(bytes)),
-            (_, ColumnKind::Text) => SqlValue::from("void"),
+            (_, ColumnKind::Text | ColumnKind::Json) => SqlValue::from("void"),
             (_, ColumnKind::Integer) => SqlValue::Integer(1),
             (_, ColumnKind::Real) => SqlValue::Real(1.5),
         })

@@ -52,6 +52,12 @@ pub enum PublishError {
         holds: u32,
         needs: u32,
     },
+    /// A database holds a JSON column of schema 7 that schema 8 keeps as rows.
+    JsonAtScale {
+        number: u32,
+        database: String,
+        column: String,
+    },
     /// The journal cannot be used.
     Journal { number: u32, problem: String },
     /// An upload or check failed part way; the next run continues from the journal.
@@ -134,6 +140,16 @@ impl fmt::Display for PublishError {
                 "release {number} is not published: {database} holds releases of D1 schema \
                  version {holds}, whose rows each belong to one release, and this release is of \
                  version {needs}, whose rows are shared between releases; nothing was uploaded"
+            ),
+            Self::JsonAtScale {
+                number,
+                database,
+                column,
+            } => write!(
+                f,
+                "release {number} is not published: {database} holds {column}, JSON that D1 \
+                 schema 8 keeps as rows of their own; run `univ-ingest migrate` on the state, \
+                 with no Worker on it, then publish; nothing was uploaded"
             ),
             Self::Journal { number, problem } => {
                 write!(f, "release {number} is not published: {problem}")

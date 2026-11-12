@@ -31,7 +31,7 @@ const FILE: &str = "crates/univ-api/src/testkit_objects.sql";
 const RELEASE: u32 = 2;
 
 /// The tables the file holds, in its order.
-const TABLES: [&str; 9] = [
+const TABLES: [&str; 15] = [
     "sources",
     "source_reading",
     "terms",
@@ -39,16 +39,22 @@ const TABLES: [&str; 9] = [
     "objects",
     "entries",
     "measurements",
+    "measurement_details",
+    "entry_flags",
+    "entry_references",
+    "object_links",
+    "object_relations",
+    "memberships",
     "designations",
     "names",
 ];
 
 const HEADER: &str = "\
 -- Release 2 of Univ Ingest's fixture: its sources and how they are read, and every object
--- with its entries, measurements, designations and names, and the vocabulary they are coded
--- in, as cargo xtask integration publishes them. Checked against what ingest writes by
--- univ-ingest's test api_fixture; UPDATE_FIXTURES=1 cargo test -p univ-ingest --test
--- api_fixture rewrites it.
+-- with its entries, measurements and what they hold beside their rows, designations and
+-- names, and the vocabulary they are coded in, as cargo xtask integration publishes them.
+-- Checked against what ingest writes by univ-ingest's test api_fixture;
+-- UPDATE_FIXTURES=1 cargo test -p univ-ingest --test api_fixture rewrites it.
 ";
 
 /// A value as `sqlite3`'s `.mode insert` writes it: a whole real as `n.0`, any other real by

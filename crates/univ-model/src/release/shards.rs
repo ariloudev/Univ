@@ -17,10 +17,16 @@ use super::cells::Cell;
 use super::sql::Table;
 
 /// The tables whose rows of one object are in that object's shard.
-pub const SHARD_TABLES: [&str; 5] = [
+pub const SHARD_TABLES: [&str; 11] = [
     "objects",
     "entries",
     "measurements",
+    "measurement_details",
+    "entry_flags",
+    "entry_references",
+    "object_links",
+    "object_relations",
+    "memberships",
     "designations",
     "object_cells",
 ];
@@ -116,6 +122,13 @@ impl Table {
     #[must_use]
     pub fn in_shard(&self) -> bool {
         SHARD_TABLES.contains(&self.name)
+    }
+
+    /// Whether this table's rows grow with a release's objects: rows of each object or each
+    /// catalogue entry, shared between releases, each keyed by its object's id.
+    #[must_use]
+    pub fn grows_with_objects(&self) -> bool {
+        self.scope == super::Scope::PerRelease && !self.scale.allows_json()
     }
 }
 

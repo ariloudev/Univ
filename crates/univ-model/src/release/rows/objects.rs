@@ -4,8 +4,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::ToSql;
-use crate::release::sql::{Row, Scope, SqlValue, Table};
+use super::{Json, ToSql};
+use crate::release::sql::{Row, Scale, Scope, SqlValue, Table};
 
 /// The per-object parameters a chain can take: `chain_p1` to `chain_p4`.
 pub const PARAMS: usize = 4;
@@ -13,11 +13,11 @@ pub const PARAMS: usize = 4;
 row! {
     /// A distinct transformation chain, its per-object numbers left as `"$1"` to `"$4"` and its
     /// native value as `"$native"` (see [`crate::release::chains`]).
-    ChainRow => "chains", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    ChainRow => "chains", scope: PerRelease, scale: Chain, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u32,
         /// JSON array of the chain's steps.
-        steps: String,
+        steps: Json,
         /// How many per-object parameters it takes.
         params: u32,
         /// How many objects of the release it derived.
@@ -28,7 +28,7 @@ row! {
 row! {
     /// An object with its preferred measurements and, when placed, its derived position. Term
     /// columns are `u32`; entries are numbered by their place among the object's.
-    ObjectRow => "objects", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    ObjectRow => "objects", scope: PerRelease, scale: Object, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u64,
         kind: u32,
@@ -74,16 +74,12 @@ row! {
         runner_up_total: Option<f64>,
         runner_up_measurement: Option<f64>,
         runner_up_velocity: Option<f64>,
-        /// JSON array of its candidate links, none when it has none.
-        links: Option<String>,
-        /// JSON array of its relations, none when it has none.
-        relations: Option<String>,
     }
 }
 
 row! {
     /// A catalogue entry of an object: the object's entry number `entry`.
-    EntryRow => "entries", scope: PerRelease, key: ["object_id", "entry", "release"],
+    EntryRow => "entries", scope: PerRelease, scale: Entry, key: ["object_id", "entry", "release"],
     indexes: [], {
         release: u32,
         object_id: u64,
@@ -111,10 +107,13 @@ row! {
         error_unit: Option<u32>,
         error_kind: Option<u32>,
         group_id: Option<String>,
-        /// JSON object of its flags, none when it has none.
-        flags: Option<String>,
-        /// JSON object of what no column holds, none when nothing.
-        extra: Option<String>,
+        /// The source (its `n`) and identifier of the designation it was resolved through,
+        /// where that is none of the object's entries.
+        via_source: Option<u32>,
+        via_identifier: Option<String>,
+        /// Its spectral type as published, and that type's kind of value (a term).
+        spectral_type: Option<String>,
+        spectral_type_kind: Option<u32>,
     }
 }
 
@@ -123,7 +122,7 @@ row! {
     /// `velocity`, `proper_motion_ra`, `proper_motion_dec`, `magnitude` or
     /// `supergalactic_velocity_x`, `_y` or `_z`, `n` its place among the entry's values of
     /// that quantity.
-    MeasurementRow => "measurements", scope: PerRelease,
+    MeasurementRow => "measurements", scope: PerRelease, scale: Entry,
     key: ["object_id", "entry", "quantity", "n", "release"], indexes: [], {
         release: u32,
         object_id: u64,
@@ -152,14 +151,119 @@ row! {
         cmb_minus: Option<f64>,
         cmb_plus: Option<f64>,
         cmb_level: Option<f64>,
-        /// JSON object of what no column holds, none when nothing.
-        extra: Option<String>,
+        /// The frame a redshift was published in (a term), none for heliocentric.
+        published_frame: Option<u32>,
+    }
+}
+
+row! {
+    /// What a measurement holds beside its values, for the few that hold any: a distance's
+    /// value as also published and the cosmology it assumes, a colour index's two magnitude
+    /// columns.
+    MeasurementDetailRow => "measurement_details", scope: PerRelease, scale: Entry,
+    key: ["object_id", "entry", "quantity", "n", "release"], indexes: [], {
+        release: u32,
+        object_id: u64,
+        entry: u32,
+        quantity: u32,
+        n: u32,
+        also_value: Option<f64>,
+        also_unit: Option<u32>,
+        also_form: Option<u32>,
+        also_minus: Option<f64>,
+        also_plus: Option<f64>,
+        also_level: Option<f64>,
+        assumed_hubble_constant: Option<f64>,
+        assumed_omega_matter: Option<f64>,
+        assumed_omega_lambda: Option<f64>,
+        derived_from_first: Option<String>,
+        derived_from_second: Option<String>,
+    }
+}
+
+row! {
+    /// A flag of a catalogue entry: its source's column (a term) and the value as published.
+    EntryFlagRow => "entry_flags", scope: PerRelease, scale: Entry,
+    key: ["object_id", "entry", "flag", "release"], indexes: [["flag", "value", "release"]], {
+        release: u32,
+        object_id: u64,
+        entry: u32,
+        flag: u32,
+        value: String,
+    }
+}
+
+row! {
+    /// A paper a researched entry's values come from, `n` its place in the entry's list.
+    EntryReferenceRow => "entry_references", scope: PerRelease, scale: Entry,
+    key: ["object_id", "entry", "n", "release"], indexes: [], {
+        release: u32,
+        object_id: u64,
+        entry: u32,
+        n: u32,
+        citation: String,
+        doi: Option<String>,
+        bibcode: Option<String>,
+    }
+}
+
+row! {
+    /// A candidate match of an object, `n` its place among them, with its reason in the columns
+    /// of an entry's resolution.
+    ObjectLinkRow => "object_links", scope: PerRelease, scale: Object,
+    key: ["object_id", "n", "release"], indexes: [], {
+        release: u32,
+        object_id: u64,
+        n: u32,
+        entry_source: u32,
+        entry_identifier: String,
+        candidate_source: u32,
+        candidate_identifier: String,
+        resolution: u32,
+        scheme: Option<u32>,
+        shared: Option<String>,
+        via_source: Option<u32>,
+        via_identifier: Option<String>,
+        separation_arcsec: Option<f64>,
+        difference: Option<u32>,
+        delta: Option<f64>,
+        reason_confidence: Option<f64>,
+        confidence: f64,
+    }
+}
+
+row! {
+    /// A relation of an object to another, `n` its place among them.
+    ObjectRelationRow => "object_relations", scope: PerRelease, scale: Object,
+    key: ["object_id", "n", "release"], indexes: [], {
+        release: u32,
+        object_id: u64,
+        n: u32,
+        kind: u32,
+        entry_source: u32,
+        entry_identifier: String,
+        other_source: u32,
+        other_identifier: String,
+        scheme: String,
+        identifier: String,
+    }
+}
+
+row! {
+    /// An object that its source's own column assigns to a researched structure.
+    MembershipRow => "memberships", scope: PerRelease, scale: Object,
+    key: ["object_id", "structure", "release"], indexes: [["structure", "release"]], {
+        release: u32,
+        object_id: u64,
+        structure: String,
+        source: u32,
+        value: String,
     }
 }
 
 row! {
     /// A designation an object carries.
-    DesignationRow => "designations", scope: PerRelease,
+    DesignationRow => "designations", scope: PerRelease, scale: Entry,
     key: ["source", "identifier", "object_id", "release"], indexes: [["object_id", "release"]], {
         release: u32,
         source: u32,
@@ -172,7 +276,7 @@ row! {
     /// A common name of an object, by its key (see [`super::name_key`]). The name itself is
     /// part of the primary key: two spellings an object's source gives, such as `M 31` and
     /// `M31`, share a key and are both kept.
-    NameRow => "names", scope: PerRelease,
+    NameRow => "names", scope: PerRelease, scale: Object,
     key: ["key", "object_id", "source", "name", "release"],
     indexes: [["object_id", "release"]], {
         release: u32,

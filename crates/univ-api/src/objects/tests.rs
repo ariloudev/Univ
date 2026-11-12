@@ -73,7 +73,8 @@ fn an_id_replaced_twice_leads_to_the_object_the_read_release_holds_naming_each_c
 fn a_merge_into_an_object_later_retired_names_both_changes() {
     let db = db();
     db.exec(
-        "INSERT INTO ids_replaced VALUES (60, 1, 'merged_into', '[61]'), (61, 2, 'retired', '[]');",
+        "INSERT INTO ids_replaced VALUES (60, 1, 'merged_into'), (61, 2, 'retired');
+         INSERT INTO id_replacements VALUES (60, 0, 1, 61);",
     );
     let resolved = block_on(replaced(&db, 2, 60)).unwrap();
     assert_eq!(
@@ -111,12 +112,14 @@ fn a_split_into_many_objects_lists_every_one() {
     let many: Vec<String> = (1000..1040).map(|id| format!("(2, {id}, 1, 1)")).collect();
     db.exec(&format!(
         "INSERT INTO objects (release, id, kind, placed) VALUES {};
-         INSERT INTO ids_replaced VALUES (70, 2, 'split_into', '[{}]');",
+         INSERT INTO ids_replaced VALUES (70, 2, 'split_into');
+         INSERT INTO id_replacements VALUES {};",
         many.join(", "),
         (1000..1040)
-            .map(|id| id.to_string())
+            .enumerate()
+            .map(|(n, id)| format!("(70, {n}, 2, {id})"))
             .collect::<Vec<_>>()
-            .join(",")
+            .join(", ")
     ));
     let Resolved::Split { into, .. } = block_on(replaced(&db, 2, 70)).unwrap() else {
         panic!("a split");
@@ -127,7 +130,10 @@ fn a_split_into_many_objects_lists_every_one() {
 #[test]
 fn a_ledger_loop_ends() {
     let db = db();
-    db.exec("INSERT INTO ids_replaced VALUES (80, 1, 'merged_into', '[81]'), (81, 2, 'merged_into', '[80]');");
+    db.exec(
+        "INSERT INTO ids_replaced VALUES (80, 1, 'merged_into'), (81, 2, 'merged_into');
+         INSERT INTO id_replacements VALUES (80, 0, 1, 81), (81, 0, 2, 80);",
+    );
     assert!(matches!(
         block_on(replaced(&db, 2, 80)).unwrap(),
         Resolved::Retired { .. }

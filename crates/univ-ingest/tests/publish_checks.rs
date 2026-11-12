@@ -376,3 +376,38 @@ fn a_database_of_schema_6_takes_a_release_of_schema_7_with_no_migration() {
     );
     assert!(memory_store::int(&store.db, "SELECT COUNT(*) FROM source_reading") > 0);
 }
+
+#[test]
+fn a_database_holding_the_json_schema_8_keeps_as_rows_is_refused_until_migrated() {
+    let f = fixture();
+    build_next(&f);
+    let (journals, clock) = (tempfile::tempdir().unwrap(), Clock::new());
+    let mut store = MemoryStore::default();
+    // A catalogue of schema 7, whose entries keep their flags and extra values as JSON.
+    store
+        .db
+        .execute_batch(include_str!("fixtures/schema-7.sql"))
+        .unwrap();
+    store
+        .db
+        .execute_batch("INSERT INTO schema_version VALUES (7);")
+        .unwrap();
+    let publish = |store: &mut MemoryStore| {
+        publishing(
+            store,
+            1,
+            f.out.path(),
+            f.state.path(),
+            journals.path(),
+            &clock,
+        )
+    };
+    let error = publish(&mut store).unwrap_err().to_string();
+    assert!(error.contains("holds objects.links, JSON"), "{error}");
+    assert!(error.contains("univ-ingest migrate"), "{error}");
+    assert!(store.ops.iter().all(|o| !matches!(o, Op::Execute(_))));
+    // Migrated, it takes the release.
+    assert!(univ_ingest::release::schema8::migrate_databases(&store.db, &[], &mut |_| {}).unwrap());
+    publish(&mut store).unwrap();
+    assert!(store.int_everywhere("SELECT COUNT(*) FROM entry_flags") > 0);
+}

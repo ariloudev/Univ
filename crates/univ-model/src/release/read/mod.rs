@@ -8,12 +8,14 @@
 //! client's: a [`ReadError`] names the table, the column and the value.
 
 mod columns;
+mod details;
 mod entries;
 mod links;
 mod measurements;
 mod placed;
 mod reading;
 
+pub use details::POSITION_ERRORS;
 pub use reading::Reading;
 
 use std::collections::{BTreeMap, HashMap};
@@ -173,25 +175,39 @@ impl std::fmt::Display for ReadError {
 
 impl std::error::Error for ReadError {}
 
-/// The object of row `object` with its `entries`, `measurements` and `designations` rows, each
-/// every row of the object in the release, in any order, as their tables hold them: a source by
-/// its number in the release, which the vocabulary names.
+/// The rows of one object in a release: its `objects` row and every row of it in each of the
+/// other tables, in any order, as the tables hold them, a source by its number in the release.
+pub struct ObjectRows<'r> {
+    pub object: &'r Row,
+    pub entries: &'r [Row],
+    pub measurements: &'r [Row],
+    pub measurement_details: &'r [Row],
+    pub entry_flags: &'r [Row],
+    pub entry_references: &'r [Row],
+    pub links: &'r [Row],
+    pub relations: &'r [Row],
+    pub designations: &'r [Row],
+    pub names: &'r [Row],
+}
+
+/// The object of `rows`, the vocabulary naming each source and term.
 ///
-/// The record's designations are those rows. A release built before the `designations` table
+/// The record's designations are its `designations` rows. A release built before that table
 /// holds none for any object: given no rows, the record gives the entries' own designations.
 ///
 /// # Errors
 ///
 /// Fails when a row lacks a column, a column holds a value of the wrong type, a code names no
 /// term, source or chain of the release, or the values do not make a valid record.
-pub fn object(
-    v: &Vocabulary,
-    object: &Row,
-    entries: &[Row],
-    measurements: &[Row],
-    designations: &[Row],
-    names: &[Row],
-) -> Result<ObjectRecord, ReadError> {
+pub fn object(v: &Vocabulary, rows: &ObjectRows<'_>) -> Result<ObjectRecord, ReadError> {
+    let ObjectRows {
+        object,
+        entries,
+        measurements,
+        designations,
+        names,
+        ..
+    } = *rows;
     let c = Columns::new(v, "objects", object);
     let mut heads = BTreeMap::new();
     let mut sorted_entries = Vec::with_capacity(entries.len());
@@ -204,16 +220,23 @@ pub fn object(
         sorted_entries.push((n, row));
     }
     sorted_entries.sort_by_key(|(n, _)| *n);
-    let entries = entries::entries(v, &sorted_entries, &heads)?;
+    let (position_errors, measurements) = details::position_errors(v, measurements)?;
+    let extras = details::EntryExtras {
+        flags: details::flags(v, rows.entry_flags)?,
+        references: details::references(v, rows.entry_references)?,
+        position_errors,
+    };
+    let entries = entries::entries(v, &sorted_entries, &heads, &extras)?;
 
+    let detail = details::by_key(v, rows.measurement_details)?;
     let mut keyed = measurements
-        .iter()
-        .map(|row| Ok((measurements::key(v, row)?, row)))
+        .into_iter()
+        .map(|row| Ok((measurements::key(v, "measurements", row)?, row)))
         .collect::<Result<Vec<_>, ReadError>>()?;
     keyed.sort_by_key(|(k, _)| *k);
     let measurements = keyed
         .into_iter()
-        .map(|(key, row)| measurements::measurement(v, row, key, &heads))
+        .map(|(key, row)| measurements::measurement(v, row, key, &heads, detail.get(&key).copied()))
         .collect::<Result<Vec<_>, _>>()?;
 
     let preferred = placed::preferred(&c, v.ranking_rule())?;
@@ -246,8 +269,8 @@ pub fn object(
         preferred,
         position,
         not_placed: c.typed_opt("not_placed")?,
-        links: links::links(&c)?,
-        relations: c.json_opt("relations")?.unwrap_or_default(),
+        links: links::links(v, rows.links)?,
+        relations: links::relations(v, rows.relations)?,
         entries,
         measurements,
     })

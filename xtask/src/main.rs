@@ -16,6 +16,7 @@ mod integration;
 mod lines;
 mod node;
 mod owner;
+mod schema7;
 mod science;
 
 use std::fs;

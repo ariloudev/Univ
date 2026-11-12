@@ -1,14 +1,10 @@
 //! The fixture release loaded into `SQLite` and every cross-matched object decoded from its rows
 //! as Univ Server reads them: each row a JSON map, as D1 returns it.
 
-use std::collections::HashSet;
-use std::fmt;
 use std::sync::OnceLock;
 
 use rusqlite::Connection;
 use rusqlite::types::ValueRef;
-use serde::Deserializer;
-use serde::de::{self, DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::{Number, Value};
 use univ_ingest::crossmatch::{CrossMatched, ReleaseObject};
 use univ_model::api::objects::{MeasuredQuantity, MeasurementKey, ObjectRecord};
@@ -17,7 +13,7 @@ use univ_model::object::{
     CandidateLink, Confidence, LineOfSight, MatchMethod, MatchRecord, MeasurementRef, Object,
     Resolution,
 };
-use univ_model::release::read::{Row, Vocabulary, object};
+use univ_model::release::read::{ObjectRows, Row, Vocabulary, object};
 
 use crate::release_fixture::{built, cross, fixture_with, loaded, tiles};
 
@@ -28,7 +24,8 @@ pub struct Decoded {
 
 struct Loaded {
     pairs: Vec<(ReleaseObject, ObjectRecord)>,
-    links: Vec<String>,
+    /// Each object's `object_links` rows by their `n`, for the objects that have any.
+    links: Vec<(u64, Vec<i64>)>,
 }
 
 /// The rows of `sql` with parameter `id`, as D1 gives them: integers and reals as JSON
@@ -153,6 +150,7 @@ fn load() -> Loaded {
     let db = loaded(&release.dir, &release.manifest);
     let v = vocabulary(&db);
     let mut pairs = Vec::new();
+    let mut links = Vec::new();
     for o in crossed.objects {
         let id = i64::try_from(o.id.get()).unwrap();
         let mut one = rows(
@@ -184,19 +182,44 @@ fn load() -> Loaded {
             "SELECT source, name FROM names WHERE release = 1 AND object_id = ?1",
             id,
         );
-        let rows = [entries, measurements, designations, names];
-        let record = object(&v, &one.remove(0), &rows[0], &rows[1], &rows[2], &rows[3])
-            .unwrap_or_else(|e| panic!("object {id}: {e}"));
+        let of = |table: &str| {
+            rows(
+                &db,
+                &format!("SELECT * FROM {table} WHERE release = 1 AND object_id = ?1"),
+                id,
+            )
+        };
+        let (details, flags, references) = (
+            of("measurement_details"),
+            of("entry_flags"),
+            of("entry_references"),
+        );
+        let (object_links, relations) = (of("object_links"), of("object_relations"));
+        if !object_links.is_empty() {
+            let n = object_links
+                .iter()
+                .filter_map(|r| r["n"].as_i64())
+                .collect();
+            links.push((o.id.get(), n));
+        }
+        let record = object(
+            &v,
+            &ObjectRows {
+                object: &one.remove(0),
+                entries: &entries,
+                measurements: &measurements,
+                measurement_details: &details,
+                entry_flags: &flags,
+                entry_references: &references,
+                links: &object_links,
+                relations: &relations,
+                designations: &designations,
+                names: &names,
+            },
+        )
+        .unwrap_or_else(|e| panic!("object {id}: {e}"));
         pairs.push((o, record));
     }
-    let mut q = db
-        .prepare("SELECT links FROM objects WHERE release = 1 AND links IS NOT NULL")
-        .unwrap();
-    let links = q
-        .query_map([], |r| r.get(0))
-        .unwrap()
-        .map(Result::unwrap)
-        .collect();
     Loaded { pairs, links }
 }
 
@@ -209,8 +232,8 @@ pub fn decoded() -> Decoded {
     }
 }
 
-/// The text of every `objects.links` column of the release that is not NULL.
-pub fn link_texts() -> Vec<String> {
+/// Each object's `object_links` rows by their `n`, for every object that has any.
+pub fn link_rows() -> Vec<(u64, Vec<i64>)> {
     LOADED.get_or_init(load).links.clone()
 }
 
@@ -231,60 +254,4 @@ pub fn key_of(object: &Object, m: &MeasurementRef) -> MeasurementKey {
         quantity,
         n: u32::try_from(n).unwrap(),
     }
-}
-
-/// Any JSON value, refused when an object of it holds a key twice.
-struct Unique;
-
-impl<'de> DeserializeSeed<'de> for Unique {
-    type Value = ();
-    fn deserialize<D: Deserializer<'de>>(self, d: D) -> Result<(), D::Error> {
-        d.deserialize_any(self)
-    }
-}
-
-impl<'de> Visitor<'de> for Unique {
-    type Value = ();
-    fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("any JSON value")
-    }
-    fn visit_bool<E>(self, _: bool) -> Result<(), E> {
-        Ok(())
-    }
-    fn visit_i64<E>(self, _: i64) -> Result<(), E> {
-        Ok(())
-    }
-    fn visit_u64<E>(self, _: u64) -> Result<(), E> {
-        Ok(())
-    }
-    fn visit_f64<E>(self, _: f64) -> Result<(), E> {
-        Ok(())
-    }
-    fn visit_str<E>(self, _: &str) -> Result<(), E> {
-        Ok(())
-    }
-    fn visit_unit<E>(self) -> Result<(), E> {
-        Ok(())
-    }
-    fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<(), A::Error> {
-        while seq.next_element_seed(Unique)?.is_some() {}
-        Ok(())
-    }
-    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<(), A::Error> {
-        let mut keys = HashSet::new();
-        while let Some(key) = map.next_key::<String>()? {
-            if !keys.insert(key.clone()) {
-                return Err(de::Error::custom(format!("the key {key:?} appears twice")));
-            }
-            map.next_value_seed(Unique)?;
-        }
-        Ok(())
-    }
-}
-
-/// Whether `text` is JSON whose every object holds each key once.
-pub fn no_duplicate_keys(text: &str) -> Result<(), serde_json::Error> {
-    let mut d = serde_json::Deserializer::from_str(text);
-    Unique.deserialize(&mut d)?;
-    d.end()
 }
