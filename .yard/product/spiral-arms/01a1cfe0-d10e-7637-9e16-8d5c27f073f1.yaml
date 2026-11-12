@@ -32,3 +32,20 @@ blocks:
 
           Release 16 is live in the real store. 42 checks pass, the 2 FAILs are already accepted, and the fingerprint check passes. Release 15's local D1 and state stay in `.cache/univ-ingest/r16/` until the owner says otherwise. The details are in product/relational-schema's Yard Log.
         tone: success
+      - key: 01a1cffc-7916-7710-bbfa-987cb655e7cc
+        at: 2026-11-12T13:39:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "product/relational-schema merged"
+        markdown: |-
+          Merged on the owner's word as `b486ee7`. It brings:
+
+          - release schema 8: flags, references, extras, links and relations as rows;
+          - `cargo xtask json` in the gate, and the scan guard in `xtask science`;
+          - the masers' arm memberships;
+          - the fingerprint fix for releases built as a change.
+
+          Release 16 is live in the real store. 42 checks pass, the 2 FAILs are already accepted, and the fingerprint check passes. On the owner's word, release 15's rollback copies (`r16/wrangler-r15`, `r16/state-r15`) were deleted before this branch merged into develop. The details are in product/relational-schema's Yard Log.
+        tone: success
