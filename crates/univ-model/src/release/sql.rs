@@ -260,13 +260,7 @@ pub enum ColumnKind {
     Json,
 }
 
-impl ColumnKind {
-    /// Whether SQLite stores the column's values as text: JSON is text.
-    #[must_use]
-    pub fn is_text(self) -> bool {
-        matches!(self, Self::Text | Self::Json)
-    }
-}
+impl ColumnKind {}
 
 pub use super::scale::Scale;
 

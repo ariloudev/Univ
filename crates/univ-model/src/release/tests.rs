@@ -351,3 +351,38 @@ fn version_6_shares_rows_and_maps_files_by_hash() {
         }
     }
 }
+
+#[test]
+fn the_query_for_schema_7_json_names_exactly_its_columns() {
+    let named = super::SCHEMA_7_JSON_HELD.matches("('").count();
+    assert_eq!(named, super::SCHEMA_7_JSON.len());
+    for (table, column) in super::SCHEMA_7_JSON {
+        assert!(
+            super::SCHEMA_7_JSON_HELD.contains(&format!("('{table}', '{column}')")),
+            "{table}.{column}"
+        );
+    }
+}
+
+#[test]
+fn every_table_of_an_objects_rows_is_in_its_shard_but_its_names_and_its_shards_index() {
+    // A name is looked up across every object, and the index finds each object's shard.
+    let catalogue = ["names", "object_shards"];
+    for table in &TABLES {
+        assert_eq!(
+            table.in_shard(),
+            table.grows_with_objects() && !catalogue.contains(&table.name),
+            "{}",
+            table.name
+        );
+        // A writer forgets their keys once an object's rows are written: unique within each
+        // object, they are unique, its id being unique.
+        if table.grows_with_objects() {
+            assert!(
+                table.key.iter().any(|c| *c == "id" || *c == "object_id"),
+                "{}",
+                table.name
+            );
+        }
+    }
+}

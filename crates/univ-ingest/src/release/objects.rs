@@ -15,14 +15,13 @@ use univ_model::ids::{Designation, SourceId};
 use univ_model::ledger::Ledger;
 use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, Placement};
 use univ_model::position::Frame;
+use univ_model::release::UncertaintyColumns;
 use univ_model::release::chains::{expand, template};
 use univ_model::release::rows::Json;
 use univ_model::release::rows::{
-    DesignationRow, EntryFlagRow, EntryReferenceRow, EntryRow, IdReplacedRow, IdReplacementRow,
-    IdsIssuedRow, MeasurementDetailRow, MeasurementRow, MembershipRow, NameRow, ObjectLinkRow,
-    ObjectRelationRow, ObjectRow, PARAMS, name_key,
+    DesignationRow, IdReplacedRow, IdReplacementRow, IdsIssuedRow, NameRow, ObjectRow, PARAMS,
+    name_key,
 };
-use univ_model::release::{Row, UncertaintyColumns};
 use univ_model::units::Unit;
 use univ_model::value::Quantity;
 
@@ -65,20 +64,6 @@ pub struct ObjectCounts {
     pub not_kept: u64,
     pub first_not_kept: Option<String>,
 }
-
-/// The tables whose keys hold the object id, keyed unique within each object.
-const PER_OBJECT: [&str; 10] = [
-    EntryRow::TABLE.name,
-    MeasurementRow::TABLE.name,
-    MeasurementDetailRow::TABLE.name,
-    EntryFlagRow::TABLE.name,
-    EntryReferenceRow::TABLE.name,
-    ObjectLinkRow::TABLE.name,
-    ObjectRelationRow::TABLE.name,
-    DesignationRow::TABLE.name,
-    NameRow::TABLE.name,
-    MembershipRow::TABLE.name,
-];
 
 /// The rows of a release's objects, as they are written.
 pub struct ObjectWriter<'a> {
@@ -218,7 +203,6 @@ impl<'a> ObjectWriter<'a> {
                 name: name.to_owned(),
             })?;
         }
-        w.forget_keys(&PER_OBJECT);
         Ok(())
     }
 

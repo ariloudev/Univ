@@ -38,7 +38,7 @@ use super::check::{
     Tables, execute_sql, kept_releases, published_status, r2_manifest, schema_version, sql_text,
     tables_of,
 };
-use super::columns::{Beyond, differences};
+use super::columns::{Columns, columns};
 use super::progress::{Lines, Progress};
 use super::upload::put_checked;
 use crate::tiles::sha256;
@@ -67,13 +67,13 @@ pub(crate) fn create_as(table: &Table, name: &str) -> Result<String, String> {
 /// schema 6, the rows of each release before `latest` retired at the release after it as they
 /// are copied: those of a release after it, which a publish stopped part way loaded, stay valid
 /// from their release. A run stopped after it dropped a table, before it renamed the rebuilt one, left the
-/// rows only in the rebuilt one: it takes the table's name back first. A table keeps the columns
-/// `beyond` gives it, which a later migration reads ([`crate::release::schema8`]); a column of
-/// [`SCHEMA`] the table lacks is NULL.
+/// rows only in the rebuilt one: it takes the table's name back first. Each table's columns as
+/// `has` gives them, with their types: one it holds beyond [`SCHEMA`]'s is kept, which a later
+/// migration reads ([`crate::release::schema8`]), and one of [`SCHEMA`] it lacks is NULL; a
+/// table `has` does not name holds [`SCHEMA`]'s.
 fn rebuild(
     held: &std::collections::BTreeSet<String>,
-    beyond: &Beyond,
-    lacks: &BTreeMap<String, Vec<String>>,
+    has: &Columns,
     latest: Option<u32>,
 ) -> Result<String, String> {
     let retired = latest.map_or_else(
@@ -90,14 +90,14 @@ fn rebuild(
             }
             let _ = writeln!(sql, "ALTER TABLE {next} RENAME TO {name};");
         }
-        let missing = lacks.get(name).map(Vec::as_slice).unwrap_or_default();
-        let kept = beyond.get(name).map(Vec::as_slice).unwrap_or_default();
-        let mut columns: Vec<&str> = table
-            .columns
-            .iter()
-            .copied()
-            .filter(|c| !missing.iter().any(|m| m == c))
+        let own = has.get(name);
+        let holds = |c: &str| own.is_none_or(|own| own.iter().any(|(h, _)| h == c));
+        let kept: Vec<&(String, String)> = own
+            .into_iter()
+            .flatten()
+            .filter(|(c, _)| c != RETIRED && !table.columns.contains(&c.as_str()))
             .collect();
+        let mut columns: Vec<&str> = table.columns.iter().copied().filter(|c| holds(c)).collect();
         columns.extend(kept.iter().map(|(c, _)| c.as_str()));
         let columns = columns.join(", ");
         let _ = writeln!(
@@ -408,8 +408,8 @@ fn rebuild_one(
     progress: &mut dyn Progress,
 ) -> Result<(), String> {
     stop_if_asked(progress)?;
-    let (beyond, lacks) = differences(store, database, held)?;
-    let mut sql = rebuild(held, &beyond, &lacks, latest)?;
+    let has = columns(store, database, held)?;
+    let mut sql = rebuild(held, &has, latest)?;
     sql.push_str(SCHEMA);
     sql.push_str(extra);
     let _ = write!(

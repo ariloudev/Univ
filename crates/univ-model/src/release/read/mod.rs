@@ -15,6 +15,7 @@ mod measurements;
 mod placed;
 mod reading;
 
+pub use details::POSITION_ERRORS;
 pub use reading::Reading;
 
 use std::collections::{BTreeMap, HashMap};
@@ -230,7 +231,7 @@ pub fn object(v: &Vocabulary, rows: &ObjectRows<'_>) -> Result<ObjectRecord, Rea
     let detail = details::by_key(v, rows.measurement_details)?;
     let mut keyed = measurements
         .into_iter()
-        .map(|row| Ok((measurements::key(v, row)?, row)))
+        .map(|row| Ok((measurements::key(v, "measurements", row)?, row)))
         .collect::<Result<Vec<_>, ReadError>>()?;
     keyed.sort_by_key(|(k, _)| *k);
     let measurements = keyed

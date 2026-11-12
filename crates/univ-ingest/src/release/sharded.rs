@@ -10,11 +10,8 @@
 //! writer forgets each object's keys once its rows are written.
 
 use univ_model::cosmology::Cosmology;
-use univ_model::release::Row;
 use univ_model::release::manifest::{D1Estimate, ShardCells, ShardManifest};
-use univ_model::release::rows::{
-    ObjectCellRow, ObjectRow, ObjectShardRow, ReleaseShardRow, ShardCellRow,
-};
+use univ_model::release::rows::{ObjectCellRow, ObjectShardRow, ReleaseShardRow, ShardCellRow};
 use univ_model::release::shards::Database;
 
 use super::cells::{DomainCell, ObjectCells};
@@ -30,13 +27,6 @@ use crate::watch::Watch;
 
 /// Objects turned into rows between two looks at the build's stop flag.
 pub const OBJECTS_BETWEEN_CHECKS: usize = 10_000;
-
-/// The tables whose keys an object's own id leads, forgotten once its rows are written.
-const OWN_KEYS: [&str; 3] = [
-    ObjectRow::TABLE.name,
-    ObjectShardRow::TABLE.name,
-    ObjectCellRow::TABLE.name,
-];
 
 /// The first id two of `objects` share, if any.
 #[must_use]
@@ -163,7 +153,7 @@ fn write_object(
         id: o.id.get(),
         shard,
     })?;
-    writer.forget_keys(&OWN_KEYS);
+    writer.forget_object_keys();
     Ok(())
 }
 

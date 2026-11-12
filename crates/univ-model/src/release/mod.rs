@@ -110,9 +110,9 @@ pub use uncertainty::UncertaintyColumns;
 /// The version of the D1 schema in [`SCHEMA`].
 pub const SCHEMA_VERSION: u32 = 8;
 
-/// The first schema version whose tables share rows between releases. Every later version only
-/// adds tables, which a publish creates, so a database at this version or later takes a release
-/// of [`SCHEMA_VERSION`] without a migration.
+/// The first schema version whose tables share rows between releases. Version 7 only added
+/// tables, which a publish creates; version 8 moved [`SCHEMA_7_JSON`] into rows, so a database
+/// still holding one of those columns is migrated first, whatever its version.
 pub const SHARED_ROWS_SINCE: u32 = 6;
 
 /// The JSON columns of schema 7, in tables that grow with a release's objects, that schema 8
@@ -127,6 +127,15 @@ pub const SCHEMA_7_JSON: [(&str, &str); 6] = [
     ("measurements", "extra"),
     ("ids_replaced", "replaced_by"),
 ];
+
+/// The query that gives the first column of [`SCHEMA_7_JSON`] a database holds, as
+/// `table.column` in its one column `held`; no row when it holds none.
+pub const SCHEMA_7_JSON_HELD: &str = "SELECT t.name || '.' || c.name AS held \
+     FROM sqlite_master t JOIN pragma_table_info(t.name) c \
+     WHERE t.type = 'table' AND (t.name, c.name) IN (VALUES ('objects', 'links'), \
+     ('objects', 'relations'), ('entries', 'flags'), ('entries', 'extra'), \
+     ('measurements', 'extra'), ('ids_replaced', 'replaced_by')) \
+     ORDER BY t.name = 'objects' DESC, t.name, c.name LIMIT 1";
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");

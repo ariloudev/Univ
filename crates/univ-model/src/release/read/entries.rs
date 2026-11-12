@@ -16,27 +16,43 @@ use crate::value::{KindOfValue, Quantity, Uncertainty, Value as Measured};
 const TABLE: &str = "entries";
 
 /// The designation of source `source` and `identifier`.
-pub(super) fn designation(
-    c: &Columns<'_>,
-    source: &str,
-    identifier: &str,
-) -> Result<Designation, ReadError> {
+fn designation(c: &Columns<'_>, source: &str, identifier: &str) -> Result<Designation, ReadError> {
     let source =
         SourceId::new(source).map_err(|e| c.error("source", format!("{source:?}: {e}")))?;
     Designation::new(source, identifier.to_owned())
         .map_err(|e| c.error("identifier", format!("{identifier:?}: {e}")))
 }
 
+/// The id of the source a row of `c` names by number in `column`.
+fn source_in<'v>(v: &'v Vocabulary, c: &Columns<'_>, column: &str) -> Result<&'v str, ReadError> {
+    let n = c.int(column)?;
+    v.source(n)
+        .ok_or_else(|| c.error(column, format!("{n} is not among the release's sources")))
+}
+
 /// The id of the source a row of `c` names by number (`source`).
 pub(super) fn source_of<'v>(v: &'v Vocabulary, c: &Columns<'_>) -> Result<&'v str, ReadError> {
-    let n = c.int("source")?;
-    v.source(n)
-        .ok_or_else(|| c.error("source", format!("{n} is not among the release's sources")))
+    source_in(v, c, "source")
+}
+
+/// The designation of the source numbered in `source_column` and the identifier in
+/// `identifier_column` of `c`.
+pub(super) fn named(
+    v: &Vocabulary,
+    c: &Columns<'_>,
+    source_column: &str,
+    identifier_column: &str,
+) -> Result<Designation, ReadError> {
+    designation(
+        c,
+        source_in(v, c, source_column)?,
+        c.text(identifier_column)?,
+    )
 }
 
 /// The designation a row of `c` gives: its source by number (`source`) and its `identifier`.
 fn coded(v: &Vocabulary, c: &Columns<'_>) -> Result<Designation, ReadError> {
-    designation(c, source_of(v, c)?, c.text("identifier")?)
+    named(v, c, "source", "identifier")
 }
 
 /// The entry's number, source id and identifier, which other entries' resolutions name.
@@ -108,19 +124,14 @@ fn via(
             .cloned()
             .ok_or_else(|| c.error("via_entry", format!("{n} is none of the object's entries")));
     }
-    let n = c
-        .int_opt("via_source")?
-        .ok_or_else(|| c.error("via_entry", "is NULL and so is via_source"))?;
-    let source = v.source(n).ok_or_else(|| {
-        c.error(
-            "via_source",
-            format!("{n} is not among the release's sources"),
-        )
-    })?;
-    designation(c, source, c.text("via_identifier")?)
+    if c.int_opt("via_source")?.is_none() {
+        return Err(c.error("via_entry", "is NULL and so is via_source"));
+    }
+    named(v, c, "via_source", "via_identifier")
 }
 
-fn confidence(c: &Columns<'_>, column: &str) -> Result<Confidence, ReadError> {
+/// The confidence in `column` of `c`.
+pub(super) fn confidence(c: &Columns<'_>, column: &str) -> Result<Confidence, ReadError> {
     let x = c.real(column)?;
     Confidence::new(x).map_err(|e| c.error(column, e))
 }

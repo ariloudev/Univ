@@ -4,28 +4,9 @@
 use std::collections::BTreeMap;
 
 use super::columns::Columns;
-use super::entries::{designation, reason};
+use super::entries::{confidence, named, reason};
 use super::{ReadError, Row, Vocabulary};
-use crate::ids::Designation;
-use crate::object::{CandidateLink, Confidence, Relation};
-
-/// The designation of the source numbered in `source_column` and the identifier in
-/// `identifier_column` of `c`.
-fn named(
-    v: &Vocabulary,
-    c: &Columns<'_>,
-    source_column: &str,
-    identifier_column: &str,
-) -> Result<Designation, ReadError> {
-    let n = c.int(source_column)?;
-    let source = v.source(n).ok_or_else(|| {
-        c.error(
-            source_column,
-            format!("{n} is not among the release's sources"),
-        )
-    })?;
-    designation(c, source, c.text(identifier_column)?)
-}
+use crate::object::{CandidateLink, Relation};
 
 /// The rows of `rows`, each read by `read`, in the order of their `n`.
 fn in_order<T>(
@@ -49,11 +30,10 @@ pub(super) fn links(v: &Vocabulary, rows: &[Row]) -> Result<Vec<CandidateLink>, 
         let reason = reason(c, &entry, "reason_confidence", || {
             named(v, c, "via_source", "via_identifier")
         })?;
-        let confidence = c.real("confidence")?;
         Ok(CandidateLink {
             candidate: named(v, c, "candidate_source", "candidate_identifier")?,
             reason,
-            confidence: Confidence::new(confidence).map_err(|e| c.error("confidence", e))?,
+            confidence: confidence(c, "confidence")?,
             entry,
         })
     })

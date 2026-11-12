@@ -123,6 +123,13 @@ impl Table {
     pub fn in_shard(&self) -> bool {
         SHARD_TABLES.contains(&self.name)
     }
+
+    /// Whether this table's rows grow with a release's objects: rows of each object or each
+    /// catalogue entry, shared between releases, each keyed by its object's id.
+    #[must_use]
+    pub fn grows_with_objects(&self) -> bool {
+        self.scope == super::Scope::PerRelease && !self.scale.allows_json()
+    }
 }
 
 /// How far a cell index may lie from 0 along an axis for a Morton code: 2^16 cells, 655,360 Mpc

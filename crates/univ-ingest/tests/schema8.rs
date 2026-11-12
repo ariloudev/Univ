@@ -380,3 +380,46 @@ fn a_run_that_fails_leaves_the_database_in_hand_at_7_and_the_next_finishes_it() 
         );
     }
 }
+
+#[test]
+fn a_local_d1_with_none_of_schema_7s_json_or_no_d1_at_all_is_left_alone() {
+    use univ_ingest::release::schema8::migrate_local_d1;
+    let empty = tempfile::tempdir().unwrap();
+    assert!(!migrate_local_d1(empty.path(), &mut |_| {}).unwrap());
+    let state = tempfile::tempdir().unwrap();
+    let dir = state.path().join(univ_model::release::LOCAL_D1_FILES);
+    std::fs::create_dir_all(&dir).unwrap();
+    let db = Connection::open(dir.join("catalogue.sqlite")).unwrap();
+    db.execute_batch(SCHEMA).unwrap();
+    db.execute_batch(RELEASE_2).unwrap();
+    db.execute_batch(OBJECTS_8).unwrap();
+    let before = dump(&db);
+    drop(db);
+    assert!(!migrate_local_d1(state.path(), &mut |_| {}).unwrap());
+    let db = Connection::open(dir.join("catalogue.sqlite")).unwrap();
+    assert_eq!(dump(&db), before);
+}
+
+#[test]
+fn a_local_d1_of_schema_7_is_migrated_in_its_files_and_compacted() {
+    use univ_ingest::release::schema8::migrate_local_d1;
+    let state = tempfile::tempdir().unwrap();
+    let dir = state.path().join(univ_model::release::LOCAL_D1_FILES);
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("catalogue.sqlite");
+    let db = Connection::open(&path).unwrap();
+    db.execute_batch(SCHEMA_7).unwrap();
+    db.execute_batch(RELEASE_2).unwrap();
+    db.execute_batch(OBJECTS_7).unwrap();
+    drop(db);
+    let mut said = Vec::new();
+    assert!(migrate_local_d1(state.path(), &mut |line| said.push(line)).unwrap());
+    assert_eq!(said.len(), 1, "{said:?}");
+    let db = Connection::open(&path).unwrap();
+    assert!(!holds_json(&db).unwrap());
+    assert_eq!(int(&db, "PRAGMA freelist_count"), 0, "vacuumed");
+    let new = store(SCHEMA, OBJECTS_8);
+    for id in ids(&new) {
+        assert_eq!(read(&db, id), read(&new, id), "object {id}");
+    }
+}

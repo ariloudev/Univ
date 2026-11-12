@@ -20,9 +20,9 @@ const TABLE: &str = "measurements";
 /// A measurement's key: (entry, quantity, n).
 pub(super) type Key = (u32, MeasuredQuantity, u32);
 
-/// The measurement's key.
-pub(super) fn key(v: &Vocabulary, row: &Row) -> Result<Key, ReadError> {
-    let c = Columns::new(v, TABLE, row);
+/// The key of a row of `table`, `measurements` or `measurement_details`.
+pub(super) fn key(v: &Vocabulary, table: &'static str, row: &Row) -> Result<Key, ReadError> {
+    let c = Columns::new(v, table, row);
     Ok((c.small("entry")?, c.typed("quantity")?, c.small("n")?))
 }
 

@@ -2,11 +2,11 @@
 //! that replace a JSON column gathered in temporary tables, and a table rebuilt in schema 8's
 //! shape from its own rows and those columns.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 
 use rusqlite::Connection;
 use rusqlite::types::Value as Sql;
-use univ_model::release::{RETIRED, Row, Scope, SqlValue, TABLES, Table};
+use univ_model::release::{RETIRED, Row, SCHEMA_7_JSON, Scope, SqlValue, TABLES, Table};
 
 use crate::publish::create_as;
 
@@ -24,38 +24,54 @@ fn bound(value: SqlValue) -> Sql {
     }
 }
 
-/// Writes `rows` into their table of `db`, each retired at `retired` where the table's rows are
-/// shared between releases.
-pub(super) fn insert<R: Row>(
-    db: &Connection,
-    rows: &[R],
-    retired: Option<u32>,
-) -> Result<(), String> {
-    if rows.is_empty() {
-        return Ok(());
-    }
-    let table = R::TABLE;
-    let shared = table.scope == Scope::PerRelease;
-    let mut columns = table.columns.to_vec();
-    if shared {
-        columns.push(RETIRED);
-    }
-    let marks = vec!["?"; columns.len()].join(", ");
-    let sql = format!(
-        "INSERT INTO {} ({}) VALUES ({marks})",
-        table.name,
-        columns.join(", ")
-    );
-    let mut q = db.prepare_cached(&sql).map_err(sql_err(&sql))?;
-    for row in rows {
-        let mut values: Vec<Sql> = row.values().into_iter().map(bound).collect();
-        if shared {
-            values.push(retired.map_or(Sql::Null, |r| Sql::Integer(i64::from(r))));
+/// The rows a migration writes into `db`, each table's statement made once.
+pub(super) struct Inserts<'d> {
+    db: &'d Connection,
+    sql: HashMap<&'static str, String>,
+}
+
+impl<'d> Inserts<'d> {
+    pub(super) fn new(db: &'d Connection) -> Self {
+        Self {
+            db,
+            sql: HashMap::new(),
         }
-        q.execute(rusqlite::params_from_iter(values))
-            .map_err(sql_err(&sql))?;
     }
-    Ok(())
+
+    /// Writes `rows` into their table, each retired at `retired`.
+    pub(super) fn rows<R: Row>(&mut self, rows: &[R], retired: Option<u32>) -> Result<(), String> {
+        self.each(rows.iter().map(|r| (r, retired)))
+    }
+
+    /// Writes each row into its table, retired at its own `retired` where the table's rows are
+    /// shared between releases.
+    pub(super) fn each<'r, R: Row + 'r>(
+        &mut self,
+        rows: impl IntoIterator<Item = (&'r R, Option<u32>)>,
+    ) -> Result<(), String> {
+        let table = R::TABLE;
+        let shared = table.scope == Scope::PerRelease;
+        let sql = self.sql.entry(table.name).or_insert_with(|| {
+            let mut columns = table.columns.to_vec();
+            if shared {
+                columns.push(RETIRED);
+            }
+            format!(
+                "INSERT INTO {} ({}) VALUES ({})",
+                table.name,
+                columns.join(", "),
+                vec!["?"; columns.len()].join(", ")
+            )
+        });
+        let mut q = self.db.prepare_cached(sql).map_err(sql_err(sql))?;
+        for (row, retired) in rows {
+            let retired = shared.then(|| retired.map_or(Sql::Null, |r| Sql::Integer(r.into())));
+            let values = row.values().into_iter().map(bound).chain(retired);
+            q.execute(rusqlite::params_from_iter(values))
+                .map_err(sql_err(sql))?;
+        }
+        Ok(())
+    }
 }
 
 /// The columns `db`'s table `name` has, none when it has no such table.
@@ -68,39 +84,51 @@ pub(super) fn columns_of(db: &Connection, name: &str) -> Result<BTreeSet<String>
         .map_err(sql_err(&sql))
 }
 
-/// The temporary tables that gather the columns replacing `entries.extra`'s `via` and
-/// `spectral_type` and `measurements.extra`'s `published_frame`, each keyed as its table is.
-pub(super) struct Temp<'d> {
-    db: &'d Connection,
+/// A temporary table that gathers the columns replacing a JSON column, keyed as its table is.
+#[derive(Clone, Copy)]
+struct TempTable {
+    name: &'static str,
+    of: &'static str,
+    columns: &'static [&'static str],
+    key: &'static [&'static str],
 }
 
-/// The temporary tables' names, columns and keys.
-const ENTRIES: (&str, &[&str], &[&str]) = (
-    "schema8_entries",
-    &[
+/// The columns that replace `entries.extra`'s `via` and `spectral_type`.
+const ENTRIES: TempTable = TempTable {
+    name: "schema8_entries",
+    of: "entries",
+    columns: &[
         "via_source",
         "via_identifier",
         "spectral_type",
         "spectral_type_kind",
     ],
-    &["object_id", "entry", "release"],
-);
-const MEASUREMENTS: (&str, &[&str], &[&str]) = (
-    "schema8_measurements",
-    &["published_frame"],
-    &["object_id", "entry", "quantity", "n", "release"],
-);
+    key: &["object_id", "entry", "release"],
+};
+
+/// The column that replaces `measurements.extra`'s `published_frame`.
+const MEASUREMENTS: TempTable = TempTable {
+    name: "schema8_measurements",
+    of: "measurements",
+    columns: &["published_frame"],
+    key: &["object_id", "entry", "quantity", "n", "release"],
+};
+
+/// The temporary tables of a database's migration.
+pub(super) struct Temp<'d> {
+    db: &'d Connection,
+}
 
 impl<'d> Temp<'d> {
     /// The temporary tables of `db`, made empty.
     pub(super) fn new(db: &'d Connection) -> Result<Self, String> {
-        for (name, columns, key) in [ENTRIES, MEASUREMENTS] {
+        for t in [ENTRIES, MEASUREMENTS] {
             let sql = format!(
-                "DROP TABLE IF EXISTS temp.{name}; CREATE TEMP TABLE {name} ({}, {}, \
-                 PRIMARY KEY ({})) WITHOUT ROWID;",
-                key.join(", "),
-                columns.join(", "),
-                key.join(", ")
+                "DROP TABLE IF EXISTS temp.{0}; CREATE TEMP TABLE {0} ({1}, {2}, \
+                 PRIMARY KEY ({1})) WITHOUT ROWID;",
+                t.name,
+                t.key.join(", "),
+                t.columns.join(", ")
             );
             db.execute_batch(&sql).map_err(sql_err(&sql))?;
         }
@@ -111,10 +139,8 @@ impl<'d> Temp<'d> {
     pub(super) fn entry(
         &self,
         (object_id, entry, release): (u64, u32, u32),
-        via_source: Option<u32>,
-        via_identifier: Option<&str>,
-        spectral_type: Option<&str>,
-        spectral_type_kind: Option<u32>,
+        via: (Option<u32>, Option<&str>),
+        spectral_type: (Option<&str>, Option<u32>),
     ) -> Result<(), String> {
         let sql = "INSERT INTO temp.schema8_entries VALUES (?, ?, ?, ?, ?, ?, ?)";
         self.db
@@ -124,10 +150,10 @@ impl<'d> Temp<'d> {
                     object_id,
                     entry,
                     release,
-                    via_source,
-                    via_identifier,
-                    spectral_type,
-                    spectral_type_kind
+                    via.0,
+                    via.1,
+                    spectral_type.0,
+                    spectral_type.1
                 ])
             })
             .map(|_| ())
@@ -153,45 +179,33 @@ impl<'d> Temp<'d> {
     }
 }
 
-/// The temporary table that holds columns of `table`, if any.
-fn temp_of(
-    table: &str,
-) -> Option<(
-    &'static str,
-    &'static [&'static str],
-    &'static [&'static str],
-)> {
-    match table {
-        "entries" => Some(ENTRIES),
-        "measurements" => Some(MEASUREMENTS),
-        _ => None,
-    }
-}
-
 /// Rebuilds `table` of `db` in schema 8's shape: each of its columns from the old table where
 /// it has it, from the temporary table of its replacing columns, or NULL; the old table's
 /// other columns, its JSON, left behind.
-pub(super) fn rebuild(db: &Connection, table: &Table) -> Result<(), String> {
+pub(super) fn rebuild(
+    db: &Connection,
+    table: &Table,
+    old: &BTreeSet<String>,
+) -> Result<(), String> {
     let name = table.name;
-    let old = columns_of(db, name)?;
     let next = format!("{name}__v8");
     let mut columns: Vec<&str> = table.columns.to_vec();
     if table.scope == Scope::PerRelease {
         columns.push(RETIRED);
     }
-    let temp = temp_of(name);
+    let temp = [ENTRIES, MEASUREMENTS].into_iter().find(|t| t.of == name);
     let from = |c: &str| -> String {
         if old.contains(c) {
             format!("o.{c}")
-        } else if temp.is_some_and(|(_, held, _)| held.contains(&c)) {
+        } else if temp.is_some_and(|t| t.columns.contains(&c)) {
             format!("t.{c}")
         } else {
             "NULL".to_owned()
         }
     };
     let selected: Vec<String> = columns.iter().map(|c| from(c)).collect();
-    let join = temp.map_or_else(String::new, |(t, _, key)| {
-        format!(" LEFT JOIN temp.{t} t USING ({})", key.join(", "))
+    let join = temp.map_or_else(String::new, |t| {
+        format!(" LEFT JOIN temp.{} t USING ({})", t.name, t.key.join(", "))
     });
     let sql = format!(
         "DROP TABLE IF EXISTS {next};\n{};\nINSERT INTO {next} ({}) SELECT {} FROM {name} o{join};\n\
@@ -203,9 +217,9 @@ pub(super) fn rebuild(db: &Connection, table: &Table) -> Result<(), String> {
     db.execute_batch(&sql).map_err(sql_err(&sql))
 }
 
-/// The tables of schema 8 a migration rebuilds, each with a column schema 7 held as JSON.
+/// The tables of schema 8 that held a JSON column in schema 7, which a migration rebuilds.
 pub(super) fn rebuilt() -> impl Iterator<Item = &'static Table> {
     TABLES
         .iter()
-        .filter(|t| ["objects", "entries", "measurements", "ids_replaced"].contains(&t.name))
+        .filter(|t| SCHEMA_7_JSON.iter().any(|(name, _)| *name == t.name))
 }

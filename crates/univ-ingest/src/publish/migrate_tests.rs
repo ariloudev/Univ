@@ -16,7 +16,7 @@ fn a_table_left_only_under_its_rebuilt_name_takes_its_name_back_and_is_rebuilt_w
     .unwrap();
     // A run stopped between dropping `objects` and renaming `objects__v6`.
     let held = std::collections::BTreeSet::from(["objects__v6".to_owned()]);
-    let sql = rebuild(&held, &Beyond::new(), &BTreeMap::new(), Some(2)).unwrap();
+    let sql = rebuild(&held, &Columns::new(), Some(2)).unwrap();
     assert!(
         sql.starts_with("ALTER TABLE objects__v6 RENAME TO objects;\n"),
         "{sql}"

@@ -13,7 +13,9 @@ use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
 use super::d1::D1Writer;
-use super::extras::{Codes, detail_row, flag_rows, reason, reference_rows};
+use univ_model::release::read::POSITION_ERRORS;
+
+use super::extras::{Codes, Details, detail_row, flag_rows, reason, reference_rows};
 use super::kept::Kept;
 use super::terms::{Chains, SourceIndex, Terms};
 
@@ -72,7 +74,11 @@ pub fn write_entry<'e>(
     let r = reason(numbering, own, resolved_by)?;
     let via_entry = r.via.and_then(|through| entry_number(entries, through));
     let via = r.via.filter(|_| via_entry.is_none());
-    let terms = &mut numbering.terms;
+    let spectral_type_kind = entry
+        .spectral_type
+        .as_ref()
+        .map(|t| numbering.term_of(&t.kind))
+        .transpose()?;
     let mut row = EntryRow {
         release: numbering.release,
         object_id,
@@ -100,28 +106,28 @@ pub fn write_entry<'e>(
         error_unit: None,
         error_kind: None,
         group_id: entry.group_id.as_deref().map(str::to_owned),
-        via_source: None,
+        via_source: via.map(|through| numbering.sources.n(&through.source)),
         via_identifier: via.map(|through| String::from(&*through.identifier)),
         spectral_type: entry.spectral_type.as_ref().map(|t| t.text.clone()),
-        spectral_type_kind: entry
-            .spectral_type
-            .as_ref()
-            .map(|t| terms.of(&t.kind))
-            .transpose()?,
+        spectral_type_kind,
     };
-    row.via_source = via.map(|through| numbering.sources.n(&through.source));
     let published = match &entry.position {
         Some(p) => position_columns(&mut numbering.terms, &mut row, p)?,
         None => None,
     };
     writer.add(&row)?;
-    let release = numbering.release;
-    for flag in flag_rows(numbering, object_id, row.entry, entry.flags.iter()) {
-        writer.add(&flag)?;
-    }
-    for paper in reference_rows(release, object_id, row.entry, &entry.references) {
-        writer.add(&paper)?;
-    }
+    writer.add_all(&flag_rows(
+        numbering,
+        object_id,
+        row.entry,
+        entry.flags.iter().map(|(k, v)| (k, v.to_owned())),
+    ))?;
+    writer.add_all(&reference_rows(
+        numbering,
+        object_id,
+        row.entry,
+        &entry.references,
+    ))?;
     Ok((row, published))
 }
 
@@ -177,9 +183,7 @@ struct Detail<'q> {
     measure: Option<u32>,
     cmb: Option<&'q Quantity>,
     published_frame: Option<u32>,
-    also_published: Option<&'q Quantity>,
-    assumed_cosmology: Option<&'q univ_model::cosmology::AssumedCosmology>,
-    derived_from: Option<&'q [String; 2]>,
+    details: Details<'q>,
 }
 
 /// The measurements of one entry, written as rows.
@@ -258,24 +262,22 @@ pub fn position_error_rows(
     let PositionUncertainty::Published(errors) = uncertainty else {
         return Ok(Vec::new());
     };
-    [
-        ("position_error_ra", &errors.ra),
-        ("position_error_dec", &errors.dec),
-    ]
-    .into_iter()
-    .map(|(quantity, v)| {
-        measurement_row(
-            codes,
-            (object_id, entry),
-            quantity,
-            0,
-            v.kind,
-            &v.native,
-            &v.normalized,
-            &Detail::default(),
-        )
-    })
-    .collect()
+    let [ra, dec] = POSITION_ERRORS;
+    [(ra, &errors.ra), (dec, &errors.dec)]
+        .into_iter()
+        .map(|(quantity, v)| {
+            measurement_row(
+                codes,
+                (object_id, entry),
+                quantity,
+                0,
+                v.kind,
+                &v.native,
+                &v.normalized,
+                &Detail::default(),
+            )
+        })
+        .collect()
 }
 
 impl Measurements<'_, '_> {
@@ -307,13 +309,9 @@ impl Measurements<'_, '_> {
         self.writer.add(&row)?;
         let details = detail_row(
             numbering,
-            self.object_id,
-            self.entry,
-            row.quantity,
-            row.n,
-            detail.also_published,
-            detail.assumed_cosmology,
-            detail.derived_from,
+            (self.object_id, self.entry),
+            (row.quantity, row.n),
+            &detail.details,
         )?;
         match details {
             Some(details) => self.writer.add(&details),
@@ -375,8 +373,11 @@ impl Measurements<'_, '_> {
                 kind: Some(terms.of(&d.kind)?),
                 method: Some(terms.of(&d.method)?),
                 measure: Some(terms.of(&d.measure)?),
-                also_published: d.also_published.as_ref(),
-                assumed_cosmology: d.assumed_cosmology.as_ref(),
+                details: Details {
+                    also_published: d.also_published.as_ref(),
+                    assumed_cosmology: d.assumed_cosmology.as_ref(),
+                    derived_from: None,
+                },
                 ..Detail::default()
             };
             self.push(
@@ -452,7 +453,10 @@ impl Measurements<'_, '_> {
             // Numbered within the entry, as its distances are; the bands are its kind.
             let detail = Detail {
                 kind: Some(numbering.terms.id(&c.band_pair())),
-                derived_from: c.derived_from.as_ref(),
+                details: Details {
+                    derived_from: c.derived_from.as_ref(),
+                    ..Details::default()
+                },
                 ..Detail::default()
             };
             let v = &c.value;

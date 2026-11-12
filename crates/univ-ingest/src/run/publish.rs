@@ -182,16 +182,20 @@ pub fn store_command(
     let done = match command {
         StoreCommand::Publish => publish_command(&mut store, run.number, &options, &mut shown),
         StoreCommand::Prune => prune_command(&mut store, run.number, &options, &mut shown),
-        StoreCommand::Migrate => {
-            migrate_command(&mut store, &journals, &run.persist_to, &mut shown)
-        }
+        StoreCommand::Migrate => migrate_command(
+            &mut store,
+            &journals,
+            (&run.state, &run.persist_to),
+            &mut shown,
+        ),
     };
     done.unwrap_or_else(stopped)
 }
 
 /// Brings the store under shared rows through Wrangler, then its JSON at scale into rows of
-/// schema 8 on the local D1's own files, in `persist_to`, ending its stage with whether there
-/// was anything to do. No Worker may have the state open meanwhile.
+/// schema 8 on the local D1's own files, in `persist_to`, and, where it moved any, reindexes the
+/// state `state` from it; ending its stage with whether there was anything to do. No Worker may
+/// have the store open meanwhile.
 ///
 /// # Errors
 ///
@@ -199,11 +203,16 @@ pub fn store_command(
 fn migrate_command(
     store: &mut dyn Store,
     journals: &std::path::Path,
-    persist_to: &std::path::Path,
+    (state, persist_to): (&std::path::Path, &std::path::Path),
     shown: &mut Shown<'_>,
 ) -> Result<Outcome, String> {
     let shared = migrate_with(store, journals, shown)?;
     let rows = crate::release::schema8::migrate_local_d1(persist_to, &mut |line| shown.note(line))?;
+    if rows {
+        // New terms were numbered and rows written: the state's numbering and row index are
+        // made again from the store, so the next build numbers after them and retires them.
+        shown.note(super::reindex::reindex_command(state, persist_to)?);
+    }
     shown.ended(Vec::new());
     Ok(Outcome::Migrated(shared || rows))
 }

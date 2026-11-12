@@ -7,13 +7,14 @@
 use std::collections::BTreeMap;
 
 use super::columns::Columns;
-use super::measurements::Key;
+use super::measurements::{Key, key};
 use super::{ReadError, Row, Vocabulary};
 use crate::entry::{PaperReference, PositionErrors};
 use crate::value::{Quantity, Value as Measured};
 
-/// The quantities of a published position's errors, which are measurements of no
-/// [`crate::api::objects::MeasuredQuantity`]: they belong to the entry's position.
+/// The quantities of a published position's errors, in right ascension and declination, which
+/// are measurements of no [`crate::api::objects::MeasuredQuantity`]: they belong to the entry's
+/// position. Univ Ingest writes them under these names.
 pub const POSITION_ERRORS: [&str; 2] = ["position_error_ra", "position_error_dec"];
 
 /// What each of an object's entries holds beside its row, by entry number.
@@ -112,12 +113,6 @@ pub(super) fn by_key<'r>(
     rows: &'r [Row],
 ) -> Result<BTreeMap<Key, &'r Row>, ReadError> {
     rows.iter()
-        .map(|row| {
-            let c = Columns::new(v, "measurement_details", row);
-            Ok((
-                (c.small("entry")?, c.typed("quantity")?, c.small("n")?),
-                row,
-            ))
-        })
+        .map(|row| Ok((key(v, "measurement_details", row)?, row)))
         .collect()
 }

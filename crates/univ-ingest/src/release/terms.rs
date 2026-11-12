@@ -147,6 +147,21 @@ impl ser::Serializer for VariantName {
     }
 }
 
+/// The term `value` is written as: its variant name, or its JSON when it is not a unit
+/// variant, such as a mixed distance method.
+///
+/// # Errors
+///
+/// Fails when it cannot be written as JSON.
+pub fn term_name<T: Serialize + ?Sized>(
+    value: &T,
+) -> Result<std::borrow::Cow<'static, str>, String> {
+    match variant_name(value) {
+        Some(name) => Ok(name.into()),
+        None => Ok(super::json(value)?.0.into()),
+    }
+}
+
 /// The name serde gives `value`, a unit variant such as `galaxy_group`; none for another value.
 #[must_use]
 pub fn variant_name<T: Serialize + ?Sized>(value: &T) -> Option<&'static str> {
@@ -260,12 +275,7 @@ impl Terms {
     ///
     /// Fails when it cannot be written as JSON.
     pub fn of<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<u32, String> {
-        if let Some(name) = variant_name(value) {
-            Ok(self.id(name))
-        } else {
-            let json = super::json(value)?;
-            Ok(self.id(json.as_str()))
-        }
+        Ok(self.id(&term_name(value)?))
     }
 
     /// The rows of release `release`: the terms it names, by id.

@@ -4,9 +4,7 @@
 //! point to. The CON-3 cap is checked in `cap`.
 
 use univ_model::release::shards::Database;
-use univ_model::release::{ReleaseManifest, SHARED_ROWS_SINCE};
-
-use crate::release::schema8;
+use univ_model::release::{ReleaseManifest, SCHEMA_7_JSON_HELD, SHARED_ROWS_SINCE};
 
 use super::check::{Tables, published_status, schema_version};
 use super::upload::record_published;
@@ -66,43 +64,30 @@ pub(super) fn older_schema(
                 needs,
             }));
         }
-        if needs >= schema8::TO {
-            json_at_scale(store, manifest.release, *database, held)?;
-        }
+        json_at_scale(store, manifest.release, *database)?;
     }
     Ok(())
 }
 
-/// Refuses release `number` when `database`, which holds the tables `held`, holds a JSON column
-/// that schema 8 keeps as rows: its rows would not load, and `univ-ingest migrate` moves them.
-fn json_at_scale(
-    store: &mut dyn Store,
-    number: u32,
-    database: Database,
-    held: &std::collections::BTreeSet<String>,
-) -> Result<(), Refused> {
-    for (table, column) in schema8::JSON_COLUMNS {
-        if !held.contains(table) {
-            continue;
-        }
-        let sql = format!(
-            "SELECT COUNT(*) AS n FROM pragma_table_info('{table}') WHERE name = '{column}'"
-        );
-        let rows = store.query(database, &sql).map_err(Refused::Query)?;
-        if rows
-            .first()
-            .and_then(|r| r.get("n"))
-            .and_then(serde_json::Value::as_i64)
-            == Some(1)
-        {
-            return Err(Refused::Error(PublishError::JsonAtScale {
-                number,
-                database: database.to_string(),
-                column: format!("{table}.{column}"),
-            }));
-        }
+/// Refuses release `number` when `database` holds a JSON column of schema 7 that schema 8
+/// keeps as rows ([`SCHEMA_7_JSON_HELD`]): its rows would not load, and `univ-ingest migrate`
+/// moves them.
+fn json_at_scale(store: &mut dyn Store, number: u32, database: Database) -> Result<(), Refused> {
+    let rows = store
+        .query(database, SCHEMA_7_JSON_HELD)
+        .map_err(Refused::Query)?;
+    match rows
+        .first()
+        .and_then(|r| r.get("held"))
+        .and_then(serde_json::Value::as_str)
+    {
+        Some(column) => Err(Refused::Error(PublishError::JsonAtScale {
+            number,
+            database: database.to_string(),
+            column: column.to_owned(),
+        })),
+        None => Ok(()),
     }
-    Ok(())
 }
 
 /// Why publishing was refused before anything was uploaded.

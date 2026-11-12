@@ -17,6 +17,7 @@ use univ_model::release::rows::{
 use univ_model::value::Quantity;
 
 use super::entries::{Numbering, small};
+use super::terms::term_name;
 use crate::source::Membership;
 use univ_model::object::ObjectEntry;
 
@@ -26,12 +27,14 @@ pub trait Codes {
     fn release(&self) -> u32;
     /// The id of the term `name`.
     fn term(&mut self, name: &str) -> u32;
-    /// The id of the term `value` serializes as.
+    /// The id of the term `value` serializes as ([`term_name`]).
     ///
     /// # Errors
     ///
     /// Fails when it cannot be written as a term.
-    fn term_of<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<u32, String>;
+    fn term_of<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<u32, String> {
+        Ok(self.term(&term_name(value)?))
+    }
     /// The number of the source `source`.
     fn source(&mut self, source: &SourceId) -> u32;
 }
@@ -43,10 +46,6 @@ impl Codes for Numbering {
 
     fn term(&mut self, name: &str) -> u32 {
         self.terms.id(name)
-    }
-
-    fn term_of<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<u32, String> {
-        self.terms.of(value)
     }
 
     fn source(&mut self, source: &SourceId) -> u32 {
@@ -123,11 +122,11 @@ pub fn reason<'r>(
 
 /// The rows of the flags of entry `entry` of object `object_id`, each a column name, coded as
 /// a term, and its value as published.
-pub fn flag_rows<'f>(
+pub fn flag_rows<K: AsRef<str>>(
     codes: &mut impl Codes,
     object_id: u64,
     entry: u32,
-    flags: impl IntoIterator<Item = (&'f str, &'f str)>,
+    flags: impl IntoIterator<Item = (K, String)>,
 ) -> Vec<EntryFlagRow> {
     flags
         .into_iter()
@@ -135,8 +134,8 @@ pub fn flag_rows<'f>(
             release: codes.release(),
             object_id,
             entry,
-            flag: codes.term(flag),
-            value: value.to_owned(),
+            flag: codes.term(flag.as_ref()),
+            value,
         })
         .collect()
 }
@@ -144,7 +143,7 @@ pub fn flag_rows<'f>(
 /// The rows of the papers of entry `entry` of object `object_id`, in their order.
 #[must_use]
 pub fn reference_rows(
-    release: u32,
+    codes: &impl Codes,
     object_id: u64,
     entry: u32,
     papers: &[PaperReference],
@@ -153,7 +152,7 @@ pub fn reference_rows(
         .iter()
         .enumerate()
         .map(|(n, p)| EntryReferenceRow {
-            release,
+            release: codes.release(),
             object_id,
             entry,
             n: small(n),
@@ -164,23 +163,32 @@ pub fn reference_rows(
         .collect()
 }
 
-/// The row of what measurement `n` of `quantity` (a term) of entry `entry` holds beside its
-/// values: a distance's value as also published and its assumed cosmology, a colour index's
-/// two magnitude columns; none when it holds none of them.
-#[expect(
-    clippy::too_many_arguments,
-    reason = "the row's key, each column named where it is written"
-)]
+/// What a measurement holds beside its values, in a `measurement_details` row: a distance's
+/// value as also published and its assumed cosmology, a colour index's two magnitude columns.
+#[derive(Clone, Copy, Default)]
+pub struct Details<'q> {
+    pub also_published: Option<&'q Quantity>,
+    pub assumed_cosmology: Option<&'q AssumedCosmology>,
+    pub derived_from: Option<&'q [String; 2]>,
+}
+
+/// The row of `details` of measurement `n` of `quantity` (a term) of entry `entry` of object
+/// `object_id`; none when it holds none.
+///
+/// # Errors
+///
+/// Fails when a unit cannot be written as a term.
 pub fn detail_row(
     codes: &mut impl Codes,
-    object_id: u64,
-    entry: u32,
-    quantity: u32,
-    n: u32,
-    also: Option<&Quantity>,
-    assumed: Option<&AssumedCosmology>,
-    derived_from: Option<&[String; 2]>,
+    (object_id, entry): (u64, u32),
+    (quantity, n): (u32, u32),
+    details: &Details<'_>,
 ) -> Result<Option<MeasurementDetailRow>, String> {
+    let Details {
+        also_published: also,
+        assumed_cosmology: assumed,
+        derived_from,
+    } = *details;
     if also.is_none() && assumed.is_none() && derived_from.is_none() {
         return Ok(None);
     }

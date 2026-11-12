@@ -5,12 +5,9 @@
 use std::collections::HashMap;
 
 use rusqlite::Connection;
-use serde::Serialize;
 use univ_model::ids::SourceId;
 
 use super::super::extras::Codes;
-use super::super::json;
-use super::super::terms::variant_name;
 
 /// The catalogue's terms and sources, and the terms numbered since they were read.
 pub struct StoreCodes {
@@ -38,7 +35,8 @@ impl StoreCodes {
     ///
     /// # Errors
     ///
-    /// Fails when its terms or sources cannot be read, or when one term has two numbers.
+    /// Fails when its terms or sources cannot be read, or when one term or source has two
+    /// numbers.
     pub fn read(catalogue: &Connection) -> Result<Self, String> {
         let mut terms = HashMap::new();
         let mut next = 0;
@@ -48,9 +46,12 @@ impl StoreCodes {
             }
             next = next.max(id + 1);
         }
-        let sources = pairs::<String, u32>(catalogue, "SELECT id, n FROM sources")?
-            .into_iter()
-            .collect();
+        let mut sources = HashMap::new();
+        for (id, n) in pairs::<String, u32>(catalogue, "SELECT id, n FROM sources")? {
+            if let Some(other) = sources.insert(id.clone(), n).filter(|o| *o != n) {
+                return Err(format!("source {id} is numbered both {other} and {n}"));
+            }
+        }
         Ok(Self {
             release: 0,
             terms,
@@ -99,13 +100,6 @@ impl Codes for StoreCodes {
         self.terms.insert(name.to_owned(), id);
         self.added.push((id, name.to_owned()));
         id
-    }
-
-    fn term_of<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<u32, String> {
-        match variant_name(value) {
-            Some(name) => Ok(self.term(name)),
-            None => Ok(self.term(json(value)?.as_str())),
-        }
     }
 
     fn source(&mut self, source: &SourceId) -> u32 {

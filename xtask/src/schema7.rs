@@ -6,11 +6,11 @@ use std::fs;
 use std::path::Path;
 
 use rusqlite::{Connection, OpenFlags};
-use univ_model::release::{LOCAL_D1_FILES, SCHEMA_7_JSON};
+use univ_model::release::{LOCAL_D1_FILES, SCHEMA_7_JSON_HELD};
 
 /// The first JSON column of schema 7 that a database of the local state `state` still holds
-/// ([`SCHEMA_7_JSON`]), named with its file; none when every database is of schema 8. Each is
-/// opened read only, beside any Worker.
+/// ([`SCHEMA_7_JSON_HELD`]), named with its file; none when every database is of schema 8.
+/// Each is opened read only, beside any Worker.
 pub(crate) fn json_held(state: &Path) -> Option<String> {
     let dir = state.join(LOCAL_D1_FILES);
     let files = fs::read_dir(&dir)
@@ -22,14 +22,9 @@ pub(crate) fn json_held(state: &Path) -> Option<String> {
         let Ok(db) = Connection::open_with_flags(&path, flags) else {
             continue;
         };
-        for (table, column) in SCHEMA_7_JSON {
-            let sql = format!(
-                "SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name = '{column}'"
-            );
-            if db.query_row(&sql, [], |r| r.get::<_, i64>(0)).ok() == Some(1) {
-                let name = path.file_name().unwrap_or_default().to_string_lossy();
-                return Some(format!("{name} holds {table}.{column}"));
-            }
+        if let Ok(column) = db.query_row(SCHEMA_7_JSON_HELD, [], |r| r.get::<_, String>(0)) {
+            let name = path.file_name().unwrap_or_default().to_string_lossy();
+            return Some(format!("{name} holds {column}"));
         }
     }
     None
