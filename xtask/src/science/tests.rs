@@ -112,12 +112,23 @@ fn a_row_altered_after_the_build_is_found_by_the_fingerprints() {
     assert_eq!(load::load(&db, dir.path(), &manifest).unwrap(), 2);
     let (tables, found) = fingerprints::differences(&db, &manifest).unwrap();
     assert_eq!((tables, found.len()), (TABLES.len(), 0), "{found:?}");
-    // A distance moved, and a term renamed to another of the same length.
-    db.execute_batch(
-        "UPDATE objects SET distance_mpc = 0.781 WHERE id = 1; \
-         UPDATE terms SET term = 'cepheidz' WHERE term = 'cepheids';",
-    )
-    .unwrap();
+    // A distance moved, and a term renamed to another of the same length, in the rows as
+    // they reach the loader: the fingerprints are those of the rows read, recorded as they are
+    // loaded.
+    let last = manifest
+        .files
+        .iter()
+        .rfind(|f| f.target == univ_model::release::manifest::Target::D1)
+        .unwrap();
+    let path = dir.path().join(&last.path);
+    let mut sql = std::fs::read_to_string(&path).unwrap();
+    sql.push_str(
+        "\nUPDATE objects SET distance_mpc = 0.781 WHERE id = 1; \
+         UPDATE terms SET term = 'cepheidz' WHERE term = 'cepheids';\n",
+    );
+    std::fs::write(&path, sql).unwrap();
+    let (db, _) = load::open(None).unwrap();
+    load::load(&db, dir.path(), &manifest).unwrap();
     let (_, found) = fingerprints::differences(&db, &manifest).unwrap();
     assert!(
         found.iter().any(|f| f.starts_with("objects.distance_mpc")),
@@ -276,6 +287,28 @@ fn a_release_written_as_a_change_is_loaded_whole_through_its_parent() {
         count("SELECT COUNT(*) FROM objects WHERE release = 2 AND retired IS NULL"),
         before - 1
     );
+    // Fingerprinted as release 2 holds its rows, before the load took each as its own: every
+    // one still of release 1, and the lookup tables as release 1 wrote them.
+    let recorded = |table: &str, column: &str| -> f64 {
+        db.query_row(
+            "SELECT total FROM science_fingerprints WHERE tbl = ?1 AND col = ?2",
+            [table, column],
+            |r| r.get(0),
+        )
+        .unwrap()
+    };
+    #[expect(clippy::cast_precision_loss, reason = "a handful of objects")]
+    let kept = (before - 1) as f64;
+    assert!((recorded("objects", "release") - kept).abs() < 0.5);
+    let digest: String = db
+        .query_row(
+            "SELECT sha256 FROM science_contents WHERE tbl = 'terms'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let terms = parent.table_estimate("terms").unwrap();
+    assert_eq!(Some(digest), terms.content_sha256);
 
     // With its parent's build gone, as after a prune, it is refused, naming why.
     std::fs::remove_file(first.join(keys::MANIFEST)).unwrap();
