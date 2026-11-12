@@ -129,13 +129,16 @@ pub const SCHEMA_7_JSON: [(&str, &str); 6] = [
 ];
 
 /// The query that gives the first column of [`SCHEMA_7_JSON`] a database holds, as
-/// `table.column` in its one column `held`; no row when it holds none.
-pub const SCHEMA_7_JSON_HELD: &str = "SELECT t.name || '.' || c.name AS held \
-     FROM sqlite_master t JOIN pragma_table_info(t.name) c \
-     WHERE t.type = 'table' AND (t.name, c.name) IN (VALUES ('objects', 'links'), \
-     ('objects', 'relations'), ('entries', 'flags'), ('entries', 'extra'), \
-     ('measurements', 'extra'), ('ids_replaced', 'replaced_by')) \
-     ORDER BY t.name = 'objects' DESC, t.name, c.name LIMIT 1";
+/// `table.column` in its one column `held`; no row when it holds none. It reads each table's
+/// columns through `pragma_table_info` alone, as D1 lets a query do, never `sqlite_master`.
+pub const SCHEMA_7_JSON_HELD: &str = "\
+SELECT 'objects.' || name AS held FROM pragma_table_info('objects') \
+WHERE name IN ('links', 'relations') UNION ALL \
+SELECT 'entries.' || name FROM pragma_table_info('entries') WHERE name IN ('flags', 'extra') \
+UNION ALL SELECT 'measurements.' || name FROM pragma_table_info('measurements') \
+WHERE name IN ('extra') UNION ALL \
+SELECT 'ids_replaced.' || name FROM pragma_table_info('ids_replaced') \
+WHERE name IN ('replaced_by') LIMIT 1";
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");

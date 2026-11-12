@@ -10,6 +10,15 @@ versions:
     title: "Schema 8"
     goal: "Schema 8 holds flags, references, extras, links, relations and memberships as rows, ingest writes them, reads give the same records, and migrate brings a schema-7 store to 8"
     status: active
+  - key: 01a1cd48-beeb-712e-8c00-81a0cb488833
+    at: 2026-11-12T01:04:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Schema 8"
+    goal: "Schema 8 holds flags, references, extras, links, relations and memberships as rows, ingest writes them, reads give the same records, and migrate brings a schema-7 store to 8"
+    status: done
 blocks:
   - key: 01a1ccae-063a-74b7-8d8b-e397d16e4868
     id: t1-scale
@@ -170,6 +179,15 @@ blocks:
         title: "T6. Wave review"
         detail: "/simplify and /code-review in parallel, findings fixed; cargo xtask check and integration once each; traces linked; Yard Log closed."
         state: active
+      - key: 01a1cd48-beeb-712e-8c00-819f0380ca3d
+        at: 2026-11-12T01:04:19Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T6. Wave review"
+        detail: "/simplify (reuse, simplification, efficiency, altitude) and /code-review run in parallel; findings fixed or skipped with reasons in the build-issues note. Traces: the no-JSON and scale Constraints and the three membership criteria linked, the renamed links test relinked, changed tests re-accepted; `loft reconcile --fail-on warning` passes (the SQL gate and scan guard, wave 2, unlinked). `cargo xtask check` passed (13 gates); `cargo xtask integration` passed (fixture state, Worker end to end, 26 Playwright) once the schema-7 probe stopped reading sqlite_master."
+        state: done
   - key: 01a1ccae-063a-74b7-8d8b-e39d5b37fe59
     id: build-issues
     kind: note
@@ -237,6 +255,36 @@ blocks:
           | The build lists 39 files, not 37 (the new tables' SQL) | `release_cli` | count updated | fixed |
           | `cargo xtask serve`/`explore` on an unmigrated schema-7 state would serve object reads that fail on the missing columns | review of the path | a guard to add in T6 | open |
           | `rules/science-checks.yaml` still reads `entries.flags`/`extra` (:104, :274, :347, :392, :414, :431, :452, :1109) | grep | rewritten in wave 2, T9 | open |
+      - key: 01a1cd44-0d4e-71d3-98a1-c9b218f1e82b
+        at: 2026-11-12T00:59:11Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | The survey missed JSON columns (`releases.sources`, `sources.*`, `normalizations.*`, `grids.fields`, `structures.bounds`) | typing JSON as `Json` in T1 | all in release- or source-scale tables, typed `Json` | fixed |
+          | `ids_replaced.replaced_by` JSON in an object-scale table | the same | `id_replacements` rows | fixed |
+          | `sql.rs` at 501 lines | `cargo xtask lines` | `Scale` in `release/scale.rs` | fixed |
+          | Flag names first written as text | my review against the plan | coded as terms | fixed |
+          | The duplicate-key links test checked JSON that no longer exists | compile | `candidate_links_are_written_as_rows_of_their_own`, trace relinked | fixed |
+          | D1 tests named files by table number | `release::d1::tests` | numbers updated; estimate found by name | fixed |
+          | `shared_rows_tests` named velocity by term id | the test | term looked up by name | fixed |
+          | The 5→6 migration rebuilt tables from the current schema, failing or dropping a schema-5 store's JSON | `migrate_store` tests (an earlier run of mine hid them behind `head`) | 5→6 keeps extra columns and records 6; 7→8 converts them | fixed |
+          | A publish of 8 onto a database of 7 would fail loading | reading `refuse.rs` | refused before upload, naming `univ-ingest migrate` | fixed |
+          | `serve`/`explore` on an unmigrated state would fail object reads | review | refused with the same message (xtask `schema7`) | fixed |
+          | Review: migrate left the state's numbering and row index stale | /code-review | `univ-ingest migrate` reindexes once it moved rows | fixed |
+          | Review: migrate failed on a state with no D1 or nothing to do | /code-review | leaves it alone; tested | fixed |
+          | Review: the docs said it clones; it migrates what it is given | /code-review | docs: it is given an APFS clone, swapped in after | fixed |
+          | Review: one source numbered twice went unnoticed | /code-review | refused, as a term is | fixed |
+          | Review: local D1 discovery, term rule, schema-7 probe, source and confidence reads written twice or thrice | /simplify reuse, altitude | one each, shared | fixed |
+          | Review: per-row SQL text, flags copied thrice, index built row by row, all shards and their caches held open, no compaction | /simplify efficiency | statement made once per table, values moved, index built after the rows, one shard at a time, checkpoint and VACUUM each | fixed |
+          | Review: per-object key lists kept by hand; the shard-table test compared the list with itself | /simplify altitude | `Table::grows_with_objects`; a real test of which tables sit in a shard | fixed |
+          | The schema-7 probe read `sqlite_master`, which D1 refuses (`SQLITE_AUTH`) | `cargo xtask integration`, fixture state | `pragma_table_info` of each table alone; tested that it names no `sqlite_master` | fixed |
+          | Skipped: shards migrated in parallel (term numbers would not repeat), one rebuild generator for 5→6 and 7→8 (different paths), shared test readers (would pull in the fixture builder), `indexed()` for link sources (designations use `n()` the same way) | review | noted | skipped |
+          | `rules/science-checks.yaml` still reads `entries.flags`/`extra` | grep, /code-review | wave 2, T9 | open |
   - key: 01a1ccfd-3e6a-709a-86c9-17c3eb04b0b7
     id: size-projection
     kind: note
@@ -260,4 +308,24 @@ blocks:
           | **Net** | **≈ +55 MB a shard (≈ 2%), ≈ 0.9 GB over 16** |
 
           Well inside the 4.5 GB per-shard budget; T5 goes ahead. The few links, relations, references and measurement details are rows of no size that matters.
+        tone: success
+  - key: 01a1cd48-beeb-712e-8c00-819e1c80e96a
+    id: wave-1-done
+    kind: note
+    versions:
+      - key: 01a1cd48-beeb-712e-8c00-81a152e1190e
+        at: 2026-11-12T01:04:19Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "What wave 1 produced"
+        markdown: |-
+          - **Schema 8** keeps no JSON in a table that grows with a release's objects: flags, papers, measurement details, links, relations, memberships and replaced ids are rows; via, spectral type and the published redshift frame are columns; published position errors are measurements. Every table names its scale, JSON columns are typed `Json`, and a test refuses one at object or entry scale.
+          - **Ingest** writes the rows through builders it shares with the migration; Reid et al. 2019's `Arm` codes make masers members of their model arms.
+          - **Readers and the API** give the same records (the API's record tests unchanged); an object read is one shard batch of nine indexed reads.
+          - **`univ-ingest migrate`** brings a schema-7 store to 8 in place, one database at a time, each in one transaction and vacuumed, then reindexes; a publish, `serve` and `explore` refuse a store still at 7.
+          - **Size**: about +55 MB a shard (≈ 2%) on release 15.
+
+          Left for wave 2: the `cargo xtask json` gate, the scan guard, and the science checks rewritten onto the rows (they still read the old columns). Left for the owner's word: merging this wave, migrating a clone of the real store and swapping it in, release 16.
         tone: success

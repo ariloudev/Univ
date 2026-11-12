@@ -71,7 +71,8 @@ fn each_tracer_is_an_object_of_its_kind_in_the_galaxy_tracers_domain_once_placed
 
 #[test]
 fn a_maser_whose_arm_code_names_a_model_arm_is_its_member_with_the_source_and_code() {
-    // The recorded masers as Reid et al. 2019's Table 1 gives them: three on Sct-Cen near the
+    // The recorded masers as Reid et al. 2019's Table 1 gives them in its column `Arm`, whose
+    // code names no arm of the model for a spur or the Galactic Centre: three on Sct-Cen near the
     // Centaurus end (CtN), one on Sgr-Car near Carina (CrN), and one in the Galactic Centre
     // region (GC), which no arm of their model holds.
     let expected = [

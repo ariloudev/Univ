@@ -354,12 +354,22 @@ fn version_6_shares_rows_and_maps_files_by_hash() {
 
 #[test]
 fn the_query_for_schema_7_json_names_exactly_its_columns() {
-    let named = super::SCHEMA_7_JSON_HELD.matches("('").count();
-    assert_eq!(named, super::SCHEMA_7_JSON.len());
+    let query = super::SCHEMA_7_JSON_HELD;
+    // Each table once, each of its columns once, and nothing D1 refuses a query.
+    assert!(!query.contains("sqlite_master"));
+    let tables: std::collections::BTreeSet<&str> =
+        super::SCHEMA_7_JSON.iter().map(|(t, _)| *t).collect();
+    assert_eq!(query.matches("pragma_table_info(").count(), tables.len());
     for (table, column) in super::SCHEMA_7_JSON {
+        let at = query
+            .find(&format!("pragma_table_info('{table}')"))
+            .unwrap();
+        let clause = &query[at..query[at..]
+            .find(" UNION ALL")
+            .map_or(query.len(), |e| at + e)];
         assert!(
-            super::SCHEMA_7_JSON_HELD.contains(&format!("('{table}', '{column}')")),
-            "{table}.{column}"
+            clause.contains(&format!("'{column}'")),
+            "{table}.{column}: {clause}"
         );
     }
 }
