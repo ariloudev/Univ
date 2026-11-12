@@ -305,3 +305,22 @@ fn argument_end(tokens: &[Token], from: usize) -> usize {
     }
     tokens.len()
 }
+
+/// The tables of the release schema each name of `sql`'s `FROM` and `JOIN` lists reads, by
+/// table name and alias in lower case: an alias given to several in different statements or
+/// subqueries names each.
+pub(crate) fn tables_named(sql: &str) -> HashMap<String, Vec<&'static Table>> {
+    let tokens = tokens(sql);
+    let mut named: HashMap<String, Vec<&'static Table>> = HashMap::new();
+    for statement in tokens.split(|t| t.is_punct(";")) {
+        for (name, source) in Statement::new(statement).sources {
+            if let Source::Table(table) = source {
+                let tables = named.entry(name).or_default();
+                if !tables.iter().any(|t| t.name == table.name) {
+                    tables.push(table);
+                }
+            }
+        }
+    }
+    named
+}

@@ -164,3 +164,31 @@ pub fn register(db: &Connection, release: u32, cosmology: &Cosmology) -> Result<
     .map_err(|e| e.to_string())?;
     Ok(())
 }
+
+/// The indexes the checks search the tables per object and per catalogue entry by, beside the
+/// release schema's own (the scan guard, [`super::plan`]): made in the scratch database alone,
+/// as D1 keeps only the indexes Univ Server reads by, and these would cost every object shard
+/// space for the checks' sake.
+const CHECK_INDEXES: &[(&str, &str)] = &[
+    ("entries", "source, release"),
+    ("measurements", "quantity, release"),
+    ("objects", "scale_domain, placed, distance_mpc"),
+    ("objects", "placed, distance_mpc"),
+    ("objects", "kind, placed"),
+    ("objects", "preferred_quantity, placed"),
+];
+
+/// Makes [`CHECK_INDEXES`] in `db` where it lacks them.
+///
+/// # Errors
+///
+/// Fails when an index cannot be made.
+pub fn index(db: &Connection) -> Result<(), String> {
+    for (n, (table, columns)) in CHECK_INDEXES.iter().enumerate() {
+        db.execute_batch(&format!(
+            "CREATE INDEX IF NOT EXISTS check_{n} ON {table} ({columns})"
+        ))
+        .map_err(|e| format!("cannot index {table} ({columns}) for the checks: {e}"))?;
+    }
+    Ok(())
+}

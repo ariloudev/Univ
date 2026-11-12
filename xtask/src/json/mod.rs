@@ -14,6 +14,8 @@ mod sql;
 mod tests;
 mod tokens;
 
+pub(crate) use sql::tables_named;
+
 use std::fs;
 use std::io;
 use std::path::Path;

@@ -15,6 +15,7 @@ mod grid;
 mod load;
 mod objects;
 mod pairs;
+mod plan;
 mod rules;
 mod store;
 #[cfg(test)]
@@ -152,29 +153,13 @@ fn science(root: &Path, args: &[String], out: &mut dyn std::io::Write) -> Result
     let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
     let manifest: ReleaseManifest =
         serde_norway::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
-    let (db, loaded) = load::open(options.db.as_deref())?;
-    let started = Instant::now();
-    let load_line = if loaded {
-        "load: skipped, the database was loaded already".to_owned()
-    } else {
-        let what = match &options.store {
-            Some(dir) => format!(
-                "{} databases of the local D1 in {}",
-                store::load(&db, dir, manifest.release)?,
-                dir.display()
-            ),
-            None => format!("{} D1 files", load::load(&db, &options.release, &manifest)?),
-        };
-        format!(
-            "load: release {} from {what} in {:.1} s",
-            manifest.release,
-            started.elapsed().as_secs_f64()
-        )
-    };
     let write = |out: &mut dyn std::io::Write, line: &str| {
         writeln!(out, "{line}").map_err(|e| format!("cannot write: {e}"))
     };
-    write(out, &load_line)?;
+    let (db, lines) = loaded(&options, &manifest)?;
+    for line in &lines {
+        write(out, line)?;
+    }
     load::register(&db, manifest.release, &manifest.cosmology)?;
     let release = Release {
         db: &db,
@@ -244,4 +229,38 @@ fn science(root: &Path, args: &[String], out: &mut dyn std::io::Write) -> Result
         ),
     )?;
     Ok(counts[1] == 0)
+}
+
+/// The scratch database of the release `manifest` names, loaded as `options` say and indexed
+/// for the checks, with a line on each step.
+fn loaded(
+    options: &Options,
+    manifest: &ReleaseManifest,
+) -> Result<(Connection, [String; 2]), String> {
+    let (db, loaded) = load::open(options.db.as_deref())?;
+    let started = Instant::now();
+    let load_line = if loaded {
+        "load: skipped, the database was loaded already".to_owned()
+    } else {
+        let what = match &options.store {
+            Some(dir) => format!(
+                "{} databases of the local D1 in {}",
+                store::load(&db, dir, manifest.release)?,
+                dir.display()
+            ),
+            None => format!("{} D1 files", load::load(&db, &options.release, manifest)?),
+        };
+        format!(
+            "load: release {} from {what} in {:.1} s",
+            manifest.release,
+            started.elapsed().as_secs_f64()
+        )
+    };
+    let started = Instant::now();
+    load::index(&db)?;
+    let index_line = format!(
+        "index: the checks' indexes in {:.1} s",
+        started.elapsed().as_secs_f64()
+    );
+    Ok((db, [load_line, index_line]))
 }
