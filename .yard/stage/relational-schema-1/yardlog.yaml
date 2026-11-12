@@ -1,0 +1,62 @@
+format: yardlog/1
+key: 01a1ccae-063a-74b7-8d8b-e39502dee6c2
+branch: "stage/relational-schema-1"
+base: "develop"
+title: "stage/relational-schema-1"
+revision: 8
+opened:
+  at: 2026-11-11T22:15:19Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "733ab034-0172-4107-897d-a9a3752e1525"
+stages:
+  - key: 01a1ccae-063a-74b7-8d8b-e39611e6557d
+    id: schema
+closed:
+  at: 2026-11-12T01:04:22Z
+  revision: 8
+  by:
+    host: claude-code
+    session: "733ab034-0172-4107-897d-a9a3752e1525"
+acts:
+  - at: 2026-11-11T22:15:19Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T22:40:35Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T23:30:09Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T23:41:51Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T00:08:16Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T00:59:11Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T01:04:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T01:04:22Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"

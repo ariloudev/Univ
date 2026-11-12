@@ -131,7 +131,7 @@ impl Fingerprinter {
             .kinds
             .iter()
             .map(|kind| match kind {
-                ColumnKind::Text => Running::Bytes(0),
+                ColumnKind::Text | ColumnKind::Json => Running::Bytes(0),
                 ColumnKind::Integer => Running::Sum(0),
                 ColumnKind::Real => Running::Real(Sum::default(), Sum::default()),
             })
@@ -222,7 +222,7 @@ impl Table {
         let mut terms = vec![format!("COUNT(*) AS {ROWS}")];
         for (column, kind) in self.columns.iter().zip(self.kinds) {
             let measure = match kind {
-                ColumnKind::Text => format!("length(CAST({column} AS BLOB))"),
+                ColumnKind::Text | ColumnKind::Json => format!("length(CAST({column} AS BLOB))"),
                 ColumnKind::Integer | ColumnKind::Real => (*column).to_owned(),
             };
             terms.push(format!("total({measure}) AS {}", alias(column)));
@@ -294,7 +294,7 @@ fn order(a: &SqlValue, b: &SqlValue) -> std::cmp::Ordering {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::release::sql::Scope;
+    use crate::release::sql::{Scale, Scope};
 
     const T: Table = Table {
         name: "t",
@@ -303,6 +303,7 @@ mod tests {
         key: &["release", "name"],
         indexes: &[],
         scope: Scope::PerRelease,
+        scale: Scale::Release,
     };
 
     #[test]

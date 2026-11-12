@@ -47,6 +47,50 @@ fn declared_all(table: &str) -> (Vec<String>, Vec<String>) {
 }
 
 #[test]
+fn version_8_keeps_json_out_of_every_table_per_object_or_per_entry() {
+    assert_eq!(SCHEMA_VERSION, 8);
+    for table in &TABLES {
+        let json: Vec<&str> = table.json_columns().collect();
+        assert!(
+            table.scale.allows_json() || json.is_empty(),
+            "{} ({}) holds JSON in {json:?}",
+            table.name,
+            table.scale.words()
+        );
+    }
+    for name in [
+        "entry_flags",
+        "entry_references",
+        "measurement_details",
+        "object_links",
+        "object_relations",
+        "memberships",
+        "id_replacements",
+    ] {
+        let table = TABLES.iter().find(|t| t.name == name).unwrap();
+        assert!(!table.scale.allows_json(), "{name}");
+        assert_eq!(table.columns, declared(name).0, "{name}");
+    }
+}
+
+#[test]
+fn every_table_names_its_scale_in_the_schema() {
+    for table in &TABLES {
+        let create = format!("CREATE TABLE IF NOT EXISTS {} (", table.name);
+        let at = SCHEMA
+            .find(&create)
+            .unwrap_or_else(|| panic!("{} is not in the schema", table.name));
+        let above = SCHEMA[..at].lines().last();
+        assert_eq!(
+            above,
+            Some(format!("-- Scale: {}.", table.scale.words()).as_str()),
+            "{}",
+            table.name
+        );
+    }
+}
+
+#[test]
 fn every_row_type_matches_its_table_in_the_schema() {
     for table in TABLES {
         let (columns, key) = declared(table.name);
@@ -147,7 +191,6 @@ fn version_4_adds_the_source_terms_per_release() {
 
 #[test]
 fn version_7_adds_how_each_source_is_read_per_release() {
-    assert_eq!(SCHEMA_VERSION, 7);
     let columns = [
         "release",
         "source",
@@ -197,14 +240,13 @@ fn a_row_gives_its_values_in_column_order() {
         id: 5,
         release: 2,
         change: "merged_into".into(),
-        replaced_by: "[3]".into(),
     };
     let statements = super::statements::inserts(IdReplacedRow::TABLE, &[replaced.values()]);
     assert_eq!(
         statements,
         [
-            "INSERT OR IGNORE INTO ids_replaced (id, release, change, replaced_by) VALUES\n\
-          (5, 2, 'merged_into', '[3]');\n"
+            "INSERT OR IGNORE INTO ids_replaced (id, release, change) VALUES\n\
+          (5, 2, 'merged_into');\n"
         ]
     );
 }
@@ -300,6 +342,51 @@ fn version_6_shares_rows_and_maps_files_by_hash() {
     for table in TABLES {
         for index in table.indexes {
             assert_eq!(index.last(), Some(&"release"), "{}", table.name);
+        }
+    }
+}
+
+#[test]
+fn the_query_for_schema_7_json_names_exactly_its_columns() {
+    let query = super::SCHEMA_7_JSON_HELD;
+    // Each table once, each of its columns once, and nothing D1 refuses a query.
+    assert!(!query.contains("sqlite_master"));
+    let tables: std::collections::BTreeSet<&str> =
+        super::SCHEMA_7_JSON.iter().map(|(t, _)| *t).collect();
+    assert_eq!(query.matches("pragma_table_info(").count(), tables.len());
+    for (table, column) in super::SCHEMA_7_JSON {
+        let at = query
+            .find(&format!("pragma_table_info('{table}')"))
+            .unwrap();
+        let clause = &query[at..query[at..]
+            .find(" UNION ALL")
+            .map_or(query.len(), |e| at + e)];
+        assert!(
+            clause.contains(&format!("'{column}'")),
+            "{table}.{column}: {clause}"
+        );
+    }
+}
+
+#[test]
+fn every_table_of_an_objects_rows_is_in_its_shard_but_its_names_and_its_shards_index() {
+    // A name is looked up across every object, and the index finds each object's shard.
+    let catalogue = ["names", "object_shards"];
+    for table in &TABLES {
+        assert_eq!(
+            table.in_shard(),
+            table.grows_with_objects() && !catalogue.contains(&table.name),
+            "{}",
+            table.name
+        );
+        // A writer forgets their keys once an object's rows are written: unique within each
+        // object, they are unique, its id being unique.
+        if table.grows_with_objects() {
+            assert!(
+                table.key.iter().any(|c| *c == "id" || *c == "object_id"),
+                "{}",
+                table.name
+            );
         }
     }
 }

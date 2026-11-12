@@ -86,15 +86,26 @@ impl From<StoreArgs> for StoreRun {
     }
 }
 
-impl From<LocalArgs> for StoreRun {
-    /// A run on the local D1 and R2 alone, as a migration is: it reads no release or state.
-    fn from(args: LocalArgs) -> Self {
+#[derive(Args)]
+pub struct MigrateArgs {
+    /// The state directory, reindexed from the local D1 once its JSON is moved into rows: the
+    /// one that goes with `--persist-to`, its clone where that is a clone.
+    #[arg(long, value_name = "DIR", default_value = DEFAULT_STATE)]
+    pub state: PathBuf,
+    #[command(flatten)]
+    pub local: LocalArgs,
+}
+
+impl From<MigrateArgs> for StoreRun {
+    /// A run on the local D1 and R2 and the state that goes with them, as a migration is: it
+    /// reads no release.
+    fn from(args: MigrateArgs) -> Self {
         Self {
             number: 0,
             out: PathBuf::from(DEFAULT_BUILD),
-            state: PathBuf::from(DEFAULT_STATE),
-            persist_to: args.persist_to,
-            config: args.config,
+            state: args.state,
+            persist_to: args.local.persist_to,
+            config: args.local.config,
         }
     }
 }

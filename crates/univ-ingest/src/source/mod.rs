@@ -2,12 +2,14 @@
 //! anything is fetched.
 
 mod access;
+mod memberships;
 mod normalization;
 mod reading;
 mod reference;
 mod rules;
 
 pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
+pub use memberships::{Membership, check_structures};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{
@@ -74,6 +76,9 @@ pub struct SourceDefinition {
     /// single-key maps, such as `{ symmetric: e_cz }`, rather than YAML tags.
     #[serde(default, with = "serde_norway::with::singleton_map_recursive")]
     pub normalization: Normalization,
+    /// The flag columns whose values assign a row to a researched structure, each cited.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub memberships: Vec<Membership>,
 }
 
 /// A column the source definition takes, mapped to a univ-model field.
@@ -370,6 +375,7 @@ impl SourceDefinition {
             _ => {}
         }
         reading::check(self.designation.as_ref(), &self.flags, &self.columns)?;
+        memberships::check(&self.memberships, &self.flags, &self.columns)?;
         self.redistribution.check_permission()?;
         self.access.check()?;
         if self.columns.is_empty() && !matches!(self.access, Access::Repository { .. }) {

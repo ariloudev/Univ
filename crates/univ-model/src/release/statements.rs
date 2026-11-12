@@ -83,7 +83,7 @@ pub(crate) fn inserts(table: Table, rows: &[Vec<SqlValue>]) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::release::sql::{ColumnKind, Scope};
+    use crate::release::sql::{ColumnKind, Scale, Scope};
 
     const T: Table = Table {
         name: "t",
@@ -92,6 +92,7 @@ mod tests {
         key: &["release", "id"],
         indexes: &[],
         scope: Scope::PerRelease,
+        scale: Scale::Release,
     };
 
     #[test]

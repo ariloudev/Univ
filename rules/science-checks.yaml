@@ -98,11 +98,12 @@ checks:
     select:
       kind: query
       sql: >-
-        SELECT e.object_id FROM entries e JOIN designations d ON d.release = e.release
-        AND d.object_id = e.object_id AND d.source = source('cosmicflows-4') AND d.identifier = '41220'
-        WHERE e.release = :release AND e.source = source('cosmicflows-4')
-        AND instr(coalesce(e.flags, '') || coalesce(e.extra, ''), '2017ApJ...843...16K') > 0
-        AND instr(coalesce(e.flags, '') || coalesce(e.extra, ''), 'J/ApJ/843/16') > 0
+        SELECT e.object_id FROM designations d JOIN entries e ON e.release = d.release
+        AND e.object_id = d.object_id AND e.source = d.source
+        JOIN entry_flags f ON f.release = e.release AND f.object_id = e.object_id
+        AND f.entry = e.entry AND f.flag = term('position_source')
+        WHERE d.release = :release AND d.source = source('cosmicflows-4') AND d.identifier = '41220'
+        AND instr(f.value, '2017ApJ...843...16K') > 0 AND instr(f.value, 'J/ApJ/843/16') > 0
     expect: { equals: 1 }
     cite:
       - paper: "Kourkchi & Tully 2017, ApJ 843, 16 (VizieR J/ApJ/843/16)"
@@ -271,7 +272,8 @@ checks:
         AND d.source = source('hipparcos-2007') AND d.identifier = '27989'
         JOIN entries e ON e.release = o.release AND e.object_id = o.id AND e.entry = o.preferred_entry
         WHERE o.release = :release AND e.source = source('researched-star-distances')
-        AND instr(coalesce(e.extra, ''), '2020ApJ...902...63J') > 0
+        AND EXISTS (SELECT 1 FROM entry_references r WHERE r.release = e.release
+        AND r.object_id = e.object_id AND r.entry = e.entry AND r.bibcode = '2020ApJ...902...63J')
     expect: { equals: 1 }
     cite:
       - paper: "Joyce, Leung, Molnár, Ireland, Kobayashi & Nomoto 2020, ApJ 902, 63"
@@ -344,7 +346,8 @@ checks:
       sql: >-
         SELECT e.object_id FROM entries e WHERE e.release = :release
         AND e.source = source('researched-star-distances')
-        AND json_extract(coalesce(e.extra, '{}'), '$.references[0].citation') IS NULL
+        AND NOT EXISTS (SELECT 1 FROM entry_references r WHERE r.release = e.release
+        AND r.object_id = e.object_id AND r.entry = e.entry AND r.n = 0 AND r.citation <> '')
     expect: { equals: 0 }
     cite:
       - paper: "univ-server specification, feature Record a researched star distance"
@@ -388,8 +391,9 @@ checks:
       sql: >-
         SELECT avg(EXISTS (SELECT 1 FROM entries x WHERE x.release = e.release
         AND x.object_id = e.object_id AND x.source = source('sixdfgs-dr3')))
-        FROM entries e WHERE e.release = :release AND e.source = source('twompp-catalogue')
-        AND json_extract(e.flags, '$.Ref') = '20096dF...C...0000J'
+        FROM entry_flags f JOIN entries e ON e.release = f.release AND e.object_id = f.object_id
+        AND e.entry = f.entry WHERE f.flag = term('Ref') AND f.value = '20096dF...C...0000J'
+        AND f.release = :release AND e.source = source('twompp-catalogue')
     expect: { at_least: 0.99 }
     cite: &twompp-ref
       - paper: "Lavaux & Hudson 2011, MNRAS 416, 2840 (VizieR J/MNRAS/416/2840)"
@@ -410,8 +414,9 @@ checks:
       sql: >-
         SELECT avg(EXISTS (SELECT 1 FROM entries x WHERE x.release = e.release
         AND x.object_id = e.object_id AND x.source = source('sdss-dr17-galaxies')))
-        FROM entries e WHERE e.release = :release AND e.source = source('twompp-catalogue')
-        AND json_extract(e.flags, '$.Ref') = '2009ApJS..182..543A'
+        FROM entry_flags f JOIN entries e ON e.release = f.release AND e.object_id = f.object_id
+        AND e.entry = f.entry WHERE f.flag = term('Ref') AND f.value = '2009ApJS..182..543A'
+        AND f.release = :release AND e.source = source('twompp-catalogue')
     expect: { at_least: 0.975 }
     cite: *twompp-ref
     note: >-
@@ -425,10 +430,12 @@ checks:
     select:
       kind: query
       sql: >-
-        SELECT e.object_id, e.name FROM entries e JOIN measurements m ON m.release = e.release
-        AND m.object_id = e.object_id AND m.entry = e.entry AND m.quantity = term('redshift')
-        WHERE e.release = :release AND e.source = source('erass1-clusters')
-        AND json_extract(e.flags, '$.BEST_Z_TYPE') = 'lit_z' AND m.native_form = term('none_reported')
+        SELECT e.object_id, e.name FROM entry_flags f JOIN entries e ON e.release = f.release
+        AND e.object_id = f.object_id AND e.entry = f.entry
+        JOIN measurements m ON m.release = e.release AND m.object_id = e.object_id
+        AND m.entry = e.entry AND m.quantity = term('redshift')
+        WHERE f.flag = term('BEST_Z_TYPE') AND f.value = 'lit_z' AND f.release = :release
+        AND e.source = source('erass1-clusters') AND m.native_form = term('none_reported')
     expect: { equals: 155 }
     cite: &erass1
       - paper: "Bulbul et al. 2024, A&A 685, A106 (eRASS1 cluster catalogue erass1cl_primary_v3.2.fits)"
@@ -449,7 +456,9 @@ checks:
         SELECT e.object_id, e.name FROM entries e WHERE e.release = :release
         AND e.source = source('erass1-clusters')
         AND e.name IN ('1eRASS J123049.2+122332', '1eRASS J033829.1-352701')
-        AND json_extract(e.flags, '$.BEST_Z_TYPE') = 'lit_z'
+        AND EXISTS (SELECT 1 FROM entry_flags f WHERE f.release = e.release
+        AND f.object_id = e.object_id AND f.entry = e.entry AND f.flag = term('BEST_Z_TYPE')
+        AND f.value = 'lit_z')
     expect: { equals: 2 }
     cite: *erass1
 
@@ -836,7 +845,8 @@ checks:
     select:
       kind: query
       sql: >-
-        SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1
+        SELECT id, distance_mpc FROM objects INDEXED BY check_objects_misplaced
+        WHERE release = :release AND placed = 1
         AND (distance_mpc IS NULL OR NOT distance_mpc > 0 OR x IS NULL OR y IS NULL OR z IS NULL)
     expect: { equals: 0 }
     cite: &model
@@ -930,9 +940,16 @@ checks:
     select:
       kind: report
       sql: >-
-        SELECT coalesce((SELECT term FROM terms t WHERE t.release = o.release AND t.id = o.scale_domain), '-')
-        AS scale_domain, placed, count(*) AS objects, min(distance_mpc) AS min_mpc, max(distance_mpc) AS max_mpc
-        FROM objects o WHERE o.release = :release GROUP BY 1, 2 ORDER BY 1, 2
+        WITH RECURSIVE domain(id) AS (SELECT (SELECT min(scale_domain) FROM objects
+        WHERE scale_domain IS NOT NULL AND release = :release)
+        UNION ALL SELECT (SELECT min(scale_domain) FROM objects WHERE scale_domain > d.id
+        AND release = :release) FROM domain d WHERE d.id IS NOT NULL)
+        SELECT coalesce(t.term, '-') AS scale_domain, o.placed, count(*) AS objects,
+        min(o.distance_mpc) AS min_mpc, max(o.distance_mpc) AS max_mpc
+        FROM domain d CROSS JOIN objects o INDEXED BY check_objects_by_domain
+        ON o.release = :release AND o.scale_domain IS d.id
+        LEFT JOIN terms t ON t.release = :release AND t.id = d.id
+        GROUP BY d.id, o.placed ORDER BY 1, 2
     cite: *domains
 
   - id: pulsating-stars-joined-to-gaia
@@ -1098,21 +1115,14 @@ checks:
     select:
       kind: query
       sql: >-
-        WITH arm(code, id) AS (VALUES ('Loc', 'reid-2019-local-arm'),
-        ('Per', 'reid-2019-perseus-arm'), ('Out', 'reid-2019-outer-arm'),
-        ('Nor', 'reid-2019-norma-arm'), ('3kN', 'reid-2019-3-kpc-near-arm'),
-        ('SgN', 'reid-2019-sagittarius-carina-arm'), ('SgF', 'reid-2019-sagittarius-carina-arm'),
-        ('CrN', 'reid-2019-sagittarius-carina-arm'), ('ScN', 'reid-2019-scutum-centaurus-arm'),
-        ('ScF', 'reid-2019-scutum-centaurus-arm'), ('CtN', 'reid-2019-scutum-centaurus-arm')),
-        maser AS (SELECT o.id, o.x * 1e6 AS x, o.y * 1e6 AS y, o.z * 1e6 AS z, a.id AS arm
-        FROM entries e JOIN objects o ON o.release = e.release AND o.id = e.object_id
-        JOIN arm a ON a.code = json_extract(e.flags, '$.Arm')
-        WHERE e.release = :release AND e.source = source('reid-2019-masers') AND o.placed = 1)
-        SELECT m.id FROM maser m JOIN structure_details d ON d.release = :release AND d.id = m.arm,
+        SELECT o.id FROM structure_details d JOIN memberships s ON s.structure = d.id
+        AND s.release = :release AND s.source = source('reid-2019-masers')
+        JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
         json_each(d.shape, '$.geometry.points') p
-        GROUP BY m.id HAVING min((m.x - json_extract(p.value, '$[0]')) * (m.x - json_extract(p.value, '$[0]'))
-        + (m.y - json_extract(p.value, '$[1]')) * (m.y - json_extract(p.value, '$[1]'))
-        + (m.z - json_extract(p.value, '$[2]')) * (m.z - json_extract(p.value, '$[2]'))) > 2250000
+        WHERE d.release = :release
+        GROUP BY o.id HAVING min((o.x * 1e6 - json_extract(p.value, '$[0]')) * (o.x * 1e6 - json_extract(p.value, '$[0]'))
+        + (o.y * 1e6 - json_extract(p.value, '$[1]')) * (o.y * 1e6 - json_extract(p.value, '$[1]'))
+        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]'))) > 2250000
     expect: { at_most: 2 }
     cite:
       - paper: "Reid et al. 2019, ApJ 885, 131"
@@ -1129,6 +1139,69 @@ checks:
       sign of azimuth, a wrong frame or unit, or a wrong parameter: mirrored, a third of them
       lie farther than 1 kpc. The 3-kpc far arm, the Outer Scutum-Centaurus arm, the connecting
       arm and the Galactic Centre region have no model and are not checked.
+
+  - id: masers-members-of-their-arms
+    title: Each of the 181 Reid 2019 masers on a modelled arm is a member of that arm
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT sum((SELECT count(*) FROM memberships s WHERE s.structure = d.id
+        AND s.release = :release AND s.source = source('reid-2019-masers')))
+        FROM structure_details d WHERE d.release = :release
+    expect: { equals: 181 }
+    cite:
+      - paper: "Reid et al. 2019, ApJ 885, 131"
+        locator: "Table 1 (VizieR J/ApJ/885/131/table1), column Arm, Note (4); Table 2"
+        quote: >-
+          Of the 199 masers of table1, Arm reads Per 41, ScN 30, Loc 28, SgN 19, SgF 19, Nor 12,
+          ScF 12, Out 11, 3kN 5, CtN 4 and CrN 1: 182 on the seven arms Table 2 models; LoS 5,
+          GC 3, ??? 3, AqS 3, 3kF 1, OSC 1 and Con 1 on none. Two Per rows share the Name
+          G123.06-06.30 (NGC281 and NGC281W), which the release holds as one entry: 181.
+        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv (chunk-0000-4b763ed4.tsv), 2026-11-10; counted 2026-11-12"
+    note: >-
+      The memberships come from the source's own Arm column through the map of
+      sources/reid-2019-masers.yaml, one row for each maser and its arm. Fewer means masers lost
+      or two merged into one object; none means a release built before memberships were
+      written, such as release 15 (198 entries of the 199 masers, G123.06-06.30 once).
+
+  - id: masers-on-the-arm-their-code-names
+    title: Each Reid 2019 maser is a member of the arm its Arm code names, and of no other
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        WITH arm(code, id) AS (VALUES ('Loc', 'reid-2019-local-arm'),
+        ('Per', 'reid-2019-perseus-arm'), ('Out', 'reid-2019-outer-arm'),
+        ('Nor', 'reid-2019-norma-arm'), ('3kN', 'reid-2019-3-kpc-near-arm'),
+        ('SgN', 'reid-2019-sagittarius-carina-arm'), ('SgF', 'reid-2019-sagittarius-carina-arm'),
+        ('CrN', 'reid-2019-sagittarius-carina-arm'), ('ScN', 'reid-2019-scutum-centaurus-arm'),
+        ('ScF', 'reid-2019-scutum-centaurus-arm'), ('CtN', 'reid-2019-scutum-centaurus-arm')),
+        maser(object_id, arm) AS (SELECT f.object_id, a.id FROM arm a
+        JOIN entry_flags f ON f.flag = term('Arm') AND f.value = a.code AND f.release = :release
+        JOIN entries e ON e.release = f.release AND e.object_id = f.object_id
+        AND e.entry = f.entry AND e.source = source('reid-2019-masers'))
+        SELECT m.object_id, m.arm, 'not a member' AS found FROM maser m
+        WHERE NOT EXISTS (SELECT 1 FROM memberships s WHERE s.object_id = m.object_id
+        AND s.structure = m.arm AND s.release = :release)
+        UNION ALL SELECT s.object_id, s.structure, 'a member of another' FROM structure_details d
+        CROSS JOIN memberships s ON s.structure = d.id AND s.release = :release
+        AND s.source = source('reid-2019-masers') WHERE d.release = :release
+        AND NOT EXISTS (SELECT 1 FROM maser m WHERE m.object_id = s.object_id AND m.arm = s.structure)
+    expect: { equals: 0 }
+    cite:
+      - paper: "Reid et al. 2019, ApJ 885, 131"
+        locator: "Table 1 (VizieR J/ApJ/885/131/table1), column Arm, Note (4); Table 2"
+        quote: >-
+          Arm codes of table1: Loc Local, Per Perseus, Out Outer, Nor Norma, 3kN 3-kpc near,
+          SgN/SgF Sagittarius-Carina near and far, CrN Carina near, ScN/ScF Scutum-Centaurus near
+          and far, CtN Centaurus near; the seven arms of Table 2.
+        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10"
+    note: >-
+      The map is written here apart from sources/reid-2019-masers.yaml, so that a wrong entry
+      there shows as masers that are not members of their arm and members of another. With
+      masers-members-of-their-arms' count of 181 it holds each maser on its arm once.
 
   - id: unplaced-by-reason
     title: Unplaced objects by reason

@@ -70,6 +70,63 @@ fn each_tracer_is_an_object_of_its_kind_in_the_galaxy_tracers_domain_once_placed
 }
 
 #[test]
+fn a_maser_whose_arm_code_names_a_model_arm_is_its_member_with_the_source_and_code() {
+    // The recorded masers as Reid et al. 2019's Table 1 gives them in its column `Arm`, whose
+    // code names no arm of the model for a spur or the Galactic Centre: three on Sct-Cen near the
+    // Centaurus end (CtN), one on Sgr-Car near Carina (CrN), and one in the Galactic Centre
+    // region (GC), which no arm of their model holds.
+    let expected = [
+        (
+            "G305.20+00.01",
+            Some(("reid-2019-scutum-centaurus-arm", "CtN")),
+        ),
+        (
+            "G339.88-01.25",
+            Some(("reid-2019-scutum-centaurus-arm", "CtN")),
+        ),
+        (
+            "G348.70-01.04",
+            Some(("reid-2019-scutum-centaurus-arm", "CtN")),
+        ),
+        (
+            "G351.44+00.65",
+            Some(("reid-2019-sagittarius-carina-arm", "CrN")),
+        ),
+        ("G359.13+00.03", None),
+    ];
+    let fixture = fixture_with(&["reid-2019-masers"]);
+    let release = build_next(&fixture);
+    let db = loaded(&release.dir, &release.manifest);
+    for (name, member) in expected {
+        let mut q = db
+            .prepare(
+                "SELECT m.structure, s.id, m.value FROM memberships m \
+                 JOIN entries e ON e.release = m.release AND e.object_id = m.object_id \
+                 JOIN sources s ON s.release = m.release AND s.n = m.source \
+                 WHERE m.release = 1 AND e.identifier = ?1 \
+                 AND e.source = (SELECT n FROM sources WHERE id = 'reid-2019-masers')",
+            )
+            .unwrap();
+        let rows: Vec<(String, String, String)> = q
+            .query_map([name], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect();
+        let want: Vec<(String, String, String)> = member
+            .map(|(arm, code)| {
+                (
+                    arm.to_owned(),
+                    "reid-2019-masers".to_owned(),
+                    code.to_owned(),
+                )
+            })
+            .into_iter()
+            .collect();
+        assert_eq!(rows, want, "{name}");
+    }
+}
+
+#[test]
 fn a_cepheid_an_rr_lyrae_star_and_a_luminous_hot_star_join_the_gaia_star_their_source_names() {
     // SIMULATED positions; CG Cas's Gaia DR3 source_id as Skowron et al. 2025 give it, and an
     // RR Lyrae star's as Li et al. 2023 give it, each also a Gaia DR3 star below G = 14.

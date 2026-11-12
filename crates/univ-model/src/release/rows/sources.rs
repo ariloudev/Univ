@@ -4,14 +4,14 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::ToSql;
-use crate::release::sql::{Row, Scope, SqlValue, Table};
+use super::{Json, ToSql};
+use crate::release::sql::{Row, Scale, Scope, SqlValue, Table};
 
 row! {
     /// The conditions of a source's terms beyond its status, and the uncertainties it states
     /// once for its whole catalogue, beside its row in `sources` (schema version 4): written
     /// only for a source that has one of them.
-    SourceTermRow => "source_terms", scope: PerRelease, key: ["source", "release"],
+    SourceTermRow => "source_terms", scope: PerRelease, scale: Source, key: ["source", "release"],
     indexes: [], {
         release: u32,
         /// The source's `sources.n`.
@@ -21,10 +21,10 @@ row! {
         non_commercial: Option<String>,
         /// JSON of the request for permission to redistribute it,
         /// [`crate::api::sources::Permission`], while its status is `permission_pending`.
-        permission: Option<String>,
+        permission: Option<Json>,
         /// JSON array of the uncertainties it states once for its whole catalogue, each a
         /// [`CatalogueUncertainty`]; none when it has none.
-        catalogue_uncertainties: Option<String>,
+        catalogue_uncertainties: Option<Json>,
     }
 }
 
@@ -32,7 +32,7 @@ row! {
     /// How a source's own values are read, beside its row in `sources` (schema version 7):
     /// written only for a source that gives a designation form, flag meanings or a share-alike
     /// clause, or that the designation rules rank.
-    SourceReadingRow => "source_reading", scope: PerRelease, key: ["source", "release"],
+    SourceReadingRow => "source_reading", scope: PerRelease, scale: Source, key: ["source", "release"],
     indexes: [], {
         release: u32,
         /// The source's `sources.n`.
@@ -47,7 +47,7 @@ row! {
         /// licence, quoted; none when its terms require no such thing.
         share_alike: Option<String>,
         /// JSON of what each value of its flag columns means, by column: `{"values", "cite"}`.
-        flags: Option<String>,
+        flags: Option<Json>,
     }
 }
 

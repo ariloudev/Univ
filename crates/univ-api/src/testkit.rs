@@ -465,9 +465,11 @@ INSERT INTO names VALUES
   (2, 'twins', 11, 0, 'Twins', NULL), (2, 'twins', 12, 0, 'Twins', NULL);
 INSERT INTO designations VALUES (2, 0, 'HIP 1', 10, NULL), (2, 0, 'HIP 2', 11, NULL), (2, 0, 'HIP 2', 12, NULL);
 INSERT INTO ids_replaced VALUES
-  (5, 2, 'merged_into', '[10]'), (6, 2, 'split_into', '[20,21]'), (7, 2, 'retired', '[]'),
-  (8, 1, 'merged_into', '[9]'), (9, 2, 'merged_into', '[30]'),
-  (50, 3, 'merged_into', '[10]'), (40, 3, 'merged_into', '[10]');
+  (5, 2, 'merged_into'), (6, 2, 'split_into'), (7, 2, 'retired'), (8, 1, 'merged_into'),
+  (9, 2, 'merged_into'), (50, 3, 'merged_into'), (40, 3, 'merged_into');
+INSERT INTO id_replacements VALUES
+  (5, 0, 2, 10), (6, 0, 2, 20), (6, 1, 2, 21), (8, 0, 1, 9), (9, 0, 2, 30), (50, 0, 3, 10),
+  (40, 0, 3, 10);
 ";
 
 /// Release 2 of Univ Ingest's fixture, with every object and the vocabulary it is coded in.

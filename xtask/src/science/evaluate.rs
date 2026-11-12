@@ -6,7 +6,7 @@ use std::path::Path;
 use rusqlite::types::ValueRef;
 
 use super::rules::{Check, Exception, Expect, GridPoint, Select};
-use super::{Finding, Release, fingerprints, grid, num, objects, pairs};
+use super::{Finding, Release, fingerprints, grid, num, objects, pairs, plan};
 
 /// The most rows or pairs shown under a check.
 const SHOWN: usize = 12;
@@ -108,14 +108,17 @@ fn shown(value: ValueRef<'_>) -> String {
     }
 }
 
-/// Binds `:release` where the query names it.
+/// Binds `:release` where the query names it, once its plan is found to read no table per
+/// object or per catalogue entry whole ([`plan::whole_reads`]).
 fn statement<'c>(release: &Release<'c>, sql: &str) -> Result<rusqlite::Statement<'c>, String> {
-    let mut q = release.db.prepare(sql).map_err(|e| e.to_string())?;
-    if let Some(i) = q.parameter_index(":release").map_err(|e| e.to_string())? {
-        q.raw_bind_parameter(i, release.number)
-            .map_err(|e| e.to_string())?;
+    let whole = plan::whole_reads(release.db, sql, release.number)?;
+    if !whole.is_empty() {
+        return Err(format!(
+            "its plan reads a table whole where it should search an index: {}",
+            whole.join("; ")
+        ));
     }
-    Ok(q)
+    plan::bound(release.db, sql, release.number)
 }
 
 /// The rows `sql` gives, those whose first column is an object id in `skip` left out: the

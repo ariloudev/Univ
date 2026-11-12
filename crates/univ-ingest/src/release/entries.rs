@@ -1,11 +1,10 @@
 //! An object's catalogue entries and their measurements as D1 rows, each value in typed
-//! columns, its native value beside its normalized one, and what no column holds kept as JSON
-//! in `extra` (see the schema).
+//! columns, its native value beside its normalized one; an entry's flags and papers, and a
+//! measurement's details, in rows of their own (see the schema).
 
-use serde_json::{Map, Value as Json};
 use univ_model::entry::{CatalogueEntry, Position, PositionUncertainty};
 use univ_model::ids::Designation;
-use univ_model::object::{LineOfSight, ObjectEntry, Resolution};
+use univ_model::object::ObjectEntry;
 use univ_model::position::Frame;
 use univ_model::redshift::RedshiftFrame;
 use univ_model::release::UncertaintyColumns;
@@ -14,7 +13,9 @@ use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
 use super::d1::D1Writer;
-use super::json;
+use univ_model::release::read::POSITION_ERRORS;
+
+use super::extras::{Codes, Details, detail_row, flag_rows, reason, reference_rows};
 use super::kept::Kept;
 use super::terms::{Chains, SourceIndex, Terms};
 
@@ -54,56 +55,44 @@ pub fn entry_number(entries: &[ObjectEntry], d: &Designation) -> Option<u32> {
         .map(small)
 }
 
-/// `extra` as a column: none when it holds nothing.
-fn extra(extra: &Map<String, Json>) -> Result<Option<String>, String> {
-    if extra.is_empty() {
-        Ok(None)
-    } else {
-        json(extra).map(Some)
-    }
-}
-
-/// `value` as JSON, for `extra`.
-fn to_json<T: serde::Serialize>(value: &T) -> Result<Json, String> {
-    serde_json::to_value(value).map_err(|e| format!("a value cannot be written as JSON: {e}"))
-}
-
-/// The entry row of the `n`-th of `entries`, of object `object_id`.
+/// The entry row of the `n`-th of `entries`, of object `object_id`, and the rows of its flags
+/// and papers, written through `w`; the errors of its position that its row cannot hold come
+/// back to be written as its measurements.
 ///
 /// # Errors
 ///
-/// Fails when a value cannot be written as JSON.
-pub fn entry_row(
+/// Fails when a value cannot be written as a term or a row cannot be written.
+pub fn write_entry<'e>(
+    writer: &mut D1Writer<'_>,
     numbering: &mut Numbering,
     object_id: u64,
-    entries: &[ObjectEntry],
+    entries: &'e [ObjectEntry],
     n: usize,
-) -> Result<EntryRow, String> {
+) -> Result<(EntryRow, Option<&'e PositionUncertainty>), String> {
     let ObjectEntry { entry, resolved_by } = &entries[n];
-    let terms = &mut numbering.terms;
-    let d = &entry.designation;
-    let mut more = Map::new();
-    let via = |through: &Designation, more: &mut Map<String, Json>| {
-        let found = entry_number(entries, through);
-        if found.is_none() {
-            more.insert("via".into(), to_json(through)?);
-        }
-        Ok::<_, String>(found)
-    };
+    let own = &entry.designation;
+    let r = reason(numbering, own, resolved_by)?;
+    let via_entry = r.via.and_then(|through| entry_number(entries, through));
+    let via = r.via.filter(|_| via_entry.is_none());
+    let spectral_type_kind = entry
+        .spectral_type
+        .as_ref()
+        .map(|t| numbering.term_of(&t.kind))
+        .transpose()?;
     let mut row = EntryRow {
         release: numbering.release,
         object_id,
         entry: small(n),
-        source: numbering.sources.n(&d.source),
-        identifier: String::from(&*d.identifier),
-        resolution: terms.id("anchor"),
-        scheme: None,
-        shared: None,
-        via_entry: None,
-        confidence: None,
-        separation_arcsec: None,
-        difference: None,
-        delta: None,
+        source: numbering.sources.n(&own.source),
+        identifier: String::from(&*own.identifier),
+        resolution: r.resolution,
+        scheme: r.scheme,
+        shared: r.shared,
+        via_entry,
+        confidence: r.confidence,
+        separation_arcsec: r.separation_arcsec,
+        difference: r.difference,
+        delta: r.delta,
         name: entry.name.as_deref().map(str::to_owned),
         frame: None,
         lon: None,
@@ -117,62 +106,38 @@ pub fn entry_row(
         error_unit: None,
         error_kind: None,
         group_id: entry.group_id.as_deref().map(str::to_owned),
-        flags: (!entry.flags.is_empty())
-            .then(|| json(&entry.flags))
-            .transpose()?,
-        extra: None,
+        via_source: via.map(|through| numbering.sources.n(&through.source)),
+        via_identifier: via.map(|through| String::from(&*through.identifier)),
+        spectral_type: entry.spectral_type.as_ref().map(|t| t.text.clone()),
+        spectral_type_kind,
     };
-    match &**resolved_by {
-        Resolution::Anchor => {}
-        Resolution::CrossIdentification {
-            scheme,
-            identifier,
-            via: through,
-            confidence,
-        } => {
-            row.resolution = terms.id("cross_identification");
-            row.scheme = Some(terms.id(scheme));
-            row.shared = (**identifier != *d.identifier).then(|| identifier.clone());
-            row.via_entry = via(through, &mut more)?;
-            row.confidence = Some(confidence.get());
-        }
-        Resolution::Match(m) => {
-            row.resolution = terms.id("match");
-            row.scheme = Some(terms.of(&m.method)?);
-            row.via_entry = via(&m.with, &mut more)?;
-            row.separation_arcsec = Some(m.separation_arcsec);
-            (row.difference, row.delta) = match m.difference {
-                None => (None, None),
-                Some(LineOfSight::Velocity { delta_km_s }) => {
-                    (Some(terms.id("velocity")), Some(delta_km_s))
-                }
-                Some(LineOfSight::Distance { delta_fraction }) => {
-                    (Some(terms.id("distance")), Some(delta_fraction))
-                }
-            };
-            row.confidence = Some(m.confidence.get());
-        }
-    }
-    if let Some(p) = &entry.position {
-        position_columns(terms, &mut row, &mut more, p)?;
-    }
-    if let Some(t) = &entry.spectral_type {
-        more.insert("spectral_type".into(), to_json(t)?);
-    }
-    if !entry.references.is_empty() {
-        more.insert("references".into(), to_json(&entry.references)?);
-    }
-    row.extra = extra(&more)?;
-    Ok(row)
+    let published = match &entry.position {
+        Some(p) => position_columns(&mut numbering.terms, &mut row, p)?,
+        None => None,
+    };
+    writer.add(&row)?;
+    writer.add_all(&flag_rows(
+        numbering,
+        object_id,
+        row.entry,
+        entry.flags.iter().map(|(k, v)| (k, v.to_owned())),
+    ))?;
+    writer.add_all(&reference_rows(
+        numbering,
+        object_id,
+        row.entry,
+        &entry.references,
+    ))?;
+    Ok((row, published))
 }
 
-/// The columns of an entry's sky position, and its errors in `more` when no column holds them.
-fn position_columns(
+/// The columns of an entry's sky position; its errors when no column holds them, to be written
+/// as its measurements.
+fn position_columns<'p>(
     terms: &mut Terms,
     row: &mut EntryRow,
-    more: &mut Map<String, Json>,
-    p: &Position,
-) -> Result<(), String> {
+    p: &'p Position,
+) -> Result<Option<&'p PositionUncertainty>, String> {
     let native = &p.native;
     row.frame = Some(terms.of(&native.frame)?);
     row.lon = Some(native.lon);
@@ -202,21 +167,23 @@ fn position_columns(
                 row.error_unit = Some(terms.of(&ra.native.unit)?);
                 row.error_kind = Some(terms.of(&ra.kind)?);
             } else {
-                more.insert("position_uncertainty".into(), to_json(&p.uncertainty)?);
+                return Ok(Some(&p.uncertainty));
             }
         }
     }
-    Ok(())
+    Ok(None)
 }
 
-/// What a measurement row holds beside its values.
-#[derive(Default)]
+/// What a measurement row holds beside its values, and what its `measurement_details` row
+/// holds.
+#[derive(Clone, Copy, Default)]
 struct Detail<'q> {
     kind: Option<u32>,
     method: Option<u32>,
     measure: Option<u32>,
     cmb: Option<&'q Quantity>,
-    extra: Option<String>,
+    published_frame: Option<u32>,
+    details: Details<'q>,
 }
 
 /// The measurements of one entry, written as rows.
@@ -224,6 +191,93 @@ pub struct Measurements<'w, 's> {
     pub writer: &'w mut D1Writer<'s>,
     pub object_id: u64,
     pub entry: u32,
+}
+
+/// The row of measurement `n` of `quantity` of entry `entry` of object `object_id`: its values
+/// and kind, with what `detail` gives of its columns.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "a row's own columns, each named where it is written"
+)]
+fn measurement_row(
+    codes: &mut impl Codes,
+    (object_id, entry): (u64, u32),
+    quantity: &str,
+    n: usize,
+    kind_of_value: KindOfValue,
+    native: &Quantity,
+    normalized: &Quantity,
+    detail: &Detail<'_>,
+) -> Result<MeasurementRow, String> {
+    let u = UncertaintyColumns::from(native.uncertainty);
+    let same = normalized == native;
+    let v = UncertaintyColumns::from(normalized.uncertainty);
+    let cmb = detail
+        .cmb
+        .map(|q| (q.value, UncertaintyColumns::from(q.uncertainty)));
+    Ok(MeasurementRow {
+        release: codes.release(),
+        object_id,
+        entry,
+        quantity: codes.term(quantity),
+        n: small(n),
+        kind_of_value: codes.term_of(&kind_of_value)?,
+        native_value: native.value,
+        native_unit: codes.term_of(&native.unit)?,
+        native_form: codes.term(u.form),
+        native_minus: u.minus,
+        native_plus: u.plus,
+        native_level: u.level,
+        value: (!same).then_some(normalized.value),
+        unit: (!same)
+            .then(|| codes.term_of(&normalized.unit))
+            .transpose()?,
+        form: (!same).then(|| codes.term(v.form)),
+        minus: v.minus.filter(|_| !same),
+        plus: v.plus.filter(|_| !same),
+        level: v.level.filter(|_| !same),
+        kind: detail.kind,
+        method: detail.method,
+        measure: detail.measure,
+        cmb: cmb.map(|(z, _)| z),
+        cmb_form: cmb.map(|(_, c)| codes.term(c.form)),
+        cmb_minus: cmb.and_then(|(_, c)| c.minus),
+        cmb_plus: cmb.and_then(|(_, c)| c.plus),
+        cmb_level: cmb.and_then(|(_, c)| c.level),
+        published_frame: detail.published_frame,
+    })
+}
+
+/// The rows of the published errors of entry `entry`'s position that its row cannot hold, as
+/// the measurements `position_error_ra` and `position_error_dec`; none when it has none.
+///
+/// # Errors
+///
+/// Fails when a value cannot be written as a term.
+pub fn position_error_rows(
+    codes: &mut impl Codes,
+    (object_id, entry): (u64, u32),
+    uncertainty: &PositionUncertainty,
+) -> Result<Vec<MeasurementRow>, String> {
+    let PositionUncertainty::Published(errors) = uncertainty else {
+        return Ok(Vec::new());
+    };
+    let [ra, dec] = POSITION_ERRORS;
+    [(ra, &errors.ra), (dec, &errors.dec)]
+        .into_iter()
+        .map(|(quantity, v)| {
+            measurement_row(
+                codes,
+                (object_id, entry),
+                quantity,
+                0,
+                v.kind,
+                &v.native,
+                &v.normalized,
+                &Detail::default(),
+            )
+        })
+        .collect()
 }
 
 impl Measurements<'_, '_> {
@@ -241,43 +295,43 @@ impl Measurements<'_, '_> {
         normalized: &Quantity,
         detail: Detail<'_>,
     ) -> Result<(), String> {
-        let terms = &mut numbering.terms;
-        let u = UncertaintyColumns::from(native.uncertainty);
-        let same = normalized == native;
-        let v = UncertaintyColumns::from(normalized.uncertainty);
-        let cmb = detail
-            .cmb
-            .map(|q| (q.value, UncertaintyColumns::from(q.uncertainty)));
-        let row = MeasurementRow {
-            release: numbering.release,
-            object_id: self.object_id,
-            entry: self.entry,
-            quantity: terms.id(quantity),
-            n: small(n),
-            kind_of_value: terms.of(&kind_of_value)?,
-            native_value: native.value,
-            native_unit: terms.of(&native.unit)?,
-            native_form: terms.id(u.form),
-            native_minus: u.minus,
-            native_plus: u.plus,
-            native_level: u.level,
-            value: (!same).then_some(normalized.value),
-            unit: (!same).then(|| terms.of(&normalized.unit)).transpose()?,
-            form: (!same).then(|| terms.id(v.form)),
-            minus: v.minus.filter(|_| !same),
-            plus: v.plus.filter(|_| !same),
-            level: v.level.filter(|_| !same),
-            kind: detail.kind,
-            method: detail.method,
-            measure: detail.measure,
-            cmb: cmb.map(|(z, _)| z),
-            cmb_form: cmb.map(|(_, c)| terms.id(c.form)),
-            cmb_minus: cmb.and_then(|(_, c)| c.minus),
-            cmb_plus: cmb.and_then(|(_, c)| c.plus),
-            cmb_level: cmb.and_then(|(_, c)| c.level),
-            extra: detail.extra,
-        };
-        self.writer.add(&row)
+        let key = (self.object_id, self.entry);
+        let row = measurement_row(
+            numbering,
+            key,
+            quantity,
+            n,
+            kind_of_value,
+            native,
+            normalized,
+            &detail,
+        )?;
+        self.writer.add(&row)?;
+        let details = detail_row(
+            numbering,
+            (self.object_id, self.entry),
+            (row.quantity, row.n),
+            &detail.details,
+        )?;
+        match details {
+            Some(details) => self.writer.add(&details),
+            None => Ok(()),
+        }
+    }
+
+    /// The published errors of the entry's position that its row cannot hold, as the
+    /// measurements `position_error_ra` and `position_error_dec`.
+    ///
+    /// # Errors
+    ///
+    /// Fails when a value cannot be written as a term or a row cannot be written.
+    pub fn position_errors(
+        &mut self,
+        numbering: &mut Numbering,
+        uncertainty: &PositionUncertainty,
+    ) -> Result<(), String> {
+        let rows = position_error_rows(numbering, (self.object_id, self.entry), uncertainty)?;
+        self.writer.add_all(&rows)
     }
 
     /// A plain value: its native and normalized quantities and kind.
@@ -314,20 +368,17 @@ impl Measurements<'_, '_> {
         entry: &CatalogueEntry,
     ) -> Result<(), String> {
         for (n, d) in entry.distances.iter().enumerate() {
-            let mut more = Map::new();
-            if let Some(also) = &d.also_published {
-                more.insert("also_published".into(), to_json(also)?);
-            }
-            if let Some(assumed) = &d.assumed_cosmology {
-                more.insert("assumed_cosmology".into(), to_json(assumed)?);
-            }
             let terms = &mut numbering.terms;
             let detail = Detail {
                 kind: Some(terms.of(&d.kind)?),
                 method: Some(terms.of(&d.method)?),
                 measure: Some(terms.of(&d.measure)?),
-                cmb: None,
-                extra: extra(&more)?,
+                details: Details {
+                    also_published: d.also_published.as_ref(),
+                    assumed_cosmology: d.assumed_cosmology.as_ref(),
+                    derived_from: None,
+                },
+                ..Detail::default()
             };
             self.push(
                 numbering,
@@ -346,19 +397,17 @@ impl Measurements<'_, '_> {
             // moved it there, and a barycentric one is never relabelled heliocentric.
             let published = z.cmb.as_published();
             let native = z.velocity.as_deref().unwrap_or(&published);
-            let frame = match z.cmb.published {
-                RedshiftFrame::Heliocentric => None,
-                RedshiftFrame::Cmb => Some(r#"{"published_frame":"cmb"}"#),
-                RedshiftFrame::Barycentric => Some(r#"{"published_frame":"barycentric"}"#),
-                RedshiftFrame::LocalGroup => Some(r#"{"published_frame":"local_group"}"#),
-            };
             let terms = &mut numbering.terms;
+            let published_frame = match z.cmb.published {
+                RedshiftFrame::Heliocentric => None,
+                frame => Some(terms.of(&frame)?),
+            };
             let detail = Detail {
                 kind: Some(terms.of(&z.kind)?),
                 method: Some(terms.of(&z.cmb.dipole)?),
-                measure: None,
                 cmb: Some(&z.cmb.value),
-                extra: frame.map(str::to_owned),
+                published_frame,
+                ..Detail::default()
             };
             self.push(
                 numbering,
@@ -402,13 +451,12 @@ impl Measurements<'_, '_> {
     ) -> Result<(), String> {
         for (n, c) in entry.colours.iter().enumerate() {
             // Numbered within the entry, as its distances are; the bands are its kind.
-            let mut more = Map::new();
-            if let Some(from) = &c.derived_from {
-                more.insert("derived_from".into(), to_json(from)?);
-            }
             let detail = Detail {
                 kind: Some(numbering.terms.id(&c.band_pair())),
-                extra: extra(&more)?,
+                details: Details {
+                    derived_from: c.derived_from.as_ref(),
+                    ..Details::default()
+                },
                 ..Detail::default()
             };
             let v = &c.value;

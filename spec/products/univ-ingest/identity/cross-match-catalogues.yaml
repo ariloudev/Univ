@@ -87,6 +87,18 @@ requirements:
         name: "The group's object records a relation that names its dominant galaxy's object, as the group's source identifies that galaxy."
       - key: 01a1a147-6018-75e1-9409-3f7eb363692b
         name: "No measurement of the group is lent to its dominant galaxy, and none of the galaxy is lent to the group."
+  - key: 01a1cca1-1789-7424-a53b-b6d81af17920
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "record an object that its source's own column assigns to a researched structure as a member of that structure."
+    criteria:
+      - key: 01a1cca1-1789-7424-a53b-b6d9b9373d09
+        name: "A Reid et al. 2019 maser whose Table 1 `Arm` code names one of the seven arms of their model is a member of that arm's model spiral arm, the membership citing the column."
+      - key: 01a1cca1-1789-7424-a53b-b6daaa326039
+        name: "A maser whose `Arm` code names no arm of the model, such as a spur, is a member of no structure."
+      - key: 01a1cca1-1789-7424-a53b-b6dbc4924644
+        name: "A membership keeps the source that gave it and the value of the column as the source publishes it."
   - key: 01a19f23-636f-72bd-b194-15129323b215
     statement:
       form: ubiquitous

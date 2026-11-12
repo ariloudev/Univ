@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde::Serialize;
 use serde::ser::{self, Impossible};
 use univ_model::ids::SourceId;
-use univ_model::release::rows::{ChainRow, TermRow};
+use univ_model::release::rows::{ChainRow, Json, TermRow};
 
 /// The name serde gives a unit variant, without writing anything: none for any other value.
 struct VariantName;
@@ -147,6 +147,21 @@ impl ser::Serializer for VariantName {
     }
 }
 
+/// The term `value` is written as: its variant name, or its JSON when it is not a unit
+/// variant, such as a mixed distance method.
+///
+/// # Errors
+///
+/// Fails when it cannot be written as JSON.
+pub fn term_name<T: Serialize + ?Sized>(
+    value: &T,
+) -> Result<std::borrow::Cow<'static, str>, String> {
+    match variant_name(value) {
+        Some(name) => Ok(name.into()),
+        None => Ok(super::json(value)?.0.into()),
+    }
+}
+
 /// The name serde gives `value`, a unit variant such as `galaxy_group`; none for another value.
 #[must_use]
 pub fn variant_name<T: Serialize + ?Sized>(value: &T) -> Option<&'static str> {
@@ -260,12 +275,7 @@ impl Terms {
     ///
     /// Fails when it cannot be written as JSON.
     pub fn of<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<u32, String> {
-        if let Some(name) = variant_name(value) {
-            Ok(self.id(name))
-        } else {
-            let json = super::json(value)?;
-            Ok(self.id(&json))
-        }
+        Ok(self.id(&term_name(value)?))
     }
 
     /// The rows of release `release`: the terms it names, by id.
@@ -358,8 +368,8 @@ impl Chains {
 
     /// The id of the chain whose template is `steps`, taking `params` parameters, counting one
     /// more object of it.
-    pub fn id(&mut self, release: u32, steps: String, params: usize) -> u32 {
-        let given = self.numbers.give(&steps);
+    pub fn id(&mut self, release: u32, steps: Json, params: usize) -> u32 {
+        let given = self.numbers.give(steps.as_str());
         if given.first {
             self.list.push(ChainRow {
                 release,
@@ -430,9 +440,9 @@ mod tests {
 
         let kept = BTreeMap::from([("[2]".to_owned(), 5)]);
         let mut chains = Chains::kept(&kept);
-        assert_eq!(chains.id(2, "[1]".to_owned(), 0), 6);
-        assert_eq!(chains.id(2, "[2]".to_owned(), 1), 5);
-        assert_eq!(chains.id(2, "[2]".to_owned(), 1), 5);
+        assert_eq!(chains.id(2, Json::from("[1]"), 0), 6);
+        assert_eq!(chains.id(2, Json::from("[2]"), 1), 5);
+        assert_eq!(chains.id(2, Json::from("[2]"), 1), 5);
         let counts: Vec<(u32, u64)> = chains.rows().iter().map(|r| (r.id, r.objects)).collect();
         assert_eq!(counts, [(6, 1), (5, 2)]);
     }
