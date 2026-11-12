@@ -21,11 +21,11 @@ first, and the code is held to it.
 
 - **The specification is the contract.** `spec/` describes the three products, with their
   requirements, acceptance criteria, components and architecture decisions. It is published from
-  `develop` and pinned by `loft.lock.json`; the current publish is sequence 8.
+  `develop` and pinned by `loft.lock.json`; the current publish is sequence 10.
 - **Behaviour changes in the specification first.** A change to `spec/` is checked and approved
   before any code is written for it. Then the code is built against it, and the tests prove it.
-- **Every criterion is traced to tests.** `loft.trace.yaml` links each of the 671 acceptance
-  criteria to the tests that verify it. A test that changes after its link was accepted fails the
+- **Every criterion is traced to tests.** `loft.trace.yaml` links each acceptance criterion to
+  the tests that verify it. A test that changes after its link was accepted fails the
   gate until the link is reviewed again.
 - **Every branch keeps a record.** `.yard/` holds each branch's Yard Log: its stages and tasks,
   the questions asked and the answers given, the decisions, review findings and gate results.
@@ -64,6 +64,20 @@ gives the void's position, velocity and size as Kirshner et al. published them, 
 *Betelgeuse's record: the Hipparcos parallax distance beside the researched distances, with their
 uncertainties and the rule that chose between them. Every value names its source.*
 
+![The Milky Way's disc seen edge-on in Univ Explorer, with the dust map](docs/screenshots/milky-way-disc.jpg)
+
+*The Milky Way's disc seen edge-on from 2.5 kpc away: 2.2 million stars, with the luminous
+hot stars of Zari et al. 2021 in cyan along the plane, and the Edenhofer et al. 2024 3D
+dust map in brown. The dust map is a reconstruction and reaches 1.25 kpc from the Sun.*
+
+![The arms view: the Galaxy's disc face-on with the Reid 2019 model arms](docs/screenshots/spiral-arms.jpg)
+
+*The arms view looks down on the disc from the north Galactic pole. The points are the young
+tracers: luminous hot stars in cyan, open clusters younger than 30 million years, and the masers. The lines
+are the log-spiral arms that Reid et al. 2019 fitted to the masers, and they are labelled as a model.
+The fainter lines continue each formula beyond the masers it was fitted to, and they are this
+project's extrapolation. Most of the measured stars lie within about 5 kpc of the Sun.*
+
 ## The data
 
 The repository holds the definitions of the data, not the data itself. Each source is a YAML file
@@ -78,7 +92,8 @@ A release is built locally from those definitions. Downloads are kept outside th
 
 | Scale | Sources |
 |---|---|
-| Stars | Gaia DR3 (stars brighter than G = 10) and its Hipparcos-2 cross-match; the Gaia Catalogue of Nearby Stars; Hipparcos (ESA 1997, and van Leeuwen 2007); Bailer-Jones et al. 2021 distances; the IAU Catalog of Star Names |
+| Stars | Gaia DR3 (stars brighter than G = 14) and its Hipparcos-2 cross-match; the Gaia Catalogue of Nearby Stars; Hipparcos (ESA 1997, and van Leeuwen 2007); Bailer-Jones et al. 2021 distances; the IAU Catalog of Star Names |
+| The Galaxy | Zari et al. 2021 luminous hot stars; Hunt & Reffert 2023 open clusters; Reid et al. 2019 maser parallaxes and spiral arm fits; Skowron et al. 2025 classical Cepheids; Li et al. 2023 RR Lyrae; Baumgardt & Vasiliev 2021 globular clusters; the Edenhofer et al. 2024 3D dust map |
 | Nearby galaxies | McConnachie 2012; the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013); OpenNGC |
 | The cosmic web | 2MRS, 2M++ and 2MPZ; 6dFGS DR3; 2dFGRS; SDSS DR17 and the BOSS Great Wall region; DESI DR1; GAMA DR4; WISE × SuperCOSMOS; ALFALFA α.100; eRASS1 clusters; Cosmicflows-4 distances |
 | Reconstructions | The CF4++ density and velocity fields, the Cosmicflows-4 basins of attraction, and the 2M++ density and velocity fields (Carrick et al. 2015) |
