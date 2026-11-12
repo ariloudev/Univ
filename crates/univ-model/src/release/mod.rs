@@ -115,6 +115,19 @@ pub const SCHEMA_VERSION: u32 = 8;
 /// of [`SCHEMA_VERSION`] without a migration.
 pub const SHARED_ROWS_SINCE: u32 = 6;
 
+/// The JSON columns of schema 7, in tables that grow with a release's objects, that schema 8
+/// keeps as rows and columns of their own, by table. A database that still holds one is
+/// migrated by `univ-ingest migrate` before a release of schema 8 is published onto it or
+/// served from it.
+pub const SCHEMA_7_JSON: [(&str, &str); 6] = [
+    ("objects", "links"),
+    ("objects", "relations"),
+    ("entries", "flags"),
+    ("entries", "extra"),
+    ("measurements", "extra"),
+    ("ids_replaced", "replaced_by"),
+];
+
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");
 

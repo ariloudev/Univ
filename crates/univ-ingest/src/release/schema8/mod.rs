@@ -32,14 +32,7 @@ use sql::{Temp, columns_of, rebuild, rebuilt, sql_err};
 pub const TO: u32 = 8;
 
 /// The JSON columns of schema 7 that schema 8 replaces, by table.
-pub const JSON_COLUMNS: [(&str, &str); 6] = [
-    ("objects", "links"),
-    ("objects", "relations"),
-    ("entries", "flags"),
-    ("entries", "extra"),
-    ("measurements", "extra"),
-    ("ids_replaced", "replaced_by"),
-];
+pub use univ_model::release::SCHEMA_7_JSON as JSON_COLUMNS;
 
 /// Whether `db` holds a JSON column that schema 8 replaces.
 ///
