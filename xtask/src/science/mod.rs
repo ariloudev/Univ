@@ -12,6 +12,7 @@
 mod evaluate;
 mod fingerprints;
 mod grid;
+mod indexes;
 mod load;
 mod objects;
 mod pairs;
@@ -257,10 +258,15 @@ fn loaded(
         )
     };
     let started = Instant::now();
-    load::index(&db)?;
+    indexes::index(&db, &statistics())?;
     let index_line = format!(
         "index: the checks' indexes in {:.1} s",
         started.elapsed().as_secs_f64()
     );
     Ok((db, [load_line, index_line]))
+}
+
+/// The statistics of a full release that the checks are planned with ([`indexes`]).
+fn statistics() -> PathBuf {
+    crate::workspace_root().join("rules/science-statistics.yaml")
 }

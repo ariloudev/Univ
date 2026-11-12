@@ -8,7 +8,7 @@ use std::path::Path;
 use fixture::build;
 use univ_model::release::{ReleaseManifest, TABLES, keys};
 
-use super::{fingerprints, load, num, plan, rules, science};
+use super::{fingerprints, indexes, load, num, plan, rules, science};
 
 const CITE: &str = "cite: [{ paper: P, quote: Q, fetched: F }]";
 
@@ -332,7 +332,7 @@ fn every_query_of_the_repository_s_checks_searches_its_tables_at_scale_on_the_fi
     let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
     let (db, _) = load::open(None).unwrap();
     load::load(&db, dir.path(), &manifest).unwrap();
-    load::index(&db).unwrap();
+    indexes::index(&db, &super::statistics()).unwrap();
     load::register(&db, manifest.release, &manifest.cosmology).unwrap();
     let mut whole = Vec::new();
     for check in &file.checks {
@@ -356,7 +356,7 @@ fn a_join_on_a_column_no_index_holds_reads_its_table_whole_whatever_its_alias() 
     let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
     let (db, _) = load::open(None).unwrap();
     load::load(&db, dir.path(), &manifest).unwrap();
-    load::index(&db).unwrap();
+    indexes::index(&db, &super::statistics()).unwrap();
     load::register(&db, manifest.release, &manifest.cosmology).unwrap();
     // An automatic index on objects.x, or a scan of it: either reads every object. The alias e
     // is given again to designations in the subquery, which the bytecode does not care about.

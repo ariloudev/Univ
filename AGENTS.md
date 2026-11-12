@@ -58,8 +58,12 @@ Run them from this directory.
   Before each query or report it reads the query's bytecode, and fails a check that reads a table
   per object or per catalogue entry whole: a scan, a walk of a whole index, a count, or an
   automatic index built over it (the scan guard). The scratch database has indexes of its own for
-  the checks (`CHECK_INDEXES` in `xtask/src/science/load.rs`, named by their columns), which D1
-  does not keep.
+  the checks (`CHECK_INDEXES` in `xtask/src/science/indexes.rs`), which D1 does not keep, and is
+  planned with the statistics of a full release, `rules/science-statistics.yaml` (release 15's
+  `ANALYZE`), so that the fixture's plans are a real release's. SQLite still takes an index
+  whose key most rows share (`placed = 1`) over a scan, and reads millions of rows through it:
+  give such a check a partial index of the rows it looks for, or a join order (`CROSS JOIN`,
+  `INDEXED BY`) that starts from the few.
 - `cargo xtask integration` runs Univ Server's end-to-end tests: it writes the fixture state
   (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of

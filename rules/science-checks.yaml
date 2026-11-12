@@ -845,7 +845,8 @@ checks:
     select:
       kind: query
       sql: >-
-        SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1
+        SELECT id, distance_mpc FROM objects INDEXED BY check_objects_misplaced
+        WHERE release = :release AND placed = 1
         AND (distance_mpc IS NULL OR NOT distance_mpc > 0 OR x IS NULL OR y IS NULL OR z IS NULL)
     expect: { equals: 0 }
     cite: &model
@@ -945,7 +946,8 @@ checks:
         AND release = :release) FROM domain d WHERE d.id IS NOT NULL)
         SELECT coalesce(t.term, '-') AS scale_domain, o.placed, count(*) AS objects,
         min(o.distance_mpc) AS min_mpc, max(o.distance_mpc) AS max_mpc
-        FROM domain d JOIN objects o ON o.release = :release AND o.scale_domain IS d.id
+        FROM domain d CROSS JOIN objects o INDEXED BY check_objects_by_domain
+        ON o.release = :release AND o.scale_domain IS d.id
         LEFT JOIN terms t ON t.release = :release AND t.id = d.id
         GROUP BY d.id, o.placed ORDER BY 1, 2
     cite: *domains
@@ -1139,7 +1141,7 @@ checks:
       arm and the Galactic Centre region have no model and are not checked.
 
   - id: masers-members-of-their-arms
-    title: Each of the 182 Reid 2019 masers on a modelled arm is a member of that arm
+    title: Each of the 181 Reid 2019 masers on a modelled arm is a member of that arm
     severity: fail
     select:
       kind: query
@@ -1148,20 +1150,21 @@ checks:
         SELECT sum((SELECT count(*) FROM memberships s WHERE s.structure = d.id
         AND s.release = :release AND s.source = source('reid-2019-masers')))
         FROM structure_details d WHERE d.release = :release
-    expect: { equals: 182 }
+    expect: { equals: 181 }
     cite:
       - paper: "Reid et al. 2019, ApJ 885, 131"
         locator: "Table 1 (VizieR J/ApJ/885/131/table1), column Arm, Note (4); Table 2"
         quote: >-
-          Of the 200 rows of table1, Arm reads Per 41, ScN 30, Loc 28, SgN 19, SgF 19, Nor 12,
+          Of the 199 masers of table1, Arm reads Per 41, ScN 30, Loc 28, SgN 19, SgF 19, Nor 12,
           ScF 12, Out 11, 3kN 5, CtN 4 and CrN 1: 182 on the seven arms Table 2 models; LoS 5,
-          GC 3, ??? 3, AqS 3, 3kF 1, OSC 1, Con 1 and one blank on none.
+          GC 3, ??? 3, AqS 3, 3kF 1, OSC 1 and Con 1 on none. Two Per rows share the Name
+          G123.06-06.30 (NGC281 and NGC281W), which the release holds as one entry: 181.
         fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv (chunk-0000-4b763ed4.tsv), 2026-11-10; counted 2026-11-12"
     note: >-
       The memberships come from the source's own Arm column through the map of
       sources/reid-2019-masers.yaml, one row for each maser and its arm. Fewer means masers lost
       or two merged into one object; none means a release built before memberships were
-      written, such as release 15.
+      written, such as release 15 (198 entries of the 199 masers, G123.06-06.30 once).
 
   - id: masers-on-the-arm-their-code-names
     title: Each Reid 2019 maser is a member of the arm its Arm code names, and of no other
@@ -1198,7 +1201,7 @@ checks:
     note: >-
       The map is written here apart from sources/reid-2019-masers.yaml, so that a wrong entry
       there shows as masers that are not members of their arm and members of another. With
-      masers-members-of-their-arms' count of 182 it holds each maser on its arm once.
+      masers-members-of-their-arms' count of 181 it holds each maser on its arm once.
 
   - id: unplaced-by-reason
     title: Unplaced objects by reason

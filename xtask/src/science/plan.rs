@@ -4,7 +4,8 @@
 //! It reads the query's bytecode rather than its plan's text, which names tables by their
 //! aliases: each cursor opened on the scratch database's B-trees names a table or index by its
 //! root page, and a cursor rewound to its first row (`Rewind`, `Last`) or counted (`Count`) reads
-//! it whole, where a search seeks into it. An automatic index is built by rewinding its table.
+//! it whole, where a search seeks into it. An automatic index is built by rewinding its table. A
+//! partial index holds only the rows its `WHERE` keeps, so walking it reads no table whole.
 
 use std::collections::HashMap;
 
@@ -38,9 +39,13 @@ pub fn bound<'c>(db: &'c Connection, sql: &str, release: u32) -> Result<Statemen
 ///
 /// Fails when `sql` cannot be prepared.
 pub fn whole_reads(db: &Connection, sql: &str, release: u32) -> Result<Vec<String>, String> {
-    // Each B-tree of the main database by its root page: its name and its table's.
+    // Each B-tree of the main database by its root page, but partial indexes: its name and its
+    // table's.
     let mut trees = db
-        .prepare("SELECT rootpage, name, tbl_name FROM main.sqlite_schema WHERE rootpage > 0")
+        .prepare(
+            "SELECT rootpage, name, tbl_name FROM main.sqlite_schema WHERE rootpage > 0 \
+             AND NOT (type = 'index' AND coalesce(sql, '') LIKE '% WHERE %')",
+        )
         .map_err(|e| e.to_string())?;
     let trees: HashMap<i64, (String, String)> = trees
         .query_map([], |r| Ok((r.get(0)?, (r.get(1)?, r.get(2)?))))

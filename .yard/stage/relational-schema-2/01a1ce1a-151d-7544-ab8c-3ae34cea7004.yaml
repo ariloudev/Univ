@@ -182,3 +182,24 @@ blocks:
           | `counts-by-scale-domain` is a census of every object | the scan guard | counts each domain by a search of objects (scale_domain, placed) | fixed |
           | The arm-distance check would pass on a release with no memberships | review of the rewrite | new check `masers-members-of-their-arms`, 182 from Table 1 | fixed |
           | `migrate` says "Migrated the store to shared rows" after 7→8 | wave 1 | t9b | open |
+      - key: 01a1ce38-80e3-72ad-8143-9e4d15b046eb
+        at: 2026-11-12T05:26:11Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | 24 checks scanned entries, objects or measurements: D1 indexes none of them by source, quantity, domain or kind | the scan guard on the fixture release | indexes made in the science scratch database only (D1 keeps the API's) | fixed |
+          | Two checks (virgo-group-cites-kt17, betelgeuse-names-joyce) searched the JSON text with `instr`, which the SQL gate cannot see | the plan test: no such column | rewritten onto entry_flags (`position_source`) and entry_references (`bibcode`) | fixed |
+          | The arm-distance check would pass on a release with no memberships | review of the rewrite | `masers-members-of-their-arms` (182) and `masers-on-the-arm-their-code-names` | fixed |
+          | `migrate` said "Migrated the store to shared rows" after 7→8 | wave 1 | `Outcome::Migrated { shared, rows }` | fixed |
+          | The guard read plan text by alias: automatic indexes passed, an unresolved or reused alias passed silently | /simplify (altitude), /code-review | guard reads bytecode: a rewound or counted cursor on a table per object or entry | fixed |
+          | Check indexes named by position: a kept `--db` keeps stale ones | /code-review | named by their columns | fixed |
+          | Researched-star check no longer required the first reference | /code-review | `r.n = 0` again | fixed |
+          | Census by terms hid objects of an unknown domain | /code-review | distinct domains walked through the index, unknown as `-` | fixed |
+          | `->` with a parameter on its right went unchecked | /code-review | checked | fixed |
+          | Duplicated code: listed-file read, `:release` binding, JSON-column filter, paren scanners | /simplify (reuse, simplification) | shared helpers | fixed |
+          | A SEARCH that barely narrows (e.g. `placed = 1`) passes the guard | /simplify (efficiency), /code-review | to judge from the timings of the full run on release 15 | open |
