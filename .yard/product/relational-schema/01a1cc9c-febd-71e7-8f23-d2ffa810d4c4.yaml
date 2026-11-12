@@ -180,6 +180,22 @@ blocks:
           | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
           | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget | release 16's D1 step took 38 min against release 15's 16 | none needed: the packer moved about 220,000 objects from shards 0 and 8–13 into shard 14 (89,204 → 306,810), every shard now within 4.29–4.49 GB | closed |
           | The `fingerprints` check fails on any release built as a change: both loaders stamp each shared row with the loaded release (`store.rs:117`, `load.rs:98`), the manifest fingerprints the rows' own releases (objects: 16 × 53,546,060 against 599,515,117) | release 16's science run; release 14's failed the same way | to propose: fingerprint the rows before the stamp, or the manifest without `release` | open |
+      - key: 01a1cfe0-8839-7536-9835-7f84d1019579
+        at: 2026-11-12T13:09:21Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+          | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget | release 16's D1 step took 38 min against release 15's 16 | none needed: the packer moved about 220,000 objects from shards 0 and 8–13 into shard 14 (89,204 → 306,810), every shard now within 4.29–4.49 GB | closed |
+          | The `fingerprints` check fails on any release built as a change: both loaders stamp each shared row with the loaded release (`store.rs:117`, `load.rs:98`), the manifest fingerprints the rows' own releases (objects: 16 × 53,546,060 against 599,515,117) | release 16's science run; release 14's failed the same way | each loader fingerprints the rows before the stamp (fdc8746, stage/relational-schema-3, merged as 1db84cb); release 16 passes with 0 differences over 33 tables | fixed |
   - key: 01a1cd7b-0d70-7108-8940-0ef4a88c731e
     id: store-migrated
     kind: note
@@ -281,3 +297,16 @@ blocks:
           session: "733ab034-0172-4107-897d-a9a3752e1525"
         title: "The fingerprint fix merged"
         consequence: "stage/relational-schema-3 is merged as 1db84cb: xtask science fingerprints a release built as a change as its store holds it, and passes on release 16. Both release-16 scratch databases are deleted; release 15's local D1 and state stay in r16/ until the owner says otherwise."
+  - key: 01a1cfe0-8839-7536-9835-7f83022ff8a9
+    id: d-merge-product
+    kind: decision
+    number: 8
+    versions:
+      - key: 01a1cfe0-8839-7536-9835-7f85438ca6df
+        at: 2026-11-12T13:09:21Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "product/relational-schema merged into product/spiral-arms"
+        consequence: "Schema 8, the json gate, the scan guard, the masers' memberships and the fingerprint fix join product/spiral-arms, whose explorer already serves release 16 from the store this branch migrated."
