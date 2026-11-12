@@ -214,7 +214,7 @@ fn migrate_command(
         shown.note(super::reindex::reindex_command(state, persist_to)?);
     }
     shown.ended(Vec::new());
-    Ok(Outcome::Migrated(shared || rows))
+    Ok(Outcome::Migrated { shared, rows })
 }
 
 /// Publishes the release, ending its stage with what it uploaded: the files of each kind, the

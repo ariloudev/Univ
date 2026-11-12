@@ -55,6 +55,15 @@ blocks:
         title: "T8 Scan guard in xtask science"
         detail: "EXPLAIN QUERY PLAN before each query check; a SCAN of an Object or Entry table fails it."
         state: active
+      - key: 01a1ce2a-273d-73b1-acbd-9cf6f9536e2a
+        at: 2026-11-12T05:10:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8 Scan guard in xtask science"
+        detail: "xtask/src/science/plan.rs: EXPLAIN QUERY PLAN before each query and report; a SCAN (through an index or not) or a SEARCH by release alone of an Object or Entry table fails the check, naming it. The scratch database gets its own check indexes (entries by source, measurements by quantity, objects by domain/placing/kind/preferred quantity), not D1."
+        state: done
   - key: 01a1ce1a-151d-7544-ab8c-3ae6b6395438
     id: t9
     kind: task
@@ -68,6 +77,15 @@ blocks:
         title: "T9 Every science check reads indexed rows"
         detail: "Rules on entries.flags/extra read entry_flags and entry_references; masers-on-their-model-arms reads memberships; every check passes the guard on a fixture."
         state: open
+      - key: 01a1ce2a-273d-73b1-acbd-9cf79de2a02f
+        at: 2026-11-12T05:10:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T9 Every science check reads indexed rows"
+        detail: "Rewritten onto entry_flags, entry_references and memberships; counts-by-scale-domain searches each domain; new check masers-members-of-their-arms (182). Every repository check passes the guard on the fixture; the run on the migrated release 15 remains."
+        state: active
   - key: 01a1ce1a-151d-7544-ab8c-3ae7c460eb87
     id: t9b
     kind: task
@@ -81,6 +99,15 @@ blocks:
         title: "Migrate's summary names the 7→8 move"
         detail: "'Migrated the store to shared rows' is printed after a 7→8 move; say what was moved."
         state: open
+      - key: 01a1ce2d-fb56-7184-8d2d-891a1b7f9928
+        at: 2026-11-12T05:14:42Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate's summary names the 7→8 move"
+        detail: "Outcome::Migrated { shared, rows }: four wordings, tested in display.rs."
+        state: done
   - key: 01a1ce1a-151d-7544-ab8c-3ae86d67b1f0
     id: t10
     kind: task
@@ -94,6 +121,15 @@ blocks:
         title: "T10 Rules recorded, and traces"
         detail: "CLAUDE.md rule, memory note, loft.trace.yaml links for the four Constraints and the membership criteria."
         state: open
+      - key: 01a1ce2d-fb56-7184-8d2d-891b78c1c2fa
+        at: 2026-11-12T05:14:42Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T10 Rules recorded, and traces"
+        detail: "AGENTS.md: cargo xtask json, the scan guard and CHECK_INDEXES under Commands, and a 'No JSON at scale' rule; memory note no-json-at-scale; loft.trace.yaml links the SQL gate and scan guard Constraints to their tests, and the schema gate's tests to the schema Constraint."
+        state: done
   - key: 01a1ce1a-151d-7544-ab8c-3ae99051120f
     id: t11
     kind: task
@@ -107,6 +143,15 @@ blocks:
         title: "T11 Wave review"
         detail: "/simplify and /code-review in parallel, fixes, then cargo xtask check and cargo xtask integration once each."
         state: open
+      - key: 01a1ce2d-fb56-7184-8d2d-891c0cbb74ad
+        at: 2026-11-12T05:14:42Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11 Wave review"
+        detail: "/simplify and /code-review in parallel, fixes, then cargo xtask check and cargo xtask integration once each."
+        state: active
   - key: 01a1ce1a-151d-7544-ab8c-3aea243ce743
     id: build-issues
     kind: note
@@ -122,3 +167,18 @@ blocks:
           | Issue | Found by | Fix | State |
           |---|---|---|---|
           | — | | | |
+      - key: 01a1ce2a-273d-73b1-acbd-9cf8a1a0a654
+        at: 2026-11-12T05:10:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | 24 checks scanned entries, objects or measurements: D1 indexes none of them by source, quantity, domain or kind | the scan guard on the fixture release | indexes made in the science scratch database only (D1 keeps the API's) | fixed |
+          | Two checks (virgo-group-cites-kt17, betelgeuse-names-joyce) searched the JSON text with `instr`, which the SQL gate cannot see | the plan test: no such column | rewritten onto entry_flags (`position_source`) and entry_references (`bibcode`) | fixed |
+          | `counts-by-scale-domain` is a census of every object | the scan guard | counts each domain by a search of objects (scale_domain, placed) | fixed |
+          | The arm-distance check would pass on a release with no memberships | review of the rewrite | new check `masers-members-of-their-arms`, 182 from Table 1 | fixed |
+          | `migrate` says "Migrated the store to shared rows" after 7→8 | wave 1 | t9b | open |

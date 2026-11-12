@@ -16,8 +16,9 @@ pub enum Outcome {
     Published(u64),
     /// The run pruned this release.
     Pruned(u64),
-    /// The run migrated the store, or found it needed nothing.
-    Migrated(bool),
+    /// The run migrated the store: whether it brought it under shared rows (schema 6), and
+    /// whether it moved its JSON at scale into rows (schema 8). Neither when it needed nothing.
+    Migrated { shared: bool, rows: bool },
     /// The run stopped at a stage, for a reason.
     Stopped { stage: Stage, reason: String },
 }
@@ -83,7 +84,7 @@ impl Summary {
                 ..
             } => moved("Uploaded"),
             Outcome::Pruned(_)
-            | Outcome::Migrated(_)
+            | Outcome::Migrated { .. }
             | Outcome::Stopped {
                 stage: Stage::Prune | Stage::Migrate,
                 ..
@@ -110,8 +111,15 @@ impl Summary {
             Outcome::Built(n) => format!("Built release {n}"),
             Outcome::Published(n) => format!("Published release {n}"),
             Outcome::Pruned(n) => format!("Pruned release {n}"),
-            Outcome::Migrated(true) => "Migrated the store to shared rows".to_owned(),
-            Outcome::Migrated(false) => "The store needed no migration".to_owned(),
+            Outcome::Migrated { shared, rows } => match (shared, rows) {
+                (true, true) => {
+                    "Migrated the store to shared rows, then its JSON at scale into rows"
+                }
+                (true, false) => "Migrated the store to shared rows",
+                (false, true) => "Migrated the store's JSON at scale into rows (schema 8)",
+                (false, false) => "The store needed no migration",
+            }
+            .to_owned(),
             Outcome::Stopped { stage, reason } => {
                 format!("Stopped at {}: {reason}", stage_name(*stage))
             }
