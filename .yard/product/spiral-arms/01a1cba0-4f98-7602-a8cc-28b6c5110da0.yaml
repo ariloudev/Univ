@@ -1,0 +1,2221 @@
+key: 01a1cba0-4f98-7602-a8cc-28b6c5110da0
+id: spec
+versions:
+  - key: 01a1cba0-4f98-7602-a8cc-28ba8ad47c64
+    at: 2026-11-11T17:20:43Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Specification change"
+    goal: "spec/ says what the OB stars, the face-on view and the labelled arm model are, approved and committed"
+    status: planned
+  - key: 01a1cbb2-cb04-74b3-9d53-33ae51b67494
+    at: 2026-11-11T17:40:54Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Specification change"
+    goal: "spec/ says what the hot luminous stars, the colours by kind, the model arms and the arms view are, approved and committed"
+    status: active
+  - key: 01a1cbba-2d79-7578-a297-320fc1efe99b
+    at: 2026-11-11T17:48:58Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Specification change"
+    goal: "spec/ says what the hot luminous stars, the colours by kind, the model arms and the arms view are, approved and committed"
+    status: done
+blocks:
+  - key: 01a1cbb8-e8b7-728a-9f39-bf53b3453fbe
+    id: spec-change-1
+    kind: loft
+    versions:
+      - key: 01a1cbb8-e8b7-728a-9f39-bf54c0176dc7
+        at: 2026-11-11T17:47:35Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        view: spec-change
+        note: "One new Feature (*See the Galaxy's arms face-on*), three accepted decisions, and edits to the tracer kinds, the source list, tile encoding, structures and the Show drawer. One `LQ-005` info finding is left on the Zari distance criterion: it states one distance with its kind of value, bounds and method, the same shape as the Cepheid and cluster criteria beside it."
+        recorded:
+          commit: "ce5bf1cf605306d047b085781831241ff11be487"
+          branch: "product/spiral-arms"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-11T17:47:35Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 3,
+              "graph.diff": 67,
+              "graph.edges": 5,
+              "graph.nodes": 92,
+              "status.base.added": 51,
+              "status.base.changed": 13,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9d-727f-bb23-49695a2f5631",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Colour the Galaxy tracers by kind of object",
+                  "words": {
+                    "after": "Colour the Galaxy tracers by kind of object\n\nTiles of the Galaxy tracers domain carry each point's kind of object from encoding version 4, and the explorer colours and switches the tracers by it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9d-727f-bb23-497176d190e5",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Draw Reid 2019's spiral arms as a model, extrapolated around the disk",
+                  "words": {
+                    "after": "Draw Reid 2019's spiral arms as a model, extrapolated around the disk\n\nEach arm of Reid et al. 2019's Table 2 is a spiral arm structure over its fitted range and an extrapolation structure that carries the same formula up to 90° beyond each end, both of the status model."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Trace the spiral arms with Zari 2021's luminous hot stars",
+                  "words": {
+                    "after": "Trace the spiral arms with Zari 2021's luminous hot stars\n\nZari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 15 adds, to show the Galaxy's spiral arms.",
+                  "words": {
+                    "after": "Univ Ingest shall provide a source definition for each source that release 15 adds, to show the Galaxy's spiral arms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c912e8e751fd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The luminous hot star source is the filtered sample of Zari et al. 2021, every one of its 417,535 rows as VizieR serves J/A+A/650/A112/filtered.",
+                  "words": {
+                    "after": "The luminous hot star source is the filtered sample of Zari et al. 2021, every one of its 417,535 rows as VizieR serves J/A+A/650/A112/filtered."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c913b7dc47c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The luminous hot star source names the Galaxy tracers scale domain and the kind of object luminous hot star.",
+                  "words": {
+                    "after": "The luminous hot star source names the Galaxy tracers scale domain and the kind of object luminous hot star."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c914edbba15b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The model spiral arms are read from structure files that cite Reid et al. 2019 for each published number.",
+                  "words": {
+                    "after": "The model spiral arms are read from structure files that cite Reid et al. 2019 for each published number."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c609c99b51a3",
+                  "kind": "criterion",
+                  "label": "AC-687",
+                  "name": "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region or luminous hot star.",
+                  "words": {
+                    "after": "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region or luminous hot star.",
+                    "before": "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star or star-forming region."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c915da03062a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names the parallax, proper motion and disc-kinematics prior of Zari et al. 2021.",
+                  "words": {
+                    "after": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names the parallax, proper motion and disc-kinematics prior of Zari et al. 2021."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9166100490e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star keeps its Gaia EDR3 parallax and parallax zero point as measured values, with no uncertainty reported since its source publishes none.",
+                  "words": {
+                    "after": "A luminous hot star keeps its Gaia EDR3 parallax and parallax zero point as measured values, with no uncertainty reported since its source publishes none."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-8e6a-70ed-b03e-1a63154cca1c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No distance is derived from a luminous hot star's parallax.",
+                  "words": {
+                    "after": "No distance is derived from a luminous hot star's parallax."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91738518715",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star joins the object of its Gaia DR3 source by the Gaia EDR3 source id its source gives, which Gaia DR3 keeps, as a published cross-identification.",
+                  "words": {
+                    "after": "A luminous hot star joins the object of its Gaia DR3 source by the Gaia EDR3 source id its source gives, which Gaia DR3 keeps, as a published cross-identification."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them.",
+                  "words": {
+                    "after": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to Table 2 of Reid et al. 2019.",
+                  "words": {
+                    "after": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to Table 2 of Reid et al. 2019."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91a110700f5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's structure file gives the Galactic Centre's distance of 8.15 kpc and the Sun's height above the Galactic plane, each cited to Reid et al. 2019.",
+                  "words": {
+                    "after": "A spiral arm's structure file gives the Galactic Centre's distance of 8.15 kpc and the Sun's height above the Galactic plane, each cited to Reid et al. 2019."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91b11550e21",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The path follows ln(R / R_kink) = -(β - β_kink) tan ψ at each degree of azimuth β, with ψ the pitch angle on β's side of the kink.",
+                  "words": {
+                    "after": "The path follows ln(R / R_kink) = -(β - β_kink) tan ψ at each degree of azimuth β, with ψ the pitch angle on β's side of the kink."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and 8.15 kpc from the Galactic Centre, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                  "words": {
+                    "after": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and 8.15 kpc from the Galactic Centre, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91d880c4cef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's path spans the range of azimuth its fit covers and no more.",
+                  "words": {
+                    "after": "A spiral arm's path spans the range of azimuth its fit covers and no more."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91edb14b44d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An extrapolation's path runs on from each end of its arm's fitted range for up to 90° of azimuth, ending where its Galactocentric radius first leaves 3 to 16 kpc, and passes through the fitted range between.",
+                  "words": {
+                    "after": "An extrapolation's path runs on from each end of its arm's fitted range for up to 90° of azimuth, ending where its Galactocentric radius first leaves 3 to 16 kpc, and passes through the fitted range between."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91f12de3fd5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each point of a spiral arm's or an extrapolation's path is a reconstructed value whose derivation names the formula, the parameters and the Galactic Centre's distance it was computed from.",
+                  "words": {
+                    "after": "Each point of a spiral arm's or an extrapolation's path is a reconstructed value whose derivation names the formula, the parameters and the Galactic Centre's distance it was computed from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92011bf8744",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm and its extrapolation have the status model, and the scale domain of the Galaxy tracers.",
+                  "words": {
+                    "after": "A spiral arm and its extrapolation have the status model, and the scale domain of the Galaxy tracers."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall encode, from encoding version 4, the kind of object of each point of the Galaxy tracers domain.",
+                  "words": {
+                    "after": "Univ Ingest shall encode, from encoding version 4, the kind of object of each point of the Galaxy tracers domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92237c8477b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A version 4 point holds every column of a version 3 point and then its kind of object, as an index into the kinds of object the tile manifest lists.",
+                  "words": {
+                    "after": "A version 4 point holds every column of a version 3 point and then its kind of object, as an index into the kinds of object the tile manifest lists."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92376902d6e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point whose object names no kind of object carries a code that no kind of object takes.",
+                  "words": {
+                    "after": "A point whose object names no kind of object carries a code that no kind of object takes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9246ed5d932",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The tiles of the Galaxy tracers domain take encoding version 4, and the tiles of every other scale domain keep version 3, so that a release that adds version 4 leaves their files unchanged.",
+                  "words": {
+                    "after": "The tiles of the Galaxy tracers domain take encoding version 4, and the tiles of every other scale domain keep version 3, so that a release that adds version 4 leaves their files unchanged."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c926b85b11d1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure computed from a published model, such as a model spiral arm, has the status model, apart from observed structures, reconstructions and statistical claims.",
+                  "words": {
+                    "after": "A structure computed from a published model, such as a model spiral arm, has the status model, apart from observed structures, reconstructions and statistical claims."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": "AC-345",
+                  "name": "The decoder decodes tiles of encoding versions 1, 2, 3 and 4.",
+                  "words": {
+                    "after": "The decoder decodes tiles of encoding versions 1, 2, 3 and 4.",
+                    "before": "The decoder decodes tiles of encoding versions 1, 2 and 3."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92530ad0b85",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 4 tile gives what a version 3 point gives and its kind of object, or that it has none.",
+                  "words": {
+                    "after": "Each decoded point of a version 4 tile gives what a version 3 point gives and its kind of object, or that it has none."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5e5caae2dff",
+                  "kind": "requirement",
+                  "label": "RQ-191",
+                  "name": "Univ Explorer shall draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point.",
+                  "words": {
+                    "after": "Univ Explorer shall draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point.",
+                    "before": "Univ Explorer shall draw each point of the Galaxy tracers domain in the colour of the source of its preferred distance, larger than a star's point."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5e61e66e5d3",
+                  "kind": "criterion",
+                  "label": "AC-707",
+                  "name": "Each kind of object of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains.",
+                  "words": {
+                    "after": "Each kind of object of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains.",
+                    "before": "Each source of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5e7f392df4f",
+                  "kind": "criterion",
+                  "label": "AC-708",
+                  "name": "The key names each kind of object of the Galaxy tracers domain with its colour and the number of its points drawn.",
+                  "words": {
+                    "after": "The key names each kind of object of the Galaxy tracers domain with its colour and the number of its points drawn.",
+                    "before": "The key names each source of the Galaxy tracers domain with its colour and the number of its points drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fb25546047",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the Galaxy tracers domain is drawn in its kind of object's colour whichever source placed it.",
+                  "words": {
+                    "after": "A point of the Galaxy tracers domain is drawn in its kind of object's colour whichever source placed it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fc292cfa4a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind.",
+                  "words": {
+                    "after": "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a8cc-3d02-7585-85fb-4559a8a2b471",
+                  "kind": "requirement",
+                  "label": "RQ-149",
+                  "name": "Univ Explorer shall offer a switch for each scale domain, each source of the drawn points, each kind of value, each kind of object of the Galaxy tracers and each kind of structure, all on when the view opens.",
+                  "words": {
+                    "after": "Univ Explorer shall offer a switch for each scale domain, each source of the drawn points, each kind of value, each kind of object of the Galaxy tracers and each kind of structure, all on when the view opens.",
+                    "before": "Univ Explorer shall offer a switch for each scale domain, each source of the drawn points, each kind of value and each kind of structure, all on when the view opens."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a8cc-3d02-7585-85fb-455a3c55e223",
+                  "kind": "criterion",
+                  "label": "AC-431",
+                  "name": "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value, the kinds of object of the Galaxy tracers and the kinds of the structures, each with a switch.",
+                  "words": {
+                    "after": "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value, the kinds of object of the Galaxy tracers and the kinds of the structures, each with a switch.",
+                    "before": "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value and the kinds of the structures, each with a switch."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f9900c685f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each kind of object's switch carries the colour its points are drawn in and the number of its points the release holds.",
+                  "words": {
+                    "after": "Each kind of object's switch carries the colour its points are drawn in and the number of its points the release holds."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8faa69b54c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the Galaxy tracers domain is drawn only while its kind of object is on, as well as its other groups.",
+                  "words": {
+                    "after": "A point of the Galaxy tracers domain is drawn only while its kind of object is on, as well as its other groups."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1bcf9-343a-712a-a28c-7503bb8fdbb5",
+                  "kind": "criterion",
+                  "label": "AC-557",
+                  "name": "The summary gives, as a number on and the number in all, the scale domains, the sources, the kinds of value and the kinds of object of the points, and the kinds of structure.",
+                  "words": {
+                    "after": "The summary gives, as a number on and the number in all, the scale domains, the sources, the kinds of value and the kinds of object of the points, and the kinds of structure.",
+                    "before": "The summary gives, as a number on and the number in all, the scale domains, the sources and the kinds of value of the points, and the kinds of structure."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1bcf9-343a-712a-a28c-7513e662d7d4",
+                  "kind": "criterion",
+                  "label": "AC-569",
+                  "name": "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, the Galaxy's arms, and other.",
+                  "words": {
+                    "after": "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, the Galaxy's arms, and other.",
+                    "before": "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, and other."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "See the Galaxy's arms face-on",
+                  "words": {
+                    "after": "See the Galaxy's arms face-on\n\nLooking down on the Milky Way's disk to see its spiral arms: the young tracers that lie along them\nwithin a few kiloparsecs of the Sun, and the Reid et al. 2019 model of the arms over the whole\ndisk. The stars of the stars domain are hidden in this view, since millions of overlapping stars\naround the Sun drown the tracers, and the old tracers, RR Lyrae stars and globular clusters, belong\nto the halo and the bulge rather than to the arms.\n\nThe Galactic Centre lies 8.15 kpc from the Sun toward l = 0°, b = 0°, the distance Reid et al.\n2019 adopt (ApJ 885, 131, Table 3, fit A5) and fit their arms with, so that the model arms and the\nview share one centre."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the arms view, Univ Explorer shall look down on the Galactic disk from the north Galactic pole, centred halfway between the Sun and the Galactic Centre.",
+                  "words": {
+                    "after": "When the person chooses the arms view, Univ Explorer shall look down on the Galactic disk from the north Galactic pole, centred halfway between the Sun and the Galactic Centre."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8ff5f10db66",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A control beside the control that returns to Earth offers the arms view.",
+                  "words": {
+                    "after": "A control beside the control that returns to Earth offers the arms view."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9001874842a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view the eye looks along the direction from the north Galactic pole toward the south Galactic pole.",
+                  "words": {
+                    "after": "In the arms view the eye looks along the direction from the north Galactic pole toward the south Galactic pole."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9013e941971",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view the focus is 4.075 kpc from the Sun toward l = 0°, b = 0°, halfway to the Galactic Centre at 8.15 kpc.",
+                  "words": {
+                    "after": "In the arms view the focus is 4.075 kpc from the Sun toward l = 0°, b = 0°, halfway to the Galactic Centre at 8.15 kpc."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c902b661dfcb",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view the Sun lies above the Galactic Centre on the screen, as in Figure 1 of Reid et al. 2019, so that the Galaxy turns clockwise.",
+                  "words": {
+                    "after": "In the arms view the Sun lies above the Galactic Centre on the screen, as in Figure 1 of Reid et al. 2019, so that the Galaxy turns clockwise."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c903d2d3cf16",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view every point of every model spiral arm and its extrapolation lies within the view.",
+                  "words": {
+                    "after": "In the arms view every point of every model spiral arm and its extrapolation lies within the view."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90484cdd721",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view shows the galactic axes.",
+                  "words": {
+                    "after": "The arms view shows the galactic axes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9052bd62642",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where the person's system asks for reduced motion, the view moves to the arms view at once instead of flying.",
+                  "words": {
+                    "after": "Where the person's system asks for reduced motion, the view moves to the arms view at once instead of flying."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers and its spiral arms.",
+                  "words": {
+                    "after": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers and its spiral arms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90774284032",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the Galaxy tracers domain on and every other scale domain off.",
+                  "words": {
+                    "after": "The arms view turns the Galaxy tracers domain on and every other scale domain off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c908a3754994",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on.",
+                  "words": {
+                    "after": "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-8e6a-70ed-b03e-1a6201d77664",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the classical Cepheids, the RR Lyrae stars and the globular clusters off.",
+                  "words": {
+                    "after": "The arms view turns the classical Cepheids, the RR Lyrae stars and the globular clusters off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view chooses the Galaxy's tracers younger than 30 million years.",
+                  "words": {
+                    "after": "The arms view chooses the Galaxy's tracers younger than 30 million years."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90a7548931b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the spiral arms and their extrapolations on and every other kind of structure off.",
+                  "words": {
+                    "after": "The arms view turns the spiral arms and their extrapolations on and every other kind of structure off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90b518949a5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every source and every kind of value of the Galaxy tracers domain is on in the arms view.",
+                  "words": {
+                    "after": "Every source and every kind of value of the Galaxy tracers domain is on in the arms view."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall keep the arms view in the page's address until the person moves the view.",
+                  "words": {
+                    "after": "Univ Explorer shall keep the arms view in the page's address until the person moves the view."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90df8380717",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Choosing the arms view puts view=arms in the page's address.",
+                  "words": {
+                    "after": "Choosing the arms view puts view=arms in the page's address."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Opening an address with view=arms opens the explorer in the arms view, with what it draws.",
+                  "words": {
+                    "after": "Opening an address with view=arms opens the explorer in the arms view, with what it draws."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90f96e6d031",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Turning the view, moving the focus or zooming takes view=arms out of the address and leaves what is drawn as it is.",
+                  "words": {
+                    "after": "Turning the view, moving the focus or zooming takes view=arms out of the address and leaves what is drawn as it is."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Dragging up or down from the arms view tilts the view away from the pole.",
+                  "words": {
+                    "after": "Dragging up or down from the arms view tilts the view away from the pole."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f611bfeacf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's extrapolation is drawn beneath its arm, fainter than the arm, so that the arm's fitted range stands out along it.",
+                  "words": {
+                    "after": "A spiral arm's extrapolation is drawn beneath its arm, fainter than the arm, so that the arm's fitted range stands out along it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f729ff5037",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure of the status model says above its values that it is a model, naming the paper whose model it is.",
+                  "words": {
+                    "after": "The panel of a structure of the status model says above its values that it is a model, naming the paper whose model it is."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f82fd5ffdc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a spiral arm's extrapolation says that only its arm's fitted range rests on the paper's fit and that the rest carries the fitted formula on beyond its data.",
+                  "words": {
+                    "after": "The panel of a spiral arm's extrapolation says that only its arm's fitted range rests on the paper's fit and that the rest carries the fitted formula on beyond its data."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e7859f3c18c9",
+                  "kind": "criterion",
+                  "label": "AC-658",
+                  "name": "The list is grouped under headings for the structures within 30 kpc, from 30 kpc to 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                  "words": {
+                    "after": "The list is grouped under headings for the structures within 30 kpc, from 30 kpc to 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                    "before": "The list is grouped under headings for the structures within 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e787596ccbdd",
+                  "kind": "criterion",
+                  "label": "AC-660",
+                  "name": "A distance is written in kiloparsecs to three figures below 1 Mpc, in whole megaparsecs from 1 Mpc to below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                  "words": {
+                    "after": "A distance is written in kiloparsecs to three figures below 1 Mpc, in whole megaparsecs from 1 Mpc to below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                    "before": "A distance is written in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\"."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e7880ad36d01",
+                  "kind": "criterion",
+                  "label": "AC-661",
+                  "name": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 1 kpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                  "words": {
+                    "after": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 1 kpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                    "before": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 10 Mpc to 10 Gpc, whose ticks are labelled at the head of the list."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e789414bdf63",
+                  "kind": "criterion",
+                  "label": "AC-662",
+                  "name": "The dot is filled for an observed structure, open for a statistical claim, dotted for a reconstructed one and half filled for a model, as a legend at the head of the list says.",
+                  "words": {
+                    "after": "The dot is filled for an observed structure, open for a statistical claim, dotted for a reconstructed one and half filled for a model, as a legend at the head of the list says.",
+                    "before": "The dot is filled for an observed structure, open for a statistical claim and dotted for a reconstructed one, as a legend at the head of the list says."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9d-727f-bb23-49695a2f5631",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Colour the Galaxy tracers by kind of object",
+                  "words": {
+                    "after": "Colour the Galaxy tracers by kind of object\n\nTiles of the Galaxy tracers domain carry each point's kind of object from encoding version 4, and the explorer colours and switches the tracers by it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9d-727f-bb23-497176d190e5",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Draw Reid 2019's spiral arms as a model, extrapolated around the disk",
+                  "words": {
+                    "after": "Draw Reid 2019's spiral arms as a model, extrapolated around the disk\n\nEach arm of Reid et al. 2019's Table 2 is a spiral arm structure over its fitted range and an extrapolation structure that carries the same formula up to 90° beyond each end, both of the status model."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Trace the spiral arms with Zari 2021's luminous hot stars",
+                  "words": {
+                    "after": "Trace the spiral arms with Zari 2021's luminous hot stars\n\nZari et al. 2021's filtered sample is a Galaxy tracer source of luminous hot stars, whose astro-kinematic distances are inferred and whose stars join their Gaia DR3 objects by source id."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a1cbb8-4b9d-727f-bb23-49695a2f5631",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1c319-7860-76e8-92ac-c5e5caae2dff"
+                },
+                {
+                  "from": "01a1cbb8-4b9d-727f-bb23-49695a2f5631",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b"
+                },
+                {
+                  "from": "01a1cbb8-4b9d-727f-bb23-497176d190e5",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "from": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "from": "01a1cbb8-4b9d-727f-bb23-497b27ad83d0",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d6593dd0cb35",
+                  "kind": "feature_group",
+                  "label": "FG-1",
+                  "name": "Acquisition",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-1831f423e25f",
+                  "kind": "feature",
+                  "label": "F-1",
+                  "name": "Define a source",
+                  "parent": "01a19f1a-685d-7357-b67e-d6593dd0cb35"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall provide a source definition for each source that release 15 adds, to show the Galaxy's spiral arms.",
+                  "parent": "01a19f22-2ad9-716e-876f-1831f423e25f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c912e8e751fd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The luminous hot star source is the filtered sample of Zari et al. 2021, every one of its 417,535 rows as VizieR serves J/A+A/650/A112/filtered.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c913b7dc47c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The luminous hot star source names the Galaxy tracers scale domain and the kind of object luminous hot star.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c914edbba15b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The model spiral arms are read from structure files that cite Reid et al. 2019 for each published number.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-186219f4e104",
+                  "kind": "feature",
+                  "label": "F-4",
+                  "name": "Normalize records",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c319-7860-76e8-92ac-c608fc0fd4c3",
+                  "kind": "requirement",
+                  "label": "RQ-188",
+                  "name": "Univ Ingest shall keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value.",
+                  "parent": "01a19f22-2ad9-716e-876f-186219f4e104"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c609c99b51a3",
+                  "kind": "criterion",
+                  "label": "AC-687",
+                  "name": "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region or luminous hot star.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c915da03062a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names the parallax, proper motion and disc-kinematics prior of Zari et al. 2021.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9166100490e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star keeps its Gaia EDR3 parallax and parallax zero point as measured values, with no uncertainty reported since its source publishes none.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-8e6a-70ed-b03e-1a63154cca1c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "No distance is derived from a luminous hot star's parallax.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91738518715",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A luminous hot star joins the object of its Gaia DR3 source by the Gaia EDR3 source id its source gives, which Gaia DR3 keeps, as a published cross-identification.",
+                  "parent": "01a1c319-7860-76e8-92ac-c608fc0fd4c3"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-187ab1b6831a",
+                  "kind": "feature",
+                  "label": "F-5",
+                  "name": "Record a researched structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them.",
+                  "parent": "01a19f22-2ad9-716e-876f-187ab1b6831a"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to Table 2 of Reid et al. 2019.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91a110700f5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's structure file gives the Galactic Centre's distance of 8.15 kpc and the Sun's height above the Galactic plane, each cited to Reid et al. 2019.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91b11550e21",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The path follows ln(R / R_kink) = -(β - β_kink) tan ψ at each degree of azimuth β, with ψ the pitch angle on β's side of the kink.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and 8.15 kpc from the Galactic Centre, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91d880c4cef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's path spans the range of azimuth its fit covers and no more.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91edb14b44d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "An extrapolation's path runs on from each end of its arm's fitted range for up to 90° of azimuth, ending where its Galactocentric radius first leaves 3 to 16 kpc, and passes through the fitted range between.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91f12de3fd5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each point of a spiral arm's or an extrapolation's path is a reconstructed value whose derivation names the formula, the parameters and the Galactic Centre's distance it was computed from.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92011bf8744",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm and its extrapolation have the status model, and the scale domain of the Galaxy tracers.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                  "kind": "feature",
+                  "label": "F-10",
+                  "name": "Build octree tiles",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall encode, from encoding version 4, the kind of object of each point of the Galaxy tracers domain.",
+                  "parent": "01a19f23-636f-72bd-b194-152a40334d81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92237c8477b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A version 4 point holds every column of a version 3 point and then its kind of object, as an index into the kinds of object the tile manifest lists.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92376902d6e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point whose object names no kind of object carries a code that no kind of object takes.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9246ed5d932",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The tiles of the Galaxy tracers domain take encoding version 4, and the tiles of every other scale domain keep version 3, so that a release that adds version 4 leaves their files unchanged.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d3019ad55e7",
+                  "kind": "feature",
+                  "label": "F-17",
+                  "name": "Read a structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3d31c98e6361",
+                  "kind": "requirement",
+                  "label": "RQ-59",
+                  "name": "When a client requests a structure, Univ Server shall return its geometry, members, kind of value and the citation of each of its numbers.",
+                  "parent": "01a19f1e-d177-716d-b124-3d3019ad55e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c926b85b11d1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A structure computed from a published model, such as a model spiral arm, has the status model, apart from observed structures, reconstructions and statistical claims.",
+                  "parent": "01a19f1e-d177-716d-b124-3d31c98e6361"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d664d79c25f9",
+                  "kind": "feature_group",
+                  "label": "FG-11",
+                  "name": "API contract",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-abfe741c359f",
+                  "kind": "feature",
+                  "label": "F-32",
+                  "name": "Decode the tile format",
+                  "parent": "01a19f1a-685d-7357-b67e-d664d79c25f9"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                  "kind": "requirement",
+                  "label": "RQ-109",
+                  "name": "The Tile codec shall provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abfe741c359f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": "AC-345",
+                  "name": "The decoder decodes tiles of encoding versions 1, 2, 3 and 4.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c92530ad0b85",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 4 tile gives what a version 3 point gives and its kind of object, or that it has none.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffe4657fb77",
+                  "kind": "feature",
+                  "label": "F-34",
+                  "name": "Draw the catalogues",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5e5caae2dff",
+                  "kind": "requirement",
+                  "label": "RQ-191",
+                  "name": "Univ Explorer shall draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point.",
+                  "parent": "01a1a497-e843-728a-bce8-3ffe4657fb77"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5e61e66e5d3",
+                  "kind": "criterion",
+                  "label": "AC-707",
+                  "name": "Each kind of object of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5e5caae2dff"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c319-7860-76e8-92ac-c5e7f392df4f",
+                  "kind": "criterion",
+                  "label": "AC-708",
+                  "name": "The key names each kind of object of the Galaxy tracers domain with its colour and the number of its points drawn.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5e5caae2dff"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fb25546047",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the Galaxy tracers domain is drawn in its kind of object's colour whichever source placed it.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5e5caae2dff"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fc292cfa4a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind.",
+                  "parent": "01a1c319-7860-76e8-92ac-c5e5caae2dff"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a8cc-3d02-7585-85fb-4558813fc355",
+                  "kind": "feature",
+                  "label": "F-41",
+                  "name": "Choose what is drawn",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a8cc-3d02-7585-85fb-4559a8a2b471",
+                  "kind": "requirement",
+                  "label": "RQ-149",
+                  "name": "Univ Explorer shall offer a switch for each scale domain, each source of the drawn points, each kind of value, each kind of object of the Galaxy tracers and each kind of structure, all on when the view opens.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-4558813fc355"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a8cc-3d02-7585-85fb-455a3c55e223",
+                  "kind": "criterion",
+                  "label": "AC-431",
+                  "name": "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value, the kinds of object of the Galaxy tracers and the kinds of the structures, each with a switch.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-4559a8a2b471"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f9900c685f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each kind of object's switch carries the colour its points are drawn in and the number of its points the release holds.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-4559a8a2b471"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a8cc-3d02-7585-85fb-455c402dc776",
+                  "kind": "requirement",
+                  "label": "RQ-150",
+                  "name": "When a group is turned off or on, Univ Explorer shall draw only the points and structures whose groups are all on.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-4558813fc355"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8faa69b54c2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of the Galaxy tracers domain is drawn only while its kind of object is on, as well as its other groups.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-455c402dc776"
+                },
+                {
+                  "change": null,
+                  "key": "01a1bcf9-343a-712a-a28c-7502f6c45017",
+                  "kind": "requirement",
+                  "label": "RQ-168",
+                  "name": "Univ Explorer shall say at the head of the Show drawer how much of the points and of the structures is drawn, with one link that turns every group on.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-4558813fc355"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1bcf9-343a-712a-a28c-7503bb8fdbb5",
+                  "kind": "criterion",
+                  "label": "AC-557",
+                  "name": "The summary gives, as a number on and the number in all, the scale domains, the sources, the kinds of value and the kinds of object of the points, and the kinds of structure.",
+                  "parent": "01a1bcf9-343a-712a-a28c-7502f6c45017"
+                },
+                {
+                  "change": null,
+                  "key": "01a1bcf9-343a-712a-a28c-7511afea1d5b",
+                  "kind": "requirement",
+                  "label": "RQ-171",
+                  "name": "Univ Explorer shall show each kind of structure as a toggle with the colour its structures are drawn in and their number, among the kinds of its family.",
+                  "parent": "01a1a8cc-3d02-7585-85fb-4558813fc355"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1bcf9-343a-712a-a28c-7513e662d7d4",
+                  "kind": "criterion",
+                  "label": "AC-569",
+                  "name": "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, the Galaxy's arms, and other.",
+                  "parent": "01a1bcf9-343a-712a-a28c-7511afea1d5b"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "See the Galaxy's arms face-on",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the arms view, Univ Explorer shall look down on the Galactic disk from the north Galactic pole, centred halfway between the Sun and the Galactic Centre.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8ff5f10db66",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A control beside the control that returns to Earth offers the arms view.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9001874842a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view the eye looks along the direction from the north Galactic pole toward the south Galactic pole.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9013e941971",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view the focus is 4.075 kpc from the Sun toward l = 0°, b = 0°, halfway to the Galactic Centre at 8.15 kpc.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c902b661dfcb",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view the Sun lies above the Galactic Centre on the screen, as in Figure 1 of Reid et al. 2019, so that the Galaxy turns clockwise.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c903d2d3cf16",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In the arms view every point of every model spiral arm and its extrapolation lies within the view.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90484cdd721",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view shows the galactic axes.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9052bd62642",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Where the person's system asks for reduced motion, the view moves to the arms view at once instead of flying.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers and its spiral arms.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90774284032",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the Galaxy tracers domain on and every other scale domain off.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c908a3754994",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-8e6a-70ed-b03e-1a6201d77664",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the classical Cepheids, the RR Lyrae stars and the globular clusters off.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view chooses the Galaxy's tracers younger than 30 million years.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90a7548931b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The arms view turns the spiral arms and their extrapolations on and every other kind of structure off.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90b518949a5",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every source and every kind of value of the Galaxy tracers domain is on in the arms view.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall keep the arms view in the page's address until the person moves the view.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90df8380717",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Choosing the arms view puts view=arms in the page's address.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Opening an address with view=arms opens the explorer in the arms view, with what it draws.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90f96e6d031",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Turning the view, moving the focus or zooming takes view=arms out of the address and leaves what is drawn as it is.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Dragging up or down from the arms view tilts the view away from the pole.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffdfd7a2e54",
+                  "kind": "feature_group",
+                  "label": "FG-13",
+                  "name": "Objects and structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3fef08e193da",
+                  "kind": "feature",
+                  "label": "F-39",
+                  "name": "See the structures",
+                  "parent": "01a1a497-e843-728a-bce8-3ffdfd7a2e54"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff084b48fab",
+                  "kind": "requirement",
+                  "label": "RQ-141",
+                  "name": "Univ Explorer shall draw each structure of the release by its placed shape.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f611bfeacf",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's extrapolation is drawn beneath its arm, fainter than the arm, so that the arm's fitted range stands out along it.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff084b48fab"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ff8d753cd12",
+                  "kind": "requirement",
+                  "label": "RQ-143",
+                  "name": "When the person chooses a structure, in the view or from the list of structures, Univ Explorer shall show its record and fly to it.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f729ff5037",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a structure of the status model says above its values that it is a model, naming the paper whose model it is.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8f82fd5ffdc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The panel of a spiral arm's extrapolation says that only its arm's fitted range rests on the paper's fit and that the rest carries the fitted formula on beyond its data.",
+                  "parent": "01a1a497-e843-728a-bce8-3ff8d753cd12"
+                },
+                {
+                  "change": null,
+                  "key": "01a1c278-094a-7307-be66-e7839dd2fba6",
+                  "kind": "requirement",
+                  "label": "RQ-184",
+                  "name": "Univ Explorer shall list the structures in the Structures drawer outward from Earth, each placed on one axis of distance that every row of the list shares.",
+                  "parent": "01a1a497-e843-728a-bce8-3fef08e193da"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e7859f3c18c9",
+                  "kind": "criterion",
+                  "label": "AC-658",
+                  "name": "The list is grouped under headings for the structures within 30 kpc, from 30 kpc to 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e787596ccbdd",
+                  "kind": "criterion",
+                  "label": "AC-660",
+                  "name": "A distance is written in kiloparsecs to three figures below 1 Mpc, in whole megaparsecs from 1 Mpc to below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e7880ad36d01",
+                  "kind": "criterion",
+                  "label": "AC-661",
+                  "name": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 1 kpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1c278-094a-7307-be66-e789414bdf63",
+                  "kind": "criterion",
+                  "label": "AC-662",
+                  "name": "The dot is filled for an observed structure, open for a statistical claim, dotted for a reconstructed one and half filled for a model, as a legend at the head of the list says.",
+                  "parent": "01a1c278-094a-7307-be66-e7839dd2fba6"
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91121d4c16e",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 120,
+                    "name": "Univ Ingest shall provide a source definition for each source that release 15 adds, to show the Galaxy's spiral arms.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c912e8e751fd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 126,
+                    "name": "The luminous hot star source is the filtered sample of Zari et al. 2021, every one of its 417,535 rows as VizieR serves J/A+A/650/A112/filtered.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c913b7dc47c4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 128,
+                    "name": "The luminous hot star source names the Galaxy tracers scale domain and the kind of object luminous hot star.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c914edbba15b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 130,
+                    "name": "The model spiral arms are read from structure files that cite Reid et al. 2019 for each published number.",
+                    "path": "spec/products/univ-ingest/acquisition/define-a-source.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c915da03062a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 176,
+                    "name": "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names the parallax, proper motion and disc-kinematics prior of Zari et al. 2021.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9166100490e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 178,
+                    "name": "A luminous hot star keeps its Gaia EDR3 parallax and parallax zero point as measured values, with no uncertainty reported since its source publishes none.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-8e6a-70ed-b03e-1a63154cca1c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 180,
+                    "name": "No distance is derived from a luminous hot star's parallax.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91738518715",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 182,
+                    "name": "A luminous hot star joins the object of its Gaia DR3 source by the Gaia EDR3 source id its source gives, which Gaia DR3 keeps, as a published cross-identification.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 48,
+                    "name": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to Table 2 of Reid et al. 2019.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91a110700f5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 56,
+                    "name": "A spiral arm's structure file gives the Galactic Centre's distance of 8.15 kpc and the Sun's height above the Galactic plane, each cited to Reid et al. 2019.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91b11550e21",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 58,
+                    "name": "The path follows ln(R / R_kink) = -(β - β_kink) tan ψ at each degree of azimuth β, with ψ the pitch angle on β's side of the kink.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 60,
+                    "name": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and 8.15 kpc from the Galactic Centre, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91d880c4cef",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 62,
+                    "name": "A spiral arm's path spans the range of azimuth its fit covers and no more.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91edb14b44d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 64,
+                    "name": "An extrapolation's path runs on from each end of its arm's fitted range for up to 90° of azimuth, ending where its Galactocentric radius first leaves 3 to 16 kpc, and passes through the fitted range between.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91f12de3fd5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 66,
+                    "name": "Each point of a spiral arm's or an extrapolation's path is a reconstructed value whose derivation names the formula, the parameters and the Galactic Centre's distance it was computed from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c92011bf8744",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 68,
+                    "name": "A spiral arm and its extrapolation have the status model, and the scale domain of the Galaxy tracers.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 63,
+                    "name": "Univ Ingest shall encode, from encoding version 4, the kind of object of each point of the Galaxy tracers domain.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c92237c8477b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "A version 4 point holds every column of a version 3 point and then its kind of object, as an index into the kinds of object the tile manifest lists.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c92376902d6e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 71,
+                    "name": "A point whose object names no kind of object carries a code that no kind of object takes.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9246ed5d932",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 73,
+                    "name": "The tiles of the Galaxy tracers domain take encoding version 4, and the tiles of every other scale domain keep version 3, so that a release that adds version 4 leaves their files unchanged.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c926b85b11d1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "A structure computed from a published model, such as a model spiral arm, has the status model, apart from observed structures, reconstructions and statistical claims.",
+                    "path": "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c92530ad0b85",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 36,
+                    "name": "Each decoded point of a version 4 tile gives what a version 3 point gives and its kind of object, or that it has none.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8fb25546047",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 181,
+                    "name": "A point of the Galaxy tracers domain is drawn in its kind of object's colour whichever source placed it.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8fc292cfa4a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 183,
+                    "name": "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8f9900c685f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 17,
+                    "name": "Each kind of object's switch carries the colour its points are drawn in and the number of its points the release holds.",
+                    "path": "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8faa69b54c2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 30,
+                    "name": "A point of the Galaxy tracers domain is drawn only while its kind of object is on, as well as its other groups.",
+                    "path": "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "See the Galaxy's arms face-on",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8fe3df4c789",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 18,
+                    "name": "When the person chooses the arms view, Univ Explorer shall look down on the Galactic disk from the north Galactic pole, centred halfway between the Sun and the Galactic Centre.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8ff5f10db66",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 25,
+                    "name": "A control beside the control that returns to Earth offers the arms view.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9001874842a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 27,
+                    "name": "In the arms view the eye looks along the direction from the north Galactic pole toward the south Galactic pole.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9013e941971",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 29,
+                    "name": "In the arms view the focus is 4.075 kpc from the Sun toward l = 0°, b = 0°, halfway to the Galactic Centre at 8.15 kpc.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c902b661dfcb",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 31,
+                    "name": "In the arms view the Sun lies above the Galactic Centre on the screen, as in Figure 1 of Reid et al. 2019, so that the Galaxy turns clockwise.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c903d2d3cf16",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 33,
+                    "name": "In the arms view every point of every model spiral arm and its extrapolation lies within the view.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90484cdd721",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 35,
+                    "name": "The arms view shows the galactic axes.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c9052bd62642",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "Where the person's system asks for reduced motion, the view moves to the arms view at once instead of flying.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 39,
+                    "name": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers and its spiral arms.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90774284032",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 46,
+                    "name": "The arms view turns the Galaxy tracers domain on and every other scale domain off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c908a3754994",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 48,
+                    "name": "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-8e6a-70ed-b03e-1a6201d77664",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 50,
+                    "name": "The arms view turns the classical Cepheids, the RR Lyrae stars and the globular clusters off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 52,
+                    "name": "The arms view chooses the Galaxy's tracers younger than 30 million years.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90a7548931b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 54,
+                    "name": "The arms view turns the spiral arms and their extrapolations on and every other kind of structure off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90b518949a5",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 56,
+                    "name": "Every source and every kind of value of the Galaxy tracers domain is on in the arms view.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90caaf1a871",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 58,
+                    "name": "Univ Explorer shall keep the arms view in the page's address until the person moves the view.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90df8380717",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 64,
+                    "name": "Choosing the arms view puts view=arms in the page's address.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 66,
+                    "name": "Opening an address with view=arms opens the explorer in the arms view, with what it draws.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90f96e6d031",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 68,
+                    "name": "Turning the view, moving the focus or zooming takes view=arms out of the address and leaves what is drawn as it is.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 70,
+                    "name": "Dragging up or down from the arms view tilts the view away from the pole.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8f611bfeacf",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 21,
+                    "name": "A spiral arm's extrapolation is drawn beneath its arm, fainter than the arm, so that the arm's fitted range stands out along it.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8f729ff5037",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 95,
+                    "name": "The panel of a structure of the status model says above its values that it is a model, naming the paper whose model it is.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8f82fd5ffdc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 97,
+                    "name": "The panel of a spiral arm's extrapolation says that only its arm's fitted range rests on the paper's fit and that the rest carries the fitted formula on beyond its data.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c609c99b51a3",
+                    "kind": "criterion",
+                    "label": "AC-687",
+                    "line": 164,
+                    "name": "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region or luminous hot star.",
+                    "path": "spec/products/univ-ingest/normalization/normalize-records.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                    "kind": "criterion",
+                    "label": "AC-345",
+                    "line": 30,
+                    "name": "The decoder decodes tiles of encoding versions 1, 2, 3 and 4.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1c319-7860-76e8-92ac-c5e5caae2dff",
+                    "kind": "requirement",
+                    "label": "RQ-191",
+                    "line": 171,
+                    "name": "Univ Explorer shall draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c5e61e66e5d3",
+                    "kind": "criterion",
+                    "label": "AC-707",
+                    "line": 177,
+                    "name": "Each kind of object of the Galaxy tracers domain has its own colour, distinct from the colours of the stars' temperatures and of the galaxy domains.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c319-7860-76e8-92ac-c5e7f392df4f",
+                    "kind": "criterion",
+                    "label": "AC-708",
+                    "line": 179,
+                    "name": "The key names each kind of object of the Galaxy tracers domain with its colour and the number of its points drawn.",
+                    "path": "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1a8cc-3d02-7585-85fb-4559a8a2b471",
+                    "kind": "requirement",
+                    "label": "RQ-149",
+                    "line": 9,
+                    "name": "Univ Explorer shall offer a switch for each scale domain, each source of the drawn points, each kind of value, each kind of object of the Galaxy tracers and each kind of structure, all on when the view opens.",
+                    "path": "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a8cc-3d02-7585-85fb-455a3c55e223",
+                    "kind": "criterion",
+                    "label": "AC-431",
+                    "line": 15,
+                    "name": "The Show drawer lists the scale domains, the sources of the drawn points, the four kinds of value, the kinds of object of the Galaxy tracers and the kinds of the structures, each with a switch.",
+                    "path": "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcf9-343a-712a-a28c-7503bb8fdbb5",
+                    "kind": "criterion",
+                    "label": "AC-557",
+                    "line": 50,
+                    "name": "The summary gives, as a number on and the number in all, the scale domains, the sources, the kinds of value and the kinds of object of the points, and the kinds of structure.",
+                    "path": "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1bcf9-343a-712a-a28c-7513e662d7d4",
+                    "kind": "criterion",
+                    "label": "AC-569",
+                    "line": 92,
+                    "name": "The kinds of structure are grouped by family as denser, emptier, walls and threads, distant arcs and groups, flows, the Galaxy's arms, and other.",
+                    "path": "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e7859f3c18c9",
+                    "kind": "criterion",
+                    "label": "AC-658",
+                    "line": 132,
+                    "name": "The list is grouped under headings for the structures within 30 kpc, from 30 kpc to 100 Mpc, from 100 Mpc to 1 Gpc, from 1 to 10 Gpc and not placed, each heading with its count.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e787596ccbdd",
+                    "kind": "criterion",
+                    "label": "AC-660",
+                    "line": 136,
+                    "name": "A distance is written in kiloparsecs to three figures below 1 Mpc, in whole megaparsecs from 1 Mpc to below 1,000 Mpc and in gigaparsecs to three figures from 1 Gpc, and a structure centred on Earth reads \"around us\".",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e7880ad36d01",
+                    "kind": "criterion",
+                    "label": "AC-661",
+                    "line": 138,
+                    "name": "Each placed structure's row draws a dot in its kind's colour on one logarithmic axis from 1 kpc to 10 Gpc, whose ticks are labelled at the head of the list.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1c278-094a-7307-be66-e789414bdf63",
+                    "kind": "criterion",
+                    "label": "AC-662",
+                    "line": 140,
+                    "name": "The dot is filled for an observed structure, open for a statistical claim, dotted for a reconstructed one and half filled for a model, as a legend at the head of the list says.",
+                    "path": "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml"
+                  }
+                ],
+                "commit": "ce5bf1cf605306d047b085781831241ff11be487",
+                "removed": [],
+                "revision": "develop"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 9,
+                "publishedAt": "2026-11-11T16:04:40Z",
+                "stateRoot": "cf70fa83262810b6be6b9d3dc0bdaf3eb5ebafd0c12af53ce73a6e813aba1f97"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/spiral-arms",
+                "modified": [
+                  "spec/decisions/colour-the-galaxy-tracers-by-kind-of-object.yaml",
+                  "spec/decisions/draw-reid-2019s-spiral-arms-as-a-model-extrapolated-around-the-disk.yaml",
+                  "spec/decisions/trace-the-spiral-arms-with-zari-2021s-luminous-hot-stars.yaml",
+                  "spec/products/univ-explorer/objects-and-structures/see-the-structures.yaml",
+                  "spec/products/univ-explorer/product.yaml",
+                  "spec/products/univ-explorer/the-view/choose-what-is-drawn.yaml",
+                  "spec/products/univ-explorer/the-view/draw-the-catalogues.yaml",
+                  "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml",
+                  "spec/products/univ-ingest/acquisition/define-a-source.yaml",
+                  "spec/products/univ-ingest/normalization/normalize-records.yaml",
+                  "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml",
+                  "spec/products/univ-ingest/releases/build-octree-tiles.yaml",
+                  "spec/products/univ-server/api-contract/decode-the-tile-format.yaml",
+                  "spec/products/univ-server/reference-data/read-a-structure.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1cbb9-1815-7403-ae55-039525c0c3be
+    id: approve-spec-1
+    kind: approval
+    versions:
+      - key: 01a1cbb9-1815-7403-ae55-03966fbe3e05
+        at: 2026-11-11T17:47:47Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Approve the spiral-arms spec change"
+        markdown: |-
+          ## What changes
+
+          | Area | Change |
+          |---|---|
+          | **Ingest sources** | Release 15 adds Zari et al. 2021's filtered sample (417,535 rows, VizieR) as a Galaxy tracer source of kind *luminous hot star*. |
+          | **Normalization** | Zari's astro-kinematic median distance is kept as **inferred**, with 16th/84th percentiles. It is inferred because Zari publishes no parallax errors, so the posterior can't be shown to be parallax-led, the same rule as Bailer-Jones below 5σ. The parallax is kept as measured with no uncertainty reported, and no distance is derived from it. Stars join their Gaia DR3 objects by source id, so a G < 14 star with a precise Gaia parallax is placed by that parallax. |
+          | **Tiles** | Encoding **version 4** adds a kind-of-object column. Only the Galaxy tracers' tiles take it; the stars and galaxy domains keep version 3, so their files are not republished. |
+          | **Structures** | A structure file can give a log spiral's cited Table 2 parameters; Univ Ingest computes the path (1° steps, heliocentric galactic kpc, R0 = 8.15 kpc, the plane 5.5 pc below the Sun). There are two structures per arm: the **spiral arm** over its fitted azimuths, and an **extrapolation** up to 90° beyond each end, within 3–16 kpc of the Galactic Centre. Both have a new status, **model**. |
+          | **Explorer: colours** | Tracers are coloured **by kind of object**, whatever source placed them, and each kind gets a switch in the Show drawer (`hide=` in the address). |
+          | **Explorer: structures** | Extrapolations are drawn fainter, beneath their arms. A model's panel says it is a model; an extrapolation's says only the fitted range rests on the paper. The Structures list reaches down to 1 kpc, with a heading for structures within 30 kpc. |
+          | **Explorer: arms view** | One control (and `view=arms`) looks down from the north Galactic pole, focus halfway to the Galactic Centre, Sun above the centre as in Reid's Figure 1. It shows only the tracers domain: luminous hot stars, open clusters < 30 Myr and masers, with Cepheids, RR Lyrae and globulars off, and the model arms. |
+
+          ## Worth a look
+
+          - **The kind name "luminous hot star"** (from Zari's paper title) rather than "OB star": the sample includes late-B and A stars.
+          - **Cepheids are off in the arms view.** They are 50–300 Myr old and trace the arms only loosely; you can turn them back on.
+          - **The 90° extrapolation span** is this project's choice, recorded in the decision; Reid's Figure 1 extends the arms by hand differently.
+
+          Once you approve, I commit `spec/` alone and present the build plan in plan mode.
+    responses:
+      - key: 01a1cbb9-b355-7252-a469-e90df09cee79
+        at: 2026-11-11T17:48:27Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: approved
+  - key: 01a1cbba-2d79-7578-a297-320d85379ef4
+    id: d-spec-approved
+    kind: note
+    versions:
+      - key: 01a1cbba-2d79-7578-a297-320e86f4183a
+        at: 2026-11-11T17:48:58Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Spec committed"
+        markdown: "Approved on the page and committed as `2ae67b8` (`spec/` with `.yard/`). The build plan comes next, in plan mode."
+        tone: success

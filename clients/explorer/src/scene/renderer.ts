@@ -33,8 +33,11 @@ export interface Points {
   kinds: Uint8Array;
   /** Each point's source, by its index in its domain's manifest. */
   sources: Uint16Array;
-  /** Each point's own colour as RGBA bytes, for a star; none for a point drawn by its kind. */
+  /** Each point's own colour as RGBA bytes, for a star or a tracer; none for a point drawn by
+   * its kind. */
   colours?: Uint8Array | undefined;
+  /** Each point's object index, for a Galaxy tracer; none for any other point. */
+  objects?: Uint8Array | undefined;
   extent: Sphere;
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
@@ -60,6 +63,8 @@ interface Outline extends Drawn {
   fades: number;
   /** Its symbol, drawn at a fixed size on the view about its centre, where it has one. */
   symbol: (Drawn & Omit<FixedSymbol, "offsets">) | undefined;
+  /** Whether it is drawn before the others, beneath them. */
+  beneath: boolean;
 }
 
 /** The eye's axes, place and projection for one frame. */
@@ -130,6 +135,7 @@ export class Renderer implements Drawer {
   private masks: Masks = NO_MASKS;
   private readonly hiddenKinds: WebGLUniformLocation | null;
   private readonly hiddenSources: WebGLUniformLocation | null;
+  private readonly hiddenObjects: WebGLUniformLocation | null;
   /** The point program's `a_inside`. */
   private readonly insideAt: number;
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
@@ -163,6 +169,7 @@ export class Renderer implements Drawer {
     this.opacity = gl.getUniformLocation(this.points.program, "u_opacity");
     this.hiddenKinds = gl.getUniformLocation(this.points.program, "u_hiddenKinds");
     this.hiddenSources = gl.getUniformLocation(this.points.program, "u_hiddenSources");
+    this.hiddenObjects = gl.getUniformLocation(this.points.program, "u_hiddenObjects");
     const at = (name: string) => gl.getUniformLocation(this.points.program, name);
     this.detailAt = { onsets: at("u_onsets"), cumulative: at("u_cumulative"), slice: at("u_slice"), count: at("u_count") };
     // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
@@ -170,6 +177,8 @@ export class Renderer implements Drawer {
     gl.vertexAttrib4f(gl.getAttribLocation(this.points.program, "a_colour"), 0, 0, 0, 0);
     // Nor sources: `a_source` beyond every mask's bits, so that nothing turned off hides them.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
+    // Nor kinds of object: `a_object` 0, a point of no kind, which no switch turns off.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_object"), 0);
     // And every point is drawn while the catalogue marks none, markers always.
     this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
     gl.vertexAttrib1f(this.insideAt, 1);
@@ -241,7 +250,7 @@ export class Renderer implements Drawer {
     return buffer;
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours"> & { sources?: Uint16Array }): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects"> & { sources?: Uint16Array }): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
@@ -250,6 +259,7 @@ export class Renderer implements Drawer {
     ];
     if (points.sources !== undefined) buffers.push(this.buffer(this.points.program, "a_source", points.sources, 1));
     if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
+    if (points.objects !== undefined) buffers.push(this.buffer(this.points.program, "a_object", points.objects, 1));
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }
@@ -349,7 +359,8 @@ export class Renderer implements Drawer {
     if (lines === undefined) return;
     const { symbol: fixed } = lines;
     const symbol = fixed === undefined ? undefined : { ...this.uploadLines(lines.centre, fixed.offsets), pixels: fixed.pixels, maxWidth: fixed.maxWidth };
-    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets, lines.neighbours), colour: lines.colour, fades: fadesOf(lines), symbol });
+    const beneath = lines.beneath === true;
+    this.outlines.set(name, { ...this.uploadLines(lines.centre, lines.offsets, lines.neighbours), colour: lines.colour, fades: fadesOf(lines), symbol, beneath });
   }
 
   /** Draws the view on a canvas `width` × `height` device pixels, `ratio` of them to a CSS pixel. */
@@ -375,15 +386,23 @@ export class Renderer implements Drawer {
     this.gl.uniform1f(this.lineScale, 1);
     // The fade's bounds are CSS pixels, so many device pixels each.
     this.gl.uniform2f(this.lineFade.range, FADE.gone * ratio, FADE.full * ratio);
-    for (const [name, outline] of this.outlines) {
-      if (this.hiddenNames.has(name)) continue;
-      this.gl.uniform1f(this.lineFade.on, outline.fades);
-      const style = structureStyle(outline.colour, name === this.chosen);
-      this.gl.uniform4f(this.lineColour, ...style.colour);
-      this.gl.uniform1f(this.lineWidth, style.lineWidth);
-      if (outline.count > 0) this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
-      this.drawSymbol(frame, outline, style.lineWidth, height);
+    // The outlines drawn beneath the others first, then the rest.
+    for (const beneath of [true, false]) {
+      for (const [name, outline] of this.outlines) {
+        if (outline.beneath === beneath) this.drawOutline(frame, name, outline, height);
+      }
     }
+  }
+
+  /** The outline drawn under `name`, unless it is turned off, and its symbol. */
+  private drawOutline(frame: Frame, name: string, outline: Outline, height: number): void {
+    if (this.hiddenNames.has(name)) return;
+    this.gl.uniform1f(this.lineFade.on, outline.fades);
+    const style = structureStyle(outline.colour, name === this.chosen);
+    this.gl.uniform4f(this.lineColour, ...style.colour);
+    this.gl.uniform1f(this.lineWidth, style.lineWidth);
+    if (outline.count > 0) this.drawOne(this.lines, frame, outline, this.gl.TRIANGLES);
+    this.drawSymbol(frame, outline, style.lineWidth, height);
   }
 
   /** An outline's symbol, if it has one, at its fixed size on a view `height` pixels high, in
@@ -404,6 +423,7 @@ export class Renderer implements Drawer {
     this.use(this.points, frame);
     this.dust.usePoints();
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
+    gl.uniform1ui(this.hiddenObjects, this.masks.objects);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
     const share = (id: string) => detail.share(id);

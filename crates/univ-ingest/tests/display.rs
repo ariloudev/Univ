@@ -316,6 +316,28 @@ fn the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended() 
         ..stopped
     };
     assert_eq!(published.lines().last().unwrap(), "Published release 3");
+    let migrated = |shared, rows| {
+        let summary = Summary {
+            outcome: Outcome::Migrated { shared, rows },
+            sources: vec![],
+            ..published.clone()
+        };
+        summary.lines().last().unwrap().clone()
+    };
+    assert_eq!(
+        [
+            migrated(true, true),
+            migrated(true, false),
+            migrated(false, true),
+            migrated(false, false)
+        ],
+        [
+            "Migrated the store to shared rows, then its JSON at scale into rows",
+            "Migrated the store to shared rows",
+            "Migrated the store's JSON at scale into rows (schema 8)",
+            "The store needed no migration",
+        ]
+    );
 }
 
 #[test]

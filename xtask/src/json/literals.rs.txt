@@ -1,0 +1,13 @@
+fn f<'a>(x: &'a str) -> char {
+    // "a comment"
+    let q = "SELECT a,";
+    let r = "\
+        b FROM t";
+    let s = "x \"y\" z";
+    let t = r#"raw "quoted""#;
+    let u = b"bytes";
+    /* "block" */
+    let c = '"';
+    let v = "after 'a' and '\"'";
+    c
+}

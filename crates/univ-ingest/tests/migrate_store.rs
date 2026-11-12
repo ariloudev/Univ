@@ -11,216 +11,18 @@
 mod common;
 mod memory_store;
 mod release_fixture;
+mod schema_5_store;
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::Path;
 
 use memory_store::{Clock, MemoryStore, Op, Rows, pruning, publishing};
-use release_fixture::{build_next, fixture, read_manifest};
+use release_fixture::{build_next, fixture};
 use rusqlite::Connection;
 use rusqlite::types::Value;
+use schema_5_store::{SCHEMA_5, as_schema_5, file_map, insert, reads, reads_but, rows, schema8};
 use univ_ingest::publish::migrate;
 use univ_ingest::release::reindex::reindex;
-use univ_ingest::release::release_dir;
-use univ_model::release::manifest::Target;
-use univ_model::release::{SCHEMA_VERSION, Scope, TABLES, keys, valid_in};
-
-/// The schema of version 5, as univ-model wrote it before rows were shared.
-const SCHEMA_5: &str = include_str!("fixtures/schema-5.sql");
-
-/// The rows `sql` gives.
-fn rows(db: &Connection, sql: &str) -> Vec<Vec<Value>> {
-    let mut q = db.prepare(sql).unwrap();
-    let n = q.column_count();
-    q.query_map([], |r| (0..n).map(|i| r.get::<_, Value>(i)).collect())
-        .unwrap()
-        .map(Result::unwrap)
-        .collect()
-}
-
-/// Whether `db` holds a table `name`.
-fn holds(db: &Connection, name: &str) -> bool {
-    memory_store::int(
-        db,
-        &format!("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '{name}'"),
-    ) > 0
-}
-
-/// Every row `filter` selects of every table of [`Scope::PerRelease`] in each database of
-/// `store`, the catalogue's first, without `release` and `retired`, as text, sorted by table:
-/// the tables schema 5 has not left out ([`file_map`] compares `release_files`).
-fn reads(store: &MemoryStore, filter: &str) -> Vec<BTreeMap<&'static str, Vec<String>>> {
-    reads_but(store, filter, |_| false)
-}
-
-/// Whether schema 5 declares table `name`, which a store of schema 5 can hold.
-fn in_schema_5(name: &str) -> bool {
-    SCHEMA_5.contains(&format!("CREATE TABLE IF NOT EXISTS {name} ("))
-}
-
-/// [`reads`], leaving out the columns `out` names.
-fn reads_but(
-    store: &MemoryStore,
-    filter: &str,
-    out: fn(&str) -> bool,
-) -> Vec<BTreeMap<&'static str, Vec<String>>> {
-    std::iter::once(&store.db)
-        .chain(store.shards.values())
-        .map(|db| {
-            TABLES
-                .iter()
-                .filter(|t| {
-                    t.scope == Scope::PerRelease && in_schema_5(t.name) && holds(db, t.name)
-                })
-                .map(|t| {
-                    let columns: Vec<&str> = t
-                        .columns
-                        .iter()
-                        .copied()
-                        .filter(|c| *c != "release" && !out(c))
-                        .collect();
-                    let sql = format!(
-                        "SELECT {} FROM {} WHERE {filter}",
-                        columns.join(", "),
-                        t.name
-                    );
-                    let mut text: Vec<String> =
-                        rows(db, &sql).iter().map(|r| format!("{r:?}")).collect();
-                    text.sort();
-                    (t.name, text)
-                })
-                .filter(|(_, r)| !r.is_empty())
-                .collect()
-        })
-        .filter(|tables: &BTreeMap<_, _>| !tables.is_empty())
-        .collect()
-}
-
-/// Copies `rows` into `table` of `to`, its `columns`.
-fn insert(to: &Connection, table: &str, columns: &[&str], rows: &[Vec<Value>]) {
-    let marks = vec!["?"; columns.len()].join(", ");
-    let sql = format!(
-        "INSERT INTO {table} ({}) VALUES ({marks})",
-        columns.join(", ")
-    );
-    for row in rows {
-        to.execute(&sql, rusqlite::params_from_iter(row)).unwrap();
-    }
-}
-
-/// The store `a`'s `releases`, published under schema 6 from the build output `out`, as
-/// schema 5 held them: each release's rows its own, its files under its prefix.
-fn as_schema_5(a: &MemoryStore, out: &Path, releases: &[u32]) -> MemoryStore {
-    // Each release's files by the key schema 6 gives them, to the key schema 5 gave them.
-    let old_keys: BTreeMap<u32, BTreeMap<String, String>> = releases
-        .iter()
-        .map(|r| {
-            let m = read_manifest(&release_dir(out, *r));
-            let map = m
-                .files
-                .iter()
-                .filter(|f| f.target == Target::R2)
-                .filter_map(|f| Some((f.key.clone()?, keys::key(*r, &f.path))))
-                .collect();
-            (*r, map)
-        })
-        .collect();
-    let mut b = MemoryStore::default();
-    let mut pairs = vec![(&a.db, None)];
-    pairs.extend(a.shards.iter().map(|(i, db)| (db, Some(*i))));
-    for (from, shard) in pairs {
-        let to = match shard {
-            None => &b.db,
-            Some(i) => b
-                .shards
-                .entry(i)
-                .or_insert_with(|| Connection::open_in_memory().unwrap()),
-        };
-        to.execute_batch(SCHEMA_5).unwrap();
-        to.execute("INSERT INTO schema_version (version) VALUES (5)", [])
-            .unwrap();
-        for t in TABLES
-            .iter()
-            .filter(|t| holds(from, t.name) && holds(to, t.name))
-        {
-            let columns = t.columns.join(", ");
-            if t.scope == Scope::PerRelease {
-                for r in releases {
-                    let mut each = rows(
-                        from,
-                        &format!("SELECT {columns} FROM {} WHERE {}", t.name, valid_in("", r)),
-                    );
-                    let at = t.position("release").unwrap();
-                    let named: Vec<usize> = (0..t.columns.len())
-                        .filter(|i| t.columns[*i].ends_with("_key"))
-                        .collect();
-                    for row in &mut each {
-                        row[at] = Value::Integer(i64::from(*r));
-                        for i in &named {
-                            if let Value::Text(key) = &row[*i]
-                                && let Some(old) = old_keys[r].get(key)
-                            {
-                                row[*i] = Value::Text(old.clone());
-                            }
-                        }
-                    }
-                    insert(to, t.name, t.columns, &each);
-                }
-            } else {
-                insert(
-                    to,
-                    t.name,
-                    t.columns,
-                    &rows(from, &format!("SELECT {columns} FROM {}", t.name)),
-                );
-            }
-        }
-        // When each release was published and pruned, which its row does not carry.
-        if holds(from, "releases") {
-            for r in rows(from, "SELECT number, published_at, pruned_at FROM releases") {
-                to.execute(
-                    "UPDATE releases SET published_at = ?2, pruned_at = ?3 WHERE number = ?1",
-                    rusqlite::params_from_iter(r),
-                )
-                .unwrap();
-            }
-        }
-        if holds(from, "latest") {
-            insert(
-                to,
-                "latest",
-                &["one", "release", "moved_at"],
-                &rows(from, "SELECT one, release, moved_at FROM latest"),
-            );
-        }
-    }
-    for r in releases {
-        let mut m = read_manifest(&release_dir(out, *r));
-        for f in m.files.iter_mut().filter(|f| f.target == Target::R2) {
-            let old = keys::key(*r, &f.path);
-            b.r2.insert(old.clone(), a.r2[f.key.as_ref().unwrap()].clone());
-            f.key = Some(old);
-        }
-        m.parent = None;
-        b.r2.insert(
-            keys::manifest(*r),
-            serde_norway::to_string(&m).unwrap().into_bytes(),
-        );
-    }
-    b
-}
-
-/// What `store` maps each path of release `n` to.
-fn file_map(store: &MemoryStore, n: u32) -> BTreeSet<String> {
-    let sql = format!(
-        "SELECT path, sha256 FROM release_files WHERE {}",
-        valid_in("", n)
-    );
-    rows(&store.db, &sql)
-        .iter()
-        .map(|r| format!("{r:?}"))
-        .collect()
-}
+use univ_model::release::{SHARED_ROWS_SINCE, TABLES, keys, valid_in};
 
 #[test]
 fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged() {
@@ -267,12 +69,11 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     let work = tempfile::tempdir().unwrap();
     let databases = 1 + i64::try_from(b.shards.len()).unwrap();
     migrate(&mut b, work.path(), &mut |_| {}).unwrap();
-    assert_eq!(
-        b.int_everywhere(&format!(
-            "SELECT COUNT(*) FROM schema_version WHERE version = {SCHEMA_VERSION}"
-        )),
-        databases
-    );
+    let at = |v: u32| format!("SELECT COUNT(*) FROM schema_version WHERE version = {v}");
+    assert_eq!(b.int_everywhere(&at(SHARED_ROWS_SINCE)), databases);
+    // Then the JSON the old tables kept, into the rows of schema 8.
+    assert!(schema8(&b));
+    assert_eq!(b.int_everywhere(&at(8)), databases);
     // Nothing built or uploaded again: D1 runs only the migration's own files, and R2 is given
     // only the files it held, under their SHA-256.
     for op in &b.ops {
@@ -300,6 +101,7 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     // Migrating again changes nothing.
     b.reset();
     migrate(&mut b, work.path(), &mut |_| {}).unwrap();
+    assert!(!schema8(&b));
     assert!(
         !b.ops
             .iter()
@@ -351,6 +153,7 @@ fn a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_ch
     // Migrated, then the state's numbering and row index of release 2 made again from it.
     let work = tempfile::tempdir().unwrap();
     assert!(migrate(&mut b, work.path(), &mut |_| {}).unwrap());
+    assert!(schema8(&b));
     reindex(&Rows(&b), 2, &dir).unwrap();
     for n in [1, 2] {
         std::fs::remove_file(univ_ingest::publish::journal::file(journals.path(), n)).unwrap();
@@ -435,7 +238,7 @@ fn a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_a
     assert_eq!(old(&b), before);
     assert_eq!(
         b.int(&format!(
-            "SELECT COUNT(*) FROM schema_version WHERE version = {SCHEMA_VERSION}"
+            "SELECT COUNT(*) FROM schema_version WHERE version = {SHARED_ROWS_SINCE}"
         )),
         1
     );

@@ -2,7 +2,9 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { structureCss } from "../../scene/kinds.ts";
+import { css, structureCss } from "../../scene/kinds.ts";
+import { TRACER_OBJECTS, tracerColour } from "../../scene/tracers.ts";
+import { createStore } from "../store.ts";
 import { DOMAINS, manifestOf } from "../../test/fixtures.ts";
 import { NOTHING_HIDDEN, hiddenInAddress } from "../hidden.ts";
 import { choicesOf } from "./choices.ts";
@@ -161,5 +163,32 @@ describe("the Show drawer's dust map", () => {
   it("says it is reading the map while it is on and not yet read", () => {
     dust(true);
     expect(within(screen.getByTestId("dust-switch")).getByText(/Reading the dust map/)).toBeTruthy();
+  });
+
+  it("offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary", async () => {
+    const withTracers = choicesOf(
+      [...DOMAINS, "galaxy_tracers"].map((name) => ({ name, manifest: manifestOf(name) })),
+      [],
+    );
+    const lines = TRACER_OBJECTS.slice(1).map(({ id, title }, i) => ({ id, title, colour: tracerColour(i + 1), points: (i + 1) * 1000 }));
+    const tracers = { frame: createStore(0), lines: () => lines };
+    const onApply = vi.fn();
+    render(<ShowPanel choices={withTracers} hidden={hiddenInAddress("?hide=object:open_cluster")} onApply={onApply} tracers={tracers} />);
+    const chips = within(screen.getByTestId("show-objects")).getAllByRole("button");
+    expect(chips.map((c) => c.textContent)).toEqual(lines.map((l) => `${l.title} ${l.points.toLocaleString("en-GB")}`));
+    expect(pressed("Open clusters 2,000 drawn")).toBe("false");
+    expect(pressed("Luminous hot stars 1,000 drawn")).toBe("true");
+    const probe = document.createElement("span");
+    probe.style.background = css(tracerColour(1));
+    expect((chips[0]?.querySelector("span") as HTMLElement).style.background).toBe(probe.style.background);
+    expect(screen.getByTestId("show-summary").textContent).toContain("5 of 6 kinds of object");
+    await userEvent.click(screen.getByRole("button", { name: "Luminous hot stars 1,000 drawn" }));
+    expect(onApply).toHaveBeenCalledWith([{ group: "object", name: "luminous_hot_star", shown: false }]);
+  });
+
+  it("offers no kinds of object where the release holds no tracers, nor counts them in the summary", () => {
+    drawer();
+    expect(screen.queryByTestId("show-objects")).toBeNull();
+    expect(screen.getByTestId("show-summary").textContent).not.toContain("kinds of object");
   });
 });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { hiddenInAddress } from "../ui/hidden.ts";
 import { MASK_BITS, NO_MASKS, isPointShown, masksOf, shownIn } from "./masks.ts";
+import { objectIndex } from "./tracers.ts";
 
 const DOMAINS = [
   { name: "stars", manifest: { sources: [{ index: 0, id: "gaia-dr3-bright" }, { index: 3, id: "hipparcos-2007" }] } },
@@ -45,5 +46,21 @@ describe("the masks of what is turned off", () => {
     expect(shownIn(NO_MASKS, "stars", [3], [0])).toBe("all");
     const shown = shownIn(masks, "stars", [3, 0], [0, 0]);
     expect(typeof shown === "function" ? [shown(0), shown(1)] : shown).toEqual([false, true]);
+  });
+
+  it("set a kind of object's bit at its object index, and draw a tracer only while its kind is on", () => {
+    const masks = masksOf(hiddenInAddress("?hide=object:luminous_hot_star,object:globular_cluster"), DOMAINS);
+    const hot = objectIndex("luminous_hot_star");
+    const open = objectIndex("open_cluster");
+    expect(masks.objects).toBe((1 << hot) | (1 << objectIndex("globular_cluster")));
+    expect(masks.objects & 1).toBe(0);
+    expect(isPointShown(masks, "galaxy_tracers", 0, 0, hot)).toBe(false);
+    expect(isPointShown(masks, "galaxy_tracers", 0, 0, open)).toBe(true);
+    // A tracer of no kind, and a point of any other domain, are drawn as their other groups say.
+    expect(isPointShown(masks, "galaxy_tracers", 0, 0, 0)).toBe(true);
+    expect(isPointShown(masks, "stars", 0, 0)).toBe(true);
+    const shown = shownIn(masks, "galaxy_tracers", [0, 0, 0], [0, 0, 0], [hot, open, 0]);
+    expect(typeof shown === "function" ? [shown(0), shown(1), shown(2)] : shown).toEqual([false, true, true]);
+    expect(shownIn(masks, "stars", [0], [0])).toBe("all");
   });
 });

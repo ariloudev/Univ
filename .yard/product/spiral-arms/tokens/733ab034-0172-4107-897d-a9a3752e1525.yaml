@@ -1,0 +1,115 @@
+format: yardtokens/2
+session: 733ab034-0172-4107-897d-a9a3752e1525
+host: claude-code
+firstEnded: 2026-11-11T17:20:43Z
+lastEnded: 2026-11-12T13:39:41Z
+tokens:
+  input: 444
+  cacheRead: 31414264
+  cacheWrite: 621193
+  output: 133369
+stages:
+  - stage: 01a1cba0-4f98-7602-a8cc-28b59a9b3e8c
+    input: 292
+    cacheRead: 16762242
+    cacheWrite: 411132
+    output: 73521
+    agents:
+      - agent: main
+        input: 20
+        cacheRead: 745929
+        cacheWrite: 35957
+        output: 12022
+      - agent: a6ff2107a53ef847c
+        type: general-purpose
+        input: 132
+        cacheRead: 7244159
+        cacheWrite: 179365
+        output: 32371
+      - agent: acf074daaa392f45d
+        type: Explore
+        input: 140
+        cacheRead: 8772154
+        cacheWrite: 195810
+        output: 29128
+  - stage: 01a1cba0-4f98-7602-a8cc-28b6c5110da0
+    input: 96
+    cacheRead: 8758121
+    cacheWrite: 122508
+    output: 43881
+    agents:
+      - agent: main
+        input: 96
+        cacheRead: 8758121
+        cacheWrite: 122508
+        output: 43881
+  - stage: 01a1cba0-4f98-7602-a8cc-28b73dfeaf38
+    input: 6
+    cacheRead: 802918
+    cacheWrite: 7961
+    output: 1046
+    agents:
+      - agent: main
+        input: 6
+        cacheRead: 802918
+        cacheWrite: 7961
+        output: 1046
+  - stage: 01a1cbbb-0be0-773a-bf15-a8c62d4777a0
+    input: 4
+    cacheRead: 504046
+    cacheWrite: 9920
+    output: 943
+    agents:
+      - agent: main
+        input: 4
+        cacheRead: 504046
+        cacheWrite: 9920
+        output: 943
+  - stage: 01a1cbc0-d4ed-7191-a3da-63a18d5a9ec2
+    input: 14
+    cacheRead: 2103052
+    cacheWrite: 22855
+    output: 4018
+    agents:
+      - agent: main
+        input: 14
+        cacheRead: 2103052
+        cacheWrite: 22855
+        output: 4018
+noStage:
+  input: 32
+  cacheRead: 2483885
+  cacheWrite: 46817
+  output: 9960
+agents:
+  - agent: main
+    model: claude-opus-5-5
+    input: 172
+    cacheRead: 15397951
+    cacheWrite: 246018
+    output: 71870
+  - agent: a6ff2107a53ef847c
+    type: general-purpose
+    model: claude-opus-5-5
+    input: 132
+    cacheRead: 7244159
+    cacheWrite: 179365
+    output: 32371
+  - agent: acf074daaa392f45d
+    type: Explore
+    model: claude-opus-5-5
+    input: 140
+    cacheRead: 8772154
+    cacheWrite: 195810
+    output: 29128
+submissions:
+  - submission: 01a1cbae-346d-7107-8b88-3f8f1b25363a
+    input: 4
+    cacheRead: 218539
+    cacheWrite: 9218
+    output: 4528
+  - submission: 01a1cbb9-1815-7403-ae55-03974db63e56
+    input: 4
+    cacheRead: 462613
+    cacheWrite: 2381
+    output: 1557

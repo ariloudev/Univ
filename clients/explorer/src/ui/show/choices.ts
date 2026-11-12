@@ -5,6 +5,7 @@
 import { MPC_PER } from "../../catalogue/tiles.ts";
 import { KINDS, STRUCTURE_FAMILIES } from "../../scene/kinds.ts";
 import { MASK_BITS } from "../../scene/masks.ts";
+import { TRACER_KINDS, holdsTracerKinds } from "../../scene/tracers.ts";
 import type { Hidden } from "../hidden.ts";
 import { sourceShort } from "../record/names.ts";
 
@@ -24,6 +25,8 @@ export interface ShowChoices {
   sources: readonly ShowSource[];
   /** The kinds of structure by family, each with how many structures of it the release holds. */
   families: readonly { family: string; kinds: readonly { kind: string; count: number }[] }[];
+  /** The kinds of object of the Galaxy's tracers, where the release holds them; none else. */
+  objectKinds: readonly string[];
   /** The names of the domains, sources and kinds of structure, for turning all of one on or off. */
   domainNames: readonly string[];
   sourceIds: readonly string[];
@@ -37,6 +40,7 @@ interface ChoiceDomain {
     radius: number;
     points: number;
     sources: readonly { index: number; id: string; title: string; role: string }[];
+    encoding: { object_kinds?: readonly string[] | undefined };
   };
 }
 
@@ -62,6 +66,7 @@ export function choicesOf(unordered: readonly ChoiceDomain[], structures: readon
     domains: domains.map((d) => ({ name: d.name, points: d.manifest.points })),
     sources: [...sources.values()],
     families,
+    objectKinds: holdsTracerKinds(domains) ? TRACER_KINDS : [],
     domainNames: domains.map((d) => d.name),
     sourceIds: [...sources.keys()],
     structureKinds: families.flatMap((f) => f.kinds.map((k) => k.kind)),
@@ -91,13 +96,14 @@ export interface Tally {
 
 const tally = (names: readonly string[], off: ReadonlySet<string>): Tally => ({ on: names.filter((n) => !off.has(n)).length, of: names.length });
 
-/** How much of each group this release offers is on: the domains, sources and kinds of value of
- * the points, and the kinds of structure. */
-export function summaryOf(choices: ShowChoices, hidden: Hidden): Record<"domains" | "sources" | "kinds" | "structures", Tally> {
+/** How much of each group this release offers is on: the domains, sources, kinds of value and
+ * kinds of object of the points, and the kinds of structure. */
+export function summaryOf(choices: ShowChoices, hidden: Hidden): Record<"domains" | "sources" | "kinds" | "objects" | "structures", Tally> {
   return {
     domains: tally(choices.domainNames, hidden.domain),
     sources: tally(choices.sourceIds, hidden.source),
     kinds: tally(KINDS, hidden.kind),
+    objects: tally(choices.objectKinds, hidden.object),
     structures: tally(choices.structureKinds, hidden.structure),
   };
 }

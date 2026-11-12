@@ -29,6 +29,8 @@ export interface FixtureTile {
     colour?: [number, ColourBands];
     /** The base-10 logarithm of its age in years before rounding, where it carries one. */
     log_age?: number;
+    /** Its kind of object, in a version 4 tile; null for a point of none. */
+    object_kind?: string | null;
   }[];
 }
 

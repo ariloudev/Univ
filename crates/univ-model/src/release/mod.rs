@@ -64,6 +64,15 @@
 //! to be shared alike. Univ Server formats, orders and explains an object's designations and
 //! flags by it. A database of version 6 takes version 7's table as the next publish creates it:
 //! nothing is migrated.
+//!
+//! # No JSON at scale (schema version 8)
+//!
+//! Version 8 keeps JSON out of every table whose rows grow with a release's objects
+//! (keep-json-out-of-the-tables-that-grow-with-a-releases-objects): an entry's flags and
+//! references, a measurement's details, an object's candidate links and relations, the ids that
+//! replaced an id, and the memberships of objects in structures are rows of tables of their own,
+//! and an entry's via and spectral type and a redshift's published frame are columns.
+//! `univ-ingest migrate` brings a database of version 7 to version 8 in place.
 
 pub mod cells;
 pub mod chains;
@@ -72,6 +81,7 @@ pub mod keys;
 pub mod manifest;
 pub mod read;
 pub mod rows;
+mod scale;
 pub mod shards;
 pub mod shared;
 pub mod sql;
@@ -93,17 +103,42 @@ pub use fingerprint::{ColumnTotal, Fingerprinter};
 pub use manifest::{D1_CAP_BYTES, RELEASE_BUDGET_BYTES, ReleaseManifest};
 pub use rows::TABLES;
 pub use shared::{RETIRED, valid_in};
-pub use sql::{ColumnKind, Row, Scope, SqlValue, Table, Tree};
+pub use sql::{ColumnKind, Row, Scale, Scope, SqlValue, Table, Tree};
 pub use statements::Statements;
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 7;
+pub const SCHEMA_VERSION: u32 = 8;
 
-/// The first schema version whose tables share rows between releases. Every later version only
-/// adds tables, which a publish creates, so a database at this version or later takes a release
-/// of [`SCHEMA_VERSION`] without a migration.
+/// The first schema version whose tables share rows between releases. Version 7 only added
+/// tables, which a publish creates; version 8 moved [`SCHEMA_7_JSON`] into rows, so a database
+/// still holding one of those columns is migrated first, whatever its version.
 pub const SHARED_ROWS_SINCE: u32 = 6;
+
+/// The JSON columns of schema 7, in tables that grow with a release's objects, that schema 8
+/// keeps as rows and columns of their own, by table. A database that still holds one is
+/// migrated by `univ-ingest migrate` before a release of schema 8 is published onto it or
+/// served from it.
+pub const SCHEMA_7_JSON: [(&str, &str); 6] = [
+    ("objects", "links"),
+    ("objects", "relations"),
+    ("entries", "flags"),
+    ("entries", "extra"),
+    ("measurements", "extra"),
+    ("ids_replaced", "replaced_by"),
+];
+
+/// The query that gives the first column of [`SCHEMA_7_JSON`] a database holds, as
+/// `table.column` in its one column `held`; no row when it holds none. It reads each table's
+/// columns through `pragma_table_info` alone, as D1 lets a query do, never `sqlite_master`.
+pub const SCHEMA_7_JSON_HELD: &str = "\
+SELECT 'objects.' || name AS held FROM pragma_table_info('objects') \
+WHERE name IN ('links', 'relations') UNION ALL \
+SELECT 'entries.' || name FROM pragma_table_info('entries') WHERE name IN ('flags', 'extra') \
+UNION ALL SELECT 'measurements.' || name FROM pragma_table_info('measurements') \
+WHERE name IN ('extra') UNION ALL \
+SELECT 'ids_replaced.' || name FROM pragma_table_info('ids_replaced') \
+WHERE name IN ('replaced_by') LIMIT 1";
 
 /// The D1 schema: every table and index, created only where missing.
 pub const SCHEMA: &str = include_str!("schema.sql");

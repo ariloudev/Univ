@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { STRUCTURE_FAMILIES } from "../../scene/kinds.ts";
+import { TRACER_KINDS } from "../../scene/tracers.ts";
 import { DOMAINS, manifestOf } from "../../test/fixtures.ts";
 import { NOTHING_HIDDEN, hiddenInAddress } from "../hidden.ts";
 import { anyOff, choicesOf, summaryOf } from "./choices.ts";
@@ -34,6 +35,13 @@ describe("what the Show drawer offers", () => {
     expect(choices.sourceIds).toHaveLength(6);
   });
 
+  it("offers the kinds of object of the Galaxy's tracers only where their tiles give each point's kind", () => {
+    const tracers = (objectKinds?: string[]) => ({ name: "galaxy_tracers", manifest: { ...manifestOf("stars"), encoding: { ...manifestOf("stars").encoding, object_kinds: objectKinds } } });
+    expect(choicesOf([tracers(["luminous_hot_star"])], []).objectKinds).toEqual(TRACER_KINDS);
+    expect(choicesOf([tracers()], []).objectKinds).toEqual([]);
+    expect(choicesOf(domains, []).objectKinds).toEqual([]);
+  });
+
   it("groups the kinds of structure by family, with their counts, any other kind under other", () => {
     const choices = choicesOf([], STRUCTURES);
     expect(choices.families).toEqual([
@@ -48,18 +56,19 @@ describe("what the Show drawer offers", () => {
 
   it("keeps each kind of structure's family with its colour, every kind with a colour in one family", () => {
     const kinds = STRUCTURE_FAMILIES.flatMap((f) => f.kinds);
-    expect(kinds).toHaveLength(13);
-    expect(new Set(kinds).size).toBe(13);
-    expect(STRUCTURE_FAMILIES.map((f) => f.family)).toEqual(["denser", "emptier", "walls and threads", "distant arcs and groups", "flows"]);
+    expect(kinds).toHaveLength(15);
+    expect(new Set(kinds).size).toBe(15);
+    expect(STRUCTURE_FAMILIES.map((f) => f.family)).toEqual(["denser", "emptier", "walls and threads", "distant arcs and groups", "flows", "the Galaxy's arms"]);
+    expect(STRUCTURE_FAMILIES.at(-1)?.kinds).toEqual(["spiral_arm", "spiral_arm_extrapolation"]);
   });
 
   it("sums up how many domains, sources, kinds of value and kinds of structure are on, of how many this release offers", () => {
     const choices = choicesOf(domains, STRUCTURES);
     const all = summaryOf(choices, NOTHING_HIDDEN);
-    expect(all).toEqual({ domains: { on: 3, of: 3 }, sources: { on: 6, of: 6 }, kinds: { on: 4, of: 4 }, structures: { on: 5, of: 5 } });
+    expect(all).toEqual({ domains: { on: 3, of: 3 }, sources: { on: 6, of: 6 }, kinds: { on: 4, of: 4 }, objects: { on: 0, of: 0 }, structures: { on: 5, of: 5 } });
     expect(anyOff(all)).toBe(false);
     const hidden = hiddenInAddress("?hide=domain:stars,source:twomrs,source:gone,kind:inferred,structure:void,structure:wall");
-    expect(summaryOf(choices, hidden)).toEqual({ domains: { on: 2, of: 3 }, sources: { on: 5, of: 6 }, kinds: { on: 3, of: 4 }, structures: { on: 3, of: 5 } });
+    expect(summaryOf(choices, hidden)).toEqual({ domains: { on: 2, of: 3 }, sources: { on: 5, of: 6 }, kinds: { on: 3, of: 4 }, objects: { on: 0, of: 0 }, structures: { on: 3, of: 5 } });
     // A name this release does not offer turns nothing it offers off.
     expect(anyOff(summaryOf(choices, hiddenInAddress("?hide=source:gone,structure:ring")))).toBe(false);
   });

@@ -177,6 +177,32 @@ fn an_unknown_grid_or_field_answers_404_naming_it() {
 }
 
 #[test]
+fn the_tile_format_describes_version_4_beside_version_3_when_a_domain_uses_it() {
+    // The Galaxy tracers' tiles take version 4, with each point's kind of object; every other
+    // domain keeps version 3.
+    let db = db();
+    db.put("files/57a125", r#"{"encoding":{"version":3},"nodes":[]}"#);
+    db.put("files/9b31e0", r#"{"encoding":{"version":4},"nodes":[]}"#);
+    let (response, format) = db.get_json("/v1/tile-format", "");
+    assert_eq!(response.status, 200, "{format}");
+    let encodings = format["encodings"].as_array().unwrap();
+    let of = |v: u64| {
+        encodings
+            .iter()
+            .find(|e| e["version"] == v)
+            .unwrap_or_else(|| panic!("no version {v}: {format}"))
+    };
+    let (three, four) = (of(3), of(4));
+    assert_eq!(four["point_bytes"], 21);
+    assert_eq!(
+        four["points"].as_array().unwrap().last().unwrap()["name"],
+        "object_kind"
+    );
+    assert_eq!(four["object_kinds"][6], "luminous_hot_star");
+    assert!(three.get("object_kinds").is_none());
+}
+
+#[test]
 fn the_tile_format_gives_the_byte_layout_of_each_encoding_the_release_uses() {
     let db = db();
     db.put("files/57a125", r#"{"encoding":{"version":1},"nodes":[]}"#);

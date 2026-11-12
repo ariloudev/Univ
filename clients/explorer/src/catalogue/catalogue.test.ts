@@ -6,6 +6,7 @@ import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts
 import { Catalogue, KEEP_ALLOWANCE } from "./catalogue.ts";
 import { EVERYTHING } from "./lod.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
+import { TRACER_KINDS } from "../scene/tracers.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
 import type { Vec3 } from "../scene/vec.ts";
@@ -163,21 +164,30 @@ describe("the catalogue", () => {
     }
   });
 
-  it("counts the Galaxy's tracers by source, each in its source's colour, and their kinds of value apart from the other points", async () => {
-    // The cosmic web's fixture, served as the tracers' domain.
+  it("counts the Galaxy's tracers by kind of object, each in its kind's colour, and their kinds of value apart from the other points", async () => {
+    // The SIMULATED tracers' version 4 fixture, served as the tracers' domain: every ninth point
+    // of no kind.
     const web = server(undefined, undefined, ["galaxy_tracers"]);
-    const http: Http = { ...web, fetch: (url) => web.fetch(url.replace("/galaxy_tracers/", "/cosmic_web/")) };
+    const http: Http = { ...web, fetch: (url) => web.fetch(url.replace("/galaxy_tracers/", "/simulated_tracers/")) };
     const drawn: string[] = [];
     const catalogue = await loaded(http, drawn);
     await until(() => drawn.length >= 1);
-    const points = fixtureTiles("cosmic_web").find((t) => `galaxy_tracers/${t.address}` === drawn[0])?.points ?? [];
+    const points = fixtureTiles("simulated_tracers").find((t) => `galaxy_tracers/${t.address}` === drawn[0])?.points ?? [];
+    const of = (kind: string | undefined) => points.filter((p) => (p.object_kind ?? undefined) === kind).length;
     const lines = catalogue.tracers();
-    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.map((line) => line.id)).toEqual([...TRACER_KINDS, "unknown"]);
+    for (const line of lines) expect(line.points).toBe(of(line.id === "unknown" ? undefined : line.id));
     expect(lines.reduce((sum, line) => sum + line.points, 0)).toBe(points.length);
+    expect(new Set(lines.map((line) => line.colour)).size).toBe(lines.length);
     expect(catalogue.kinds.reduce((a, b) => a + b, 0)).toBe(0);
     // Their kinds of value counted apart, so that the key still says how many are inferred.
     expect(catalogue.tracerKinds.reduce((a, b) => a + b, 0)).toBe(points.length);
-    expect(new Set(lines.map((line) => line.colour)).size).toBe(Math.min(lines.length, 5));
+    // A kind of object turned off is counted out, and the others kept.
+    const domains = await domainsOf(2, { http });
+    catalogue.setMasks(masksOf(hiddenInAddress("?hide=object:luminous_hot_star"), domains));
+    const after = catalogue.tracers();
+    expect(after.find((line) => line.id === "luminous_hot_star")?.points).toBe(0);
+    expect(after.reduce((sum, line) => sum + line.points, 0)).toBe(points.length - of("luminous_hot_star"));
   });
 
   it("leaves a tile that fails its SHA-256 undrawn and counts it", async () => {

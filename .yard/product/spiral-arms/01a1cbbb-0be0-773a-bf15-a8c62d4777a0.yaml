@@ -1,0 +1,212 @@
+key: 01a1cbbb-0be0-773a-bf15-a8c62d4777a0
+id: asked-toolu-01xxwqtyvzcs42qbzympdnqb
+versions:
+  - key: 01a1cbbb-0be0-773a-bf15-a8c82333bcef
+    at: 2026-11-11T17:49:55Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Asked in the session"
+    status: active
+  - key: 01a1cbc0-d4ed-7191-a3da-63a306169a48
+    at: 2026-11-11T17:56:14Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Build plan"
+    status: done
+blocks:
+  - key: 01a1cbbb-0be0-773a-bf15-a8c7aaf6bb44
+    id: plan-23-plan-cozy-wishing-raven-asked-toolu-01xxwqtyvzcs42qbzympdnqb
+    kind: plan
+    versions:
+      - key: 01a1cbbb-0be0-773a-bf15-a8c9c92f68ce
+        at: 2026-11-11T17:49:55Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build plan: the Galaxy's spiral arms (product/spiral-arms)"
+        markdown: |
+          # Build plan: the Galaxy's spiral arms (product/spiral-arms)
+
+          ## Context
+
+          You asked for Gaia-era OB stars and young open clusters seen face-on, with the Reid 2019 log-spiral model as a separate, labelled layer. The spec change is approved and committed (`2ae67b8`). It covers:
+          - Zari et al. 2021 luminous hot stars as Galaxy tracers;
+          - tracers coloured and switched by kind of object, through tile encoding v4 for the tracers domain only;
+          - Reid 2019 arms as `spiral_arm` and `spiral_arm_extrapolation` structures with a new `model` status, computed from cited Table 2 parameters;
+          - the Structures list reaching down to kpc;
+          - an arms view (`view=arms`).
+
+          The work spans ingest, univ-model, the API contract, the tile decoder and the explorer, with more than 8 tasks. So it runs as **two waves**, each on a `stage/spiral-arms-<n>` branch cut from `product/spiral-arms`. Each wave has its own Yard Log and ends with `/simplify`, then `/code-review`, the full gate and `cargo xtask integration`. Each merges back into the product branch only when you say. Release 15 is a full ingest, which waits for your word.
+
+          ## Wave 1: data (stage/spiral-arms-1)
+
+          **T1. Kinds and status in the model and contract.**
+          - Add `ObjectKind::LuminousHotStar` to `crates/univ-model/src/object/relation.rs` and include it in `is_tracer()`.
+          - Add `StructureKind::{SpiralArm, SpiralArmExtrapolation}` and `Status::Model` to `crates/univ-ingest/src/structures/mod.rs`, with the matching univ-model and API enums.
+          - Update the `crates/univ-api/openapi.v1.json` enums.
+          - Update the science check `tracers-name-their-kind` (`rules/science-checks.yaml`).
+          - Add the explorer's `KIND_NOUNS` entry.
+          - Criteria: the tracer kinds criterion in *normalize-records*; *read-a-structure*'s model status.
+          - Done when: unit tests on enum round-trips pass, and an OpenAPI snapshot test passes.
+
+          **T2. Zari 2021 source.**
+          - New `sources/zari-2021-luminous-hot-stars.yaml`: `vizier_tsv` on `J/A+A/650/A112/filtered`, sliced by `GaiaEDR3` like `li-2023-rr-lyrae.yaml`, `rows: 417535`.
+          - Fields:
+            - `d50kin` as an inferred distance in kpc, with `d16kin`/`d84kin` as its bounds;
+            - the method names the astro-kinematic posterior;
+            - `Plx` as a measured parallax with no error reported, plus `ZeroPoint`;
+            - `Probv1` as quality;
+            - `object_kind: luminous_hot_star`, `scale_domain: galaxy_tracers`;
+            - citation, terms and credit.
+          - Add `zari-2021-luminous-hot-stars` to the `gaia-source-id` cross-id in `rules/matching.yaml`.
+          - Record a small VizieR fixture in `crates/univ-ingest/tests/fixtures/vizier/`.
+          - Tests in `tests/normalize_tracers.rs` and `tests/release_tracers.rs`:
+            - kind;
+            - inferred distance with bounds;
+            - parallax kept, no distance derived from it;
+            - joins a Gaia DR3 object, and a precise Gaia parallax wins the ranking.
+          - Criteria: *define-a-source*'s release 15 requirement; *normalize-records*' three Zari criteria.
+
+          **T3. Tile encoding v4 for the tracers domain.**
+          - Write the v4 layout in `crates/univ-model/src/tile/format.rs` and its read and write: 48 + 21n bytes, the last column a u8 that is 0 for none or 1 + an index into the manifest's `object_kinds`.
+          - `crates/univ-ingest/src/tiles/domain.rs` writes v4 for `galaxy_tracers` and keeps v3 for every other domain.
+          - Reference decoder `clients/tile-decoder/decode.ts`:
+            - add v4 to `POINT_BYTES`;
+            - add a kind-of-object field;
+            - regenerate the fixtures.
+          - Update the tile description in the OpenAPI document.
+          - Tests: v4 round-trip; a point with no kind; other domains' tiles stay byte-identical to v3; decoder fixtures for v4.
+          - Criteria: *build-octree-tiles*' v4 requirement; *decode-the-tile-format*'s v4 criteria.
+
+          **T4. Log-spiral structures.**
+          - Structure files accept a `log_spiral` geometry: cited `beta_kink`, `r_kink`, `pitch_inside`, `pitch_outside`, `width`, `fitted_beta`, `r0` and `sun_height`, plus `extent: fitted | extrapolated`. This goes in `structures/shape.rs` or a new `structures/spiral.rs`, kept under 500 lines.
+          - Ingest computes a univ-model `Geometry::Path`:
+            - sample at each 1° of β;
+            - R = R_kink · exp(−(β − β_kink) tan ψ);
+            - heliocentric galactic kpc: x = R0 − R cos β, y = R sin β, z = −Z☉;
+            - each point is reconstructed, with a derivation naming the formula, the parameters and R0.
+          - Extrapolation: run on up to 90° beyond each fitted end, stopping where R first leaves 3–16 kpc.
+          - Status `model`, scale domain `galaxy_tracers`.
+          - Write 14 structure files, `structures/reid-2019-<arm>.yaml` and `…-extrapolated.yaml`, for 3-kpc(N), Norma, Sct-Cen, Sgr-Car, Local, Perseus and Outer. Table 2 is transcribed from the arXiv TeX source of 1910.03357, checked a second time against the source while writing, and cited by table row.
+          - Tests:
+            - β = 0 radii: Local 8.53, Perseus 10.07, Sgr-Car 6.87 kpc;
+            - the fitted span is exact;
+            - the extrapolation is cut at 3 and 16 kpc;
+            - the Sun-relative frame, e.g. Perseus at l = 90–180°;
+            - an uncited parameter is refused.
+          - Criteria: *record-a-researched-structure*'s new requirement; *define-a-source*'s arm criterion.
+
+          **T5. Science checks.**
+          - In `rules/science-checks.yaml`:
+            - luminous hot star count;
+            - every Zari distance inferred;
+            - share placed by Gaia vs Zari (a report);
+            - arms present, 7 + 7, each with status model;
+            - fitted arms within the paper's β ranges.
+
+          **T6. Wave review.** Run `/simplify`, then `/code-review`, and fix the findings. Then run `cargo xtask check` and `cargo xtask integration`, once each, green. Link traces in `loft.trace.yaml` with `loft reconcile --accept`. Close the wave's Yard Log.
+
+          **Release 15 (your word first).** After wave 1 merges into `product/spiral-arms`: fetch Zari live (VizieR, 12 slices, in the background), then do a full build as a change on release 14 (~35 min). Publish to an APFS clone, run `cargo xtask science --store`, then swap. Only the tracers' tiles and the new rows publish.
+
+          ## Wave 2: explorer (stage/spiral-arms-2)
+
+          **T7. Colour tracers by kind.**
+          - The catalogue reads v4's kind column (`catalogue/tiles.ts`).
+          - `scene/tracers.ts` maps a colour per kind, plus an "unknown kind" colour; the 7 existing colours, held at least 0.3 apart, are kept.
+          - The key lists kinds with counts.
+          - Criteria: *draw-the-catalogues*' tracer requirement.
+          - Tests: Vitest for `tracerBytes` by kind, the unknown-kind colour and the key.
+
+          **T8. Kind-of-object switches.**
+          - A new `object` group in `ui/hidden.ts` (`hide=object:rr_lyrae_star`) and a mask in `scene/masks.ts`.
+          - A row of kind switches with colour and count in `ui/show/Points.tsx`.
+          - The summary and "show everything" count them.
+          - Criteria: *choose-what-is-drawn*'s changed criteria.
+          - Tests: Vitest on the address round-trip, the mask, and the drawer.
+
+          **T9. Arm structures in the explorer.**
+          - `scene/kinds.ts`: a family "the Galaxy's arms", where the extrapolation is fainter and drawn first (beneath).
+          - The panel shows a model banner, plus the extrapolation note (`ui/record/structureText.ts`).
+          - `ui/structures/depth.ts`:
+            - the axis runs from 1 kpc to 10 Gpc;
+            - a heading for within 30 kpc;
+            - kpc distances below 1 Mpc;
+            - a half-filled dot for a model, with its legend.
+          - Criteria: *see-the-structures*' changed criteria.
+          - Tests: Vitest on each.
+
+          **T10. Pole-safe camera and the arms view's camera.**
+          - `scene/camera.ts` `eyeAxes` takes `right = [−sin yaw, cos yaw, 0]`, which is defined at the pole. Drags still clamp to `MAX_PITCH`.
+          - `scene/controller.ts` gets an `armsView()`:
+            - galactic axes;
+            - pitch π/2, yaw 0, so the screen's up is toward l = 180°, the Sun above the Galactic Centre, and rotation clockwise;
+            - focus 4.075 kpc toward l = 0, b = 0, via the manifest's galactic rotation;
+            - distance chosen so a 20.1 kpc radius fits the narrower side of the field of view;
+            - it flies there, or jumps there under reduced motion.
+          - A control beside "return to Earth".
+          - Criteria: the arms view's first requirement.
+          - Tests: Vitest on the projection, with every arm path point inside the viewport, the Sun above the GC, and the pole being finite.
+
+          **T11. Arms view groups and address.**
+          - Choosing the view:
+            - hides every domain but `galaxy_tracers`;
+            - hides Cepheids, RR Lyrae and globular clusters;
+            - sets `age=30`;
+            - shows only the arm kinds;
+            - writes `view=arms`.
+          - Opening `?view=arms` applies all of that.
+          - Any turn, pan or zoom drops `view=arms`.
+          - Criteria: the arms view's second and third requirements.
+          - Tests: Vitest, plus a Playwright test with axe on the fixture state.
+
+          **T12. Wave review.** As in T6. Then run `cargo xtask explore` on release 15 and send you a face-on screenshot as a file.
+
+          ## Kept throughout
+
+          - Each wave's stage keeps a `build-issues` note.
+          - Every task is a Yard task, marked active and done as it runs.
+          - Commits use `feat(model|ingest|explorer): …`, with `.yard/` committed alongside.
+          - Focused checks run between tasks: `cargo test -p …`, clippy `-D warnings`, `cargo fmt --check`, and `pnpm check` for explorer-only steps.
+
+          ## Verification
+
+          - Wave 1:
+            - `cargo test -p univ-model -p univ-ingest`, including the arm radii at β = 0 and the v3 tiles unchanged;
+            - decoder fixtures;
+            - `cargo xtask check` and `cargo xtask integration`.
+          - Release 15:
+            - science checks pass;
+            - the tracers manifest lists `object_kinds` and version 4, with about 560k points;
+            - the stars manifest stays version 3 with unchanged files.
+          - Wave 2:
+            - `pnpm check`;
+            - Playwright with axe on the arms view;
+            - `cargo xtask explore` on release 15, then `?view=arms` shows arm segments in the luminous hot stars and young clusters along the Reid arms out to ~4–5 kpc, the model arms around the disk, and fainter extrapolations.
+        planMode: true
+    responses:
+      - key: 01a1cbc0-97bd-71a0-94d2-5f7a044a0034
+        at: 2026-11-11T17:55:59Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: approved
+  - key: 01a1cbc0-d4ed-7191-a3da-63a01f816005
+    id: d-plan
+    kind: decision
+    number: 5
+    versions:
+      - key: 01a1cbc0-d4ed-7191-a3da-63a440e0d866
+        at: 2026-11-11T17:56:14Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The build runs as two waves around release 15"
+        consequence: "Wave 1 (stage/spiral-arms-1) builds the data side: kinds, the Zari source, tile encoding 4 and the model arms. Release 15 follows its merge, on the owner's word. Wave 2 (stage/spiral-arms-2) builds the explorer side and ends with a face-on screenshot of release 15."

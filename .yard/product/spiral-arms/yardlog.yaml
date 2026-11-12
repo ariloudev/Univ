@@ -1,0 +1,171 @@
+format: yardlog/1
+key: 01a1cba0-4f98-7602-a8cc-28b4c34bd49e
+branch: "product/spiral-arms"
+base: "develop"
+title: "product/spiral-arms"
+revision: 17
+opened:
+  at: 2026-11-11T17:20:43Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "733ab034-0172-4107-897d-a9a3752e1525"
+stages:
+  - key: 01a1cba0-4f98-7602-a8cc-28b59a9b3e8c
+    id: survey
+  - key: 01a1cba0-4f98-7602-a8cc-28b6c5110da0
+    id: spec
+  - key: 01a1cbbb-0be0-773a-bf15-a8c62d4777a0
+    id: asked-toolu-01xxwqtyvzcs42qbzympdnqb
+  - key: 01a1cba0-4f98-7602-a8cc-28b73dfeaf38
+    id: build
+  - key: 01a1cbc0-d4ed-7191-a3da-63a18d5a9ec2
+    id: release-15
+  - key: 01a1cbc0-d4ed-7191-a3da-63a232fb89cf
+    id: wave-2
+  - key: 01a1cfe0-d10e-7637-9e16-8d5c27f073f1
+    id: relational-schema
+submissions:
+  - key: 01a1cbae-346d-7107-8b88-3f8f1b25363a
+    blocks:
+      - 01a1cbae-346d-7107-8b88-3f867134cdd4
+      - 01a1cbae-346d-7107-8b88-3f874829da9d
+      - 01a1cbae-346d-7107-8b88-3f8899c9b655
+      - 01a1cbae-346d-7107-8b88-3f893defd3e3
+    changes:
+      - what: sent
+        at: 2026-11-11T17:35:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+      - what: answered
+        at: 2026-11-11T17:40:45Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+  - key: 01a1cbb9-1815-7403-ae55-03974db63e56
+    blocks:
+      - 01a1cbb9-1815-7403-ae55-039525c0c3be
+    changes:
+      - what: sent
+        at: 2026-11-11T17:47:47Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+      - what: answered
+        at: 2026-11-11T17:48:27Z
+        revision: 7
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+  - key: 01a1cbbb-0be0-773a-bf15-a8ca695f105c
+    blocks:
+      - 01a1cbbb-0be0-773a-bf15-a8c7aaf6bb44
+    changes:
+      - what: sent
+        at: 2026-11-11T17:49:55Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+      - what: answered
+        at: 2026-11-11T17:55:59Z
+        revision: 10
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+closed:
+  at: 2026-11-12T13:39:52Z
+  revision: 16
+  by:
+    host: claude-code
+    session: "733ab034-0172-4107-897d-a9a3752e1525"
+acts:
+  - at: 2026-11-11T17:20:43Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:35:53Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:40:45Z
+    revision: 3
+    by:
+      name: "ariloudev"
+      email: "contact@askloft.ai"
+  - at: 2026-11-11T17:40:54Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:47:35Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:47:47Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:48:27Z
+    revision: 7
+    by:
+      name: "ariloudev"
+      email: "contact@askloft.ai"
+  - at: 2026-11-11T17:48:58Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:49:55Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T17:55:59Z
+    revision: 10
+    by:
+      name: "ariloudev"
+      email: "contact@askloft.ai"
+  - at: 2026-11-11T17:56:14Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T20:14:08Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-11T21:59:16Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T13:09:39Z
+    revision: 14
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T13:39:52Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T13:39:52Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T13:42:50Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"

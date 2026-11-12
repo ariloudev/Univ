@@ -65,4 +65,11 @@ describe("the groups turned off", () => {
     );
     expect(new URLSearchParams(location.search).has("hide")).toBe(false);
   });
+
+  it("turn off a kind of object of the Galaxy's tracers through the address, and leave out a name that is none", () => {
+    const hidden = hiddenInAddress("?hide=object:rr_lyrae_star,object:classical_cepheid,object:galaxy,object:body");
+    expect([...hidden.object].sort()).toEqual(["classical_cepheid", "rr_lyrae_star"]);
+    expect(hideParameter(hidden)).toBe("object:classical_cepheid,object:rr_lyrae_star");
+    expect(hiddenInAddress(`?hide=${encodeURIComponent(hideParameter(hidden) ?? "")}`)).toEqual(hidden);
+  });
 });

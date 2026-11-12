@@ -66,8 +66,8 @@ fn from_rows(mut record: Value) -> Value {
     record
 }
 
-/// Release 3 of Univ Ingest's fixture objects: object 1's measurement of native value 6179
-/// (quantity 37) replaced by one of 6180, object 2 retired with every row of it, object 3 kept.
+/// Release 3 of Univ Ingest's fixture objects: object 1's velocity of native value 6179
+/// replaced by one of 6180, object 2 retired with every row of it, object 3 kept.
 /// Odd ids are in shard 1, even ones in shard 0.
 fn objects_db() -> Sqlite {
     let db = Sqlite::new();
@@ -83,14 +83,14 @@ const OBJECTS_OF_RELEASE_3: &str = "
     UPDATE shard0.object_cells SET retired = 3 WHERE object_id = 2;
     UPDATE names SET retired = 3 WHERE object_id = 2;
     UPDATE object_shards SET retired = 3 WHERE id = 2;
-    INSERT INTO ids_replaced VALUES (2, 3, 'retired', '[]');";
+    INSERT INTO ids_replaced VALUES (2, 3, 'retired');";
 
 fn objects_of_release_3() -> String {
     format!(
         "{OBJECTS_OF_RELEASE_3}\n{}",
         replace(
             "shard1.measurements",
-            "object_id = 1 AND quantity = 37",
+            "object_id = 1 AND quantity = (SELECT id FROM main.terms WHERE term = 'velocity')",
             "native_value = 6180.0"
         )
     )

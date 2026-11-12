@@ -1,0 +1,50 @@
+# Reid et al. 2019's log-spiral fit to the Local arm, over the azimuths of its masers.
+name: Local arm (Reid 2019 model)
+kind: spiral_arm
+status: model
+scale_domain: galaxy_tracers
+papers:
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357, Table 2 (Spiral Arm Characteristics), Section 3 and the abstract"
+geometry:
+  kind: log_spiral
+  log_spiral:
+    extent: fitted
+    beta_kink:
+      value: 9
+      unit: degree
+      kind: estimated
+      uncertainty: { form: none_reported }
+      cite: { paper: reid-2019, table: "2", row: "Local", column: "β_kink", cell: "9" }
+      note: "Given without an uncertainty: not solved for, but assigned, mainly at a gap in sources (Table 2's comments)."
+    r_kink:
+      { value: 8.26, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.05 },
+        cite: { paper: reid-2019, table: "2", row: "Local", column: "R_kink", cell: "8.26 ± 0.05" } }
+    pitch_inside:
+      { value: 11.4, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 1.9 },
+        cite: { paper: reid-2019, table: "2", row: "Local", column: "ψ_<", cell: "11.4 ± 1.9" } }
+    pitch_outside:
+      { value: 11.4, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 1.9 },
+        cite: { paper: reid-2019, table: "2", row: "Local", column: "ψ_>", cell: "11.4 ± 1.9" } }
+    width:
+      { value: 0.31, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.05 },
+        cite: { paper: reid-2019, table: "2", row: "Local", column: "Width", cell: "0.31 ± 0.05" } }
+    fitted:
+      - { value: -8, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: reid-2019, table: "2", row: "Local", column: "β range", cell: "-8 → 34" } }
+      - { value: 34, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: reid-2019, table: "2", row: "Local", column: "β range", cell: "-8 → 34" } }
+    r0:
+      { value: 8.15, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: reid-2019, sentence: "The models assume R0 = 8.15 kpc." },
+        note: "Table 2's comments: the distance the arm fits assume, the value of the paper's fit A5 (Table 3), whose uncertainty belongs to that fit." }
+    sun_height:
+      { value: 5.5, unit: parsec, kind: estimated, uncertainty: { form: symmetric, sigma: 5.8 },
+        cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." } }
+notes: >-
+  The Local arm of Reid et al. 2019's model: the log spiral with a kink fitted to the parallaxes of the masers assigned to the arm, over the range of Galactocentric azimuth those masers cover. The path is computed from the parameters of its row of Table 2, which assumes the Galactic Centre's distance given here; the arm's width is recorded and not drawn. A model, not an observed outline: the masers it was fitted to are among the release's star-forming regions.

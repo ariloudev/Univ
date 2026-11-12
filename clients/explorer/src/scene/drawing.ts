@@ -21,6 +21,9 @@ export interface Lines {
   neighbours?: Float32Array | undefined;
   /** A symbol drawn at a fixed size on the view about `centre`, such as an attractor's. */
   symbol?: FixedSymbol | undefined;
+  /** Whether the lines are drawn before every other outline, beneath them, as a model arm's
+   * extrapolation is beneath its arm. */
+  beneath?: boolean | undefined;
 }
 
 /** Segments drawn at a fixed size on the view: `offsets` in units of `pixels` device pixels,

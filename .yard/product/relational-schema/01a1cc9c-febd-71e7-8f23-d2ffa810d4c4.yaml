@@ -1,0 +1,373 @@
+key: 01a1cc9c-febd-71e7-8f23-d2ffa810d4c4
+id: release-16
+versions:
+  - key: 01a1cc9c-febd-71e7-8f23-d307eb836dda
+    at: 2026-11-11T21:56:43Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Release 16"
+    goal: "A release of schema 7, published and checked"
+    status: planned
+  - key: 01a1ccad-dfdd-72e9-a8d9-b555d61bc6fd
+    at: 2026-11-11T22:15:09Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "The store and release 16"
+    goal: "The real store is migrated to schema 8 and release 16 is published with the masers' memberships, every check passing under the scan guard"
+    status: planned
+  - key: 01a1cd59-d701-730c-9402-f7dcc5ef1f75
+    at: 2026-11-12T01:22:59Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "The store and release 16"
+    goal: "The real store is migrated to schema 8 and release 16 is published with the masers' memberships, every check passing under the scan guard"
+    status: active
+  - key: 01a1cf62-a9ea-76a5-ad97-83b2f8609796
+    at: 2026-11-12T10:51:52Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "The store and release 16"
+    goal: "The real store is migrated to schema 8 and release 16 is published with the masers' memberships, every check passing under the scan guard"
+    status: done
+blocks:
+  - key: 01a1cd59-d701-730c-9402-f7d673f8e7bb
+    id: s1-fix-migrate-state
+    kind: task
+    versions:
+      - key: 01a1cd59-d701-730c-9402-f7dd75486846
+        at: 2026-11-12T01:22:59Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "migrate reindexes the state it is given"
+        detail: "Run on a clone of the local D1, `univ-ingest migrate` reindexed the real state, `.cache/univ-ingest/state`, from the clone before the swap. It now takes `--state`. Committed as 8c5b378; `migrate_store` tests pass."
+        state: done
+  - key: 01a1cd59-d701-730c-9402-f7d784976e86
+    id: s2-migrate-clone
+    kind: task
+    versions:
+      - key: 01a1cd59-d701-730c-9402-f7de52e1ce5a
+        at: 2026-11-12T01:22:59Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate clones of the real local D1 and state"
+        detail: "APFS clones of `.cache/univ-ingest/wrangler` and `state` in `.cache/univ-ingest/schema8/`; `univ-ingest migrate --state … --persist-to …`, timed, in the background."
+        state: active
+      - key: 01a1cd7b-0d70-7108-8940-0ef54806b13d
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate clones of the real local D1 and state"
+        detail: "The first run sat on shard 1 for 9 min: each rebuild's join scanned the untyped temporary table for every row (quadratic). Stopped, fixed (eadaa52, with a plan test), clones made again. Second run: 15 shards and the catalogue in 11 min, reindex of release 15 (545 M rows) in 3 min; 14 min 40 s in all."
+        state: done
+  - key: 01a1cd59-d701-730c-9402-f7d8a9bd66e3
+    id: s3-check-clone
+    kind: task
+    versions:
+      - key: 01a1cd59-d701-730c-9402-f7dfd67fc5d3
+        at: 2026-11-12T01:22:59Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Check the migrated clone against the real state"
+        detail: "A sample of objects read through the Worker on both states, compared field by field; every database at 8; integrity checked."
+        state: open
+      - key: 01a1cd7b-0d70-7108-8940-0ef6771eaae4
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Check the migrated clone against the real state"
+        detail: "Every database at version 8, no schema-7 JSON left, `PRAGMA quick_check` ok on all 19 files; 42.3 → 39.5 GB. 1,304 objects (301 with links, 307 with relations, entries with flags, references, spectral types, via and position errors, and a random 300) read through the Worker: identical field by field to the old code on the old state. The 1,591 replaced ids match; 9 replaced by nothing keep their ids_replaced row and read as before."
+        state: done
+  - key: 01a1cd59-d701-730c-9402-f7d9353d9646
+    id: s4-swap
+    kind: task
+    versions:
+      - key: 01a1cd59-d701-730c-9402-f7e02bba40a6
+        at: 2026-11-12T01:22:59Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Swap the migrated clone in"
+        detail: "Stop my explorer (task bi8axoops), carry the univ-layers database over from the real state, swap the directories keeping the old ones beside them, and restart the explorer on the new code."
+        state: open
+      - key: 01a1cd7b-0d70-7108-8940-0ef75d7fabee
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Swap the migrated clone in"
+        detail: "Explorer stopped; the real univ-layers database put back in the clone; `wrangler` and `state` swapped, the old ones kept as `wrangler-schema7` and `state-schema7`. The explorer runs on the migrated state on the new code at http://127.0.0.1:5317/."
+        state: done
+  - key: 01a1cd7b-0d70-7108-8940-0ef36733fb1f
+    id: store-issues
+    kind: note
+    versions:
+      - key: 01a1cd7b-0d70-7108-8940-0ef885c01b25
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | to fix with wave 2 | open |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+      - key: 01a1cf12-64c1-74fc-88bb-d9cdd5b540b4
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+      - key: 01a1cf38-dbfb-76f3-a488-008d2cf90418
+        at: 2026-11-12T10:06:12Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+          | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget: release 16's shards give up cells to shard 14, whose objects' rows are retired and written again | release 16's D1 step ran past release 15's 16 min; shard 14 wrote more measurement files than release 15's whole shard 14; `placing.rs` `give_up` | none needed: the packer moves cells by design; the build and publish run longer | open: counted when the build ends |
+      - key: 01a1cf62-a9ea-76a5-ad97-83b1fcf7af8a
+        at: 2026-11-12T10:51:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+          | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget | release 16's D1 step took 38 min against release 15's 16 | none needed: the packer moved about 220,000 objects from shards 0 and 8–13 into shard 14 (89,204 → 306,810), every shard now within 4.29–4.49 GB | closed |
+          | The `fingerprints` check fails on any release built as a change: both loaders stamp each shared row with the loaded release (`store.rs:117`, `load.rs:98`), the manifest fingerprints the rows' own releases (objects: 16 × 53,546,060 against 599,515,117) | release 16's science run; release 14's failed the same way | to propose: fingerprint the rows before the stamp, or the manifest without `release` | open |
+      - key: 01a1cfe0-8839-7536-9835-7f84d1019579
+        at: 2026-11-12T13:09:21Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+          | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget | release 16's D1 step took 38 min against release 15's 16 | none needed: the packer moved about 220,000 objects from shards 0 and 8–13 into shard 14 (89,204 → 306,810), every shard now within 4.29–4.49 GB | closed |
+          | The `fingerprints` check fails on any release built as a change: both loaders stamp each shared row with the loaded release (`store.rs:117`, `load.rs:98`), the manifest fingerprints the rows' own releases (objects: 16 × 53,546,060 against 599,515,117) | release 16's science run; release 14's failed the same way | each loader fingerprints the rows before the stamp (fdc8746, stage/relational-schema-3, merged as 1db84cb); release 16 passes with 0 differences over 33 tables | fixed |
+  - key: 01a1cd7b-0d70-7108-8940-0ef4a88c731e
+    id: store-migrated
+    kind: note
+    versions:
+      - key: 01a1cd7b-0d70-7108-8940-0ef96f3549af
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The real store is at schema 8"
+        markdown: "Release 15's local D1 and state are migrated and swapped in; the old ones are kept beside them until you say they can go. Release 16 (memberships) waits for your word, and the science checks still read the old JSON columns until wave 2 rewrites them."
+        tone: success
+  - key: 01a1cf12-64c1-74fc-88bb-d9c98acae6af
+    id: s5-delete-old
+    kind: task
+    versions:
+      - key: 01a1cf12-64c1-74fc-88bb-d9ce15cd858e
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Delete the schema-7 copies and the scratch databases"
+        detail: "Approved by the owner: wrangler-schema7 (43 GB), state-schema7 (45 GB), target/science/r15-schema8.sqlite (54 GB), .cache/univ-ingest/schema8 (18 MB)."
+        state: active
+      - key: 01a1cf13-3e54-732d-82dd-e820746831b5
+        at: 2026-11-12T09:25:07Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Delete the schema-7 copies and the scratch databases"
+        detail: "Deleted wrangler-schema7, state-schema7, .cache/univ-ingest/schema8 and target/science/r15-schema8.sqlite; 90 GB freed on disk (the rest were blocks the APFS clones shared)."
+        state: done
+  - key: 01a1cf12-64c1-74fc-88bb-d9ca80b2fda4
+    id: s6-release-16
+    kind: task
+    versions:
+      - key: 01a1cf12-64c1-74fc-88bb-d9cf71e4c5d4
+        at: 2026-11-12T09:24:11Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build release 16, publish to a clone, run the science checks, swap"
+        detail: "A change on migrated release 15 adding the masers' memberships."
+        state: open
+      - key: 01a1cf13-3e54-732d-82dd-e8212cf61088
+        at: 2026-11-12T09:25:07Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build release 16, publish to a clone, run the science checks, swap"
+        detail: "A change on migrated release 15 adding the masers' memberships, from ca1be6f: `.cache/univ-ingest/r16/run.sh` clones the state, builds offline, publishes to a clone of the local D1 and runs the science checks there."
+        state: active
+      - key: 01a1cf62-a9ea-76a5-ad97-83b00dc7cc48
+        at: 2026-11-12T10:51:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build release 16, publish to a clone, run the science checks, swap"
+        detail: "Build 55 min (D1 rows 38 min), publish to the clone 13 min (463 MB), science 16 min: 41 PASS, 3 FAIL, 3 CONCERN, 5 INFO. All three maser checks pass with 181 memberships. Swapped at 10:50 UTC; release 15's local D1 kept in r16/wrangler-r15, its state in r16/state-r15. The explorer serves release 16."
+        state: done
+  - key: 01a1cf62-a9ea-76a5-ad97-83afa13cfe17
+    id: release-16-result
+    kind: note
+    versions:
+      - key: 01a1cf62-a9ea-76a5-ad97-83b34f5cdc36
+        at: 2026-11-12T10:51:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Release 16 published"
+        markdown: |-
+          | Check | Release 16 |
+          |---|---|
+          | `masers-members-of-their-arms` | PASS: 181 of 181 |
+          | `masers-on-the-arm-their-code-names` | PASS: 0 mismatches |
+          | `masers-on-their-model-arms` | PASS: 1 more than 1.5 kpc off, ≤ 2 allowed (0.0 s; 20+ min on release 15) |
+          | FAILs | `twompp-sdss-sourced` 0.9727 and `local-group-duplicates` 33 (both accepted), `fingerprints` (the loader's release stamp) |
+          | CONCERNs | coma-ngc4889, redshift-conflicts 288, placed-high 110, as on release 15 |
+
+          Scan guard passed every check; the checks took 368 s, 229 of them the fingerprint pass.
+        tone: success
+  - key: 01a1cf99-ba18-72f2-935d-d6577c7d507a
+    id: d-merge-fingerprints
+    kind: decision
+    number: 7
+    versions:
+      - key: 01a1cf99-ba18-72f2-935d-d6581c7a5352
+        at: 2026-11-12T11:52:00Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The fingerprint fix merged"
+        consequence: "stage/relational-schema-3 is merged as 1db84cb: xtask science fingerprints a release built as a change as its store holds it, and passes on release 16. Both release-16 scratch databases are deleted; release 15's local D1 and state stay in r16/ until the owner says otherwise."
+  - key: 01a1cfe0-8839-7536-9835-7f83022ff8a9
+    id: d-merge-product
+    kind: decision
+    number: 8
+    versions:
+      - key: 01a1cfe0-8839-7536-9835-7f85438ca6df
+        at: 2026-11-12T13:09:21Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "product/relational-schema merged into product/spiral-arms"
+        consequence: "Schema 8, the json gate, the scan guard, the masers' memberships and the fingerprint fix join product/spiral-arms, whose explorer already serves release 16 from the store this branch migrated."
+  - key: 01a1cfff-32f7-711d-9677-3a643a5cf463
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1cfff-32f7-711d-9677-3a6507122b42
+        at: 2026-11-12T13:42:50Z
+        revision: 19
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        view: publish
+        note: "Published as sequence 10 on develop, through product/spiral-arms: CON-9 to CON-12, ADR-40 and RQ-198 (the masers' arm memberships)."
+        recorded:
+          commit: "6a122275cce257a9f90e8dc42bcdf3c7f31b5f7b"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-12T13:42:50Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 71,
+              "constraint": 12,
+              "criterion": 772,
+              "decision": 41,
+              "feature": 45,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 202
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "6a122275cce257a9f90e8dc42bcdf3c7f31b5f7b",
+                "removed": [],
+                "revision": "6a122275cce257a9f90e8dc42bcdf3c7f31b5f7b"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }

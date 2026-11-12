@@ -7,7 +7,7 @@
 macro_rules! row {
     (
         $(#[$meta:meta])*
-        $name:ident => $table:literal, scope: $scope:ident,
+        $name:ident => $table:literal, scope: $scope:ident, scale: $scale:ident,
         key: [$($key:literal),*], indexes: [$([$($index:literal),*]),*],
         { $($(#[$fmeta:meta])* $field:ident: $ty:ty),* $(,)? }
     ) => {
@@ -25,6 +25,7 @@ macro_rules! row {
                 key: &[$($key),*],
                 indexes: &[$(&[$($index),*]),*],
                 scope: Scope::$scope,
+                scale: Scale::$scale,
             };
 
             fn values(&self) -> Vec<SqlValue> {
@@ -38,13 +39,16 @@ mod objects;
 mod shards;
 mod sources;
 
-pub use objects::{ChainRow, DesignationRow, EntryRow, MeasurementRow, NameRow, ObjectRow, PARAMS};
+pub use objects::{
+    ChainRow, DesignationRow, EntryFlagRow, EntryReferenceRow, EntryRow, MeasurementDetailRow,
+    MeasurementRow, MembershipRow, NameRow, ObjectLinkRow, ObjectRelationRow, ObjectRow, PARAMS,
+};
 pub use shards::{ObjectShardRow, ReleaseShardRow, ShardCellRow};
 pub use sources::{CatalogueError, CatalogueUncertainty, SourceReadingRow, SourceTermRow};
 
 use serde::{Deserialize, Serialize};
 
-use super::sql::{ColumnKind, Row, Scope, SqlValue, Table};
+use super::sql::{ColumnKind, Row, Scale, Scope, SqlValue, Table};
 
 /// A field's value as an SQL value, and the type of its column.
 pub trait ToSql {
@@ -65,6 +69,48 @@ impl ToSql for Option<String> {
 
     fn to_sql(&self) -> SqlValue {
         self.clone().into()
+    }
+}
+
+/// JSON text of what univ-model serializes, in a column of kind [`ColumnKind::Json`].
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Json(pub String);
+
+impl Json {
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::ops::Deref for Json {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<&str> for Json {
+    fn from(text: &str) -> Self {
+        Self(text.to_owned())
+    }
+}
+
+impl ToSql for Json {
+    const KIND: ColumnKind = ColumnKind::Json;
+
+    fn to_sql(&self) -> SqlValue {
+        SqlValue::Text(self.0.clone())
+    }
+}
+
+impl ToSql for Option<Json> {
+    const KIND: ColumnKind = ColumnKind::Json;
+
+    fn to_sql(&self) -> SqlValue {
+        self.as_ref().map(|j| j.0.clone()).into()
     }
 }
 
@@ -145,12 +191,12 @@ row! {
     /// A release as built. Publishing sets its `published_at` once `latest` has moved to it, and
     /// pruning its `pruned_at`. A release whose `published_at` is NULL is not published, its
     /// rows possibly part loaded: readers list only releases with `published_at` set.
-    ReleaseRow => "releases", scope: Releases, key: ["number"], indexes: [], {
+    ReleaseRow => "releases", scope: Releases, scale: Release, key: ["number"], indexes: [], {
         number: u32,
         /// RFC 3339, UTC.
         built_at: String,
         /// JSON of the release cosmology.
-        cosmology: String,
+        cosmology: Json,
         peculiar_velocity_km_s: f64,
         model_version: String,
         ingest_version: String,
@@ -161,7 +207,7 @@ row! {
         ranking_rule: String,
         ranking_rule_name: String,
         /// JSON array of the release's source ids.
-        sources: String,
+        sources: Json,
         objects: u64,
         structures: u64,
         grids: u64,
@@ -174,7 +220,7 @@ row! {
 
 row! {
     /// The ids a release issued.
-    IdsIssuedRow => "ids_issued", scope: Ledger, key: ["release"], indexes: [], {
+    IdsIssuedRow => "ids_issued", scope: Ledger, scale: Release, key: ["release"], indexes: [], {
         release: u32,
         first: u64,
         last: u64,
@@ -183,19 +229,28 @@ row! {
 
 row! {
     /// An id that left the releases, in `release`.
-    IdReplacedRow => "ids_replaced", scope: Ledger, key: ["id"], indexes: [], {
+    IdReplacedRow => "ids_replaced", scope: Ledger, scale: Object, key: ["id"], indexes: [], {
         id: u64,
         release: u32,
         /// `merged_into`, `split_into` or `retired`.
         change: String,
-        /// JSON array of the ids that replaced it, ascending.
-        replaced_by: String,
+    }
+}
+
+row! {
+    /// An id that replaced the id `id` of `ids_replaced`, `n` its place among them, ascending.
+    IdReplacementRow => "id_replacements", scope: Ledger, scale: Object, key: ["id", "n"],
+    indexes: [], {
+        id: u64,
+        n: u32,
+        release: u32,
+        replaced_by: u64,
     }
 }
 
 row! {
     /// A placed object in its level-0 cell.
-    ObjectCellRow => "object_cells", scope: PerRelease,
+    ObjectCellRow => "object_cells", scope: PerRelease, scale: Object,
     key: ["domain", "ix", "iy", "iz", "object_id", "release"], indexes: [], {
         release: u32,
         /// Term: its scale domain.
@@ -209,7 +264,7 @@ row! {
 
 row! {
     /// A structure in one cell its bounding box meets.
-    StructureCellRow => "structure_cells", scope: PerRelease,
+    StructureCellRow => "structure_cells", scope: PerRelease, scale: Structure,
     key: ["level", "ix", "iy", "iz", "structure", "release"], indexes: [], {
         release: u32,
         level: u8,
@@ -223,7 +278,7 @@ row! {
 row! {
     /// A term of the release: the name univ-model serializes for a value, which term columns
     /// hold by its id.
-    TermRow => "terms", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    TermRow => "terms", scope: PerRelease, scale: Release, key: ["id", "release"], indexes: [], {
         release: u32,
         id: u32,
         term: String,
@@ -232,7 +287,7 @@ row! {
 
 row! {
     /// A source of the release with its citation, terms and query.
-    SourceRow => "sources", scope: PerRelease, key: ["n", "release"],
+    SourceRow => "sources", scope: PerRelease, scale: Source, key: ["n", "release"],
     indexes: [["id", "release"]], {
         release: u32,
         /// Its index in the release, which every `source` column of the release holds.
@@ -252,15 +307,15 @@ row! {
         /// Catalogue entries the release holds from it.
         entries: u64,
         /// JSON of the access method and query, verbatim.
-        access: String,
-        cuts: String,
-        fixes: String,
+        access: Json,
+        cuts: Json,
+        fixes: Json,
     }
 }
 
 row! {
     /// A payload a source's provenance records.
-    PayloadRow => "payloads", scope: PerRelease, key: ["source", "item", "release"],
+    PayloadRow => "payloads", scope: PerRelease, scale: Source, key: ["source", "item", "release"],
     indexes: [], {
         release: u32,
         source: u32,
@@ -275,20 +330,20 @@ row! {
 
 row! {
     /// What normalization made of a source's rows.
-    NormalizationRow => "normalizations", scope: PerRelease, key: ["source", "release"],
+    NormalizationRow => "normalizations", scope: PerRelease, scale: Source, key: ["source", "release"],
     indexes: [], {
         release: u32,
         source: u32,
         published: u64,
         /// JSON map of the entries left out by reason.
-        left_out: String,
-        fixes: String,
+        left_out: Json,
+        fixes: Json,
     }
 }
 
 row! {
     /// A researched structure: its record as its file gives it, every number cited.
-    StructureRow => "structures", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    StructureRow => "structures", scope: PerRelease, scale: Structure, key: ["id", "release"], indexes: [], {
         release: u32,
         id: String,
         name: String,
@@ -304,19 +359,19 @@ row! {
         centre_y: Option<f64>,
         centre_z: Option<f64>,
         geometry_kind: Option<String>,
-        record: String,
+        record: Json,
         /// JSON of its member list as resolved at ingest: `shape`, each member an object at its
         /// derived position or a tracer, and `placed_from_file`, how each tracer was placed from
         /// the structure file's own sky position and redshift for it.
-        members: Option<String>,
+        members: Option<Json>,
         /// JSON of its ICRS bounding box in Mpc, when it has one.
-        bounds: Option<String>,
+        bounds: Option<Json>,
     }
 }
 
 row! {
     /// A scale domain's tiles.
-    ScaleDomainRow => "scale_domains", scope: PerRelease, key: ["name", "release"], indexes: [], {
+    ScaleDomainRow => "scale_domains", scope: PerRelease, scale: Release, key: ["name", "release"], indexes: [], {
         release: u32,
         name: String,
         unit: String,
@@ -329,20 +384,20 @@ row! {
 
 row! {
     /// A volume grid.
-    GridRow => "grids", scope: PerRelease, key: ["id", "release"], indexes: [], {
+    GridRow => "grids", scope: PerRelease, scale: Release, key: ["id", "release"], indexes: [], {
         release: u32,
         id: String,
         source: u32,
         unit: String,
-        shape: String,
-        fields: String,
+        shape: Json,
+        fields: Json,
         header_key: String,
     }
 }
 
 row! {
     /// A source's primary reference and coverage, beside its row in `sources`.
-    SourceDetailRow => "source_details", scope: PerRelease, key: ["source", "release"],
+    SourceDetailRow => "source_details", scope: PerRelease, scale: Source, key: ["source", "release"],
     indexes: [], {
         release: u32,
         /// The source's `sources.n`.
@@ -355,37 +410,37 @@ row! {
         reference_note: Option<String>,
         /// JSON `{"order": 5, "cells": [..]}`: the NESTED `HEALPix` cells, ICRS, ascending, that
         /// hold at least one of its published entries; none when no entry has a sky position.
-        sky: Option<String>,
+        sky: Option<Json>,
         /// JSON array of the radial ranges its entries span, one per measure; none when none.
-        radial: Option<String>,
+        radial: Option<Json>,
     }
 }
 
 row! {
     /// A structure's placed geometry and how it was derived, its outline test and its sizes
     /// rescaled to the release cosmology, beside its row in `structures`.
-    StructureDetailRow => "structure_details", scope: PerRelease, key: ["id", "release"],
+    StructureDetailRow => "structure_details", scope: PerRelease, scale: Structure, key: ["id", "release"],
     indexes: [], {
         release: u32,
         /// The structure's `structures.id`.
         id: String,
         /// JSON of the univ-model shape of the placed structure, ICRS Cartesian about the
         /// barycentre in its scale domain's unit; none when it cannot be placed.
-        shape: Option<String>,
+        shape: Option<Json>,
         /// JSON of how `shape` and the structure's centre and bounds were derived; none when it
         /// is not placed.
-        derivation: Option<String>,
+        derivation: Option<Json>,
         /// JSON of the result of the test that admitted or refused its outline on a volume
         /// grid; none for a structure not outlined from a grid.
-        outline: Option<String>,
+        outline: Option<Json>,
         /// JSON array of its lengths published under another cosmology, each as published and
         /// rescaled to the release cosmology; none when it has none.
-        rescaled: Option<String>,
+        rescaled: Option<Json>,
     }
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 26] = [
+pub const TABLES: [Table; 33] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -395,10 +450,17 @@ pub const TABLES: [Table; 26] = [
     ObjectRow::TABLE,
     EntryRow::TABLE,
     MeasurementRow::TABLE,
+    MeasurementDetailRow::TABLE,
+    EntryFlagRow::TABLE,
+    EntryReferenceRow::TABLE,
+    ObjectLinkRow::TABLE,
+    ObjectRelationRow::TABLE,
+    MembershipRow::TABLE,
     DesignationRow::TABLE,
     NameRow::TABLE,
     IdsIssuedRow::TABLE,
     IdReplacedRow::TABLE,
+    IdReplacementRow::TABLE,
     StructureRow::TABLE,
     ScaleDomainRow::TABLE,
     GridRow::TABLE,
@@ -419,7 +481,7 @@ row! {
     /// `tiles/cosmic_web/r07.bin`, and the SHA-256 of what it holds there: R2 keeps each file
     /// once, under [`crate::release::keys::file`] of its SHA-256, shared by every release that
     /// maps a path to it.
-    ReleaseFileRow => "release_files", scope: PerRelease, key: ["path", "release"],
+    ReleaseFileRow => "release_files", scope: PerRelease, scale: Release, key: ["path", "release"],
     indexes: [], {
         release: u32,
         path: String,

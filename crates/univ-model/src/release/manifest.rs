@@ -106,6 +106,8 @@ pub struct Versions {
     pub univ_model: String,
     pub univ_ingest: String,
     pub d1_schema: u32,
+    /// The newest tile encoding the build writes; each scale domain's tile manifest names the
+    /// encoding of its own tiles, which may be older.
     pub tile_encoding: u16,
     pub tile_manifest: u32,
 }

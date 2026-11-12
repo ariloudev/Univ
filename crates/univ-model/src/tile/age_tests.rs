@@ -1,5 +1,6 @@
 //! Version 3's point value: a colour index, or the base-10 logarithm of an age in years, coded
-//! apart, in the same 20 bytes a version 2 point takes. Every point here is SIMULATED.
+//! apart, in the same 20 bytes a version 2 point takes; and version 4's kind of object after
+//! them. Every point here is SIMULATED.
 
 use super::*;
 
@@ -14,6 +15,7 @@ fn point(n: u64, value: Option<PointValue>) -> TilePoint {
         source: 0,
         kind: KindOfValue::Estimated,
         value,
+        object: None,
     }
 }
 
@@ -34,7 +36,7 @@ fn points() -> Vec<TilePoint> {
 #[test]
 fn version_3_round_trips_every_value_code_in_20_bytes_a_point() {
     let bytes = encode(&node(), &points()).unwrap();
-    assert_eq!(VERSION, 3);
+    assert_eq!(BASE_VERSION, 3);
     assert_eq!(u16::from_le_bytes([bytes[4], bytes[5]]), 3);
     assert_eq!(bytes.len(), HEADER_BYTES + 20 * 4);
     assert_eq!(point_bytes(3), Some(20));
@@ -93,4 +95,70 @@ fn the_version_3_layout_names_the_value_and_its_code_and_the_age_code() {
     let v2 = format::layout(2).unwrap();
     assert_eq!(v2.log_age_code, None);
     assert!(v2.points.iter().any(|f| f.name == "colour"));
+}
+
+#[test]
+fn version_4_adds_each_points_kind_of_object_after_version_3s_columns() {
+    // build-octree-tiles: the kind of object follows every column of a version 3 point; a body
+    // carries code 0, which no kind of object takes.
+    let kinds = [
+        Some(ObjectKind::LuminousHotStar),
+        None,
+        Some(ObjectKind::OpenCluster),
+        Some(ObjectKind::StarFormingRegion),
+    ];
+    let points: Vec<TilePoint> = points()
+        .into_iter()
+        .zip(kinds)
+        .map(|(p, object)| TilePoint { object, ..p })
+        .collect();
+    let v3 = encode(&node(), &points).unwrap();
+    let v4 = encode_as(VERSION, &node(), &points).unwrap();
+    let n = points.len();
+    assert_eq!(VERSION, 4);
+    assert_eq!(u16::from_le_bytes([v4[4], v4[5]]), 4);
+    assert_eq!(v4.len(), HEADER_BYTES + 21 * n);
+    assert_eq!(point_bytes(4), Some(21));
+    // Every byte after the version field is version 3's, then the kind of object column.
+    assert_eq!(v4[6..HEADER_BYTES + POINT_BYTES * n], v3[6..]);
+    let codes = &v4[HEADER_BYTES + POINT_BYTES * n..];
+    assert_eq!(codes, [7, 0, 2, 6]);
+    let decoded = decode(&v4).unwrap();
+    let objects: Vec<_> = decoded.points.iter().map(|p| p.object).collect();
+    assert_eq!(objects, kinds);
+    let values: Vec<_> = decoded.points.iter().map(|p| p.value).collect();
+    let v3_values: Vec<_> = decode(&v3)
+        .unwrap()
+        .points
+        .iter()
+        .map(|p| p.value)
+        .collect();
+    assert_eq!(values, v3_values);
+    // A version 3 tile carries no kind of object.
+    assert!(
+        decode(&v3)
+            .unwrap()
+            .points
+            .iter()
+            .all(|p| p.object.is_none())
+    );
+}
+
+#[test]
+fn every_kind_of_object_round_trips_and_a_code_beyond_them_is_refused() {
+    for (i, kind) in OBJECT_KINDS.iter().enumerate() {
+        let code = object_kind_code(Some(*kind));
+        assert_eq!(usize::from(code), i + 1);
+        assert_eq!(object_kind_of_code(code), Ok(Some(*kind)));
+    }
+    assert_eq!(object_kind_code(None), 0);
+    assert_eq!(object_kind_code(Some(ObjectKind::Body)), 0);
+    assert_eq!(object_kind_of_code(0), Ok(None));
+    let mut bytes = encode_as(VERSION, &node(), &points()).unwrap();
+    let last = bytes.len() - 1;
+    bytes[last] = 8;
+    assert_eq!(
+        decode(&bytes),
+        Err(TileError::ObjectKind { point: 3, code: 8 })
+    );
 }

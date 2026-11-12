@@ -46,6 +46,36 @@ fn one<T: rusqlite::types::FromSql>(db: &Connection, sql: &str) -> Result<Option
         .map_err(|e| format!("{sql}: {e}"))
 }
 
+/// The `SQLite` files of the local D1 in Wrangler's state directory `persist_to`, in order of
+/// their names; none when it holds no local D1.
+///
+/// # Errors
+///
+/// Fails when the directory cannot be read.
+pub fn database_files(persist_to: &Path) -> Result<Vec<PathBuf>, String> {
+    let dir = persist_to.join(LOCAL_D1_FILES);
+    if !dir.is_dir() {
+        return Ok(Vec::new());
+    }
+    let mut files: Vec<PathBuf> = std::fs::read_dir(&dir)
+        .map_err(|e| err(&dir, e))?
+        .filter_map(Result::ok)
+        .map(|e| e.path())
+        .filter(|p| p.extension().is_some_and(|x| x == "sqlite"))
+        .collect();
+    files.sort();
+    Ok(files)
+}
+
+/// The release `db`'s `latest` points to: some only for the catalogue database.
+///
+/// # Errors
+///
+/// Fails when `latest` cannot be read.
+pub fn latest_of(db: &Connection) -> Result<Option<i64>, String> {
+    one::<i64>(db, "SELECT release FROM latest")
+}
+
 impl LocalD1 {
     /// The local D1 kept in Wrangler's state directory `persist_to`.
     ///
@@ -56,13 +86,7 @@ impl LocalD1 {
     /// when the shards found are not those the release has.
     pub fn open(persist_to: &Path) -> Result<Self, String> {
         let dir = persist_to.join(LOCAL_D1_FILES);
-        let mut files: Vec<PathBuf> = std::fs::read_dir(&dir)
-            .map_err(|e| err(&dir, e))?
-            .filter_map(Result::ok)
-            .map(|e| e.path())
-            .filter(|p| p.extension().is_some_and(|x| x == "sqlite"))
-            .collect();
-        files.sort();
+        let files = database_files(persist_to)?;
         let mut catalogue: Option<(PathBuf, Connection, i64)> = None;
         let mut others = Vec::new();
         for path in files {
@@ -70,7 +94,7 @@ impl LocalD1 {
             if !holds(&db, "objects")? {
                 continue;
             }
-            match one::<i64>(&db, "SELECT release FROM latest")? {
+            match latest_of(&db)? {
                 Some(latest) => {
                     if let Some((other, ..)) = &catalogue {
                         return Err(format!(

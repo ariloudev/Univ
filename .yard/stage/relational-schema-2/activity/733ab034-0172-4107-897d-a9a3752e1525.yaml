@@ -1,0 +1,108 @@
+session: 733ab034-0172-4107-897d-a9a3752e1525
+host: claude-code
+adapter:
+  format: yard-adapter/1
+  version: "2.3.0"
+  capabilities:
+    nativeQuestions: true
+    nativePlans: true
+    taskMirroring: true
+    events:
+      - turn.start
+      - turn.end
+      - request
+      - tool.start
+      - tool.end
+      - subagent.start
+      - subagent.end
+      - compaction
+      - plan.start
+      - plan.end
+    usage:
+      - input
+      - cacheRead
+      - cacheWrite
+      - output
+lastEnded: 2026-11-12T06:09:06Z
+turns:
+  - started: 2026-11-12T04:52:58Z
+    ended: 2026-11-12T05:15:18Z
+  - started: 2026-11-12T05:15:21Z
+    ended: 2026-11-12T05:15:29Z
+  - started: 2026-11-12T05:16:32Z
+    ended: 2026-11-12T05:16:34Z
+  - started: 2026-11-12T05:16:47Z
+    ended: 2026-11-12T05:16:51Z
+  - started: 2026-11-12T05:17:55Z
+    ended: 2026-11-12T05:17:59Z
+  - started: 2026-11-12T05:18:06Z
+    ended: 2026-11-12T05:18:51Z
+  - started: 2026-11-12T05:20:10Z
+    ended: 2026-11-12T05:26:17Z
+  - started: 2026-11-12T05:34:58Z
+    ended: 2026-11-12T05:38:24Z
+  - started: 2026-11-12T05:40:27Z
+    ended: 2026-11-12T05:42:35Z
+  - started: 2026-11-12T05:49:24Z
+    ended: 2026-11-12T05:50:44Z
+  - started: 2026-11-12T06:03:20Z
+    ended: 2026-11-12T06:03:30Z
+  - started: 2026-11-12T06:09:06Z
+subagents:
+  - agent: a4343cab0a129581a
+    type: general-purpose
+    started: 2026-11-12T05:15:03Z
+    ended: 2026-11-12T05:16:47Z
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - agent: a62abeaea2c489893
+    type: general-purpose
+    started: 2026-11-12T05:15:03Z
+    ended: 2026-11-12T05:16:32Z
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - agent: a898e8820f70f326a
+    type: general-purpose
+    started: 2026-11-12T05:15:03Z
+    ended: 2026-11-12T05:17:55Z
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - agent: a7b588a88f1d417be
+    type: general-purpose
+    started: 2026-11-12T05:15:03Z
+    ended: 2026-11-12T05:18:06Z
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+loft:
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-12T05:14:15Z
+    ended: 2026-11-12T05:14:16Z
+    failed: false
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-12T05:14:20Z
+    ended: 2026-11-12T05:14:21Z
+    failed: false
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - commands:
+      - check
+      - fmt
+    agent: main
+    started: 2026-11-12T05:14:29Z
+    ended: 2026-11-12T05:14:30Z
+    failed: false
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-12T05:25:55Z
+    ended: 2026-11-12T05:25:56Z
+    failed: false
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+  - commands:
+      - reconcile
+    agent: main
+    started: 2026-11-12T05:50:38Z
+    ended: 2026-11-12T05:50:39Z
+    failed: false
+    stage: 01a1ce1a-151d-7544-ab8c-3ae34cea7004

@@ -1,0 +1,46 @@
+# Reid et al. 2019's log-spiral fit to the Norma arm, carried on beyond the azimuths of its masers by this project.
+name: Norma arm extrapolated (Reid 2019 model)
+kind: spiral_arm_extrapolation
+status: model
+scale_domain: galaxy_tracers
+papers:
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357, Table 2 (Spiral Arm Characteristics), Section 3 and the abstract"
+geometry:
+  kind: log_spiral
+  log_spiral:
+    extent: extrapolated
+    beta_kink:
+      { value: 18, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 4 },
+        cite: { paper: reid-2019, table: "2", row: "Norma", column: "β_kink", cell: "18 ± 4" } }
+    r_kink:
+      { value: 4.46, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.19 },
+        cite: { paper: reid-2019, table: "2", row: "Norma", column: "R_kink", cell: "4.46 ± 0.19" } }
+    pitch_inside:
+      { value: -1.0, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 3.3 },
+        cite: { paper: reid-2019, table: "2", row: "Norma", column: "ψ_<", cell: "-1.0 ± 3.3" } }
+    pitch_outside:
+      { value: 19.5, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 5.1 },
+        cite: { paper: reid-2019, table: "2", row: "Norma", column: "ψ_>", cell: "19.5 ± 5.1" } }
+    width:
+      { value: 0.14, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.1 },
+        cite: { paper: reid-2019, table: "2", row: "Norma", column: "Width", cell: "0.14 ± 0.1" } }
+    fitted:
+      - { value: 5, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: reid-2019, table: "2", row: "Norma", column: "β range", cell: "5 → 54" } }
+      - { value: 54, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: reid-2019, table: "2", row: "Norma", column: "β range", cell: "5 → 54" } }
+    r0:
+      { value: 8.15, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: reid-2019, sentence: "The models assume R0 = 8.15 kpc." },
+        note: "Table 2's comments: the distance the arm fits assume, the value of the paper's fit A5 (Table 3), whose uncertainty belongs to that fit." }
+    sun_height:
+      { value: 5.5, unit: parsec, kind: estimated, uncertainty: { form: symmetric, sigma: 5.8 },
+        cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." } }
+notes: >-
+  The Norma arm of Reid et al. 2019's model, its fitted log spiral carried on beyond the range of azimuth its masers cover, as far as this project's choice of extrapolation allows (see the derivation's method). Only the part within the fitted range rests on the paper's fit; the rest is this project's extrapolation of the formula, not a measurement and not the paper's own drawing, whose Figure 1 extends some arms by hand. The path is computed from the parameters of its row of Table 2, which assumes the Galactic Centre's distance given here.

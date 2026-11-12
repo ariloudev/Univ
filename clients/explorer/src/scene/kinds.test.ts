@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { EVERYTHING, LEVELS } from "../catalogue/lod.ts";
-import { CHOSEN_COLOUR, FLOWS, CULLED_OPACITY, POINT_OPACITY, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureColour, structureCss, structureStyle } from "./kinds.ts";
+import { CHOSEN_COLOUR, FLOWS, CULLED_OPACITY, drawnBeneath, POINT_OPACITY, KINDS, KIND_COLOURS, KIND_INDEX, POINT_CSS, STRUCTURE_COLOUR, css, detailOpacity, pointOpacity, structureColour, structureCss, structureStyle } from "./kinds.ts";
 
 describe("the kinds of value", () => {
   it("are drawn in one colour, in one order whatever a manifest lists", () => {
@@ -59,7 +59,7 @@ describe("a structure's style", () => {
   });
 
   it("is a colour of each kind's own, apart from the points', the chosen structure's and every other kind's", () => {
-    const kinds = ["void", "repeller", "attractor", "supercluster", "supercluster_complex", "basin", "overdensity", "wall", "filament", "quasar_group", "ring", "arc", "shell"];
+    const kinds = ["void", "repeller", "attractor", "supercluster", "supercluster_complex", "basin", "overdensity", "wall", "filament", "quasar_group", "ring", "arc", "shell", "spiral_arm"];
     const colours = kinds.map((kind) => structureColour(kind, false));
     const apart = (a: readonly number[], b: readonly number[]) => Math.hypot((a[0] ?? 0) - (b[0] ?? 0), (a[1] ?? 0) - (b[1] ?? 0), (a[2] ?? 0) - (b[2] ?? 0));
     colours.forEach((a, i) => {
@@ -85,6 +85,16 @@ describe("a structure's style", () => {
       expect(apart("repeller", kind)).toBeGreaterThan(15);
     }
     expect(FLOWS).toEqual({ attractor: "in", repeller: "out" });
+  });
+
+  it("draws a model arm's extrapolation in its arm's colour, fainter, and beneath the other outlines", () => {
+    const arm = structureColour("spiral_arm", false);
+    const extrapolation = structureColour("spiral_arm_extrapolation", false);
+    expect(extrapolation.slice(0, 3)).toEqual(arm.slice(0, 3));
+    expect(extrapolation[3]).toBeLessThan((arm[3] ?? 0) / 2);
+    expect(drawnBeneath("spiral_arm_extrapolation")).toBe(true);
+    expect(drawnBeneath("spiral_arm")).toBe(false);
+    expect(drawnBeneath("void")).toBe(false);
   });
 
   it("draws the chosen structure's outline thicker than any other's", () => {

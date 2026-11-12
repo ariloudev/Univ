@@ -44,10 +44,12 @@
 
 mod cap;
 mod check;
+mod columns;
 mod error;
 mod held;
 pub mod journal;
 mod migrate;
+pub(crate) use migrate::create_as;
 mod progress;
 mod prune;
 mod r2batch;

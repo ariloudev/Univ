@@ -1,0 +1,260 @@
+key: 01a1cba0-4f98-7602-a8cc-28b59a9b3e8c
+id: survey
+versions:
+  - key: 01a1cba0-4f98-7602-a8cc-28b95d38fdec
+    at: 2026-11-11T17:20:43Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Survey and sources"
+    goal: "What the release and explorer already give for the Galaxy's arms is known, and the OB-star sample and the Reid 2019 arm model are chosen with their citations"
+    status: active
+  - key: 01a1cbb2-cb04-74b3-9d53-33ad4744eefb
+    at: 2026-11-11T17:40:54Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Survey and sources"
+    goal: "What the release and explorer already give for the Galaxy's arms is known, and the OB-star sample and the Reid 2019 arm model are chosen with their citations"
+    status: done
+blocks:
+  - key: 01a1cba0-4f98-7602-a8cc-28b848fbabad
+    id: scope
+    kind: note
+    versions:
+      - key: 01a1cba0-4f98-7602-a8cc-28bcbf8c30ff
+        at: 2026-11-11T17:20:43Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "What this branch is for"
+        markdown: |-
+          Show the Galaxy's spiral structure as the data allow:
+
+          - **Measured:** Gaia DR3 OB stars in a colour of their own, and young open clusters (Hunt & Reffert 2023, already ingested with ages), seen face-on.
+          - **Model:** the Reid et al. 2019 log-spiral arm fits drawn as a separate layer, labelled as a model, for the disk beyond where the stars reach.
+
+          The Reid 2019 masers, already in the Galaxy tracers domain, are the measured arm points that tie the two together.
+  - key: 01a1cbae-346d-7107-8b88-3f8560ae989c
+    id: survey-findings
+    kind: note
+    versions:
+      - key: 01a1cbae-346d-7107-8b88-3f8ac4c1c858
+        at: 2026-11-11T17:35:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "What exists and what's missing"
+        markdown: |-
+          ## Already in release 14
+
+          | Piece | State |
+          |---|---|
+          | Young open clusters | Hunt & Reffert 2023 with log ages; explorer age choice `age=100/30/10` (2,794 / 1,169 / 405 clusters) |
+          | Reid 2019 masers | 199 regions in `galaxy_tracers`, each with its `Arm` code, placed by VLBI parallax |
+          | Gaia DR3 G < 14 | 16.8 M stars with ESP-HS spectral type on the record (not in tiles) |
+          | Paths | univ-model `Geometry::Path` exists and the explorer draws it; structure files don't accept it yet |
+
+          ## Gaps
+
+          - **Tracer colours by source break already.** 7 colours for 8 manifest sources in release 14: the masers (index 7) share bailer-jones's colour, against *Each source of the Galaxy tracers domain has its own colour*. A point is coloured by the source of its winning distance, so a tracer joined to its Gaia star is drawn in Gaia's or Bailer-Jones's colour, not its own catalogue's.
+          - **No face-on view.** Orbit camera in ICRS Mpc, pitch stops 1.15° short of the pole (`eyeAxes` is degenerate there), no view preset, view not in the URL. No R0 or Galactic Centre anywhere.
+          - **Structures** take no `path`, have no `model` status (observed / reconstructed / statistical_claim) and no Galactocentric frame; the Structures drawer's depth axis runs 10 Mpc–10 Gpc.
+          - **A new source means a full build** (~35 min build + ~15 min publish + ~15 min science checks for release 14), built as a change on release 14.
+
+          ## OB-star samples compared
+
+          | Sample | Rows | Access | Distances | Purity |
+          |---|---|---|---|---|
+          | Zari et al. 2021, `J/A+A/650/A112/filtered` | 417,535 | VizieR (checked) | own astro-kinematic d16/d50/d84, plus Bailer-Jones | OB and late-B/A, M_K < 0 (≈ earlier than B7V); some evolved stars |
+          | ALS III (Pantaleoni González et al. 2025) | ~14k (`Cat = M`) | INTA website form only, not on VizieR; no licence stated | own Bayesian, OB prior | cleanest; literature compilation, ~2–3 kpc |
+          | Xu et al. 2021, `J/A+A/645/L8` | 9,750 | VizieR (checked) | none (parallax only) | spectroscopic OB; few placed beyond ~2 kpc |
+          | Drimmel et al. 2023 query | ~580k | Gaia TAP + Bailer-Jones join | Bailer-Jones photogeo | admits A stars; not published as a table |
+          | Gaia OBA golden sample | 3.0 M | Gaia TAP | none | 75% A stars |
+
+          ## Reid 2019 arm model
+
+          Table 2 transcribed from the arXiv TeX source (not on VizieR): 7 arms, `ln(R/R_kink) = −(β − β_kink) tan ψ`, ψ switching at the kink, β = Galactocentric azimuth, 0 toward the Sun, increasing with rotation; R0 = 8.15 kpc. The β range of each fit is the range of its masers (e.g. Perseus −23° → 115°, Sgr-Car 2° → 97°); the arms the paper draws beyond that are not tabulated.
+        tone: info
+  - key: 01a1cbae-346d-7107-8b88-3f867134cdd4
+    id: q-ob-sample
+    kind: question
+    versions:
+      - key: 01a1cbae-346d-7107-8b88-3f8b32b1b5fd
+        at: 2026-11-11T17:35:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "Which young-star sample should trace the arms?"
+        header: "OB sample"
+        context: "All options keep the stars' measured parallaxes beside their catalogue's distance. Any new source needs a full build of release 15, which waits for your word."
+        options:
+          - label: "Zari 2021 (417k)"
+            detail: "Densest map, reaching 4–5 kpc as you described; on VizieR with its own distance percentiles, so it fits the existing VizieR path. Honestly labelled as hot luminous stars (OB with late-B/A), not pure OB. Recommended: the only option that gives arm segments out to ~5 kpc with little new ingest code."
+            recommended: true
+          - label: "ALS III (~14k)"
+            detail: "Cleanest OB sample with OB-specific distances, but reaches ~3 kpc, is a literature compilation, sits only behind the INTA website form (a new access method) and states no licence, so it may not be publishable."
+          - label: "Xu 2021 (9,750)"
+            detail: "Spectroscopic OB on VizieR, but no distances: only parallaxes within 10% are placed, so few stars beyond ~2 kpc."
+          - label: "Zari and Xu"
+            detail: "Zari for the density, Xu's spectral types joining the same Gaia stars by source_id as a purity check. More rows and matching to verify."
+    responses:
+      - key: 01a1cbb2-a5dd-70cb-9f87-d1eca99cedb6
+        at: 2026-11-11T17:40:45Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "Zari 2021 (417k)"
+  - key: 01a1cbae-346d-7107-8b88-3f874829da9d
+    id: q-tracer-colour
+    kind: question
+    versions:
+      - key: 01a1cbae-346d-7107-8b88-3f8cd3291f89
+        at: 2026-11-11T17:35:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "How should Galaxy tracers be coloured?"
+        header: "Colours"
+        context: "Today a tracer is coloured by the source of its winning distance, and release 14 already has 8 sources for 7 colours (masers clash with Bailer-Jones). An OB star joined to its Gaia star would often be drawn in Gaia's colour."
+        options:
+          - label: "By kind of object"
+            detail: "One colour each for open cluster, globular cluster, Cepheid, RR Lyrae, star-forming region and the new hot young stars, whatever placed them. OB stars always look like OB stars, and the masers' clash goes away. Hiding by source still works as now. Recommended."
+            recommended: true
+          - label: "By source, more colours"
+            detail: "Keep colouring by distance source and add colours. The OB stars would mix the colours of Zari, Gaia and Bailer-Jones."
+    responses:
+      - key: 01a1cbb2-a5dd-70cb-9f87-d1ede87195c8
+        at: 2026-11-11T17:40:45Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "By kind of object"
+  - key: 01a1cbae-346d-7107-8b88-3f8899c9b655
+    id: q-arm-extent
+    kind: question
+    versions:
+      - key: 01a1cbae-346d-7107-8b88-3f8dff36849c
+        at: 2026-11-11T17:35:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "How much of the Reid 2019 arms should be drawn?"
+        header: "Model arms"
+        context: "The arms are drawn as paths in a new `spiral_arm` structure kind with a new `model` status, converted to heliocentric galactic coordinates with Reid's R0 = 8.15 kpc and named as a derivation from Table 2."
+        options:
+          - label: "Fit + extrapolation"
+            detail: "Each arm over its fitted range, plus its formula carried on around the disk (to Galactocentric radii of about 3–16 kpc) as a separate path marked as our extrapolation. Gives the whole disk you asked for while keeping what the paper fitted apart. Recommended."
+            recommended: true
+          - label: "Fitted range only"
+            detail: "Only where masers constrain each arm. Strictly what the paper fitted, but the far side of the Galaxy stays mostly empty."
+          - label: "Fit + extrapolation + widths"
+            detail: "As the first, with each arm's 1σ width drawn as two side lines from Table 2's width and dw/dR = 42 pc/kpc. Three times the lines; busier face-on."
+    responses:
+      - key: 01a1cbb2-a5dd-70cb-9f87-d1eea350cd83
+        at: 2026-11-11T17:40:45Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "Fit + extrapolation"
+  - key: 01a1cbae-346d-7107-8b88-3f893defd3e3
+    id: q-face-on
+    kind: question
+    versions:
+      - key: 01a1cbae-346d-7107-8b88-3f8e54359973
+        at: 2026-11-11T17:35:53Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "What should the face-on view do?"
+        header: "Face-on"
+        context: "The camera needs a pole-safe orbit either way: today it stops 1.15° short of the pole."
+        options:
+          - label: "Arms view preset"
+            detail: "One button, also in the URL (`view=arms`): looks down from the north Galactic pole over about 30 kpc, centred between the Sun and the Galactic Centre, hides the stars and cosmic web, shows tracers younger than 30 Myr and turns the model arms on. Recommended: 16.8 M additive-blended stars otherwise drown the Sun's surroundings."
+            recommended: true
+          - label: "Camera only"
+            detail: "A button that only turns the camera to look down from the north Galactic pole; you choose what's drawn in the Show drawer."
+    responses:
+      - key: 01a1cbb2-a5dd-70cb-9f87-d1efcbc980a3
+        at: 2026-11-11T17:40:45Z
+        revision: 3
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "Arms view preset"
+  - key: 01a1cbb2-cb04-74b3-9d53-33a5d45797f3
+    id: d-zari
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1cbb2-cb04-74b3-9d53-33a9e8f26901
+        at: 2026-11-11T17:40:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Zari et al. 2021's filtered sample traces the arms"
+        consequence: "A new VizieR source of 417,535 hot luminous stars joins the Galaxy tracers under a new object kind, named for what it is (OB and late-B/A stars, M_K < 0), with Zari's astro-kinematic distance percentiles as estimated distances beside the measured parallaxes. It joins its Gaia DR3 stars by source_id. Release 15 needs a full build, which waits for the owner's word."
+        question: 01a1cbae-346d-7107-8b88-3f867134cdd4
+  - key: 01a1cbb2-cb04-74b3-9d53-33a644e8616c
+    id: d-colour-by-kind
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1cbb2-cb04-74b3-9d53-33aa1b5b0668
+        at: 2026-11-11T17:40:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Galaxy tracers are coloured by kind of object"
+        consequence: "Each tracer kind gets one colour whatever source placed it, which replaces the per-source colour criterion and ends the masers' clash with Bailer-Jones. Hiding by source keeps its meaning (the source that placed a point)."
+        question: 01a1cbae-346d-7107-8b88-3f874829da9d
+  - key: 01a1cbb2-cb04-74b3-9d53-33a7fd059c06
+    id: d-arms-extrapolated
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1cbb2-cb04-74b3-9d53-33ab794ffe23
+        at: 2026-11-11T17:40:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Reid 2019 arms are drawn over their fit and extrapolated around the disk"
+        consequence: "Each of the 7 arms becomes two structures of a new spiral_arm kind with a new model status: the fitted β range, and the same formula carried on to Galactocentric radii of about 3–16 kpc, marked as our extrapolation. Structure files learn path geometry and a derivation from Table 2 with R0 = 8.15 kpc."
+        question: 01a1cbae-346d-7107-8b88-3f8899c9b655
+  - key: 01a1cbb2-cb04-74b3-9d53-33a8352e9df9
+    id: d-arms-view
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1cbb2-cb04-74b3-9d53-33ac3fb53b63
+        at: 2026-11-11T17:40:54Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "An arms view preset looks down on the disk"
+        consequence: "The explorer gets a pole-safe orbit and one arms view, also addressable as view=arms: face-on from the north Galactic pole over about 30 kpc, centred between the Sun and the Galactic Centre, with the stars and cosmic web hidden, tracers under 30 Myr and the model arms on."
+        question: 01a1cbae-346d-7107-8b88-3f893defd3e3

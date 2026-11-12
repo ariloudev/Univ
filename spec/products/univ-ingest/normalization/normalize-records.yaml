@@ -162,7 +162,7 @@ requirements:
       shall: "keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value."
     criteria:
       - key: 01a1c319-7860-76e8-92ac-c609c99b51a3
-        name: "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star or star-forming region."
+        name: "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region or luminous hot star."
       - key: 01a1c319-7860-76e8-92ac-c60af84ad06b
         name: "A Cepheid or RR Lyrae star keeps its pulsation type as its source publishes it."
       - key: 01a1c319-7860-76e8-92ac-c60bab2a9a0e
@@ -173,3 +173,11 @@ requirements:
         name: "A maser's parallax is kept as measured with its error, and a distance is derived from it only under the parallax rule of the ranking rule."
       - key: 01a1c319-7860-76e8-92ac-c60efaeb5601
         name: "A Cepheid or RR Lyrae star joins the object of its Gaia DR3 source by the source id its source gives, as a published cross-identification."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c915da03062a
+        name: "A luminous hot star's distance is the median of its astro-kinematic distance posterior, inferred, with the 16th and 84th percentiles as its bounds and a method that names its parallax, proper motion and prior from a model of young stars' velocities and density, after Zari et al. 2021."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c9166100490e
+        name: "A luminous hot star keeps its Gaia EDR3 parallax as a measured value, with no uncertainty reported since its source publishes none, and the parallax zero point its source computed, as published."
+      - key: 01a1cbb8-8e6a-70ed-b03e-1a63154cca1c
+        name: "No distance is derived from a luminous hot star's parallax."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91738518715
+        name: "A luminous hot star joins the object of its Gaia DR3 source by the Gaia EDR3 source id its source gives, which Gaia DR3 keeps, as a published cross-identification."

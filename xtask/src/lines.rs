@@ -6,13 +6,13 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Every `.rs` file git sees under `root`, tracked or new but not ignored, with more than `limit`
-/// lines, with its line count, in path order.
+/// Every file git sees under `root` that matches one of `pathspecs`, tracked or new but not
+/// ignored, as paths joined to `root`.
 ///
 /// # Errors
 ///
-/// Fails when git cannot list the files or a listed file cannot be read; the error names the file.
-pub fn over_limit(root: &Path, limit: usize) -> io::Result<Vec<(PathBuf, usize)>> {
+/// Fails when git cannot list the files.
+pub fn listed(root: &Path, pathspecs: &[&str]) -> io::Result<Vec<PathBuf>> {
     let listing = Command::new("git")
         .args([
             "ls-files",
@@ -21,8 +21,8 @@ pub fn over_limit(root: &Path, limit: usize) -> io::Result<Vec<(PathBuf, usize)>
             "--others",
             "--exclude-standard",
             "--",
-            "*.rs",
         ])
+        .args(pathspecs)
         .current_dir(root)
         .output()?;
     if !listing.status.success() {
@@ -32,23 +32,42 @@ pub fn over_limit(root: &Path, limit: usize) -> io::Result<Vec<(PathBuf, usize)>
             reason.trim()
         )));
     }
-    let mut found = Vec::new();
-    for name in listing
+    Ok(listing
         .stdout
         .split(|byte| *byte == 0)
         .filter(|name| !name.is_empty())
-    {
-        let path = root.join(String::from_utf8_lossy(name).as_ref());
-        let bytes = match fs::read(&path) {
-            Ok(bytes) => bytes,
-            // A tracked file deleted from the working tree is still listed.
-            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
-            Err(error) => {
-                return Err(io::Error::new(
-                    error.kind(),
-                    format!("{}: {error}", path.display()),
-                ));
-            }
+        .map(|name| root.join(String::from_utf8_lossy(name).as_ref()))
+        .collect())
+}
+
+/// The bytes of `path`, a file [`listed`]: none when it is gone, as a tracked file deleted from
+/// the working tree is still listed.
+///
+/// # Errors
+///
+/// Fails when the file cannot be read; the error names it.
+pub fn read_listed(path: &Path) -> io::Result<Option<Vec<u8>>> {
+    match fs::read(path) {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(io::Error::new(
+            error.kind(),
+            format!("{}: {error}", path.display()),
+        )),
+    }
+}
+
+/// Every `.rs` file git sees under `root`, tracked or new but not ignored, with more than `limit`
+/// lines, with its line count, in path order.
+///
+/// # Errors
+///
+/// Fails when git cannot list the files or a listed file cannot be read; the error names the file.
+pub fn over_limit(root: &Path, limit: usize) -> io::Result<Vec<(PathBuf, usize)>> {
+    let mut found = Vec::new();
+    for path in listed(root, &["*.rs"])? {
+        let Some(bytes) = read_listed(&path)? else {
+            continue;
         };
         let lines = line_count(&bytes);
         if lines > limit {

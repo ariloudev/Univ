@@ -298,8 +298,14 @@ fn the_grids_are_listed_and_an_unknown_grid_answers_404() {
 fn the_tile_format_describes_each_encoding_the_release_uses() {
     let format = json(get("/v1/tile-format"));
     assert_eq!(format["release"], 2);
-    // The fixture releases are built by today's ingest, which writes encoding version 3.
+    // The fixture releases are built by today's ingest, which writes encoding version 3, and
+    // version 4 for the Galaxy tracers' tiles.
     assert_eq!(format["encodings"][0]["version"], 3);
+    assert_eq!(format["encodings"][1]["version"], 4);
+    assert_eq!(
+        format["encodings"][1]["object_kinds"][6],
+        "luminous_hot_star"
+    );
     assert_eq!(
         format["encodings"][0]["colour_bands"],
         serde_json::json!(["BP-RP", "B-V"])
@@ -329,7 +335,15 @@ fn a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_en
         for source in m["sources"].as_array().unwrap() {
             assert!(source["credit"].is_string(), "{name}: {source}");
         }
-        assert_eq!(m["encoding"]["version"], 3);
+        // The Galaxy tracers' tiles take version 4, with each point's kind of object; every
+        // other domain keeps version 3 (build-octree-tiles).
+        if name == "galaxy_tracers" {
+            assert_eq!(m["encoding"]["version"], 4, "{name}");
+            assert_eq!(m["encoding"]["object_kinds"][6], "luminous_hot_star");
+        } else {
+            assert_eq!(m["encoding"]["version"], 3, "{name}");
+            assert!(m["encoding"].get("object_kinds").is_none(), "{name}");
+        }
         assert_eq!(
             m["encoding"]["colour_bands"],
             serde_json::json!(["BP-RP", "B-V"])

@@ -1,0 +1,51 @@
+# The statistics of release 15 (53.5 million objects, 76.2 million catalogue entries), as
+# SQLite's ANALYZE wrote them into sqlite_stat1 of its scratch database on 2026-11-12, with the
+# check indexes of xtask/src/science/indexes.rs. xtask science loads them into every scratch
+# database, the fixture's too, so that the checks are planned as for a full release wherever
+# they run (the scan guard reads those plans). Each row: table, index (none for a table that
+# has no index), and the row count followed by the average rows per value of each prefix of
+# the index's columns.
+release: 15
+rows:
+  - { table: chains, index: chains, stat: "16 1 1" }
+  - { table: designations, index: designations, stat: "76314160 2384818 1 1 1" }
+  - { table: designations, index: designations_by_object, stat: "76314160 2 2" }
+  - { table: entries, index: check_entries_by_source, stat: "76202280 2381322 2381322" }
+  - { table: entries, index: entries, stat: "76202280 2 1 1" }
+  - { table: entry_flags, index: entry_flags, stat: "52393288 2 2 1 1" }
+  - { table: entry_flags, index: entry_flags_by_value, stat: "52393288 1164296 4 4" }
+  - { table: entry_references, index: entry_references, stat: "16 1 1 1 1" }
+  - { table: grids, index: grids, stat: "4 1 1" }
+  - { table: id_replacements, index: id_replacements, stat: "2397 2 1" }
+  - { table: ids_issued, index: null, stat: "9" }
+  - { table: ids_replaced, index: null, stat: "1591" }
+  - { table: measurement_details, index: measurement_details, stat: "324411 1 1 1 1 1" }
+  - { table: measurements, index: check_measurements_by_quantity, stat: "178692648 14891054 14891054" }
+  - { table: measurements, index: measurements, stat: "178692648 4 3 2 1 1" }
+  - { table: names, index: names, stat: "14417 1 1 1 1 1" }
+  - { table: names, index: names_by_object, stat: "14417 1 1" }
+  - { table: normalizations, index: normalizations, stat: "32 1 1" }
+  - { table: object_cells, index: object_cells, stat: "53231905 13307977 8812 29 3 1 1" }
+  - { table: object_links, index: object_links, stat: "501016 2 1 1" }
+  - { table: object_relations, index: object_relations, stat: "177100 2 1 1" }
+  - { table: object_shards, index: object_shards, stat: "53546060 1 1" }
+  - { table: objects, index: check_objects_by_kind, stat: "53546060 6693258 4118928" }
+  - { table: objects, index: check_objects_by_distance, stat: "53546060 26773030 1" }
+  - { table: objects, index: check_objects_by_preferred_quantity, stat: "53546060 13386515 8924344" }
+  - { table: objects, index: check_objects_by_domain, stat: "53546060 10709212 10709212 1" }
+  - { table: objects, index: objects, stat: "53546060 1 1" }
+  - { table: payloads, index: payloads, stat: "1840 55 1 1" }
+  - { table: release_files, index: release_files, stat: "6922 1 1" }
+  - { table: release_shards, index: release_shards, stat: "15 1 1" }
+  - { table: releases, index: null, stat: "1" }
+  - { table: scale_domains, index: scale_domains, stat: "4 1 1" }
+  - { table: shard_cells, index: shard_cells, stat: "545089 36340 24777 1 1" }
+  - { table: source_details, index: source_details, stat: "37 1 1" }
+  - { table: source_reading, index: source_reading, stat: "28 1 1" }
+  - { table: source_terms, index: source_terms, stat: "6 1 1" }
+  - { table: sources, index: sources, stat: "37 1 1" }
+  - { table: sources, index: sources_by_id, stat: "37 1 1" }
+  - { table: structure_cells, index: structure_cells, stat: "1318 189 14 5 2 1 1" }
+  - { table: structure_details, index: structure_details, stat: "68 1 1" }
+  - { table: structures, index: structures, stat: "68 1 1" }
+  - { table: terms, index: terms, stat: "185 1 1" }

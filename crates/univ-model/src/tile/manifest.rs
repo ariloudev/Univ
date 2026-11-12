@@ -24,10 +24,11 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAX_TILE_BYTES, POINT_BYTES,
-    STEPS, VERSION,
+    BASE_VERSION, COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAX_TILE_BYTES,
+    OBJECT_KINDS, POINT_BYTES, STEPS, V4_POINT_BYTES, VERSION,
 };
 use crate::cosmology::Cosmology;
+use crate::object::ObjectKind;
 use crate::position::{BARYCENTRE, Frame, ICRS_CARTESIAN_NAME, Rotation, from_icrs};
 use crate::value::KindOfValue;
 
@@ -158,11 +159,20 @@ pub struct Encoding {
     /// before version 3.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub log_age_code: Option<u8>,
+    /// The kinds of object, coded by their index plus one, 0 coding none; absent before
+    /// version 4.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(
+        feature = "openapi",
+        schema(value_type = Option<Vec<ObjectKind>>, min_items = 7, max_items = 7)
+    )]
+    pub object_kinds: Option<[ObjectKind; OBJECT_KINDS.len()]>,
 }
 
-/// The encoding of this version.
+/// The encoding of [`BASE_VERSION`], which every scale domain's tiles take but the Galaxy
+/// tracers'.
 pub const ENCODING: Encoding = Encoding {
-    version: VERSION,
+    version: BASE_VERSION,
     header_bytes: HEADER_BYTES,
     point_bytes: POINT_BYTES,
     steps_per_edge: STEPS,
@@ -174,6 +184,16 @@ pub const ENCODING: Encoding = Encoding {
     kinds: KINDS,
     colour_bands: Some(COLOUR_BANDS),
     log_age_code: Some(LOG_AGE_CODE),
+    object_kinds: None,
+};
+
+/// The encoding of [`VERSION`], which the Galaxy tracers' tiles take: [`ENCODING`] with each
+/// point's kind of object.
+pub const TRACERS_ENCODING: Encoding = Encoding {
+    version: VERSION,
+    point_bytes: V4_POINT_BYTES,
+    object_kinds: Some(OBJECT_KINDS),
+    ..ENCODING
 };
 
 /// A level of the octree: its nodes' edge and its quantization step, in the unit, and the

@@ -15,18 +15,21 @@ use univ_model::ids::{Designation, SourceId};
 use univ_model::ledger::Ledger;
 use univ_model::object::{FractionalUncertainty, MeasurementRef, Object, Placement};
 use univ_model::position::Frame;
+use univ_model::release::UncertaintyColumns;
 use univ_model::release::chains::{expand, template};
+use univ_model::release::rows::Json;
 use univ_model::release::rows::{
-    DesignationRow, EntryRow, IdReplacedRow, IdsIssuedRow, MeasurementRow, NameRow, ObjectRow,
-    PARAMS, name_key,
+    DesignationRow, IdReplacedRow, IdReplacementRow, IdsIssuedRow, NameRow, ObjectRow, PARAMS,
+    name_key,
 };
-use univ_model::release::{Row, UncertaintyColumns};
 use univ_model::units::Unit;
 use univ_model::value::Quantity;
 
 use super::d1::D1Writer;
-use super::entries::{Measurements, Numbering, entry_number, entry_row, small};
+use super::entries::{Measurements, Numbering, entry_number, small, write_entry};
+use super::extras::{link_rows, membership_rows, relation_rows, replacement_rows};
 use crate::crossmatch::ReleaseObject;
+use crate::source::Membership;
 use crate::source::{ScaleDomain, SourceDefinition};
 use crate::tiles::{domain_of, name_of};
 
@@ -35,8 +38,10 @@ use crate::tiles::{domain_of, name_of};
 /// # Errors
 ///
 /// Fails when serde cannot write it as JSON.
-pub fn json<T: Serialize + ?Sized>(value: &T) -> Result<String, String> {
-    serde_json::to_string(value).map_err(|e| format!("a value cannot be written as JSON: {e}"))
+pub fn json<T: Serialize + ?Sized>(value: &T) -> Result<Json, String> {
+    serde_json::to_string(value)
+        .map(Json)
+        .map_err(|e| format!("a value cannot be written as JSON: {e}"))
 }
 
 /// A unit variant's name as serde writes it, such as `galaxy_group`.
@@ -60,20 +65,13 @@ pub struct ObjectCounts {
     pub first_not_kept: Option<String>,
 }
 
-/// The tables whose keys hold the object id, keyed unique within each object.
-const PER_OBJECT: [&str; 4] = [
-    EntryRow::TABLE.name,
-    MeasurementRow::TABLE.name,
-    DesignationRow::TABLE.name,
-    NameRow::TABLE.name,
-];
-
 /// The rows of a release's objects, as they are written.
 pub struct ObjectWriter<'a> {
     pub numbering: Numbering,
     pub counts: ObjectCounts,
     cosmology: &'a Cosmology,
     domains: HashMap<&'a SourceId, ScaleDomain>,
+    memberships: HashMap<&'a SourceId, &'a [Membership]>,
 }
 
 /// A preferred measurement as (entry, quantity, n).
@@ -135,6 +133,11 @@ impl<'a> ObjectWriter<'a> {
                 .iter()
                 .map(|d| (&d.id, d.scale_domain))
                 .collect(),
+            memberships: definitions
+                .iter()
+                .filter(|d| !d.memberships.is_empty())
+                .map(|d| (&d.id, d.memberships.as_slice()))
+                .collect(),
         }
     }
 
@@ -150,15 +153,19 @@ impl<'a> ObjectWriter<'a> {
         self.counts.placed += u64::from(row.placed);
         w.add(&row)?;
         let object = &o.object;
+        w.add_all(&link_rows(&mut self.numbering, id, &object.links)?)?;
+        w.add_all(&relation_rows(&mut self.numbering, id, &object.relations)?)?;
         for (n, e) in object.entries.iter().enumerate() {
-            let entry = entry_row(&mut self.numbering, id, &object.entries, n)?;
-            w.add(&entry)?;
+            let (entry, published) = write_entry(w, &mut self.numbering, id, &object.entries, n)?;
             let mut measurements = Measurements {
                 writer: w,
                 object_id: id,
                 entry: entry.entry,
             };
             measurements.write(&mut self.numbering, &e.entry)?;
+            if let Some(errors) = published {
+                measurements.position_errors(&mut self.numbering, errors)?;
+            }
             self.counts.entries += 1;
             *self
                 .counts
@@ -166,6 +173,11 @@ impl<'a> ObjectWriter<'a> {
                 .entry(e.entry.designation.source.clone())
                 .or_default() += 1;
         }
+        let memberships = &self.memberships;
+        let members = membership_rows(&mut self.numbering, id, &object.entries, |source| {
+            memberships.get(source).copied().unwrap_or_default()
+        });
+        w.add_all(&members)?;
         let release = self.numbering.release;
         let designations: BTreeSet<&Designation> = object.designations().collect();
         for d in designations {
@@ -191,7 +203,6 @@ impl<'a> ObjectWriter<'a> {
                 name: name.to_owned(),
             })?;
         }
-        w.forget_keys(&PER_OBJECT);
         Ok(())
     }
 
@@ -265,12 +276,6 @@ impl<'a> ObjectWriter<'a> {
             runner_up_total: None,
             runner_up_measurement: None,
             runner_up_velocity: None,
-            links: (!object.links.is_empty())
-                .then(|| json(&object.links))
-                .transpose()?,
-            relations: (!object.relations.is_empty())
-                .then(|| json(&object.relations))
-                .transpose()?,
         };
         if let Some(p) = preferred {
             let (entry, quantity, n) = reference(object, &p.measurement);
@@ -370,13 +375,21 @@ impl<'a> ObjectWriter<'a> {
     }
 }
 
+/// The id ledger's rows: the ids each release issued, each id replaced, and the ids that
+/// replaced it.
+pub struct LedgerRows {
+    pub issued: Vec<IdsIssuedRow>,
+    pub replaced: Vec<IdReplacedRow>,
+    pub replacements: Vec<IdReplacementRow>,
+}
+
 /// The whole id ledger as rows: every release's issued ids and every replacement so far, so a
 /// database that never held an earlier release still resolves its ids.
 ///
 /// # Errors
 ///
 /// Fails when a release of the ledger is not numbered, or a value cannot be written as JSON.
-pub fn ledger_rows(ledger: &Ledger) -> Result<(Vec<IdsIssuedRow>, Vec<IdReplacedRow>), String> {
+pub fn ledger_rows(ledger: &Ledger) -> Result<LedgerRows, String> {
     let number = |name: &str| {
         name.parse::<u32>()
             .map_err(|_| format!("the ledger names release {name:?}, which is not a number"))
@@ -391,18 +404,21 @@ pub fn ledger_rows(ledger: &Ledger) -> Result<(Vec<IdsIssuedRow>, Vec<IdReplaced
             });
         }
     }
-    let replaced = ledger
-        .replaced()
-        .iter()
-        .map(|r| {
-            let by: Vec<u64> = r.replaced_by.iter().map(|id| id.get()).collect();
-            Ok(IdReplacedRow {
-                id: r.id.get(),
-                release: number(&r.release)?,
-                change: snake(&r.change),
-                replaced_by: json(&by)?,
-            })
-        })
-        .collect::<Result<_, String>>()?;
-    Ok((issued, replaced))
+    let mut replaced = Vec::new();
+    let mut replacements = Vec::new();
+    for r in ledger.replaced() {
+        let release = number(&r.release)?;
+        let by: Vec<u64> = r.replaced_by.iter().map(|id| id.get()).collect();
+        replacements.extend(replacement_rows(r.id.get(), release, &by));
+        replaced.push(IdReplacedRow {
+            id: r.id.get(),
+            release,
+            change: snake(&r.change),
+        });
+    }
+    Ok(LedgerRows {
+        issued,
+        replaced,
+        replacements,
+    })
 }

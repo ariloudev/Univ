@@ -204,3 +204,37 @@ fn an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_asi
     assert_eq!(preferred.decided, Decided::Uncertainty);
     assert!(place(&mut object, &Release::planck_2018(), &ranking_rules()).is_some());
 }
+
+#[test]
+fn a_luminous_hot_star_is_placed_by_its_gaia_parallax_before_its_inferred_distance() {
+    // SIMULATED: Zari et al. 2021's EDR3 52581364756139392 at its recorded 0.686 kpc, with a
+    // symmetric 16 pc standing in for its 16th to 84th percentiles, beside the same star in
+    // Gaia DR3 at its recorded 1.4224 mas with a SIMULATED error of 0.1 mas (7%). The
+    // astro-kinematic distance is inferred, so the measured parallax places the star although
+    // it is the less precise of the two (normalize-records; choose-the-preferred-measurement).
+    let id = "52581364756139392";
+    let mut zari = with_distance(
+        entry("zari-2021-luminous-hot-stars", id, 63.805_085, 22.097_121),
+        0.000_686,
+        Some(0.000_016),
+        (DistanceKind::Geometric, Method::AstroKinematic),
+    );
+    zari.distances[0].kind_of_value = KindOfValue::Inferred;
+    let gaia = with_parallax(
+        entry("gaia-dr3-bright", id, 63.805_085, 22.097_121),
+        1.4224,
+        0.1,
+    );
+    let joined = ranked(vec![gaia, zari.clone()]);
+    let preferred = joined.preferred_distance.unwrap();
+    assert!(
+        matches!(preferred.measurement, MeasurementRef::Parallax { .. }),
+        "{preferred:?}"
+    );
+    // Alone, the star is placed by its inferred distance.
+    let alone = ranked(vec![zari]).preferred_distance.unwrap();
+    assert!(
+        matches!(alone.measurement, MeasurementRef::Distance { .. }),
+        "{alone:?}"
+    );
+}

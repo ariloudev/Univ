@@ -6,7 +6,7 @@ import type { Rotations } from "../api/schemas.ts";
 import { type StructureDetail, type StructureSummary, structureOf, structuresOf } from "../api/structures.ts";
 import { viewingDistance } from "../scene/controls.ts";
 import type { Lines, Rgba } from "../scene/drawing.ts";
-import { FLOW_LINE_WIDTH, FLOW_PIXELS, structureColour } from "../scene/kinds.ts";
+import { FLOW_LINE_WIDTH, FLOW_PIXELS, drawnBeneath, structureColour } from "../scene/kinds.ts";
 import { FLOW_REACH } from "../scene/outline.ts";
 import { type StructureDrawing, drawingOf } from "../scene/structures.ts";
 import { ORIGIN, type Vec3, norm, sub } from "../scene/vec.ts";
@@ -46,7 +46,7 @@ export function rendered(drawing: StructureDrawing): { lines: Lines | undefined;
   // The symbol is about the structure's own centre, which it has wherever it has one.
   const symbol = drawing.symbol === undefined ? undefined : { offsets: offsetsFrom(ORIGIN, drawing.symbol), pixels: FLOW_PIXELS, maxWidth: FLOW_LINE_WIDTH };
   return {
-    lines: segments.length === 0 && symbol === undefined ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour, symbol },
+    lines: segments.length === 0 && symbol === undefined ? undefined : { centre, offsets: offsetsFrom(centre, segments), colour, symbol, beneath: drawnBeneath(drawing.kind) },
     markers: markers.length === 0 ? undefined : { centre, offsets: offsetsFrom(centre, markers), colour: structureColour(drawing.kind, false) },
   };
 }
