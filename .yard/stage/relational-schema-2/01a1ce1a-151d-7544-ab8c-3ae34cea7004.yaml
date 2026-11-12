@@ -86,6 +86,15 @@ blocks:
         title: "T9 Every science check reads indexed rows"
         detail: "Rewritten onto entry_flags, entry_references and memberships; counts-by-scale-domain searches each domain; new check masers-members-of-their-arms (182). Every repository check passes the guard on the fixture; the run on the migrated release 15 remains."
         state: active
+      - key: 01a1ce4e-c566-74db-ae1f-f74bbdc97e32
+        at: 2026-11-12T05:50:31Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T9 Every science check reads indexed rows"
+        detail: "On migrated release 15: 52 checks in 210 s (742 s on schema 7). Same findings as release 15's own run; the maser membership checks fail as expected until release 16 writes memberships."
+        state: done
   - key: 01a1ce1a-151d-7544-ab8c-3ae7c460eb87
     id: t9b
     kind: task
@@ -203,3 +212,26 @@ blocks:
           | `->` with a parameter on its right went unchecked | /code-review | checked | fixed |
           | Duplicated code: listed-file read, `:release` binding, JSON-column filter, paren scanners | /simplify (reuse, simplification) | shared helpers | fixed |
           | A SEARCH that barely narrows (e.g. `placed = 1`) passes the guard | /simplify (efficiency), /code-review | to judge from the timings of the full run on release 15 | open |
+      - key: 01a1ce4e-c566-74db-ae1f-f74c43e93017
+        at: 2026-11-12T05:50:31Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | 24 checks scanned entries, objects or measurements: D1 indexes none of them by source, quantity, domain or kind | the scan guard on the fixture release | indexes made in the science scratch database only | fixed |
+          | Two checks searched the JSON text with `instr`, which the SQL gate cannot see | the plan test: no such column | rewritten onto entry_flags and entry_references | fixed |
+          | The arm-distance check would pass on a release with no memberships | review of the rewrite | `masers-members-of-their-arms` (181) and `masers-on-the-arm-their-code-names` | fixed |
+          | `migrate` said "Migrated the store to shared rows" after 7→8 | wave 1 | `Outcome::Migrated { shared, rows }` | fixed |
+          | The guard read plan text by alias: automatic indexes and unresolved aliases passed | /simplify, /code-review | guard reads bytecode | fixed |
+          | Check indexes named by position | /code-review | fixed names, remade when their definition changes, stale ones dropped | fixed |
+          | Researched-star check no longer required the first reference | /code-review | `r.n = 0` | fixed |
+          | Census by terms hid objects of an unknown domain | /code-review | distinct domains walked through the index | fixed |
+          | `->` with a parameter went unchecked | /code-review | checked | fixed |
+          | Duplicated helpers | /simplify | shared | fixed |
+          | A search on a key most rows share passed the guard and ran slower than a scan: no-negative-or-missing-distances 4.6 → 97 s, tracers-in-tracer-domain 22 → 172 s, masers 95 s | the run on release 15 | release 15's statistics loaded into every scratch database; a partial index; `CROSS JOIN`/`INDEXED BY`. Now 0.0, 0.9 and 0.0 s; all checks 210 s | fixed |
+          | Table 1 gives two masers (NGC281, NGC281W) the Name G123.06-06.30; the release keeps one entry | the arm check on release 15 | count set to 181; the ingest fold is older than this wave | noted |
+          | `fingerprints` errors on release 15: its manifest names schema 7's columns | the run on release 15 | none: release 16's manifest is of schema 8 | noted |
