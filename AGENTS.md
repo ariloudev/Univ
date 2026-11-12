@@ -45,11 +45,20 @@ Run them from this directory.
   first, and must pass before a merge. `loft verify` runs on the publish branch only, and the
   summary names any gate it skipped.
 - `cargo xtask lines` lists every `.rs` file over 500 lines.
+- `cargo xtask json` refuses JSON at scale, and runs in the gate: a JSON column in a table of the
+  release schema per object or per catalogue entry, and a JSON function (`json_extract`,
+  `json_each`, `->>`…) in the project's SQL (Rust string literals, `rules/*.yaml`, `.sql` files)
+  applied to anything but a bound parameter, a literal, a `json_each`'s `value`, or a JSON column
+  of a table per release, source, structure or chain. It names each by file and line.
 - `cargo xtask science <release-dir>` loads a built release's D1 rows into a scratch SQLite
   database and runs the cited checks of `rules/science-checks.yaml`, one line each; it exits
   non-zero on any FAIL. `--db <file>` keeps the database in a file and reuses it on the next run.
   `--store <wrangler-dir>` reads the release's rows from the local D1 it was published to, rather
   than from the builds of its chain; a release built as a change needs one or the other.
+  Before each query or report it reads the query's plan, and fails a check that scans a table per
+  object or per catalogue entry, or searches it by the release alone (the scan guard). The
+  scratch database has indexes of its own for the checks (`CHECK_INDEXES` in
+  `xtask/src/science/load.rs`), which D1 does not keep.
 - `cargo xtask integration` runs Univ Server's end-to-end tests: it writes the fixture state
   (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of
@@ -135,6 +144,15 @@ Run them from this directory.
   zero.
 - **Frames and epochs.** Every position names its frame and epoch. Galactic coordinates follow
   the Hipparcos catalogue (ESA 1997); supergalactic follow Lahav et al. 2000.
+- **No JSON at scale.** A table whose rows grow with a release's objects or catalogue entries
+  holds no JSON: a value of an object or an entry that a query may read is a column, or rows of a
+  table of its own indexed by what it is found by (`entry_flags`, `entry_references`,
+  `memberships`). JSON functions apply only to bound parameters and to tables per release,
+  source, structure or chain. A science check searches those tables through an index rather than
+  scanning them; one that cannot, such as a census, searches each group (a scale domain, a
+  source) in turn. `cargo xtask json` and the scan guard of `xtask science` enforce it. Release
+  15's maser check read `json_extract(flags, '$.Arm')` over 76 million entries for more than 20
+  minutes.
 - **YAML for internal data.** Source definitions, structure files, matching and ranking rules,
   provenance records, id ledgers and release manifests are YAML. JSON is used only where the spec
   fixes it for clients: the API and tile manifests.
