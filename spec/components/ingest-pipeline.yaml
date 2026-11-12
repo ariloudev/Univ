@@ -28,3 +28,6 @@ components:
           requiredValue: "10 GB"
         conservationKind: cap
         verificationFate: monitored
+      - key: 01a1cca1-1789-7424-a53b-b6caaaba436f
+        name: "A science check of a release shall read each table whose rows grow with the release's objects through an index, and fail where its query plan scans one of them whole."
+        verificationFate: proved

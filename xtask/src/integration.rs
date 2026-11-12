@@ -141,6 +141,14 @@ pub(crate) fn prepared_real_state(root: &Path) -> Option<std::path::PathBuf> {
         );
         return None;
     }
+    if let Some(held) = crate::schema7::json_held(&state) {
+        eprintln!(
+            "{held}: JSON of D1 schema 7, which the Worker of schema 8 does not read; run \
+             `univ-ingest migrate` on a clone of {} and swap it in first",
+            state.display()
+        );
+        return None;
+    }
     (release_tables(root, &state) && migrate(root, &state)).then_some(state)
 }
 

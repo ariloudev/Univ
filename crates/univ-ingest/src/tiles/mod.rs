@@ -43,7 +43,7 @@ use thiserror::Error;
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::{ObjectId, SourceId};
 use univ_model::position::Frame;
-use univ_model::tile::{MAX_TILE_BYTES, NodeBox, TileError, TilePoint, encode};
+use univ_model::tile::{MAX_TILE_BYTES, NodeBox, TileError, TilePoint, encode_as};
 
 pub use domain::{
     Assigned, DOMAINS, DomainPoint, DomainPoints, NEARBY_GALAXIES_DEPTH_MPC, assign, colour_of,
@@ -51,7 +51,8 @@ pub use domain::{
 };
 pub use manifest::{
     Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, GENERATOR, Level, MANIFEST_VERSION,
-    NodeEntry, Rotations, Sampling, SourceEntry, SourceRole, TileManifest, rotations, sampling,
+    NodeEntry, Rotations, Sampling, SourceEntry, SourceRole, TRACERS_ENCODING, TileManifest,
+    rotations, sampling,
 };
 pub use octree::{Node, Octree, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
@@ -301,9 +302,17 @@ pub fn build_domain(
         error,
     };
     let sources = source_table(name, points, sources, context.definitions)?;
+    let encoding = encoding_of(domain);
     let root = root_box(points).map_err(|e| encode_error("r", e))?;
     let mut rng = generator(context.rules.seed, stream);
-    let tree = octree::build(name, points, root, context.rules, &mut rng)?;
+    let tree = octree::build(
+        name,
+        encoding.point_bytes,
+        points,
+        root,
+        context.rules,
+        &mut rng,
+    )?;
 
     let mut built = Vec::with_capacity(tree.nodes.len());
     for node in tree.nodes {
@@ -318,11 +327,12 @@ pub fn build_domain(
                     source: p.source,
                     kind: p.kind,
                     value: p.value,
+                    object: p.object,
                 }
             })
             .collect();
-        let tile =
-            encode(&node.bounds, &tile_points).map_err(|e| encode_error(&node.address, e))?;
+        let tile = encode_as(encoding.version, &node.bounds, &tile_points)
+            .map_err(|e| encode_error(&node.address, e))?;
         built.push(BuiltNode {
             sha256: sha256(&tile),
             points: tile_points.len(),
@@ -349,6 +359,18 @@ pub fn build_domain(
         manifest,
         json,
     })
+}
+
+/// The encoding of `domain`'s tiles: version 4, with each point's kind of object, for the
+/// Galaxy tracers; version 3 for every other domain, so that their files stay as they were
+/// (build-octree-tiles).
+#[must_use]
+pub fn encoding_of(domain: ScaleDomain) -> Encoding {
+    if domain == ScaleDomain::GalaxyTracers {
+        TRACERS_ENCODING
+    } else {
+        ENCODING
+    }
 }
 
 /// The manifest of a domain's built nodes.
@@ -388,7 +410,7 @@ fn manifest_of(
         unit: Cow::Borrowed(unit_symbol(domain)),
         cosmology: context.cosmology.clone(),
         rotations: rotations()?,
-        encoding: ENCODING,
+        encoding: encoding_of(domain),
         levels,
         sampling: sampling(context.rules, stream),
         points: points.len(),

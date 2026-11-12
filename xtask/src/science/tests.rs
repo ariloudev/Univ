@@ -8,7 +8,7 @@ use std::path::Path;
 use fixture::build;
 use univ_model::release::{ReleaseManifest, TABLES, keys};
 
-use super::{fingerprints, load, num, rules, science};
+use super::{fingerprints, indexes, load, num, plan, rules, science};
 
 const CITE: &str = "cite: [{ paper: P, quote: Q, fetched: F }]";
 
@@ -23,13 +23,15 @@ fn checks() -> String {
         "{ id: pairs, title: t, severity: fail, select: { kind: close_pairs, scale_domains: [nearby_galaxies], kinds: [body], radius_arcmin: 1.0 }, expect: { equals: 0 }, CITE }",
         "{ id: pairs-excepted, title: t, severity: fail, select: { kind: close_pairs, scale_domains: [nearby_galaxies], kinds: [body], radius_arcmin: 1.0, exceptions: [{ source: gal-b, identifier: B1, reason: r }] }, expect: { equals: 0 }, CITE }",
         "{ id: inside-1, title: t, severity: fail, select: { kind: query, sql: \"SELECT id FROM objects WHERE release = :release AND placed = 1 AND distance_mpc < 1 AND scale_domain = term('nearby_galaxies')\", exceptions: [{ source: gal-a, identifier: A1, reason: r }] }, expect: { equals: 1 }, CITE }",
-        "{ id: share, title: t, severity: fail, select: { kind: query, scalar: true, sql: \"SELECT avg(source = source('gal-a')) FROM entries WHERE release = :release\" }, expect: { at_least: 0.6, at_most: 0.7 }, CITE }",
+        "{ id: share, title: t, severity: fail, select: { kind: query, scalar: true, sql: \"SELECT avg(source = source('gal-a')) FROM entries WHERE release = :release AND source IN (SELECT n FROM sources WHERE release = :release)\" }, expect: { at_least: 0.6, at_most: 0.7 }, CITE }",
         "{ id: grid, title: t, severity: fail, select: { kind: grid_labels, grid: g, field: 0, frame: supergalactic, unit: megaparsec_over_h, points: [{ name: w, at: [-1, -1, -1], label: 1 }, { name: e, at: [1, -1, 1], label: 2 }] }, expect: { equals: 0 }, CITE }",
         "{ id: tile, title: t, severity: fail, select: { kind: largest_tile }, expect: { at_most: 100 }, CITE }",
         "{ id: budget, title: t, severity: fail, select: { kind: d1_estimate }, expect: { at_most: 4500000000 }, CITE }",
         "{ id: fingerprints, title: t, severity: fail, select: { kind: fingerprints }, expect: { equals: 0 }, CITE }",
         "{ id: missing, title: t, severity: fail, select: { kind: object_distance, object: { source: gal-a, identifier: nope } }, expect: { value: 1, absolute: 1 }, CITE }",
-        "{ id: report, title: t, severity: report, select: { kind: report, sql: \"SELECT placed, count(*) AS n FROM objects WHERE release = :release GROUP BY 1\" }, CITE }",
+        "{ id: report, title: t, severity: report, select: { kind: report, sql: \"SELECT placed, count(*) AS n FROM objects WHERE release = :release AND placed = 0 GROUP BY 1\" }, CITE }",
+        // Fails under the scan guard: nothing indexes objects by x, so the plan reads them whole.
+        "{ id: scan, title: t, severity: fail, select: { kind: query, sql: \"SELECT id FROM objects WHERE release = :release AND x > 0\" }, expect: { equals: 2 }, CITE }",
     ];
     let body: Vec<String> = checks
         .iter()
@@ -73,6 +75,7 @@ fn each_kind_of_check_is_judged_against_the_fixture_release() {
         ("fingerprints", "PASS"),
         ("missing", "FAIL"),
         ("report", "INFO"),
+        ("scan", "FAIL"),
     ];
     for (id, s) in want {
         assert_eq!(status(id), s, "{id} in\n{out}");
@@ -83,6 +86,7 @@ fn each_kind_of_check_is_judged_against_the_fixture_release() {
         "{out}"
     );
     assert!(out.contains("placed=0 n=1"), "{out}");
+    assert!(out.contains("objects is read whole"), "{out}");
     assert!(
         out.lines()
             .next()
@@ -93,7 +97,7 @@ fn each_kind_of_check_is_judged_against_the_fixture_release() {
         out.lines()
             .last()
             .unwrap()
-            .contains("13 checks: 9 PASS, 2 FAIL, 1 CONCERN, 1 INFO")
+            .contains("14 checks: 9 PASS, 3 FAIL, 1 CONCERN, 1 INFO")
     );
 }
 
@@ -108,12 +112,23 @@ fn a_row_altered_after_the_build_is_found_by_the_fingerprints() {
     assert_eq!(load::load(&db, dir.path(), &manifest).unwrap(), 2);
     let (tables, found) = fingerprints::differences(&db, &manifest).unwrap();
     assert_eq!((tables, found.len()), (TABLES.len(), 0), "{found:?}");
-    // A distance moved, and a term renamed to another of the same length.
-    db.execute_batch(
-        "UPDATE objects SET distance_mpc = 0.781 WHERE id = 1; \
-         UPDATE terms SET term = 'cepheidz' WHERE term = 'cepheids';",
-    )
-    .unwrap();
+    // A distance moved, and a term renamed to another of the same length, in the rows as
+    // they reach the loader: the fingerprints are those of the rows read, recorded as they are
+    // loaded.
+    let last = manifest
+        .files
+        .iter()
+        .rfind(|f| f.target == univ_model::release::manifest::Target::D1)
+        .unwrap();
+    let path = dir.path().join(&last.path);
+    let mut sql = std::fs::read_to_string(&path).unwrap();
+    sql.push_str(
+        "\nUPDATE objects SET distance_mpc = 0.781 WHERE id = 1; \
+         UPDATE terms SET term = 'cepheidz' WHERE term = 'cepheids';\n",
+    );
+    std::fs::write(&path, sql).unwrap();
+    let (db, _) = load::open(None).unwrap();
+    load::load(&db, dir.path(), &manifest).unwrap();
     let (_, found) = fingerprints::differences(&db, &manifest).unwrap();
     assert!(
         found.iter().any(|f| f.starts_with("objects.distance_mpc")),
@@ -208,7 +223,7 @@ fn a_query_check_shows_as_many_rows_as_it_asks() {
     let rules = dir.path().join("checks.yaml");
     let check = |id: &str, shown: &str| {
         format!(
-            "  - {{ id: {id}, title: t, severity: concern, select: {{ kind: query, sql: \"SELECT id, distance_mpc FROM objects WHERE release = :release ORDER BY id\"{shown} }}, expect: {{ equals: 0 }}, {CITE} }}"
+            "  - {{ id: {id}, title: t, severity: concern, select: {{ kind: query, sql: \"SELECT id, distance_mpc FROM objects WHERE release = :release AND placed = 1 ORDER BY id\"{shown} }}, expect: {{ equals: 0 }}, {CITE} }}"
         )
     };
     let body = format!(
@@ -272,6 +287,28 @@ fn a_release_written_as_a_change_is_loaded_whole_through_its_parent() {
         count("SELECT COUNT(*) FROM objects WHERE release = 2 AND retired IS NULL"),
         before - 1
     );
+    // Fingerprinted as release 2 holds its rows, before the load took each as its own: every
+    // one still of release 1, and the lookup tables as release 1 wrote them.
+    let recorded = |table: &str, column: &str| -> f64 {
+        db.query_row(
+            "SELECT total FROM science_fingerprints WHERE tbl = ?1 AND col = ?2",
+            [table, column],
+            |r| r.get(0),
+        )
+        .unwrap()
+    };
+    #[expect(clippy::cast_precision_loss, reason = "a handful of objects")]
+    let kept = (before - 1) as f64;
+    assert!((recorded("objects", "release") - kept).abs() < 0.5);
+    let digest: String = db
+        .query_row(
+            "SELECT sha256 FROM science_contents WHERE tbl = 'terms'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let terms = parent.table_estimate("terms").unwrap();
+    assert_eq!(Some(digest), terms.content_sha256);
 
     // With its parent's build gone, as after a prune, it is refused, naming why.
     std::fs::remove_file(first.join(keys::MANIFEST)).unwrap();
@@ -315,5 +352,59 @@ fn the_age_checks_of_the_repository_run_against_the_fixture_release() {
     assert!(
         out.contains("2 checks: 1 PASS, 0 FAIL, 0 CONCERN, 1 INFO"),
         "{out}"
+    );
+}
+
+#[test]
+fn every_query_of_the_repository_s_checks_searches_its_tables_at_scale_on_the_fixture_release() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
+    let file = rules::read(&root.join("rules/science-checks.yaml")).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    build(dir.path());
+    let text = std::fs::read_to_string(dir.path().join(keys::MANIFEST)).unwrap();
+    let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
+    let (db, _) = load::open(None).unwrap();
+    load::load(&db, dir.path(), &manifest).unwrap();
+    indexes::index(&db, &super::statistics()).unwrap();
+    load::register(&db, manifest.release, &manifest.cosmology).unwrap();
+    let mut whole = Vec::new();
+    for check in &file.checks {
+        let (rules::Select::Query { sql, .. } | rules::Select::Report { sql }) = &check.select
+        else {
+            continue;
+        };
+        match plan::whole_reads(&db, sql, manifest.release) {
+            Ok(found) => whole.extend(found.into_iter().map(|f| format!("{}: {f}", check.id))),
+            Err(e) => whole.push(format!("{}: cannot be planned: {e}", check.id)),
+        }
+    }
+    assert!(whole.is_empty(), "{}", whole.join("\n"));
+}
+
+#[test]
+fn a_join_on_a_column_no_index_holds_reads_its_table_whole_whatever_its_alias() {
+    let dir = tempfile::tempdir().unwrap();
+    build(dir.path());
+    let text = std::fs::read_to_string(dir.path().join(keys::MANIFEST)).unwrap();
+    let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
+    let (db, _) = load::open(None).unwrap();
+    load::load(&db, dir.path(), &manifest).unwrap();
+    indexes::index(&db, &super::statistics()).unwrap();
+    load::register(&db, manifest.release, &manifest.cosmology).unwrap();
+    // An automatic index on objects.x, or a scan of it: either reads every object. The alias e
+    // is given again to designations in the subquery, which the bytecode does not care about.
+    let sql = "SELECT e.object_id FROM entries e JOIN objects o ON o.release = e.release \
+               AND o.x = e.object_id WHERE e.release = :release AND e.source = source('gal-a') \
+               AND EXISTS (SELECT 1 FROM designations e WHERE e.object_id = o.id)";
+    let whole = plan::whole_reads(&db, sql, manifest.release).unwrap();
+    assert!(
+        whole.iter().any(|w| w.starts_with("objects is read whole")),
+        "{whole:?}"
+    );
+    let search = "SELECT e.object_id FROM entries e WHERE e.release = :release \
+                  AND e.source = source('gal-a')";
+    assert_eq!(
+        plan::whole_reads(&db, search, manifest.release).unwrap(),
+        Vec::<String>::new()
     );
 }

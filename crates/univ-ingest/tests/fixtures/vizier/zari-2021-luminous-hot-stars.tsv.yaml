@@ -1,0 +1,5 @@
+source: zari-2021-luminous-hot-stars
+url: http://vizier.idia.ac.za/viz-bin/asu-tsv?-source=J%2FA%2BA%2F650%2FA112%2Ffiltered&-out=GaiaEDR3%2CRA_ICRS%2CDE_ICRS%2CPlx%2Cd50kin%2Cd16kin%2Cd84kin%2CZeroPoint%2CProbv1&-out.max=5&GaiaEDR3=0..144115188075855871
+retrieved: 2026-11-11T18:04:36Z
+sha256: 1648584c34ee477760c9bc0d6b75d1960a2a81f1b663ade76cd843267a7633ae
+note: the first slice's query cut to 5 rows

@@ -40,8 +40,8 @@ use univ_model::value::{Quantity, Uncertainty};
 
 use crate::crossmatch::MemberPlacement;
 use crate::structures::{
-    AxisBox, Cited, Coordinates, Radial, Sides, SkyBox, SphereSize, Structure, StructureGeometry,
-    StructurePrimitive,
+    AxisBox, Cited, Coordinates, LogSpiral, Radial, Sides, SkyBox, SphereSize, Structure,
+    StructureGeometry, StructurePrimitive,
 };
 
 /// The samples along each side of a sky region's longitude and latitude ranges.
@@ -87,15 +87,14 @@ pub fn index_bounds(
         Some(StructureGeometry::SkyRegion(b)) => sky_region(b, release),
         Some(StructureGeometry::AxisBox(b)) => {
             let primitive = axis_box(b, release)?.into();
-            Shape::new(
-                Frame::Icrs,
-                Unit::Megaparsec,
-                Geometry::Primitive { primitive },
-            )
-            .map_err(|e| format!("its box cannot stand: {e}"))?
-            .bounds_in(Frame::Icrs)
-            .ok_or_else(|| "its box has no bounds".to_owned())
+            bounds_of(Geometry::Primitive { primitive }, "box")
         }
+        Some(StructureGeometry::LogSpiral(l)) => bounds_of(
+            Geometry::Path {
+                points: spiral_path(l)?,
+            },
+            "path",
+        ),
         None => match &structure.position {
             Some(at) => point(at, release, correction),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -133,6 +132,13 @@ pub fn centre(
             Ok(between(b.frame, Frame::Icrs).apply(scaled(u, f64::midpoint(near, far))))
         }
         Some(StructureGeometry::AxisBox(b)) => axis_box(b, release).map(|placed| placed.centre),
+        // The middle point of its path, so that its name lies on the arm.
+        Some(StructureGeometry::LogSpiral(l)) => {
+            let path = spiral_path(l)?;
+            path.get(path.len() / 2)
+                .copied()
+                .ok_or_else(|| "its path holds no point".to_owned())
+        }
         None => match &structure.position {
             Some(at) => place(at, release, correction).map(|(c, _)| c),
             None => Err("it publishes no position or geometry".to_owned()),
@@ -446,4 +452,30 @@ pub fn sky_region(region: &SkyBox, release: &Release) -> Result<Aabb, String> {
     let max: Vec3 =
         std::array::from_fn(|k| along(hi[k]).into_iter().fold(f64::NEG_INFINITY, f64::max) + pad);
     Ok(Aabb { min, max })
+}
+
+/// The bounds of `geometry`, in ICRS megaparsecs; `what` names it in a refusal.
+fn bounds_of(geometry: Geometry, what: &str) -> Result<Aabb, String> {
+    Shape::new(Frame::Icrs, Unit::Megaparsec, geometry)
+        .map_err(|e| format!("its {what} cannot stand: {e}"))?
+        .bounds_in(Frame::Icrs)
+        .ok_or_else(|| format!("its {what} has no bounds"))
+}
+
+/// A log spiral's path in the ICRS about the barycentre, in Mpc: its heliocentric galactic
+/// points turned into the ICRS, the Sun's offset from the barycentre, under 0.01 AU, left aside.
+///
+/// # Errors
+///
+/// Fails when kiloparsecs do not convert to megaparsecs.
+pub fn spiral_path(spiral: &LogSpiral) -> Result<Vec<Vec3>, String> {
+    let to_icrs = between(Frame::Galactic, Frame::Icrs);
+    let per_kpc = Unit::Kiloparsec
+        .factor_to(Unit::Megaparsec)
+        .map_err(|e| e.to_string())?;
+    Ok(spiral
+        .path_galactic_kpc()
+        .into_iter()
+        .map(|p| scaled(to_icrs.apply(p), per_kpc))
+        .collect())
 }

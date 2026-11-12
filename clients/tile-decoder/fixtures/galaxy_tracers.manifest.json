@@ -55,9 +55,9 @@
     "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
   },
   "encoding": {
-    "version": 3,
+    "version": 4,
     "header_bytes": 48,
-    "point_bytes": 20,
+    "point_bytes": 21,
     "steps_per_edge": 65536,
     "max_tile_bytes": 1048576,
     "point_source": "the index in sources of the source of the point's preferred distance, which gives its kind of value too",
@@ -71,7 +71,16 @@
       "BP-RP",
       "B-V"
     ],
-    "log_age_code": 3
+    "log_age_code": 3,
+    "object_kinds": [
+      "galaxy_group",
+      "open_cluster",
+      "globular_cluster",
+      "classical_cepheid",
+      "rr_lyrae_star",
+      "star_forming_region",
+      "luminous_hot_star"
+    ]
   },
   "levels": [],
   "sampling": {

@@ -25,6 +25,17 @@ use crate::releases::{RELEASE_PARAM, pinned, resolve};
 use crate::shards::{SHARD_OF, shard_in};
 use futures_util::future::try_join;
 
+/// The read of every row of object `?2` in table `$table`, valid in release `?1`.
+macro_rules! per_object {
+    ($table:literal) => {
+        concat!(
+            "SELECT * FROM ",
+            $table,
+            " WHERE object_id = ?2 AND ",
+            valid_in!("", "?1")
+        )
+    };
+}
 /// Reads one object of the release the request reads, by its id.
 ///
 /// # Errors
@@ -212,7 +223,7 @@ async fn record<B: Backend>(
         };
         (shard, Some(read.next().unwrap_or_default()))
     };
-    let statements: [(u32, &str, &[serde_json::Value]); 4] = [
+    let statements: [(u32, &str, &[serde_json::Value]); 9] = [
         (
             shard,
             concat!(
@@ -221,22 +232,13 @@ async fn record<B: Backend>(
             ),
             &params,
         ),
-        (
-            shard,
-            concat!(
-                "SELECT * FROM entries WHERE object_id = ?2 AND ",
-                valid_in!("", "?1")
-            ),
-            &params,
-        ),
-        (
-            shard,
-            concat!(
-                "SELECT * FROM measurements WHERE object_id = ?2 AND ",
-                valid_in!("", "?1")
-            ),
-            &params,
-        ),
+        (shard, per_object!("entries"), &params),
+        (shard, per_object!("measurements"), &params),
+        (shard, per_object!("measurement_details"), &params),
+        (shard, per_object!("entry_flags"), &params),
+        (shard, per_object!("entry_references"), &params),
+        (shard, per_object!("object_links"), &params),
+        (shard, per_object!("object_relations"), &params),
         (
             shard,
             concat!(
@@ -256,13 +258,22 @@ async fn record<B: Backend>(
             .await?
         }
     };
-    let [objects, entries, measurements, designations]: [Vec<Row>; 4] =
-        batch.try_into().map_err(|_| {
-            Problem::new(
-                ProblemType::InternalError,
-                "An object shard answered a batch of four reads with another number.",
-            )
-        })?;
+    let [
+        objects,
+        entries,
+        measurements,
+        measurement_details,
+        entry_flags,
+        entry_references,
+        links,
+        relations,
+        designations,
+    ]: [Vec<Row>; 9] = batch.try_into().map_err(|_| {
+        Problem::new(
+            ProblemType::InternalError,
+            "An object shard answered a batch of nine reads with another number.",
+        )
+    })?;
     let Some(object) = first(objects) else {
         return Err(Problem::new(
             ProblemType::InternalError,
@@ -274,11 +285,18 @@ async fn record<B: Backend>(
     let vocabulary = vocabulary(backend, release).await?;
     let record = read::object(
         &vocabulary,
-        &object,
-        &entries,
-        &measurements,
-        &designations,
-        &names,
+        &read::ObjectRows {
+            object: &object,
+            entries: &entries,
+            measurements: &measurements,
+            measurement_details: &measurement_details,
+            entry_flags: &entry_flags,
+            entry_references: &entry_references,
+            links: &links,
+            relations: &relations,
+            designations: &designations,
+            names: &names,
+        },
     )
     .map_err(|error| {
         Problem::new(

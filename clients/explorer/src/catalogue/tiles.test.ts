@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ExplorerManifest } from "../api/schemas.ts";
 import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures.ts";
 import { starBytes } from "../scene/starColour.ts";
-import { tracerBytes } from "../scene/tracers.ts";
+import { objectIndex, tracerBytes } from "../scene/tracers.ts";
 import { shuffled } from "./shuffle.ts";
 import { MPC_PER, TileFailed, batchOf, tilesOf } from "./tiles.ts";
 
@@ -117,8 +117,30 @@ describe("a tile", () => {
     expect(before.kinds[i]).not.toBe(after.kinds[j]);
   });
 
-  it("gives each point of the Galaxy's tracers its source's colour", async () => {
-    // A tile of another domain read as the tracers': its points coloured by their sources.
+  it("gives each point of the Galaxy's tracers its kind of object's colour, whichever source placed it", async () => {
+    // The SIMULATED tracers domain's version 4 tiles: every ninth point of no kind.
+    const domain = domainOf("simulated_tracers");
+    const tracers = { ...domain, name: "galaxy_tracers" };
+    let none = 0;
+    const kinds = new Set<number>();
+    for (const raw of fixtureTiles("simulated_tracers")) {
+      const tile = domain.tiles.find((t) => t.address === raw.address);
+      if (tile === undefined) throw new Error("no fixture tile");
+      const batch = await batchOf(tracers, tile, bytesOf(raw.hex));
+      const objects = batch.objects ?? new Uint8Array();
+      expect(objects.length).toBe(batch.ids.length);
+      expect([...(batch.colours ?? [])]).toEqual([...tracerBytes(objects)]);
+      const at = indexById(batch);
+      for (const p of raw.points) expect(objects[at(p.id)]).toBe(objectIndex(p.object_kind ?? undefined));
+      none += objects.filter((o) => o === 0).length;
+      for (const o of objects) kinds.add(o);
+    }
+    expect(none).toBeGreaterThan(0);
+    expect(kinds.size).toBeGreaterThan(2);
+  });
+
+  it("draws a tracer of a tile that gives no kind of object in the unknown kind's colour, and gives no other domain's points kinds", async () => {
+    // A version 3 tile of another domain read as the tracers'.
     const domain = domainOf("cosmic_web");
     const tracers = { ...domain, name: "galaxy_tracers" };
     const raw = fixtureTiles("cosmic_web")[0];
@@ -126,8 +148,11 @@ describe("a tile", () => {
     if (raw === undefined || tile === undefined) throw new Error("no fixture tile");
     const batch = await batchOf(tracers, tile, bytesOf(raw.hex));
     expect(batch.stars).toBeUndefined();
-    expect([...(batch.colours ?? [])]).toEqual([...tracerBytes(batch.sources)]);
-    expect((await batchOf(domain, tile, bytesOf(raw.hex))).colours).toBeUndefined();
+    expect([...(batch.objects ?? [])].every((o) => o === 0)).toBe(true);
+    expect([...(batch.colours ?? []).slice(0, 4)]).toEqual([...tracerBytes(Uint8Array.of(0))]);
+    const other = await batchOf(domain, tile, bytesOf(raw.hex));
+    expect(other.colours).toBeUndefined();
+    expect(other.objects).toBeUndefined();
   });
 
   it("gives each point of the Galaxy's tracers the logarithm of its age, or none, and no other domain's points any", async () => {

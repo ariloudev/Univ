@@ -1,0 +1,65 @@
+key: 01a1cbb8-4b9d-727f-bb23-49695a2f5631
+slug: colour-the-galaxy-tracers-by-kind-of-object
+title: "Colour the Galaxy tracers by kind of object"
+context: "Each Galaxy tracer is drawn in the colour of the source of its preferred distance. A tracer joined to its Gaia DR3 star is often placed by the Gaia parallax or the Bailer-Jones distance, so Cepheids, RR Lyrae stars and luminous hot stars share Gaia's colours. Release 14 already lists eight sources for seven colours, so the masers share Bailer-Jones's colour. Tiles give each point its source but not its kind of object."
+state:
+  kind: accepted
+  selectedOption: 01a1cbb8-4b9d-727f-bb23-496dadfc9258
+  outcome: "Tiles of the Galaxy tracers domain carry each point's kind of object from encoding version 4, and the explorer colours and switches the tracers by it."
+drivers:
+  - key: 01a1cbb8-4b9d-727f-bb23-496aa74ed247
+    kind: local
+    label: "One look per kind"
+    statement: "Tracers of one kind look alike whatever placed them."
+  - key: 01a1cbb8-4b9d-727f-bb23-496b1b37e988
+    kind: local
+    label: "Colours enough"
+    statement: "Each colour of the key names one thing."
+  - key: 01a1cbb8-4b9d-727f-bb23-496c109d967d
+    kind: local
+    label: "Small publish"
+    statement: "The change leaves the stars' tiles as they are."
+options:
+  - key: 01a1cbb8-4b9d-727f-bb23-496dadfc9258
+    title: "By kind of object"
+    description: "A colour and a switch for each kind of object, carried by each point of the tracers' tiles."
+  - key: 01a1cbb8-4b9d-727f-bb23-496e035b6567
+    title: "By source, more colours"
+    description: "Keep colouring by the source of the preferred distance, with a colour for each source."
+assessments:
+  - option: 01a1cbb8-4b9d-727f-bb23-496dadfc9258
+    driver: 01a1cbb8-4b9d-727f-bb23-496aa74ed247
+    rating: supports
+    rationale: "the colour comes from the kind, not the distance"
+  - option: 01a1cbb8-4b9d-727f-bb23-496dadfc9258
+    driver: 01a1cbb8-4b9d-727f-bb23-496b1b37e988
+    rating: supports
+    rationale: "six kinds for seven colours"
+  - option: 01a1cbb8-4b9d-727f-bb23-496dadfc9258
+    driver: 01a1cbb8-4b9d-727f-bb23-496c109d967d
+    rating: supports
+    rationale: "only the tracers' tiles take version 4"
+  - option: 01a1cbb8-4b9d-727f-bb23-496e035b6567
+    driver: 01a1cbb8-4b9d-727f-bb23-496aa74ed247
+    rating: conflicts
+    rationale: "a kind takes the colours of every source that places it"
+  - option: 01a1cbb8-4b9d-727f-bb23-496e035b6567
+    driver: 01a1cbb8-4b9d-727f-bb23-496b1b37e988
+    rating: neutral
+    rationale: "ten sources need ten colours distinct from the stars' and each other's"
+  - option: 01a1cbb8-4b9d-727f-bb23-496e035b6567
+    driver: 01a1cbb8-4b9d-727f-bb23-496c109d967d
+    rating: supports
+    rationale: "no tile changes"
+consequences:
+  - key: 01a1cbb8-4b9d-727f-bb23-496fdea8aeca
+    kind: cost
+    statement: "Tile encoding version 4, which the reference decoder and the explorer read beside versions 1 to 3."
+  - key: 01a1cbb8-4b9d-727f-bb23-4970007a58e3
+    kind: benefit
+    statement: "The reader can turn kinds of object on and off, as the arms view does to hide the halo's tracers."
+subjects:
+  - role: outcome
+    node: 01a1c319-7860-76e8-92ac-c5e5caae2dff
+  - role: outcome
+    node: 01a1cbb8-4b9e-71c0-8bbe-c921ca1d815b

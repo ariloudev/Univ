@@ -294,20 +294,21 @@ impl<'s> D1Writer<'s> {
         Ok(())
     }
 
-    /// Forgets the keys seen of `tables`, whose keys hold the object id, once an object's rows
-    /// are all written: their keys are unique if unique within each object, the object's id
-    /// being unique among the objects.
+    /// Forgets the keys seen of the tables whose rows grow with the objects
+    /// ([`univ_model::release::Table::grows_with_objects`]), whose keys hold the object id, once
+    /// an object's rows are all written: their keys are unique if unique within each object, the
+    /// object's id being unique among the objects.
     ///
     /// Only the catalogue and the shard set are touched; a writer that only measures keeps no
     /// keys.
-    pub fn forget_keys(&mut self, tables: &[&str]) {
+    pub fn forget_object_keys(&mut self) {
         if self.sink.is_none() {
             return;
         }
         let shard = self.shard.map_or(0, |s| slot(Database::Shard(s)));
         for db in [0, shard] {
             for state in &mut self.databases[db] {
-                if tables.contains(&state.table.name) {
+                if state.table.grows_with_objects() {
                     state.keys.clear();
                 }
             }

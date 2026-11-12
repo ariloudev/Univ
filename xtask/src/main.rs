@@ -2,6 +2,7 @@
 //!
 //! - `cargo xtask check` runs every gate in order and stops at the first that fails.
 //! - `cargo xtask lines` reports each `.rs` file over the 500-line limit.
+//! - `cargo xtask json` refuses JSON at scale: in the release schema, and in the project's SQL.
 //! - `cargo xtask science <release-dir>` runs the science checks of a built release.
 //! - `cargo xtask integration` runs Univ Server's end-to-end tests inside `wrangler dev`.
 //! - `cargo xtask serve` runs Univ Server on the real local state.
@@ -13,9 +14,11 @@
 mod bench;
 mod explore;
 mod integration;
+mod json;
 mod lines;
 mod node;
 mod owner;
+mod schema7;
 mod science;
 
 use std::fs;
@@ -41,6 +44,8 @@ enum Gate {
     Command(&'static str, &'static str, &'static [&'static str]),
     /// The 500-line rule.
     Lines,
+    /// No JSON at scale, in the release schema or the project's SQL.
+    Json,
     /// `loft verify`, which only holds on the publish branch.
     Verify,
     /// The reference TypeScript tile decoder's tests, when `node` is on the path.
@@ -61,6 +66,7 @@ pub(crate) enum Outcome {
 const GATES: &[Gate] = &[
     Gate::Command("fmt", "cargo", &["fmt", "--all", "--check"]),
     Gate::Lines,
+    Gate::Json,
     Gate::Command("machete", "cargo", &["machete"]),
     Gate::Command("loft fmt", "loft", &["fmt", "--check"]),
     Gate::Command("loft check", "loft", &["check", "--fail-on", "warning"]),
@@ -125,6 +131,7 @@ impl Gate {
         match self {
             Self::Command(name, _, _) => name,
             Self::Lines => "lines",
+            Self::Json => "json",
             Self::Verify => "loft verify",
             Self::TileDecoder => "tile decoder",
             Self::Explorer => "explorer",
@@ -135,6 +142,7 @@ impl Gate {
         let passed = match self {
             Self::Command(_, program, args) => run(root, program, args),
             Self::Lines => lines_pass(root),
+            Self::Json => json::gate(root),
             Self::Verify => return verify(root),
             Self::TileDecoder => return node::tile_decoder(root),
             Self::Explorer => return explore::gate(root),
@@ -152,6 +160,7 @@ fn main() -> ExitCode {
     let passed = match std::env::args().nth(1).as_deref() {
         Some("check") => check(&root),
         Some("lines") => lines_pass(&root),
+        Some("json") => json::gate(&root),
         Some("integration") => {
             integration::stop_on_interrupt();
             integration::integration(&root)
@@ -185,7 +194,7 @@ fn main() -> ExitCode {
 
 fn usage() -> ExitCode {
     eprintln!(
-        "usage: cargo xtask <check|lines|integration|serve|explore|bench lookup|bench volume|bench first-points|science <release-dir>>"
+        "usage: cargo xtask <check|lines|json|integration|serve|explore|bench lookup|bench volume|bench first-points|science <release-dir>>"
     );
     ExitCode::from(2)
 }

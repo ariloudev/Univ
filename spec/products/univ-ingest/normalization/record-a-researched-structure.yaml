@@ -45,3 +45,25 @@ requirements:
         name: "The test compares the outline with the galaxy catalogues that cover it, as the earlier Univ work did for voids."
       - key: 01a19f22-2ad9-716e-876f-188469a36f95
         name: "A structure whose outline fails its test is published as a point at its published position, with the reason."
+  - key: 01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them."
+    criteria:
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5
+        name: "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to Table 2 of Reid et al. 2019."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91a110700f5
+        name: "A spiral arm's structure file gives the Galactic Centre's distance of 8.15 kpc and the Sun's height above the Galactic plane, each cited to Reid et al. 2019."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91b11550e21
+        name: "The path follows ln(R / R_kink) = -(β - β_kink) tan ψ at each degree of azimuth β, with ψ the pitch angle on β's side of the kink."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7
+        name: "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and 8.15 kpc from the Galactic Centre, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91d880c4cef
+        name: "A spiral arm's path spans the range of azimuth its fit covers and no more."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91edb14b44d
+        name: "An extrapolation's path runs on from each end of its arm's fitted range for up to 90° of azimuth, ending where its Galactocentric radius first leaves 3 to 16 kpc, and passes through the fitted range between."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c91f12de3fd5
+        name: "Each point of a spiral arm's or an extrapolation's path is a reconstructed value whose derivation names the formula, the parameters and the Galactic Centre's distance it was computed from."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c92011bf8744
+        name: "A spiral arm and its extrapolation have the status model, and the scale domain of the Galaxy tracers."

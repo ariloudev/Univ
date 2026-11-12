@@ -24,6 +24,8 @@ requirements:
         name: "Each number derived from a published number names its derivation."
       - key: 01a19f1e-d177-716d-b124-3d34432eb4b3
         name: "A structure outlined from a reconstruction has the kind of value reconstructed."
+      - key: 01a1cbb8-4b9e-71c0-8bbe-c926b85b11d1
+        name: "A structure computed from a published model, such as a model spiral arm, has the status model, apart from observed structures, reconstructions and statistical claims."
       - key: 01a19f1e-d177-716d-b124-3d359cc582f4
         name: "A number digitised from a figure has the kind of value estimated."
       - key: 01a19f1e-d177-716d-b124-3d3618ffc2c2

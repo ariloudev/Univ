@@ -20,3 +20,12 @@ constraints:
     name: "univ-model shall classify every value by its kind of value: measured, estimated, inferred or reconstructed."
   - key: 01a19f1e-d177-716d-b124-3cf9b013bc7c
     name: "univ-model shall carry each value's uncertainty in a typed form, keep a stated interval with no probability, given by its lower and upper bounds, apart from a one-sigma error, and mark a value with no published uncertainty as having none reported."
+  - key: 01a1cca1-1789-7424-a53b-b6cb86c7b7f5
+    name: "The release schema of univ-model shall hold no JSON column in a table whose rows grow with the release's objects: its objects, catalogue entries, measurements, designations, names, memberships and the cells and shards of its objects."
+    verificationFate: proved
+  - key: 01a1cca1-1789-7424-a53b-b6ccd16f6358
+    name: "No SQL of Univ Server, Univ Ingest or the project's checks shall apply a JSON function to anything but a bound parameter, such as a list of ids, or a column of a release table bounded by the release's sources, structures and chains."
+    verificationFate: proved
+  - key: 01a1cca1-61b4-7169-8060-dc09bd8ff146
+    name: "The release schema of univ-model shall name the scale of each of its tables: per release, per source, per structure, per chain, per object or per catalogue entry."
+    verificationFate: proved

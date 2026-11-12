@@ -5,7 +5,8 @@ import { KINDS } from "../../scene/kinds.ts";
 import { type Change, type Group, GROUPS, type Hidden } from "../hidden.ts";
 import type { ShowChoices } from "./choices.ts";
 
-const every = (group: Group, names: readonly string[], shown: boolean): Change[] => names.map((name) => ({ group, name, shown }));
+/** Each of `names` in `group` turned on, or off. */
+export const every = (group: Group, names: readonly string[], shown: boolean): Change[] => names.map((name) => ({ group, name, shown }));
 
 /** Only the source `id`: it and each domain whose points it places on, every other source off. */
 export const onlySource = (id: string, choices: ShowChoices): Change[] => [
@@ -17,11 +18,12 @@ export const onlySource = (id: string, choices: ShowChoices): Change[] => [
 export const onlyKind = (kind: string, choices: ShowChoices): Change[] =>
   choices.structureKinds.map((name) => ({ group: "structure", name, shown: name === kind }));
 
-/** Every domain, source and kind of value on. */
+/** Every domain, source, kind of value and kind of object on. */
 export const allPoints = (choices: ShowChoices): Change[] => [
   ...every("domain", choices.domainNames, true),
   ...every("source", choices.sourceIds, true),
   ...every("kind", KINDS, true),
+  ...every("object", choices.objectKinds, true),
 ];
 
 /** Every domain off, so no point is drawn, the sources' switches as they are. */

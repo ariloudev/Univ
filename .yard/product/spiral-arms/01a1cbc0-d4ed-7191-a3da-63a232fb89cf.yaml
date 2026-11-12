@@ -1,0 +1,35 @@
+key: 01a1cbc0-d4ed-7191-a3da-63a232fb89cf
+id: wave-2
+versions:
+  - key: 01a1cbc0-d4ed-7191-a3da-63a73b32e6de
+    at: 2026-11-11T17:56:14Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 2: explorer"
+    goal: "stage/spiral-arms-2 is merged: tracers coloured and switched by kind, arm structures drawn and listed, and the arms view"
+    status: planned
+  - key: 01a1cc9f-564a-778c-8e8c-419ade54c0de
+    at: 2026-11-11T21:59:16Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 2: explorer"
+    goal: "stage/spiral-arms-2 is merged: tracers coloured and switched by kind, arm structures drawn and listed, and the arms view"
+    status: done
+blocks:
+  - key: 01a1cc9f-564a-778c-8e8c-41975c4cc8e6
+    id: wave2-merged
+    kind: note
+    versions:
+      - key: 01a1cc9f-564a-778c-8e8c-419be4816c08
+        at: 2026-11-11T21:59:16Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Wave 2 merged"
+        markdown: "Merged on the owner's word as `96f126c`. Gate green (13 gates, loft verify skipped off develop), 770 of 770 criteria linked, integration green after the two axe tests' fix. Face-on screenshot of release 15 sent. Details in stage/spiral-arms-2's Yard Log; the schema work continues on product/relational-schema, cut from the wave's head."
+        tone: success

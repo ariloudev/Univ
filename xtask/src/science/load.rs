@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use super::fingerprints::Recorder;
 use rusqlite::Connection;
 use rusqlite::functions::FunctionFlags;
 use univ_model::cosmology::Cosmology;
@@ -92,12 +93,23 @@ pub fn load(db: &Connection, dir: &Path, manifest: &ReleaseManifest) -> Result<u
         return Err("the manifest lists no D1 files".to_owned());
     }
     let n = manifest.release;
-    for table in TABLES.iter().filter(|t| t.scope == Scope::PerRelease) {
+    let shared = || TABLES.iter().filter(|t| t.scope == Scope::PerRelease);
+    for table in shared() {
         db.execute_batch(&format!(
-            "DELETE FROM {name} WHERE NOT ({valid}); UPDATE {name} SET release = {n}, \
-             {RETIRED} = NULL;",
+            "DELETE FROM {name} WHERE NOT ({valid});",
             name = table.name,
             valid = valid_in("", n)
+        ))
+        .map_err(|e| format!("{}: {e}", table.name))?;
+    }
+    // Measured as the release holds its rows, before each is taken as its own.
+    let mut recorder = Recorder::new(n);
+    recorder.add(db)?;
+    recorder.record(db)?;
+    for table in shared() {
+        db.execute_batch(&format!(
+            "UPDATE {name} SET release = {n}, {RETIRED} = NULL;",
+            name = table.name
         ))
         .map_err(|e| format!("{}: {e}", table.name))?;
     }

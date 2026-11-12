@@ -1,6 +1,6 @@
 // The Structures drawer's depth index (see-the-structures): each structure listed outward from
 // Earth, placed on one logarithmic axis of distance that every row shares, and known as observed,
-// a statistical claim, or reconstructed.
+// a statistical claim, reconstructed, or a model.
 
 import type { StructureSummary } from "../../api/structures.ts";
 import { figures, shortDistance, whole } from "../../scene/format.ts";
@@ -10,10 +10,10 @@ import type { Structures } from "../useStructures.ts";
 import { words } from "../text.ts";
 
 /** How a structure is known, as its record says. */
-export type Known = "observed" | "statistical_claim" | "reconstructed";
+export type Known = "observed" | "statistical_claim" | "reconstructed" | "model";
 
 /** The ways a structure is known, in the legend's order. */
-export const KNOWN: readonly Known[] = ["observed", "statistical_claim", "reconstructed"];
+export const KNOWN: readonly Known[] = ["observed", "statistical_claim", "reconstructed", "model"];
 
 /** One row of the index: a structure, its kind's colour, how it is known where its record says,
  * and the distance from Earth to its centre as the view places it, megaparsecs, where it is
@@ -42,26 +42,28 @@ export function depthRows(shown: readonly StructureSummary[], structures: Pick<S
   });
 }
 
-/** Within this distance of Earth, megaparsecs, a structure is centred on it. */
-const AROUND_US = 0.5;
+/** Within this distance of Earth, megaparsecs, a structure is centred on it: a parsec, well
+ * within the nearest structure placed apart from Earth, a model arm kiloparsecs away. */
+const AROUND_US = 1e-6;
 
-/** A distance in whole megaparsecs below 1,000 Mpc and in gigaparsecs to three figures from
- * there, as the headings divide them; "around us" for a structure centred on Earth, and "not
- * placed" for none. */
+/** A distance in kiloparsecs to three figures below 1 Mpc, in whole megaparsecs from there to
+ * below 1,000 Mpc and in gigaparsecs to three figures from there, as the headings divide them;
+ * "around us" for a structure centred on Earth, and "not placed" for none. */
 export function distanceText(mpc: number | undefined): string {
   if (mpc === undefined) return "not placed";
   if (mpc < AROUND_US) return "around us";
+  if (mpc < 1) return `${figures(mpc * 1000)} kpc`;
   return mpc < 1000 ? `${whole(mpc)} Mpc` : `${figures(mpc / 1000)} Gpc`;
 }
 
-/** The axis's ends, as powers of ten of megaparsecs: 10 Mpc to 10 Gpc. */
-const NEAR = 1;
+/** The axis's ends, as powers of ten of megaparsecs: 1 kpc to 10 Gpc. */
+const NEAR = -3;
 const FAR = 4;
 
-/** The axis's labelled ticks, megaparsecs, with their words. */
-export const DEPTH_TICKS: readonly { mpc: number; text: string }[] = [10, 100, 1000, 10_000].map((mpc) => ({ mpc, text: shortDistance(mpc) }));
+/** The axis's labelled ticks, megaparsecs, with their words: every hundredfold from 1 kpc. */
+export const DEPTH_TICKS: readonly { mpc: number; text: string }[] = [1e-3, 0.1, 10, 1000].map((mpc) => ({ mpc, text: shortDistance(mpc) }));
 
-/** Where `mpc` lies along an axis `width` long: logarithmically from 10 Mpc to 10 Gpc, held at
+/** Where `mpc` lies along an axis `width` long: logarithmically from 1 kpc to 10 Gpc, held at
  * its ends. */
 export function depthX(mpc: number, width: number): number {
   const at = (Math.log10(Math.max(mpc, 10 ** NEAR)) - NEAR) / (FAR - NEAR);
@@ -70,7 +72,8 @@ export function depthX(mpc: number, width: number): number {
 
 /** The headings the index groups its rows under, each with the distances it holds. */
 const BANDS: readonly { heading: string; holds: (mpc: number | undefined) => boolean }[] = [
-  { heading: "Within 100 Mpc", holds: (d) => d !== undefined && d < 100 },
+  { heading: "Within 30 kpc", holds: (d) => d !== undefined && d < 0.03 },
+  { heading: "30 kpc to 100 Mpc", holds: (d) => d !== undefined && d >= 0.03 && d < 100 },
   { heading: "100 Mpc to 1 Gpc", holds: (d) => d !== undefined && d >= 100 && d < 1000 },
   { heading: "1 to 10 Gpc", holds: (d) => d !== undefined && d >= 1000 },
   { heading: "Not placed", holds: (d) => d === undefined },

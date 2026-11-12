@@ -1,0 +1,758 @@
+key: 01a1cc9c-febd-71e7-8f23-d2fc98de75ad
+id: spec
+versions:
+  - key: 01a1cc9c-febd-71e7-8f23-d304e70425d6
+    at: 2026-11-11T21:56:43Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Specification"
+    goal: "The specification forbids JSON in per-object and per-entry tables and names the relational tables that replace it"
+    status: active
+  - key: 01a1ccad-dfdd-72e9-a8d9-b5526aaa1c70
+    at: 2026-11-11T22:15:09Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Specification"
+    goal: "The specification forbids JSON in per-object and per-entry tables and names the relational tables that replace it"
+    status: done
+blocks:
+  - key: 01a1cc9c-febd-71e7-8f23-d300571fc0d3
+    id: survey
+    kind: note
+    versions:
+      - key: 01a1cc9c-febd-71e7-8f23-d308af2cbfaa
+        at: 2026-11-11T21:56:43Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Where JSON sits at scale (release 15, object shard 0)"
+        markdown: |-
+          | Table | Rows | JSON columns | Filled |
+          |---|---|---|---|
+          | entries | 4.87 M | `flags`, `extra` | 2.44 M, 2.41 M |
+          | measurements | 19.3 M | `extra` | 0 here |
+          | objects | 2.43 M | `links`, `relations` | 22, 0 |
+
+          Every other JSON column is in a table of at most a few thousand rows. The API's `json_each(?N)` reads bound parameter lists only. Science checks read `entries.flags` (`Arm`, `Ref`, `BEST_Z_TYPE`), `entries.extra` (references) and `structure_details.shape` (arm points).
+  - key: 01a1cc9c-febd-71e7-8f23-d301873acff8
+    id: q-scope
+    kind: question
+    versions:
+      - key: 01a1cc9c-febd-71e7-8f23-d30938f422a8
+        at: 2026-11-11T21:56:43Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "How far should the schema fix go?"
+        header: "Scope"
+        context: "`flags` and `extra` fill about half of all entries. Science checks read three flags and the references."
+        options:
+          - label: "No JSON per object"
+            detail: "Every per-object and per-entry table loses its JSON columns: flags become an indexed entry_flags table, extra becomes typed columns plus entry_references, links and relations become object_links, and the masers' arms become arm memberships. JSON is left only in tables bounded by sources and structures. Recommended: the rule then holds by construction, with nothing to judge case by case."
+            recommended: true
+          - label: "Only what is queried"
+            detail: "Move only the queried values (the Arm, Ref and BEST_Z_TYPE flags, and references) into columns, and keep the rest as JSON the API passes through. Smaller, but the opaque JSON stays in 50 M-row tables and the next query into it is one edit away."
+    responses:
+      - key: 01a1cc9f-153d-7792-ba7f-03bd1cbed8a1
+        at: 2026-11-11T21:59:00Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "No JSON per object"
+  - key: 01a1cc9c-febd-71e7-8f23-d302fe542b80
+    id: q-guards
+    kind: question
+    versions:
+      - key: 01a1cc9c-febd-71e7-8f23-d30a90a5c254
+        at: 2026-11-11T21:56:43Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "Which guards should the gate run?"
+        header: "Guards"
+        context: "Each one is recorded as a rule in the specification and in the project's instructions."
+        options:
+          - label: "Schema gate"
+            detail: "Each table of the release schema declares its scale (per object, per entry, per source, per structure); the gate refuses a JSON column in a per-object or per-entry table."
+            recommended: true
+          - label: "SQL gate"
+            detail: "The gate scans the SQL in crates, xtask and rules and refuses json_extract, json_each, json_tree, -> and ->> on anything but a bound parameter, except in a short, listed set of small tables."
+            recommended: true
+          - label: "Scan guard"
+            detail: "The science runner reads each check's EXPLAIN QUERY PLAN and fails a check that scans a per-object or per-entry table whole; that also catches slow checks that use no JSON."
+            recommended: true
+        multiple: true
+    responses:
+      - key: 01a1cc9f-153d-7792-ba7f-03bee870c9e9
+        at: 2026-11-11T21:59:00Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "Schema gate"
+          - "SQL gate"
+          - "Scan guard"
+  - key: 01a1cc9c-febd-71e7-8f23-d3035491d3ff
+    id: q-merge
+    kind: question
+    versions:
+      - key: 01a1cc9c-febd-71e7-8f23-d30b88a375be
+        at: 2026-11-11T21:56:43Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        prompt: "Merge wave 2 (stage/spiral-arms-2) into product/spiral-arms now?"
+        header: "Wave 2"
+        context: "Wave 2 is closed and green (gate, integration, traces); this branch is cut from its head, so either way the schema work builds on it."
+        options:
+          - label: "Merge now"
+            detail: "Merge stage/spiral-arms-2 into product/spiral-arms and mark wave 2 done there; product/relational-schema then merges into product/spiral-arms when it is finished."
+            recommended: true
+          - label: "Not yet"
+            detail: "Leave wave 2 on its branch; I'll ask again before this branch merges."
+    responses:
+      - key: 01a1cc9f-153d-7792-ba7f-03bf6958a2b5
+        at: 2026-11-11T21:59:00Z
+        revision: 2
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: terminal
+        chosen:
+          - "Merge now"
+  - key: 01a1cc9f-82e1-70e4-93c4-df67f2618659
+    id: d-scope
+    kind: decision
+    number: 1
+    versions:
+      - key: 01a1cc9f-82e1-70e4-93c4-df6a669fd8f0
+        at: 2026-11-11T21:59:28Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "No JSON in any per-object or per-entry table"
+        consequence: "Release schema 7 replaces entries.flags with an indexed entry_flags table, entries.extra and measurements.extra with typed columns and an entry_references table, objects.links and relations with an object_links table, and records the masers' arms as memberships of the model arms. JSON stays only in tables bounded by sources, structures and chains. Release 16 is a full rebuild on schema 7."
+        question: 01a1cc9c-febd-71e7-8f23-d301873acff8
+  - key: 01a1cc9f-82e1-70e4-93c4-df680e341973
+    id: d-guards
+    kind: decision
+    number: 2
+    versions:
+      - key: 01a1cc9f-82e1-70e4-93c4-df6bc1b08e40
+        at: 2026-11-11T21:59:28Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The gate runs a schema gate, an SQL gate and a scan guard"
+        consequence: "Each release table declares its scale and the gate refuses JSON columns in per-object and per-entry tables; the gate refuses JSON functions over anything but bound parameters outside a listed set of small tables; the science runner fails a check whose query plan scans a per-object or per-entry table whole. Each is a Constraint in the specification and a rule in CLAUDE.md."
+        question: 01a1cc9c-febd-71e7-8f23-d302fe542b80
+  - key: 01a1cc9f-82e1-70e4-93c4-df6924284c7e
+    id: d-merge
+    kind: decision
+    number: 3
+    versions:
+      - key: 01a1cc9f-82e1-70e4-93c4-df6c22c91405
+        at: 2026-11-11T21:59:28Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Wave 2 merged into product/spiral-arms"
+        consequence: "Merged as 96f126c; this branch is brought up to product/spiral-arms (76de7e3) and merges back into it when done."
+        question: 01a1cc9c-febd-71e7-8f23-d3035491d3ff
+  - key: 01a1cca1-929d-7280-ae6c-422868cf26bd
+    id: spec-change-1
+    kind: loft
+    versions:
+      - key: 01a1cca1-929d-7280-ae6c-42295d4051e3
+        at: 2026-11-11T22:01:43Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        view: spec-change
+        note: "One new decision and four Constraints, all from your answers, plus one Requirement for the masers' arms. Two `LQ-005` infos are left: the SQL Constraint names its one exception (bound parameters and the tables bounded by sources, structures and chains), and the Zari distance criterion carried over from product/spiral-arms."
+        base: "product/spiral-arms"
+        recorded:
+          commit: "76de7e3460849a02c33db2189e3b5e0856ba12cc"
+          branch: "product/relational-schema"
+          dirty: true
+          loft: 2.3.0
+          at: 2026-11-11T22:01:43Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 1,
+              "graph.diff": 9,
+              "graph.edges": 3,
+              "graph.nodes": 10,
+              "status.base.added": 8,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6cd3ac4d42d",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Keep JSON out of the tables that grow with a release's objects",
+                  "words": {
+                    "after": "Keep JSON out of the tables that grow with a release's objects\n\nNo table whose rows grow with a release's objects holds JSON: an entry's flags, references and extra values, an object's links and relations, and the memberships of objects in structures are rows of tables of their own, indexed by what they are found by."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6d81af17920",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall record an object that its source's own column assigns to a researched structure as a member of that structure.",
+                  "words": {
+                    "after": "Univ Ingest shall record an object that its source's own column assigns to a researched structure as a member of that structure."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6d9b9373d09",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A Reid et al. 2019 maser whose Table 1 `Arm` code names one of the seven arms of their model is a member of that arm's model spiral arm, the membership citing the column.",
+                  "words": {
+                    "after": "A Reid et al. 2019 maser whose Table 1 `Arm` code names one of the seven arms of their model is a member of that arm's model spiral arm, the membership citing the column."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6daaa326039",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A maser whose `Arm` code names no arm of the model, such as a spur, is a member of no structure.",
+                  "words": {
+                    "after": "A maser whose `Arm` code names no arm of the model, such as a spur, is a member of no structure."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6dbc4924644",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A membership keeps the source that gave it and the value of the column as the source publishes it.",
+                  "words": {
+                    "after": "A membership keeps the source that gave it and the value of the column as the source publishes it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6caaaba436f",
+                  "kind": "constraint",
+                  "label": null,
+                  "name": "A science check of a release shall read each table whose rows grow with the release's objects through an index, and fail where its query plan scans one of them whole.",
+                  "words": {
+                    "after": "A science check of a release shall read each table whose rows grow with the release's objects through an index, and fail where its query plan scans one of them whole."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6cb86c7b7f5",
+                  "kind": "constraint",
+                  "label": null,
+                  "name": "The release schema of univ-model shall hold no JSON column in a table whose rows grow with the release's objects: its objects, catalogue entries, measurements, designations, names, memberships and the cells and shards of its objects.",
+                  "words": {
+                    "after": "The release schema of univ-model shall hold no JSON column in a table whose rows grow with the release's objects: its objects, catalogue entries, measurements, designations, names, memberships and the cells and shards of its objects."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6ccd16f6358",
+                  "kind": "constraint",
+                  "label": null,
+                  "name": "No SQL of Univ Server, Univ Ingest or the project's checks shall apply a JSON function to anything but a bound parameter, such as a list of ids, or a column of a release table bounded by the release's sources, structures and chains.",
+                  "words": {
+                    "after": "No SQL of Univ Server, Univ Ingest or the project's checks shall apply a JSON function to anything but a bound parameter, such as a list of ids, or a column of a release table bounded by the release's sources, structures and chains."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-61b4-7169-8060-dc09bd8ff146",
+                  "kind": "constraint",
+                  "label": null,
+                  "name": "The release schema of univ-model shall name the scale of each of its tables: per release, per source, per structure, per chain, per object or per catalogue entry.",
+                  "words": {
+                    "after": "The release schema of univ-model shall name the scale of each of its tables: per release, per source, per structure, per chain, per object or per catalogue entry."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6cd3ac4d42d",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Keep JSON out of the tables that grow with a release's objects",
+                  "words": {
+                    "after": "Keep JSON out of the tables that grow with a release's objects\n\nNo table whose rows grow with a release's objects holds JSON: an entry's flags, references and extra values, an object's links and relations, and the memberships of objects in structures are rows of tables of their own, indexed by what they are found by."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a1cca1-1789-7424-a53b-b6cd3ac4d42d",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f1e-d177-716d-b124-3cf1defde8b6"
+                },
+                {
+                  "from": "01a1cca1-1789-7424-a53b-b6cd3ac4d42d",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a19f1e-d177-716d-b124-3cf3def064d0"
+                },
+                {
+                  "from": "01a1cca1-1789-7424-a53b-b6cd3ac4d42d",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a1cca1-1789-7424-a53b-b6d81af17920"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": "FG-3",
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                  "kind": "feature",
+                  "label": "F-7",
+                  "name": "Cross-match catalogues",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6d81af17920",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall record an object that its source's own column assigns to a researched structure as a member of that structure.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6d9b9373d09",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A Reid et al. 2019 maser whose Table 1 `Arm` code names one of the seven arms of their model is a member of that arm's model spiral arm, the membership citing the column.",
+                  "parent": "01a1cca1-1789-7424-a53b-b6d81af17920"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6daaa326039",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A maser whose `Arm` code names no arm of the model, such as a spur, is a member of no structure.",
+                  "parent": "01a1cca1-1789-7424-a53b-b6d81af17920"
+                },
+                {
+                  "change": "added",
+                  "key": "01a1cca1-1789-7424-a53b-b6dbc4924644",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A membership keeps the source that gave it and the value of the column as the source publishes it.",
+                  "parent": "01a1cca1-1789-7424-a53b-b6d81af17920"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ceccbdcd63e",
+                  "kind": "component",
+                  "label": "CMP-33",
+                  "name": "Ingest pipeline",
+                  "parent": null
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf1defde8b6",
+                  "kind": "component",
+                  "label": "CMP-38",
+                  "name": "Release publisher",
+                  "parent": "01a19f1e-d177-716d-b124-3ceccbdcd63e"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1e-d177-716d-b124-3cf3def064d0",
+                  "kind": "component",
+                  "label": "CMP-39",
+                  "name": "univ-model",
+                  "parent": null
+                }
+              ]
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a1cca1-1789-7424-a53b-b6d81af17920",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 90,
+                    "name": "Univ Ingest shall record an object that its source's own column assigns to a researched structure as a member of that structure.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cca1-1789-7424-a53b-b6d9b9373d09",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 96,
+                    "name": "A Reid et al. 2019 maser whose Table 1 `Arm` code names one of the seven arms of their model is a member of that arm's model spiral arm, the membership citing the column.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cca1-1789-7424-a53b-b6daaa326039",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 98,
+                    "name": "A maser whose `Arm` code names no arm of the model, such as a spur, is a member of no structure.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cca1-1789-7424-a53b-b6dbc4924644",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 100,
+                    "name": "A membership keeps the source that gave it and the value of the column as the source publishes it.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cca1-1789-7424-a53b-b6caaaba436f",
+                    "kind": "constraint",
+                    "label": null,
+                    "line": 31,
+                    "name": "A science check of a release shall read each table whose rows grow with the release's objects through an index, and fail where its query plan scans one of them whole.",
+                    "path": "spec/components/ingest-pipeline.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cca1-1789-7424-a53b-b6cb86c7b7f5",
+                    "kind": "constraint",
+                    "label": null,
+                    "line": 23,
+                    "name": "The release schema of univ-model shall hold no JSON column in a table whose rows grow with the release's objects: its objects, catalogue entries, measurements, designations, names, memberships and the cells and shards of its objects.",
+                    "path": "spec/components/univ-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cca1-1789-7424-a53b-b6ccd16f6358",
+                    "kind": "constraint",
+                    "label": null,
+                    "line": 26,
+                    "name": "No SQL of Univ Server, Univ Ingest or the project's checks shall apply a JSON function to anything but a bound parameter, such as a list of ids, or a column of a release table bounded by the release's sources, structures and chains.",
+                    "path": "spec/components/univ-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cca1-61b4-7169-8060-dc09bd8ff146",
+                    "kind": "constraint",
+                    "label": null,
+                    "line": 29,
+                    "name": "The release schema of univ-model shall name the scale of each of its tables: per release, per source, per structure, per chain, per object or per catalogue entry.",
+                    "path": "spec/components/univ-model.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "76de7e3460849a02c33db2189e3b5e0856ba12cc",
+                "removed": [],
+                "revision": "product/spiral-arms"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 9,
+                "publishedAt": "2026-11-11T16:04:40Z",
+                "stateRoot": "cf70fa83262810b6be6b9d3dc0bdaf3eb5ebafd0c12af53ce73a6e813aba1f97"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/relational-schema",
+                "modified": [
+                  "spec/components/ingest-pipeline.yaml",
+                  "spec/components/univ-model.yaml",
+                  "spec/decisions/keep-json-out-of-the-tables-that-grow-with-a-releases-objects.yaml",
+                  "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
+  - key: 01a1cca1-b60f-73ae-abed-a1a4bc3930fb
+    id: approve-spec-1
+    kind: approval
+    versions:
+      - key: 01a1cca1-b60f-73ae-abed-a1a5bbc3dead
+        at: 2026-11-11T22:01:52Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Approve the relational-schema spec change"
+        markdown: |-
+          ## What changes
+
+          | Node | Says |
+          |---|---|
+          | **Decision** *Keep JSON out of the tables that grow with a release's objects* | Relational rows chosen over columns-for-what-is-queried and indexes on JSON expressions. Consequences: schema 7, a full release 16, and the three guards. |
+          | **univ-model Constraint** | No JSON column in a table whose rows grow with the objects: objects, entries, measurements, designations, names, memberships, object cells and shards. *(schema gate)* |
+          | **univ-model Constraint** | The release schema names each table's scale: per release, source, structure, chain, object or entry. *(what the schema gate reads)* |
+          | **univ-model Constraint** | No SQL of Univ Server, Univ Ingest or the project's checks applies a JSON function to anything but a bound parameter, or a column of a table bounded by sources, structures and chains. *(SQL gate)* |
+          | **Release publisher Constraint** | A science check reads those tables through an index, and fails where its query plan scans one whole. *(scan guard)* |
+          | **Cross-match Requirement** | An object that its source's own column assigns to a researched structure is recorded as its member: a Reid 2019 maser whose `Arm` code names one of the seven model arms is a member of that arm, citing the column; a spur's maser is a member of none. |
+
+          ## Unchanged on purpose
+
+          - **API responses** keep every field: *The response gives each flag of each catalogue entry with its value as the source publishes it* still holds; Univ Server assembles flags, references, links and relations from the new rows.
+          - **JSON in small tables** stays: sources' sky and radial summaries, structures' records and shapes, chains' steps. They are bounded by the number of sources and structures, a few thousand rows at most.
+
+          ## Worth a look
+
+          - **The SQL gate's exception** for small tables: the arm checks read the 14 arm paths from `structure_details.shape`. I'd keep that allowed rather than add a points table for 14 rows.
+          - **Memberships** are the one new relation the explorer and API could later show (*a maser on the Perseus arm*); this change adds the rows, not a response field.
+
+          Once you approve, I commit `spec/` alone and present the build plan in plan mode.
+    responses:
+      - key: 01a1cca2-8afa-77e6-90b5-d8ef58c7c56b
+        at: 2026-11-11T22:02:46Z
+        revision: 6
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: approved
+  - key: 01a1cca8-2f90-74c5-9618-156c6d0d77a1
+    id: plan-23-plan-cozy-wishing-raven-01a1cc9c-febd-71e7-8f23-d2fc98de75ad
+    kind: plan
+    versions:
+      - key: 01a1cca8-2f90-74c5-9618-156dda6873ee
+        at: 2026-11-11T22:08:56Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build plan: no JSON at scale (product/relational-schema)"
+        markdown: |
+          # Build plan: no JSON at scale (product/relational-schema)
+
+          ## Context
+
+          Release 15's maser science check read `json_extract(entries.flags, '$.Arm')` over 76 M entries and ran for more than 20 minutes. You asked for the schema to be fixed properly, and for rules and static checks that stop JSON being used on million-row tables. The spec change is approved and committed (`620f2f4`, `351b44e`):
+          - **Decision:** *Keep JSON out of the tables that grow with a release's objects*.
+          - **Four Constraints:**
+            - no JSON column at scale (schema gate);
+            - each table names its scale;
+            - JSON functions apply only to bound parameters or to small tables (SQL gate);
+            - a science check that scans an object- or entry-scale table whole fails (scan guard).
+          - **One Requirement:** a Reid 2019 maser is a member of the arm its `Arm` code names.
+
+          The release schema is at version 7, and this change moves it to **8**.
+
+          What changes, from the survey:
+
+          | JSON column today | Holds | Becomes |
+          |---|---|---|
+          | `entries.flags` (≈50% of entries) | `{column: raw value}` from `field: quality` columns | table `entry_flags(object_id, entry, flag, value)`, with an index on `(flag, value)` |
+          | `entries.extra` (≈50%) | `via`, `position_uncertainty`, `spectral_type`, `references` | typed columns on `entries`, plus table `entry_references(object_id, entry, n, citation, doi, bibcode)` |
+          | `measurements.extra` | `also_published`, `assumed_cosmology`, `published_frame`, `derived_from` | typed columns on `measurements` |
+          | `objects.links` (rare) | `CandidateLink{entry, candidate, reason, confidence}` | table `object_links`, with `reason` flattened into columns (anchor / cross-identification / match fields) |
+          | `objects.relations` (rare) | `Relation{kind, entry, other, scheme, identifier}` | table `object_relations` |
+          | none; `Arm` sits in flags | the maser → arm assignment | table `memberships(object_id, structure, source, value)`, indexed by structure |
+
+          All of these are object- or entry-scale tables. Like the other per-object tables, they go in the object shards (`shards.rs` `SHARD_TABLES`). JSON stays only in tables bounded by sources, structures and chains. The API's responses are unchanged: Univ Server assembles the same fields from the rows.
+
+          Two waves, because the work spans the model, ingest, the API and xtask with more than 8 tasks. Each wave runs on a `stage/relational-schema-<n>` branch cut from `product/relational-schema`, has its own Yard Log, and ends with `/simplify` and `/code-review` in parallel, then `cargo xtask check` and `cargo xtask integration` once each, traces linked, and the Yard Log closed. Each wave merges only on your word. Migrating the real store and building release 16 also wait for your word.
+
+          ## Wave 1: the schema (stage/relational-schema-1)
+
+          **T1. Each table names its scale, and JSON columns are marked as such.**
+          - In `crates/univ-model/src/release/sql.rs`:
+            - add `Scale {Release, Source, Structure, Chain, Object, Entry}` and a `scale` field on `Table`, beside `scope`;
+            - add a `ColumnKind::Json` variant, stored as TEXT.
+          - Every entry of `TABLES` (`rows/mod.rs`) declares its scale. Each JSON column is marked `Json`: `chains.steps`, `structures.record` and `members`, `structure_details.*`, `source_details.sky` and `radial`, `source_terms.*`, `source_reading.flags`, `grids.shape`, `releases.cosmology`.
+          - Readers, fingerprints and size estimates treat `Json` as TEXT.
+          - `schema.sql` states each table's scale in its comment.
+          - Test: every table has a scale, and the schema comment states it.
+          - Meets the Constraint that each table names its scale.
+
+          **T2. Schema 8: the new tables and typed columns, and the five JSON columns gone.**
+          - `schema.sql` and the row types (`rows/objects.rs`) as in the table above. Flag names are terms. Each new table carries `release` and `retired` like every shared row.
+          - `SCHEMA_VERSION = 8`; the new per-object tables go into `SHARD_TABLES`.
+          - `every_row_type_matches_its_table_in_the_schema` (`release/tests.rs:50`) passes.
+          - A univ-model test asserts that no `Json` column sits in an `Object` or `Entry` table; the gate's version of this comes in T7.
+
+          **T3. Ingest writes the rows, and the masers' memberships.**
+          - `release/entries.rs` and `release/objects.rs` write `entry_flags`, `entry_references`, the typed columns, `object_links` and `object_relations` in place of the JSON. They go through the `D1Writer::add_at` path, so size estimates, content hashes and fingerprints cover them unchanged.
+          - A source definition may give `memberships`:
+            - a column, its citation, and a map from the column's values to structure ids;
+            - `define-a-source` refuses an unknown structure id, or a column the source doesn't take.
+          - `sources/reid-2019-masers.yaml` maps the 11 arm codes the science check uses to the 7 fitted arms, citing Table 1's `Arm` column. A spur's code maps to nothing.
+          - Tests:
+            - flags, references, links and relations are written as rows;
+            - a maser on a named arm is a member of it, and a spur's maser is a member of none;
+            - an unknown structure id is refused.
+          - **Measured before going on:** I'll take one release-15 object shard and project the new tables' size from its own rows, against the 4.5 GB per-shard budget. 2.4 M flagged entries may become several times as many `entry_flags` rows, each with an index entry. If the growth is large, I'll bring you the numbers before T5. The packer would otherwise make more shards.
+
+          **T4. Reads assemble the same records.**
+          - `univ-model/src/release/read/*`: `EntryRecord`'s flags, references, via, position uncertainty and spectral type, and the measurement extras and object links and relations, are read from the rows.
+          - `crates/univ-api/src/objects/mod.rs:216-245` also reads the object's `entry_flags`, `entry_references`, `object_links` and `object_relations` from the same shard, by `object_id` through their keys.
+          - `testkit_objects.sql` is converted: its JSON literals become rows of the new tables.
+          - Done when the existing response tests pass unchanged (`univ-api/src/objects/record_tests.rs`, `univ-ingest/tests/object_reads.rs`, `read/tests.rs`). The OpenAPI document and the explorer don't change.
+
+          **T5. `univ-ingest migrate` brings a store of schema 7 to 8, in place.**
+          - In `publish/migrate.rs`, after the 5→6 step, with the same rusqlite access to each database:
+            - create the new tables;
+            - read each row with a non-null JSON column, parse it in Rust with univ-model's serde types (no SQL JSON functions), and write its rows with the parent row's `release` and `retired`;
+            - fill the typed columns;
+            - rebuild `entries`, `measurements` and `objects` without the JSON columns, with `create_as` and `INSERT … SELECT` as the 5→6 `rebuild` does;
+            - write `schema_version` 8.
+          - Memberships are not migrated; release 16 adds them.
+          - Every step can run again: a database at 8 is left alone, and an interrupted run finishes on the next. `univ-ingest reindex` then rebuilds the row index, since the content hashes change with the columns.
+          - Tests:
+            - a schema-7 fixture store migrates;
+            - the object records read the same before and after, for every fixture object;
+            - running it twice is safe;
+            - a store at 8 is untouched.
+
+          **T6. Wave review**, as above.
+
+          ## Wave 2: the guards and checks (stage/relational-schema-2)
+
+          **T7. Schema gate and SQL gate: `cargo xtask json`, a new entry in `GATES` after `Lines`.**
+          - It also runs as its own subcommand. Its model is `Gate::Lines` and `lines_pass` (`xtask/src/main.rs:251`).
+          - **Schema gate:** refuses a `Json` column in a table of scale `Object` or `Entry` (from univ-model's `TABLES`).
+          - **SQL gate:**
+            - It scans `crates/**/*.rs`, `xtask/**/*.rs`, `rules/*.yaml` and `**/*.sql` for `json_extract`, `json_each`, `json_tree`, `json_type`, `json_array_length` and other `json_*` readers, and for `->`/`->>` in YAML and `.sql` files only (in Rust source they are the language's own syntax).
+            - Each call's first argument must be one of:
+              - a bound parameter (`?`, `?N`, `:name`);
+              - the `value` of an enclosing `json_each`;
+              - a column that the schema marks `Json` in a table of scale `Source`, `Structure`, `Chain` or `Release`.
+            - Anything else is refused, with its file and line.
+          - Today's API uses (`json_each(?N)` lists, `layers/write/store.rs` `json_each(?3)`) pass. The arm checks' `json_each(structure_details.shape)` passes, as you saw in the approval.
+          - Tests on fixtures: each refused and allowed form.
+
+          **T8. Scan guard in `xtask science`.**
+          - Before each query check, the runner reads its `EXPLAIN QUERY PLAN` on the loaded database.
+          - It fails the check, naming the table, wherever the plan has a `SCAN` of an `Object` or `Entry` table. An index walk over the whole table (`SCAN … USING INDEX`) counts as a scan too. Only `SEARCH` passes.
+          - Tests: a check that scans `entries` fails, and one that searches by `(release, source)` passes.
+
+          **T9. Every science check reads indexed rows.**
+          - Rules on `entries.flags` and `extra` (`rules/science-checks.yaml` :104, :274, :347, :392, :414, :431, :452) read `entry_flags` and `entry_references`.
+          - `masers-on-their-model-arms` reads `memberships`.
+          - I'll run every check's plan against a schema-8 fixture and against release 15 migrated on a clone, which needs your word (below).
+            - Each check the guard flags is rewritten, or given an index the schema keeps.
+            - A whole-release census that can't be made a `SEARCH` comes to you with its plan, rather than being exempted.
+          - Each check keeps its citation and its expectation.
+
+          **T10. Rules recorded, and traces.**
+          - **CLAUDE.md** gets a *Data and science rules* bullet: no JSON in object- or entry-scale tables, JSON functions only on bound parameters or small tables, checks must search rather than scan, and `cargo xtask json` and the scan guard enforce it.
+          - **Memory:** a feedback note with the why (the 20-minute maser check).
+          - **Traces:** the four Constraints and the membership criteria link to the T1–T9 tests in `loft.trace.yaml`.
+
+          **T11. Wave review**, as above.
+
+          ## The real store and release 16 (each on your word)
+
+          1. **Migrate a clone.**
+             - Make an APFS clone of `.cache/univ-ingest/wrangler`, then run `univ-ingest migrate --persist-to <clone>` and `reindex`, timed and in the background.
+             - Check: the API on the clone answers a sample of objects the same as on the real state (records compared field by field), and `xtask science --store` runs every check under the scan guard.
+             - Then swap the clone in, keeping the old state beside it.
+          2. **Release 16.**
+             - A build as a change on migrated release 15. It adds only the memberships, and rows whose JSON moved are unchanged after reindex.
+             - Publish to a clone, run the science checks in full, then swap.
+
+          ## Kept throughout
+
+          - Each task is a Yard task, marked active and done as it runs, and each wave keeps a `build-issues` note.
+          - Focused checks run between tasks: `cargo test -p <crate> <filter>`, clippy `-D warnings`, `cargo fmt --check`, and `loft check`.
+          - Commits are `feat(model|ingest|api|xtask): …`, with `.yard/` committed alongside.
+
+          ## Verification
+
+          - **Wave 1:**
+            - `cargo test -p univ-model -p univ-ingest -p univ-api`, with the API's record tests unchanged;
+            - migration round-trip tests;
+            - `cargo xtask check` and `cargo xtask integration`, whose Rust end-to-end tests read objects with flags, references and links through the Worker.
+          - **Wave 2:**
+            - `cargo xtask json` passes on the tree and fails on each fixture of a refused form;
+            - the scan guard passes every check of `rules/science-checks.yaml` on a fixture store;
+            - full gate and integration.
+          - **Store and release 16:**
+            - object records identical before and after migration on a sample;
+            - every science check passes under the scan guard;
+            - `masers-on-their-model-arms` and every check run in seconds, where the maser check took more than 20 minutes on release 15.
+        planMode: true
+    responses:
+      - key: 01a1ccad-b10b-7009-8cd4-00038ab5d934
+        at: 2026-11-11T22:14:57Z
+        revision: 8
+        by:
+          name: "ariloudev"
+          email: "contact@askloft.ai"
+        channel: page
+        verdict: approved
+  - key: 01a1ccad-dfdd-72e9-a8d9-b54ea6096c1d
+    id: spec-committed
+    kind: note
+    versions:
+      - key: 01a1ccad-dfdd-72e9-a8d9-b5502be49207
+        at: 2026-11-11T22:15:09Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Spec committed"
+        markdown: "Approved on the page and committed as `620f2f4`; `351b44e` corrects the decision's consequence to schema **8** (the schema was already at 7) with held releases migrated in place, a minor change under the standing approval."
+        tone: success
+  - key: 01a1ccad-dfdd-72e9-a8d9-b54f484b94fe
+    id: d-plan
+    kind: decision
+    number: 4
+    versions:
+      - key: 01a1ccad-dfdd-72e9-a8d9-b5515e8e09b3
+        at: 2026-11-11T22:15:09Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The build runs as two waves, then the store and release 16"
+        consequence: "Wave 1 (stage/relational-schema-1) moves the schema to 8 with the new tables, ingest, reads and migration; wave 2 (stage/relational-schema-2) adds the json gate, the scan guard, the rewritten checks and the recorded rules. Migrating the real store and building release 16 each wait for the owner's word."

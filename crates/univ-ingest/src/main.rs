@@ -24,7 +24,7 @@ use univ_model::redshift::{CmbCorrection, DipoleModel};
 
 mod store_cli;
 
-use store_cli::{LocalArgs, ReindexArgs, StoreArgs, on_store, reindex};
+use store_cli::{MigrateArgs, ReindexArgs, StoreArgs, on_store, reindex};
 
 /// Exit status of a run the owner interrupted, as for a shell's SIGINT.
 const INTERRUPTED: u8 = 130;
@@ -75,8 +75,11 @@ enum Command {
     /// rows valid from their release to the next, each R2 file copied to the key of its SHA-256,
     /// and the old keys deleted last. Nothing is built or uploaded again, and a stopped run is
     /// finished by the next; a store already at schema 6 is left as it is. A publish does the
-    /// same first.
-    Migrate(LocalArgs),
+    /// same first. Then moves the JSON that schema 7 kept in tables per object and per entry into
+    /// the rows of schema 8, in the local D1's own files, vacuums each, and reindexes `--state`
+    /// from it. No Worker may have the local D1 open: run it on a clone of the state and its
+    /// local D1, and swap them in once migrated.
+    Migrate(MigrateArgs),
     /// Makes again, from the local D1, the state's row index and numbering of the release latest
     /// points to: what the next build compares its rows with to write only its change. The
     /// state's last release must be the one latest points to, and the local D1 of schema 6.

@@ -1,0 +1,59 @@
+key: 01a1cbc0-d4ed-7191-a3da-63a18d5a9ec2
+id: release-15
+versions:
+  - key: 01a1cbc0-d4ed-7191-a3da-63a6e78d442a
+    at: 2026-11-11T17:56:14Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Release 15"
+    goal: "Release 15 is built, published, checked and swapped in, with Zari's stars and the model arms"
+    status: planned
+  - key: 01a1cc3f-15f6-719f-99ac-e7258c09799c
+    at: 2026-11-11T20:14:08Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Release 15"
+    goal: "Release 15 is built, published, checked and swapped in, with Zari's stars and the model arms"
+    status: active
+  - key: 01a1cc9f-564a-778c-8e8c-4198d22c3f17
+    at: 2026-11-11T21:59:16Z
+    revision: 13
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Release 15"
+    goal: "Release 15 is built, published, checked and swapped in, with Zari's stars and the model arms"
+    status: done
+blocks:
+  - key: 01a1cc9f-564a-778c-8e8c-41962a66bc3c
+    id: r15-published
+    kind: note
+    versions:
+      - key: 01a1cc9f-564a-778c-8e8c-41992f794033
+        at: 2026-11-11T21:59:16Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Release 15 swapped in"
+        markdown: |-
+          Built from `b4a271a` (fetch 30 s, build 39 min, publish to an APFS clone 19 min) and swapped into the real state at 21:52 UTC; release 14's state kept beside it in `r15/wrangler-r14`.
+
+          | Check | Result |
+          |---|---|
+          | luminous-hot-stars-every-row | PASS, 417,535 |
+          | luminous-hot-star-distances-inferred | PASS |
+          | luminous-hot-stars-placed-by | Bailer-Jones 207,107; Zari 184,092; Gaia DR3 bright 25,519; Hipparcos 15 |
+          | model-spiral-arms | PASS, 14 |
+          | local-arm-beside-the-sun | PASS, 375 pc |
+          | tracers-name-their-kind | PASS |
+          | twompp-sdss-sourced, local-group-duplicates | FAIL as in release 14; accepted by the owner |
+          | fingerprints | FAIL as in release 14: `--store` rewrites `release` |
+          | masers-on-their-model-arms, unplaced-by-reason | skipped on the owner's word: the maser check read `entries.flags` JSON over every entry; product/relational-schema removes that JSON |
+
+          Tracers: 563,094 points in 182 nodes, encoding 4.
+        tone: success

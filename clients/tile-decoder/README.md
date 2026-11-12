@@ -66,7 +66,10 @@ const points = decodeTile(bytes, node, manifest);
   - `logAge`, in a version 3 tile where the point carries one in place of a colour index (an
     open cluster of the Galaxy tracers domain): the base-10 logarithm of its age in years, to
     the hundredth. Absent before version 3 and for a point with none.
-- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2, 3]`.
+  - `objectKind`, in a version 4 tile where the point's object names one: what the Galaxy
+    tracer is, such as `open_cluster` or `luminous_hot_star`, from
+    `manifest.encoding.object_kinds`. Absent before version 4 and for one body.
+- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2, 3, 4]`.
 
 `decodeTile` throws an `Error` in these cases:
 
@@ -74,10 +77,12 @@ const points = decodeTile(bytes, node, manifest);
 - the encoding version is one it does not know (the message names the version; the version is
   read before the size, so this holds at any size);
 - a reserved field is not zero;
-- the size is not `48 + 17 n` for the tile's count `n`, or not the node's `points` and `bytes`;
+- the size is not `48 + p n` for the tile's count `n`, `p` its version's point bytes (17, 20 or 21), or not
+  the node's `points` and `bytes`;
 - the header's corner and edge are not the node's bounds and its level's step;
 - an object id is outside 1 to 2^53 − 1;
-- a source or kind of value is not listed in the manifest.
+- a source or kind of value is not listed in the manifest, or, in a version 4 tile, a kind of
+  object code is beyond `manifest.encoding.object_kinds`.
 
 It does not check the tile's SHA-256 against `node.sha256`; a client that wants to can use
 `crypto.subtle.digest('SHA-256', bytes)`.
@@ -116,6 +121,18 @@ Version 2 has the version field 2 and two columns more, so a tile of `n` points 
 A value decodes to the number held over 100, within 0.005 of the value it was built from. A
 value of −32768 with a code other than 0, or the other way round, is refused, and so is code 3
 in a version 2 tile.
+
+## Encoding version 4
+
+Version 4 has the version field 4 and version 3's columns, then one more, so a tile of `n`
+points is `48 + 21 n` bytes:
+
+| Offset | Type | Field |
+|---|---|---|
+| 48 + 20n | n × u8 | Each point's kind of object: 0 for none, else 1 + an index in `manifest.encoding.object_kinds` |
+
+Only the Galaxy tracers' tiles take version 4; every other scale domain's keep version 3, so a
+release that adds version 4 leaves their files as they were.
 
 The Rust encoder and reference decoder are in `crates/univ-model/src/tile/`.
 `univ_model::tile::format::layout` gives the same layout as data, for Univ Server's tile format

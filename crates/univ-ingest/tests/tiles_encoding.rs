@@ -17,7 +17,9 @@ use univ_ingest::tiles::{
 };
 use univ_model::cosmology::Cosmology;
 use univ_model::position::{Frame, from_icrs};
-use univ_model::tile::{MAX_POINTS, MAX_TILE_BYTES, STEPS, decode, tile_bytes};
+use univ_model::tile::{
+    MAX_POINTS, MAX_TILE_BYTES, POINT_BYTES, STEPS, V4_POINT_BYTES, decode, max_points, tile_bytes,
+};
 
 #[test]
 fn positions_are_quantized_within_a_step_of_one_65536th_of_their_node() {
@@ -167,8 +169,8 @@ fn every_tile_stays_within_one_mebibyte_under_the_repository_rules() {
     // SIMULATED stress: 300,000 points, half spread over 10 kpc and half packed into a few
     // star-cluster-sized clumps, under the repository's rules.
     let rules = repository_rules();
-    assert!(tile_bytes(rules.split_threshold) <= MAX_TILE_BYTES);
-    assert!(tile_bytes(rules.level_points) <= MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, rules.split_threshold) <= MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, rules.level_points) <= MAX_TILE_BYTES);
     let mut points = uniform(150_000, 10_000.0, 12);
     let mut lcg = Lcg(13);
     for id in 150_001..=300_000 {
@@ -206,7 +208,9 @@ fn a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it
     };
     // The four nodes above the cell, at depths 0 to 3, keep 500 points each.
     let above = 4 * 500;
-    let too_many = u64::try_from(MAX_POINTS + above).unwrap() + 1;
+    // The stars' tiles take version 3, of 20 bytes a point.
+    let most = max_points(POINT_BYTES);
+    let too_many = u64::try_from(most + above).unwrap() + 1;
     let Err(refused) = build_domain(ScaleDomain::Stars, &crowded(too_many), &gaia(), &context)
     else {
         panic!("built")
@@ -222,13 +226,13 @@ fn a_cell_at_the_maximum_depth_too_full_for_one_tile_refuses_the_build_naming_it
     };
     assert_eq!(domain, "stars");
     assert_eq!(address.len(), 5, "a node at depth 4: {address}");
-    assert_eq!(*points, MAX_POINTS + 1, "less what the nodes above it keep");
+    assert_eq!(*points, most + 1, "less what the nodes above it keep");
     assert!(*bytes > MAX_TILE_BYTES);
     assert!(refused.to_string().contains(address.as_str()), "{refused}");
 
-    let full = u64::try_from(MAX_POINTS + above).unwrap();
+    let full = u64::try_from(most + above).unwrap();
     let built = build_domain(ScaleDomain::Stars, &crowded(full), &gaia(), &context).unwrap();
-    assert_eq!(built.largest_tile(), tile_bytes(MAX_POINTS));
+    assert_eq!(built.largest_tile(), tile_bytes(POINT_BYTES, most));
     assert!(built.largest_tile() <= MAX_TILE_BYTES);
 }
 

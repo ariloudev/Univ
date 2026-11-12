@@ -15,7 +15,7 @@ use univ_model::release::rows::name_key;
 use univ_model::valid_in;
 
 use super::vocabulary::vocabulary;
-use crate::backend::{Backend, column, first, json_column};
+use crate::backend::{Backend, column, first};
 use crate::problem::{Problem, ProblemType};
 use crate::shards::{shard_map, shard_of};
 
@@ -62,20 +62,35 @@ async fn change<B: Backend>(
     release: u32,
     id: u64,
 ) -> Result<Option<LedgerChange>, Problem> {
-    let rows = backend
-        .releases(
-            "SELECT release, change, replaced_by FROM ids_replaced \
-             WHERE id = ?1 AND release <= ?2",
-            &[json!(id), json!(release)],
-        )
-        .await?;
-    first(rows)
+    let params = [json!(id), json!(release)];
+    let mut rows = backend
+        .releases_batch(&[
+            (
+                "SELECT release, change FROM ids_replaced WHERE id = ?1 AND release <= ?2",
+                &params,
+            ),
+            (
+                "SELECT replaced_by FROM id_replacements WHERE id = ?1 AND release <= ?2 \
+                 ORDER BY n",
+                &params,
+            ),
+        ])
+        .await?
+        .into_iter();
+    let (changes, by) = (
+        rows.next().unwrap_or_default(),
+        rows.next().unwrap_or_default(),
+    );
+    first(changes)
         .map(|row| {
             Ok(LedgerChange {
                 id,
                 release: column(&row, "release")?,
                 change: column(&row, "change")?,
-                replaced_by: json_column(&row, "replaced_by")?,
+                replaced_by: by
+                    .iter()
+                    .map(|row| column(row, "replaced_by"))
+                    .collect::<Result<_, _>>()?,
             })
         })
         .transpose()

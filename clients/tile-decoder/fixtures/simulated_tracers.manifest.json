@@ -1,0 +1,310 @@
+{
+  "format": "univ-tile-manifest",
+  "manifest_version": 1,
+  "release": "1",
+  "scale_domain": "galaxy_tracers",
+  "frame": {
+    "name": "ICRS equatorial Cartesian",
+    "origin": "Solar System barycentre",
+    "axes": "x toward (RA, Dec) = (0 deg, 0 deg), y toward (90 deg, 0 deg), z toward Dec = +90 deg",
+    "epoch": "each object's position at the epoch of its preferred sky position, not propagated"
+  },
+  "unit": "pc",
+  "cosmology": {
+    "name": "Planck 2018 (A&A 641, A6, Table 2: TT,TE,EE+lowE+lensing+BAO)",
+    "hubble_constant": 67.66,
+    "omega_matter": 0.3111
+  },
+  "rotations": {
+    "applied_as": "row-major matrix times the ICRS column vector [x, y, z]",
+    "to_galactic": [
+      [
+        -0.05487556041621561,
+        -0.873437090234885,
+        -0.48383501554871317
+      ],
+      [
+        0.49410942787558354,
+        -0.44482962996001124,
+        0.7469822444972188
+      ],
+      [
+        -0.8676661490190047,
+        -0.1980763734312013,
+        0.45598377617506697
+      ]
+    ],
+    "galactic_basis": "Hipparcos catalogue (ESA 1997, vol. 1, sec. 1.5.3): the transpose of A_G",
+    "to_supergalactic": [
+      [
+        0.37501547780780486,
+        0.3413589618290254,
+        0.861880183426672
+      ],
+      [
+        -0.8983204556165199,
+        -0.09572714072498714,
+        0.4287851134887344
+      ],
+      [
+        0.22887496679521785,
+        -0.9350456532745492,
+        0.27075057870087615
+      ]
+    ],
+    "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
+  },
+  "encoding": {
+    "version": 4,
+    "header_bytes": 48,
+    "point_bytes": 21,
+    "steps_per_edge": 65536,
+    "max_tile_bytes": 1048576,
+    "point_source": "the index in sources of the source of the point's preferred distance, which gives its kind of value too",
+    "kinds": [
+      "measured",
+      "estimated",
+      "inferred",
+      "reconstructed"
+    ],
+    "colour_bands": [
+      "BP-RP",
+      "B-V"
+    ],
+    "log_age_code": 3,
+    "object_kinds": [
+      "galaxy_group",
+      "open_cluster",
+      "globular_cluster",
+      "classical_cepheid",
+      "rr_lyrae_star",
+      "star_forming_region",
+      "luminous_hot_star"
+    ]
+  },
+  "levels": [
+    {
+      "level": 0,
+      "edge": 16384.0,
+      "step": 0.25,
+      "fraction": 0.2
+    },
+    {
+      "level": 1,
+      "edge": 8192.0,
+      "step": 0.125,
+      "fraction": 1.0
+    }
+  ],
+  "sampling": {
+    "seed": 5,
+    "generator": "ChaCha20, key the seed's 8 little-endian bytes then 24 zero bytes, stream the domain's number; level by level from the root, the nodes of a level in order of address, an inner node of n points keeps floor(level_points * n / m) of them, m the most points reaching any inner node of its level, drawn by a partial Fisher-Yates shuffle over its points in increasing id; a leaf keeps every point reaching it, the finest level of its region",
+    "stream": 3,
+    "split_threshold": 12,
+    "level_points": 8,
+    "max_depth": 3,
+    "statement": "test rules"
+  },
+  "points": 40,
+  "radius": 7131.131097695334,
+  "sources": [
+    {
+      "index": 0,
+      "id": "hunt-reffert-2023",
+      "role": "distance_and_position",
+      "title": "Hunt & Reffert 2023 open clusters",
+      "citation": "Hunt E.L., Reffert S. 2023, \"Improving the open cluster census. II. An all-sky cluster catalogue with Gaia DR3\", A&A 673, A114. 2023A&A...673A.114H. VizieR catalogue J/A+A/673/A114.",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite Hunt & Reffert 2023, A&A 673, A114."
+    },
+    {
+      "index": 1,
+      "id": "zari-2021-luminous-hot-stars",
+      "role": "distance_and_position",
+      "title": "Zari 2021 luminous hot stars",
+      "citation": "Zari E., Rix H.-W., Frankel N., Xiang M., Poggio E., Drimmel R., Tkachenko A. 2021, \"Mapping luminous hot stars in the Galaxy\", A&A 650, A112. 2021A&A...650A.112Z. VizieR catalogue J/A+A/650/A112, doi:10.26093/cds/vizier.36500112.",
+      "credit": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23. Cite Zari et al. 2021, A&A 650, A112. The parallaxes are from Gaia EDR3: ESA/Gaia/DPAC."
+    }
+  ],
+  "nodes": [
+    {
+      "address": "r",
+      "level": 0,
+      "bounds": {
+        "min": [
+          -8192.0,
+          -8192.0,
+          -8192.0
+        ],
+        "max": [
+          8192.0,
+          8192.0,
+          8192.0
+        ]
+      },
+      "points": 8,
+      "sampled_from": 40,
+      "bytes": 216,
+      "sha256": "3035bd63850c6c65e290114894778c7e40f9f7741fb78594189c5dee4543f4ae"
+    },
+    {
+      "address": "r0",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -8192.0,
+          -8192.0,
+          -8192.0
+        ],
+        "max": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "points": 2,
+      "sampled_from": 2,
+      "bytes": 90,
+      "sha256": "01c317e7cff3d81a360885fd7913da557b5f2447a7fb5f944535d57d37bf6b20"
+    },
+    {
+      "address": "r1",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          -8192.0,
+          -8192.0
+        ],
+        "max": [
+          8192.0,
+          0.0,
+          0.0
+        ]
+      },
+      "points": 1,
+      "sampled_from": 1,
+      "bytes": 69,
+      "sha256": "9ffa438aabace86fa69c6b0389c65fa25ac9eaba09f8ed122a99ec5b6ec5eba6"
+    },
+    {
+      "address": "r2",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -8192.0,
+          0.0,
+          -8192.0
+        ],
+        "max": [
+          0.0,
+          8192.0,
+          0.0
+        ]
+      },
+      "points": 4,
+      "sampled_from": 4,
+      "bytes": 132,
+      "sha256": "bb32d14f86c28fc75007d8237dc8ce576c77b1b93b047fa402d61346be44c9a0"
+    },
+    {
+      "address": "r3",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          0.0,
+          -8192.0
+        ],
+        "max": [
+          8192.0,
+          8192.0,
+          0.0
+        ]
+      },
+      "points": 2,
+      "sampled_from": 2,
+      "bytes": 90,
+      "sha256": "2c5c55e3bb128db133daa28ee73ef3a2cda1e46bf36c5927dd91b5ef36ea04df"
+    },
+    {
+      "address": "r4",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -8192.0,
+          -8192.0,
+          0.0
+        ],
+        "max": [
+          0.0,
+          0.0,
+          8192.0
+        ]
+      },
+      "points": 10,
+      "sampled_from": 10,
+      "bytes": 258,
+      "sha256": "0194ac50e30ae7bbe4236fe10082fbc20c7237897076427cca2d0ddb04302db4"
+    },
+    {
+      "address": "r5",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          -8192.0,
+          0.0
+        ],
+        "max": [
+          8192.0,
+          0.0,
+          8192.0
+        ]
+      },
+      "points": 5,
+      "sampled_from": 5,
+      "bytes": 153,
+      "sha256": "b22e30ba0d0b9f4199e92e8c50a4d703a7315871c5f8eae33c0fdb3da3a360ec"
+    },
+    {
+      "address": "r6",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -8192.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.0,
+          8192.0,
+          8192.0
+        ]
+      },
+      "points": 2,
+      "sampled_from": 2,
+      "bytes": 90,
+      "sha256": "ac12738bd7240b98c2dd4bb916eabaa778901577dd393549bc40836caace3a6d"
+    },
+    {
+      "address": "r7",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          8192.0,
+          8192.0,
+          8192.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 174,
+      "sha256": "2732542c50df6f4d988ac31d20482d6f79226d8e6db933069aa2acc2301e17d2"
+    }
+  ]
+}

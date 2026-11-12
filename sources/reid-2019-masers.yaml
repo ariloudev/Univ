@@ -80,3 +80,24 @@ flags:
       Loc: "Local arm."
       Per: "Perseus arm."
       LoS: "Local arm spur."
+# The arm each region was assigned to and fitted with. Table 2 fits seven arms: 3-kpc(N),
+# Norma, Sct-Cen, Sgr-Car, Local, Perseus and Outer; Sct-Cen joins Table 1's ScN, ScF and CtN,
+# and Sgr-Car its SgN, SgF and CrN. GC, Con, 3kF, OSC and the Local arm spur LoS have no model.
+memberships:
+  - column: Arm
+    cite: >-
+      Reid et al. 2019, ApJ 885, 131: Table 1 (VizieR J/ApJ/885/131/table1), column Arm, Note
+      (4); Table 2 (Spiral Arm Characteristics), rows 3-kpc(N), Norma, Sct-Cen, Sgr-Car, Local,
+      Perseus, Outer.
+    structures:
+      3kN: reid-2019-3-kpc-near-arm
+      Nor: reid-2019-norma-arm
+      ScN: reid-2019-scutum-centaurus-arm
+      ScF: reid-2019-scutum-centaurus-arm
+      CtN: reid-2019-scutum-centaurus-arm
+      SgN: reid-2019-sagittarius-carina-arm
+      SgF: reid-2019-sagittarius-carina-arm
+      CrN: reid-2019-sagittarius-carina-arm
+      Loc: reid-2019-local-arm
+      Per: reid-2019-perseus-arm
+      Out: reid-2019-outer-arm

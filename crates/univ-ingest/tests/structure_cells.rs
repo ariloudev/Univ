@@ -239,6 +239,10 @@ fn a_sky_region_over_every_longitude_spans_all_360_degrees() {
 /// Catalog, its deepest source.
 const NEARBY_GALAXIES_MPC: f64 = 11.0;
 
+/// The reach of the Galaxy's structures: its model spiral arms run out to 16 kpc from its
+/// centre, about 24 kpc from the Sun.
+const GALAXY_MPC: f64 = 0.03;
+
 #[test]
 fn each_structure_is_in_the_scale_domain_its_published_distance_falls_in() {
     let release = Release::planck_2018();
@@ -256,8 +260,12 @@ fn each_structure_is_in_the_scale_domain_its_published_distance_falls_in() {
         };
         let expected = if distance > NEARBY_GALAXIES_MPC {
             ScaleDomain::CosmicWeb
-        } else {
+        } else if distance > GALAXY_MPC {
             ScaleDomain::NearbyGalaxies
+        } else {
+            // Within the Galaxy: its model spiral arms, listed among the tracers they are drawn
+            // with.
+            ScaleDomain::GalaxyTracers
         };
         assert_eq!(s.scale_domain, expected, "{id} at {distance} Mpc");
         checked += 1;

@@ -1,0 +1,44 @@
+key: 01a1cba0-4f98-7602-a8cc-28b73dfeaf38
+id: build
+versions:
+  - key: 01a1cba0-4f98-7602-a8cc-28bb61293ebd
+    at: 2026-11-11T17:20:43Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Build"
+    goal: "The explorer shows OB stars and young clusters face-on, with the Reid 2019 arm model as a labelled model layer, in a published release"
+    status: planned
+  - key: 01a1cbc0-d4ed-7191-a3da-63a536979517
+    at: 2026-11-11T17:56:14Z
+    revision: 11
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 1: data"
+    goal: "stage/spiral-arms-1 is merged: luminous hot stars, tile encoding 4 for the tracers, and the Reid 2019 arms as model structures, gated and reviewed"
+    status: active
+  - key: 01a1cc3f-15f6-719f-99ac-e723a74b81eb
+    at: 2026-11-11T20:14:08Z
+    revision: 12
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Wave 1: data"
+    goal: "stage/spiral-arms-1 is merged: luminous hot stars, tile encoding 4 for the tracers, and the Reid 2019 arms as model structures, gated and reviewed"
+    status: done
+blocks:
+  - key: 01a1cc3f-15f6-719f-99ac-e722afe2f3be
+    id: wave1-merged
+    kind: note
+    versions:
+      - key: 01a1cc3f-15f6-719f-99ac-e724074cf596
+        at: 2026-11-11T20:14:08Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Wave 1 merged"
+        markdown: "Merged on the owner's word as `b4a271a`. Every gate step passed but `loft reconcile`, which fails only on the nine explorer criteria wave 2 builds; integration green. Details in stage/spiral-arms-1's Yard Log."
+        tone: success

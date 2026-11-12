@@ -25,6 +25,7 @@ fn points() -> Vec<TilePoint> {
             source: 0,
             kind: KindOfValue::Measured,
             value: None,
+            object: None,
         },
         TilePoint {
             position: [0.0, 0.0, 512.0],
@@ -35,6 +36,7 @@ fn points() -> Vec<TilePoint> {
                 index: -327.67,
                 bands: ColourBands::BV,
             })),
+            object: None,
         },
     ];
     for k in 0..200_u32 {
@@ -54,6 +56,7 @@ fn points() -> Vec<TilePoint> {
                     bands: COLOUR_BANDS[k as usize % 2],
                 })
             }),
+            object: None,
         });
     }
     points
@@ -61,9 +64,11 @@ fn points() -> Vec<TilePoint> {
 
 #[test]
 fn the_most_points_a_tile_holds_fit_in_one_mebibyte() {
-    assert_eq!(MAX_POINTS, 52_426);
-    assert!(tile_bytes(MAX_POINTS) <= MAX_TILE_BYTES);
-    assert!(tile_bytes(MAX_POINTS + 1) > MAX_TILE_BYTES);
+    // A version 4 point is the widest, so it bounds a tile of either version written.
+    assert_eq!(MAX_POINTS, 49_929);
+    assert_eq!(max_points(POINT_BYTES), 52_426);
+    assert!(tile_bytes(V4_POINT_BYTES, MAX_POINTS) <= MAX_TILE_BYTES);
+    assert!(tile_bytes(V4_POINT_BYTES, MAX_POINTS + 1) > MAX_TILE_BYTES);
 }
 
 #[test]
@@ -71,9 +76,9 @@ fn a_tile_round_trips_within_half_a_step_of_each_position() {
     let node = node();
     let points = points();
     let bytes = encode(&node, &points).unwrap();
-    assert_eq!(bytes.len(), tile_bytes(points.len()));
+    assert_eq!(bytes.len(), tile_bytes(POINT_BYTES, points.len()));
     let tile = decode(&bytes).unwrap();
-    assert_eq!(tile.version, VERSION);
+    assert_eq!(tile.version, BASE_VERSION);
     assert_eq!(tile.node, node);
     assert_eq!(tile.points.len(), points.len());
     let step = node.step();
@@ -102,6 +107,7 @@ fn the_byte_layout_is_as_documented() {
             index: 1.856,
             bands: ColourBands::BV,
         })),
+        object: None,
     };
     let bytes = encode(&node, &[p]).unwrap();
     assert_eq!(&bytes[0..4], b"UVTL");
@@ -199,15 +205,22 @@ fn a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_c
 fn an_encoder_refuses_too_many_points_or_one_outside_its_node() {
     let node = node();
     let p = points()[0];
-    let many = vec![p; MAX_POINTS + 1];
+    // A version 3 tile holds 52,426 points of 20 bytes, a version 4 tile 49,929 of 21.
+    for (version, bytes) in [(BASE_VERSION, POINT_BYTES), (VERSION, V4_POINT_BYTES)] {
+        let most = max_points(bytes);
+        assert_eq!(
+            encode_as(version, &node, &vec![p; most + 1]),
+            Err(TileError::TooManyPoints {
+                points: most + 1,
+                point_bytes: bytes,
+            })
+        );
+        assert!(encode_as(version, &node, &vec![p; most]).is_ok());
+    }
     assert_eq!(
-        encode(&node, &many),
-        Err(TileError::TooManyPoints {
-            points: MAX_POINTS + 1,
-            point_bytes: POINT_BYTES,
-        })
+        encode_as(2, &node, &[p]),
+        Err(TileError::UnwrittenVersion(2))
     );
-    assert!(encode(&node, &vec![p; MAX_POINTS]).is_ok());
     let outside = TilePoint {
         position: [0.1, 0.0, 0.0],
         ..p
@@ -242,10 +255,10 @@ fn a_decoder_refuses_bad_input_with_an_error() {
     ));
 
     let mut version = good.clone();
-    version[4] = 4;
+    version[4] = 5;
     let error = decode(&version).unwrap_err();
-    assert_eq!(error, TileError::UnknownVersion(4));
-    assert!(error.to_string().contains("version 4"), "{error}");
+    assert_eq!(error, TileError::UnknownVersion(5));
+    assert!(error.to_string().contains("version 5"), "{error}");
 
     let mut magic = good.clone();
     magic[0] = b'X';
@@ -327,10 +340,10 @@ fn a_child_cube_halves_its_parent_and_takes_its_octant() {
 fn an_oversized_tile_of_an_unknown_version_is_refused_naming_its_version() {
     let mut bytes = vec![0; 1_048_577];
     bytes[..4].copy_from_slice(&MAGIC);
-    bytes[4..6].copy_from_slice(&4u16.to_le_bytes());
+    bytes[4..6].copy_from_slice(&5u16.to_le_bytes());
     let error = decode(&bytes).unwrap_err();
-    assert_eq!(error, TileError::UnknownVersion(4));
-    assert!(error.to_string().contains("version 4"), "{error}");
+    assert_eq!(error, TileError::UnknownVersion(5));
+    assert!(error.to_string().contains("version 5"), "{error}");
     bytes[..4].copy_from_slice(b"XXXX");
     assert_eq!(decode(&bytes), Err(TileError::Magic(*b"XXXX")));
     bytes[..4].copy_from_slice(&MAGIC);
@@ -338,10 +351,10 @@ fn an_oversized_tile_of_an_unknown_version_is_refused_naming_its_version() {
     assert_eq!(decode(&bytes), Err(TileError::Oversized(1_048_577)));
 }
 
-/// A version 1 tile of one point at the far corner of the node with corner `min` and edge
-/// `edge`.
+/// A tile of the newest version of one point at the far corner of the node with corner `min`
+/// and edge `edge`.
 fn one_point_tile(min: f64, edge: f64) -> Vec<u8> {
-    let mut bytes = vec![0; tile_bytes(1)];
+    let mut bytes = vec![0; tile_bytes(V4_POINT_BYTES, 1)];
     bytes[..4].copy_from_slice(&MAGIC);
     bytes[4..6].copy_from_slice(&VERSION.to_le_bytes());
     bytes[8..12].copy_from_slice(&1u32.to_le_bytes());
