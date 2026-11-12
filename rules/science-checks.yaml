@@ -347,7 +347,7 @@ checks:
         SELECT e.object_id FROM entries e WHERE e.release = :release
         AND e.source = source('researched-star-distances')
         AND NOT EXISTS (SELECT 1 FROM entry_references r WHERE r.release = e.release
-        AND r.object_id = e.object_id AND r.entry = e.entry AND r.citation <> '')
+        AND r.object_id = e.object_id AND r.entry = e.entry AND r.n = 0 AND r.citation <> '')
     expect: { equals: 0 }
     cite:
       - paper: "univ-server specification, feature Record a researched star distance"
@@ -939,16 +939,15 @@ checks:
     select:
       kind: report
       sql: >-
-        WITH domain(id, term) AS (SELECT id, term FROM terms WHERE release = :release
-        UNION ALL SELECT NULL, '-'), placing(placed) AS (VALUES (0), (1))
-        SELECT * FROM (SELECT d.term AS scale_domain, p.placed,
-        (SELECT count(*) FROM objects o WHERE o.release = :release AND o.scale_domain IS d.id
-        AND o.placed = p.placed) AS objects,
-        (SELECT min(o.distance_mpc) FROM objects o WHERE o.release = :release
-        AND o.scale_domain IS d.id AND o.placed = p.placed) AS min_mpc,
-        (SELECT max(o.distance_mpc) FROM objects o WHERE o.release = :release
-        AND o.scale_domain IS d.id AND o.placed = p.placed) AS max_mpc
-        FROM domain d, placing p) WHERE objects > 0 ORDER BY 1, 2
+        WITH RECURSIVE domain(id) AS (SELECT (SELECT min(scale_domain) FROM objects
+        WHERE scale_domain IS NOT NULL AND release = :release)
+        UNION ALL SELECT (SELECT min(scale_domain) FROM objects WHERE scale_domain > d.id
+        AND release = :release) FROM domain d WHERE d.id IS NOT NULL)
+        SELECT coalesce(t.term, '-') AS scale_domain, o.placed, count(*) AS objects,
+        min(o.distance_mpc) AS min_mpc, max(o.distance_mpc) AS max_mpc
+        FROM domain d JOIN objects o ON o.release = :release AND o.scale_domain IS d.id
+        LEFT JOIN terms t ON t.release = :release AND t.id = d.id
+        GROUP BY d.id, o.placed ORDER BY 1, 2
     cite: *domains
 
   - id: pulsating-stars-joined-to-gaia
@@ -1163,6 +1162,43 @@ checks:
       sources/reid-2019-masers.yaml, one row for each maser and its arm. Fewer means masers lost
       or two merged into one object; none means a release built before memberships were
       written, such as release 15.
+
+  - id: masers-on-the-arm-their-code-names
+    title: Each Reid 2019 maser is a member of the arm its Arm code names, and of no other
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        WITH arm(code, id) AS (VALUES ('Loc', 'reid-2019-local-arm'),
+        ('Per', 'reid-2019-perseus-arm'), ('Out', 'reid-2019-outer-arm'),
+        ('Nor', 'reid-2019-norma-arm'), ('3kN', 'reid-2019-3-kpc-near-arm'),
+        ('SgN', 'reid-2019-sagittarius-carina-arm'), ('SgF', 'reid-2019-sagittarius-carina-arm'),
+        ('CrN', 'reid-2019-sagittarius-carina-arm'), ('ScN', 'reid-2019-scutum-centaurus-arm'),
+        ('ScF', 'reid-2019-scutum-centaurus-arm'), ('CtN', 'reid-2019-scutum-centaurus-arm')),
+        maser(object_id, arm) AS (SELECT f.object_id, a.id FROM arm a
+        JOIN entry_flags f ON f.flag = term('Arm') AND f.value = a.code AND f.release = :release
+        JOIN entries e ON e.release = f.release AND e.object_id = f.object_id
+        AND e.entry = f.entry AND e.source = source('reid-2019-masers'))
+        SELECT m.object_id, m.arm, 'not a member' AS found FROM maser m
+        WHERE NOT EXISTS (SELECT 1 FROM memberships s WHERE s.object_id = m.object_id
+        AND s.structure = m.arm AND s.release = :release)
+        UNION ALL SELECT s.object_id, s.structure, 'a member of another' FROM structure_details d
+        CROSS JOIN memberships s ON s.structure = d.id AND s.release = :release
+        AND s.source = source('reid-2019-masers') WHERE d.release = :release
+        AND NOT EXISTS (SELECT 1 FROM maser m WHERE m.object_id = s.object_id AND m.arm = s.structure)
+    expect: { equals: 0 }
+    cite:
+      - paper: "Reid et al. 2019, ApJ 885, 131"
+        locator: "Table 1 (VizieR J/ApJ/885/131/table1), column Arm, Note (4); Table 2"
+        quote: >-
+          Arm codes of table1: Loc Local, Per Perseus, Out Outer, Nor Norma, 3kN 3-kpc near,
+          SgN/SgF Sagittarius-Carina near and far, CrN Carina near, ScN/ScF Scutum-Centaurus near
+          and far, CtN Centaurus near; the seven arms of Table 2.
+        fetched: "VizieR, http://vizier.idia.ac.za/viz-bin/asu-tsv, 2026-11-10"
+    note: >-
+      The map is written here apart from sources/reid-2019-masers.yaml, so that a wrong entry
+      there shows as masers that are not members of their arm and members of another. With
+      masers-members-of-their-arms' count of 182 it holds each maser on its arm once.
 
   - id: unplaced-by-reason
     title: Unplaced objects by reason

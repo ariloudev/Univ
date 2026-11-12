@@ -260,8 +260,6 @@ pub enum ColumnKind {
     Json,
 }
 
-impl ColumnKind {}
-
 pub use super::scale::Scale;
 
 /// Which rows of a table belong to release n.
@@ -310,6 +308,15 @@ pub struct Table {
 }
 
 impl Table {
+    /// The columns of kind [`ColumnKind::Json`].
+    pub fn json_columns(&self) -> impl Iterator<Item = &'static str> {
+        self.columns
+            .iter()
+            .zip(self.kinds)
+            .filter(|(_, kind)| **kind == ColumnKind::Json)
+            .map(|(column, _)| *column)
+    }
+
     /// The position of `column` among the columns.
     #[must_use]
     pub fn position(&self, column: &str) -> Option<usize> {

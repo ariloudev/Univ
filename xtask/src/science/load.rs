@@ -184,11 +184,22 @@ const CHECK_INDEXES: &[(&str, &str)] = &[
 ///
 /// Fails when an index cannot be made.
 pub fn index(db: &Connection) -> Result<(), String> {
-    for (n, (table, columns)) in CHECK_INDEXES.iter().enumerate() {
+    // CREATE INDEX sorts its rows: let the sorter use worker threads.
+    db.execute_batch("PRAGMA threads = 8")
+        .map_err(|e| format!("cannot set up the sorter: {e}"))?;
+    for (table, columns) in CHECK_INDEXES {
         db.execute_batch(&format!(
-            "CREATE INDEX IF NOT EXISTS check_{n} ON {table} ({columns})"
+            "CREATE INDEX IF NOT EXISTS {} ON {table} ({columns})",
+            check_index(table, columns)
         ))
         .map_err(|e| format!("cannot index {table} ({columns}) for the checks: {e}"))?;
     }
     Ok(())
+}
+
+/// The name of the check index of `table` on `columns`, made of them, so that a database kept
+/// with `--db` and indexed by an older list never holds another index under the same name.
+fn check_index(table: &str, columns: &str) -> String {
+    let columns: Vec<&str> = columns.split(',').map(str::trim).collect();
+    format!("check_{table}_by_{}", columns.join("_"))
 }

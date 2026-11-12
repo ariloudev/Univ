@@ -55,10 +55,11 @@ Run them from this directory.
   non-zero on any FAIL. `--db <file>` keeps the database in a file and reuses it on the next run.
   `--store <wrangler-dir>` reads the release's rows from the local D1 it was published to, rather
   than from the builds of its chain; a release built as a change needs one or the other.
-  Before each query or report it reads the query's plan, and fails a check that scans a table per
-  object or per catalogue entry, or searches it by the release alone (the scan guard). The
-  scratch database has indexes of its own for the checks (`CHECK_INDEXES` in
-  `xtask/src/science/load.rs`), which D1 does not keep.
+  Before each query or report it reads the query's bytecode, and fails a check that reads a table
+  per object or per catalogue entry whole: a scan, a walk of a whole index, a count, or an
+  automatic index built over it (the scan guard). The scratch database has indexes of its own for
+  the checks (`CHECK_INDEXES` in `xtask/src/science/load.rs`, named by their columns), which D1
+  does not keep.
 - `cargo xtask integration` runs Univ Server's end-to-end tests: it writes the fixture state
   (ingest's fixture releases, the first pruned) into `target/integration/state`, applies the
   univ-layers migrations, starts `wrangler dev` on a free port and runs the ignored tests of

@@ -14,15 +14,12 @@ mod sql;
 mod tests;
 mod tokens;
 
-pub(crate) use sql::tables_named;
-
-use std::fs;
 use std::io;
 use std::path::Path;
 
-use univ_model::release::{ColumnKind, SCHEMA, TABLES, Table};
+use univ_model::release::{SCHEMA, TABLES, Table};
 
-use crate::lines::listed;
+use crate::lines::{listed, read_listed};
 
 /// Where the project's SQL is: Rust's string literals, the rules' YAML strings, SQL files.
 const PATHSPECS: &[&str] = &["crates/*.rs", "xtask/*.rs", "rules/*.yaml", "*.sql"];
@@ -65,12 +62,7 @@ fn schema(tables: &[Table], schema: &str) -> Vec<Refusal> {
             .lines()
             .position(|l| l.starts_with("CREATE TABLE") && l.contains(&created))
             .map_or(0, |n| n + 1);
-        for (column, _) in table
-            .columns
-            .iter()
-            .zip(table.kinds)
-            .filter(|(_, kind)| **kind == ColumnKind::Json)
-        {
+        for column in table.json_columns() {
             refused.push(Refusal {
                 file: SCHEMA_FILE.to_owned(),
                 line,
@@ -89,12 +81,10 @@ fn schema(tables: &[Table], schema: &str) -> Vec<Refusal> {
 fn scan(root: &Path) -> io::Result<Vec<Refusal>> {
     let mut refused = Vec::new();
     for path in listed(root, PATHSPECS)? {
-        let text = match fs::read_to_string(&path) {
-            Ok(text) => text,
-            // A tracked file deleted from the working tree is still listed.
-            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
-            Err(error) => return Err(io::Error::new(error.kind(), path.display().to_string())),
+        let Some(bytes) = read_listed(&path)? else {
+            continue;
         };
+        let text = String::from_utf8_lossy(&bytes);
         let file = path
             .strip_prefix(root)
             .unwrap_or(&path)
@@ -133,6 +123,7 @@ fn in_sql(text: &str) -> Vec<(usize, sql::Found)> {
 fn in_rust(code: &str) -> Vec<(usize, sql::Found)> {
     rust::literals(code)
         .into_iter()
+        .filter(|(_, text)| may_apply_json(text))
         .flat_map(|(start, text)| {
             sql::refusals(&text)
                 .into_iter()
@@ -157,11 +148,22 @@ fn in_yaml(text: &str) -> Result<Vec<(usize, sql::Found)>, serde_norway::Error> 
                 .map(|s| s.matches(call).count())
                 .sum::<usize>()
                 + string[..f.at].matches(call).count();
-            let at = text.match_indices(call).nth(before).map_or(0, |(at, _)| at);
+            // An alias of the YAML repeats its strings, so the count can run past the file's.
+            let mut places = text.match_indices(call).map(|(at, _)| at);
+            let at = places
+                .clone()
+                .nth(before)
+                .or_else(|| places.next())
+                .unwrap_or(0);
             found.push((line_of(text, at), f));
         }
     }
     Ok(found)
+}
+
+/// Whether `text` may hold a JSON function or arrow: most string literals of Rust are not SQL.
+fn may_apply_json(text: &str) -> bool {
+    text.contains("->") || text.to_ascii_lowercase().contains("json")
 }
 
 /// Every string of `value`, in the order of the document.

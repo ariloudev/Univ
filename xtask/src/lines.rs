@@ -40,6 +40,23 @@ pub fn listed(root: &Path, pathspecs: &[&str]) -> io::Result<Vec<PathBuf>> {
         .collect())
 }
 
+/// The bytes of `path`, a file [`listed`]: none when it is gone, as a tracked file deleted from
+/// the working tree is still listed.
+///
+/// # Errors
+///
+/// Fails when the file cannot be read; the error names it.
+pub fn read_listed(path: &Path) -> io::Result<Option<Vec<u8>>> {
+    match fs::read(path) {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(io::Error::new(
+            error.kind(),
+            format!("{}: {error}", path.display()),
+        )),
+    }
+}
+
 /// Every `.rs` file git sees under `root`, tracked or new but not ignored, with more than `limit`
 /// lines, with its line count, in path order.
 ///
@@ -49,16 +66,8 @@ pub fn listed(root: &Path, pathspecs: &[&str]) -> io::Result<Vec<PathBuf>> {
 pub fn over_limit(root: &Path, limit: usize) -> io::Result<Vec<(PathBuf, usize)>> {
     let mut found = Vec::new();
     for path in listed(root, &["*.rs"])? {
-        let bytes = match fs::read(&path) {
-            Ok(bytes) => bytes,
-            // A tracked file deleted from the working tree is still listed.
-            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
-            Err(error) => {
-                return Err(io::Error::new(
-                    error.kind(),
-                    format!("{}: {error}", path.display()),
-                ));
-            }
+        let Some(bytes) = read_listed(&path)? else {
+            continue;
         };
         let lines = line_count(&bytes);
         if lines > limit {

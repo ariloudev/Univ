@@ -118,12 +118,7 @@ fn statement<'c>(release: &Release<'c>, sql: &str) -> Result<rusqlite::Statement
             whole.join("; ")
         ));
     }
-    let mut q = release.db.prepare(sql).map_err(|e| e.to_string())?;
-    if let Some(i) = q.parameter_index(":release").map_err(|e| e.to_string())? {
-        q.raw_bind_parameter(i, release.number)
-            .map_err(|e| e.to_string())?;
-    }
-    Ok(q)
+    plan::bound(release.db, sql, release.number)
 }
 
 /// The rows `sql` gives, those whose first column is an object id in `skip` left out: the

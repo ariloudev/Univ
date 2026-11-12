@@ -71,44 +71,54 @@ enum Source {
 
 struct Statement<'t, 'a> {
     tokens: &'t [Token<'a>],
-    /// Each table name and alias, in lower case.
-    sources: HashMap<String, Source>,
+    /// What each table name and alias, in lower case, reads: an alias given again in a subquery
+    /// reads each.
+    sources: HashMap<String, Vec<Source>>,
     /// Whether it reads a `json_each` or `json_tree`, whose `value` it may name bare.
     each: bool,
+    /// Whether it reads any table at all: with no `FROM` or `JOIN` it reads no stored column.
+    reads_tables: bool,
 }
 
 impl<'t, 'a> Statement<'t, 'a> {
     fn new(tokens: &'t [Token<'a>]) -> Self {
-        let mut sources = HashMap::new();
-        let mut each = false;
+        let mut sources: HashMap<String, Vec<Source>> = HashMap::new();
+        let mut bind = |name: &str, source: Source| {
+            sources
+                .entry(name.to_ascii_lowercase())
+                .or_default()
+                .push(source);
+        };
+        let mut reads_tables = false;
         for (i, t) in tokens.iter().enumerate() {
             if !(t.is_word("from") || t.is_word("join")) {
                 continue;
             }
+            reads_tables = true;
             let mut j = i + 1;
             while let Some(name) = tokens.get(j).filter(|t| t.is_name()) {
                 let lower = name.text.to_ascii_lowercase();
-                let source = if tokens.get(j + 1).is_some_and(|t| t.is_punct("(")) {
+                // A table-valued function: a json_each is named below, wherever it stands.
+                let function = tokens.get(j + 1).is_some_and(|t| t.is_punct("("));
+                let source = if function {
                     j = closing(tokens, j + 1) + 1;
-                    if EACH.contains(&lower.as_str()) {
-                        Source::Each
-                    } else {
-                        Source::Other(lower)
-                    }
+                    (!EACH.contains(&lower.as_str())).then_some(Source::Other(lower))
                 } else {
                     j += 1;
                     let source = TABLES
                         .iter()
                         .find(|t| t.name == lower)
                         .map_or_else(|| Source::Other(lower.clone()), Source::Table);
-                    sources.insert(lower, source.clone());
-                    source
+                    bind(&lower, source.clone());
+                    Some(source)
                 };
                 if tokens.get(j).is_some_and(|t| t.is_word("as")) {
                     j += 1;
                 }
                 if let Some(alias) = tokens.get(j).filter(|t| t.is_name()) {
-                    sources.insert(alias.text.to_ascii_lowercase(), source);
+                    if let Some(source) = source {
+                        bind(alias.text, source);
+                    }
                     j += 1;
                 }
                 if !tokens.get(j).is_some_and(|t| t.is_punct(",")) {
@@ -117,7 +127,9 @@ impl<'t, 'a> Statement<'t, 'a> {
                 j += 1;
             }
         }
-        // A `json_each` may also follow a join's `ON` after a comma: its alias is after its `)`.
+        // A `json_each`, which may also follow a join's `ON` after a comma: its alias is after
+        // its `)`.
+        let mut each = false;
         for (i, t) in tokens.iter().enumerate() {
             let function = EACH.contains(&t.text.to_ascii_lowercase().as_str())
                 && t.kind == Kind::Word
@@ -131,28 +143,33 @@ impl<'t, 'a> Statement<'t, 'a> {
                 j += 1;
             }
             if let Some(alias) = tokens.get(j).filter(|t| t.is_name()) {
-                sources.insert(alias.text.to_ascii_lowercase(), Source::Each);
+                bind(alias.text, Source::Each);
             }
         }
         Self {
             tokens,
             sources,
             each,
+            reads_tables,
         }
     }
 
     fn refusals(&self, sql: &str) -> Vec<Found> {
         let mut found = Vec::new();
+        if !self.reads_tables {
+            return found;
+        }
         let tokens = self.tokens;
         for (i, t) in tokens.iter().enumerate() {
             let reader = t.kind == Kind::Word
                 && READERS.contains(&t.text.to_ascii_lowercase().as_str())
                 && tokens.get(i + 1).is_some_and(|t| t.is_punct("("));
             if reader {
-                let end = argument_end(tokens, i + 2);
-                let Some(last) = tokens.get(end.saturating_sub(1)).filter(|_| end > i + 2) else {
+                let end = closing_at(tokens, i + 2, true);
+                if end <= i + 2 {
                     continue;
-                };
+                }
+                let last = tokens[end - 1];
                 if let Err(why) = self.reads(&tokens[i + 2..end]) {
                     let rest = if tokens.get(end).is_some_and(|t| t.is_punct(",")) {
                         ", …)"
@@ -168,7 +185,9 @@ impl<'t, 'a> Statement<'t, 'a> {
                 }
             }
             let arrow = (t.is_punct("->") || t.is_punct("->>"))
-                && tokens.get(i + 1).is_some_and(|t| t.kind == Kind::Literal);
+                && tokens
+                    .get(i + 1)
+                    .is_some_and(|t| matches!(t.kind, Kind::Literal | Kind::Param));
             if arrow {
                 let (from, why) = self.left_of(i);
                 if let Some(why) = why {
@@ -225,21 +244,27 @@ impl<'t, 'a> Statement<'t, 'a> {
         Ok(())
     }
 
+    /// Whether `alias.column` is JSON the gate allows, for each source the alias names.
     fn qualified(&self, alias: &str, column: &str) -> Result<(), String> {
         let column = column.to_ascii_lowercase();
-        match self.sources.get(&alias.to_ascii_lowercase()) {
-            Some(Source::Each) if column == "value" => Ok(()),
-            Some(Source::Each) => Err(format!(
+        let sources = self
+            .sources
+            .get(&alias.to_ascii_lowercase())
+            .ok_or_else(|| {
+                format!(
+                    "cannot tell which table {alias} is: name it in the statement's FROM or JOIN"
+                )
+            })?;
+        sources.iter().try_for_each(|source| match source {
+            Source::Each if column == "value" => Ok(()),
+            Source::Each => Err(format!(
                 "{alias}.{column} is not the value of the json_each it names"
             )),
-            Some(Source::Table(table)) => holds_json(table, &column),
-            Some(Source::Other(name)) => Err(format!(
+            Source::Table(table) => holds_json(table, &column),
+            Source::Other(name) => Err(format!(
                 "{alias}.{column} is a column of {name}, which is no table of the release schema"
             )),
-            None => Err(format!(
-                "cannot tell which table {alias} is: name it in the statement's FROM or JOIN"
-            )),
-        }
+        })
     }
 
     fn bare(&self, column: &str) -> Result<(), String> {
@@ -247,15 +272,21 @@ impl<'t, 'a> Statement<'t, 'a> {
         if column == "value" && self.each {
             return Ok(());
         }
-        let mut holding = self.sources.values().filter_map(|s| match s {
-            Source::Table(t) if t.position(&column).is_some() => Some(*t),
-            _ => None,
-        });
-        let first = holding.next().ok_or_else(|| {
-            format!("cannot tell which table holds {column}: none the statement names has it")
-        })?;
-        holding.try_fold((), |(), t| holds_json(t, &column))?;
-        holds_json(first, &column)
+        let holding: Vec<&Table> = self
+            .sources
+            .values()
+            .flatten()
+            .filter_map(|s| match s {
+                Source::Table(t) if t.position(&column).is_some() => Some(*t),
+                _ => None,
+            })
+            .collect();
+        if holding.is_empty() {
+            return Err(format!(
+                "cannot tell which table holds {column}: none the statement names has it"
+            ));
+        }
+        holding.iter().try_for_each(|t| holds_json(t, &column))
     }
 }
 
@@ -276,51 +307,21 @@ fn holds_json(table: &Table, column: &str) -> Result<(), String> {
 
 /// The index of the `)` closing the `(` at `open`, or the last token.
 fn closing(tokens: &[Token], open: usize) -> usize {
-    let mut depth = 0_usize;
-    for (k, t) in tokens.iter().enumerate().skip(open) {
-        if t.is_punct("(") {
-            depth += 1;
-        } else if t.is_punct(")") {
-            depth = depth.saturating_sub(1);
-            if depth == 0 {
-                return k;
-            }
-        }
-    }
-    tokens.len().saturating_sub(1)
+    closing_at(tokens, open + 1, false).min(tokens.len().saturating_sub(1))
 }
 
-/// The end of the argument starting at `from`: its `,` or the call's `)`.
-fn argument_end(tokens: &[Token], from: usize) -> usize {
+/// The index of the `)` that closes the parenthesis `from` is in, or with `comma` of the first
+/// `,` at its depth, whichever comes first; the number of tokens when there is none.
+fn closing_at(tokens: &[Token], from: usize, comma: bool) -> usize {
     let mut depth = 0_usize;
     for (k, t) in tokens.iter().enumerate().skip(from) {
         if t.is_punct("(") {
             depth += 1;
-        } else if t.is_punct(")") || (depth == 0 && t.is_punct(",")) {
-            if depth == 0 {
-                return k;
-            }
+        } else if depth == 0 && (t.is_punct(")") || (comma && t.is_punct(","))) {
+            return k;
+        } else if t.is_punct(")") {
             depth -= 1;
         }
     }
     tokens.len()
-}
-
-/// The tables of the release schema each name of `sql`'s `FROM` and `JOIN` lists reads, by
-/// table name and alias in lower case: an alias given to several in different statements or
-/// subqueries names each.
-pub(crate) fn tables_named(sql: &str) -> HashMap<String, Vec<&'static Table>> {
-    let tokens = tokens(sql);
-    let mut named: HashMap<String, Vec<&'static Table>> = HashMap::new();
-    for statement in tokens.split(|t| t.is_punct(";")) {
-        for (name, source) in Statement::new(statement).sources {
-            if let Source::Table(table) = source {
-                let tables = named.entry(name).or_default();
-                if !tables.iter().any(|t| t.name == table.name) {
-                    tables.push(table);
-                }
-            }
-        }
-    }
-    named
 }

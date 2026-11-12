@@ -35,11 +35,6 @@ pub(super) fn literals(code: &str) -> Vec<(usize, String)> {
                         i = (end + close.len()).min(b.len());
                         continue;
                     }
-                } else if b.get(j) == Some(&b'"') {
-                    let (end, text) = escaped(code, j + 1);
-                    out.push((j + 1, text));
-                    i = end + 1;
-                    continue;
                 }
                 i += 1;
             }

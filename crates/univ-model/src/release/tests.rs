@@ -50,13 +50,7 @@ fn declared_all(table: &str) -> (Vec<String>, Vec<String>) {
 fn version_8_keeps_json_out_of_every_table_per_object_or_per_entry() {
     assert_eq!(SCHEMA_VERSION, 8);
     for table in &TABLES {
-        let json: Vec<&str> = table
-            .columns
-            .iter()
-            .zip(table.kinds)
-            .filter(|(_, kind)| **kind == ColumnKind::Json)
-            .map(|(column, _)| *column)
-            .collect();
+        let json: Vec<&str> = table.json_columns().collect();
         assert!(
             table.scale.allows_json() || json.is_empty(),
             "{} ({}) holds JSON in {json:?}",

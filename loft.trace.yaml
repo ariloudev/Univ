@@ -6764,16 +6764,19 @@ links:
     tests:
       - file: "xtask/src/science/tests.rs"
         name: "each_kind_of_check_is_judged_against_the_fixture_release"
-        body: 2e214e5073660558b6148a4769e7c69a01e7ca4b41a8246e2991e327af2167bb
+        body: c198688e661101c7f817228d2b8a7fedb849d26c4b7554c36102b95754d61518
       - file: "xtask/src/science/tests.rs"
         name: "every_query_of_the_repository_s_checks_searches_its_tables_at_scale_on_the_fixture_release"
         body: 3c64a73a87474a28789cb7401405fcb45d0c41de20c6a973bd38067cd4a495bf
+      - file: "xtask/src/science/tests.rs"
+        name: "a_join_on_a_column_no_index_holds_reads_its_table_whole_whatever_its_alias"
+        body: 5cab775b5162db2debb18e3b8d0931f03beebfe4c579c0cc9832eb01e1d39732
   - node: 01a1cca1-1789-7424-a53b-b6cb86c7b7f5
     reviewed: 2811142c91cb7826b8296d5fdb719551cbb9be65e013657b6e2ca3905e400cc4
     tests:
       - file: "crates/univ-model/src/release/tests.rs"
         name: "version_8_keeps_json_out_of_every_table_per_object_or_per_entry"
-        body: 9216190bcaeb584c1a5b7853be81811484299ce30e3024cfeacd457b8aa9d4d3
+        body: 524c542e2038773d26dc80e6d7f4b4cf723d77bd8b47c8b4da2cce52f5a157f9
       - file: "crates/univ-ingest/tests/schema8.rs"
         name: "a_store_of_schema_7_reads_every_object_as_schema_8_once_migrated_and_again_changes_nothing"
         body: 981877292588507f96ff190a452d5b47713e662b3924354197ec5f6c391ef5af

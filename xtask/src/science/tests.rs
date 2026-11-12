@@ -86,10 +86,7 @@ fn each_kind_of_check_is_judged_against_the_fixture_release() {
         "{out}"
     );
     assert!(out.contains("placed=0 n=1"), "{out}");
-    assert!(
-        out.contains("SCAN objects USING INDEX check_5 reads objects, a table per object, whole"),
-        "{out}"
-    );
+    assert!(out.contains("objects is read whole"), "{out}");
     assert!(
         out.lines()
             .next()
@@ -349,4 +346,32 @@ fn every_query_of_the_repository_s_checks_searches_its_tables_at_scale_on_the_fi
         }
     }
     assert!(whole.is_empty(), "{}", whole.join("\n"));
+}
+
+#[test]
+fn a_join_on_a_column_no_index_holds_reads_its_table_whole_whatever_its_alias() {
+    let dir = tempfile::tempdir().unwrap();
+    build(dir.path());
+    let text = std::fs::read_to_string(dir.path().join(keys::MANIFEST)).unwrap();
+    let manifest: ReleaseManifest = serde_norway::from_str(&text).unwrap();
+    let (db, _) = load::open(None).unwrap();
+    load::load(&db, dir.path(), &manifest).unwrap();
+    load::index(&db).unwrap();
+    load::register(&db, manifest.release, &manifest.cosmology).unwrap();
+    // An automatic index on objects.x, or a scan of it: either reads every object. The alias e
+    // is given again to designations in the subquery, which the bytecode does not care about.
+    let sql = "SELECT e.object_id FROM entries e JOIN objects o ON o.release = e.release \
+               AND o.x = e.object_id WHERE e.release = :release AND e.source = source('gal-a') \
+               AND EXISTS (SELECT 1 FROM designations e WHERE e.object_id = o.id)";
+    let whole = plan::whole_reads(&db, sql, manifest.release).unwrap();
+    assert!(
+        whole.iter().any(|w| w.starts_with("objects is read whole")),
+        "{whole:?}"
+    );
+    let search = "SELECT e.object_id FROM entries e WHERE e.release = :release \
+                  AND e.source = source('gal-a')";
+    assert_eq!(
+        plan::whole_reads(&db, search, manifest.release).unwrap(),
+        Vec::<String>::new()
+    );
 }

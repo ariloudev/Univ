@@ -128,7 +128,7 @@ impl Table {
     /// catalogue entry, shared between releases, each keyed by its object's id.
     #[must_use]
     pub fn grows_with_objects(&self) -> bool {
-        self.scope == super::Scope::PerRelease && !self.scale.allows_json()
+        self.scope == super::Scope::PerRelease && self.scale.grows_with_objects()
     }
 }
 
