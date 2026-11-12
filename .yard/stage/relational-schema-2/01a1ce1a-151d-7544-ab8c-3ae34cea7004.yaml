@@ -10,6 +10,15 @@ versions:
     title: "Guards and checks"
     goal: "cargo xtask json refuses JSON at scale, the scan guard fails a science check that scans an object- or entry-scale table, and every science check reads indexed rows"
     status: active
+  - key: 01a1ce5f-f580-7376-8465-3e9b5abcc6fe
+    at: 2026-11-12T06:09:17Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Guards and checks"
+    goal: "cargo xtask json refuses JSON at scale, the scan guard fails a science check that scans an object- or entry-scale table, and every science check reads indexed rows"
+    status: done
 blocks:
   - key: 01a1ce1a-151d-7544-ab8c-3ae4a6f8abd5
     id: t7
@@ -161,6 +170,15 @@ blocks:
         title: "T11 Wave review"
         detail: "/simplify and /code-review in parallel, fixes, then cargo xtask check and cargo xtask integration once each."
         state: active
+      - key: 01a1ce5f-f580-7376-8465-3e99f1f704c0
+        at: 2026-11-12T06:09:17Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11 Wave review"
+        detail: "/simplify (4 angles) and /code-review: findings fixed (see build issues). cargo xtask check: 14 gates passed. cargo xtask integration: passed (Rust end-to-end and 26 Playwright)."
+        state: done
   - key: 01a1ce1a-151d-7544-ab8c-3aea243ce743
     id: build-issues
     kind: note
@@ -235,3 +253,28 @@ blocks:
           | A search on a key most rows share passed the guard and ran slower than a scan: no-negative-or-missing-distances 4.6 → 97 s, tracers-in-tracer-domain 22 → 172 s, masers 95 s | the run on release 15 | release 15's statistics loaded into every scratch database; a partial index; `CROSS JOIN`/`INDEXED BY`. Now 0.0, 0.9 and 0.0 s; all checks 210 s | fixed |
           | Table 1 gives two masers (NGC281, NGC281W) the Name G123.06-06.30; the release keeps one entry | the arm check on release 15 | count set to 181; the ingest fold is older than this wave | noted |
           | `fingerprints` errors on release 15: its manifest names schema 7's columns | the run on release 15 | none: release 16's manifest is of schema 8 | noted |
+  - key: 01a1ce5f-f580-7376-8465-3e98777f9407
+    id: produced
+    kind: note
+    versions:
+      - key: 01a1ce5f-f580-7376-8465-3e9a9af7a6dd
+        at: 2026-11-12T06:09:17Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "What wave 2 produced"
+        markdown: |-
+          - **`cargo xtask json`**, in the gate after the 500-line rule: refuses a JSON column in a table per object or per entry, and a JSON function or arrow over anything but a parameter, a literal, a `json_each` value or a JSON column of a small table, in Rust string literals, `rules/*.yaml` and `.sql`.
+          - **Scan guard** in `xtask science`: reads each query's bytecode and fails a check that rewinds or counts a table per object or per entry (scans, whole-index walks, automatic indexes). Partial indexes pass.
+          - **Scratch indexes and statistics**: `CHECK_INDEXES` (by source, quantity, domain, kind, preferred quantity, and the misplaced objects), and release 15's `ANALYZE` in `rules/science-statistics.yaml`, loaded everywhere.
+          - **Checks**: all on rows (`entry_flags`, `entry_references`, `memberships`); two new maser checks.
+
+          | Release 15 | checks took |
+          |---|---|
+          | schema 7 (before) | 742 s |
+          | schema 8, first rewrite | 609 s |
+          | schema 8, final | 210 s |
+
+          Open for the owner: merge, release 16 (memberships), deleting the schema-7 copies; the G123.06-06.30 fold in ingest.
+        tone: success
