@@ -423,3 +423,14 @@ fn a_local_d1_of_schema_7_is_migrated_in_its_files_and_compacted() {
         assert_eq!(read(&db, id), read(&new, id), "object {id}");
     }
 }
+
+#[test]
+fn each_rebuild_searches_its_replacing_columns_by_key_rather_than_scanning_them_for_each_row() {
+    let db = store(SCHEMA_7, OBJECTS_7);
+    let plans = univ_ingest::release::schema8::rebuild_plans(&db).unwrap();
+    let joins: Vec<&String> = plans.iter().filter(|s| s.contains(" t")).collect();
+    assert_eq!(joins.len(), 2, "{plans:?}");
+    for step in joins {
+        assert!(step.starts_with("SEARCH t USING PRIMARY KEY"), "{plans:?}");
+    }
+}

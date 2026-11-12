@@ -50,6 +50,16 @@ pub fn json_held(db: &Connection) -> Result<Option<String>, String> {
         .map_err(sql_err(sql))
 }
 
+/// The plan of each table rebuild's join to its replacing columns on `db`, of schema 7: each
+/// searches them by key, never scanning them for each row.
+///
+/// # Errors
+///
+/// Fails when a plan cannot be read.
+pub fn rebuild_plans(db: &Connection) -> Result<Vec<String>, String> {
+    sql::rebuild_plans(db)
+}
+
 /// Whether `db` holds a JSON column that schema 8 replaces.
 ///
 /// # Errors

@@ -123,12 +123,16 @@ impl<'d> Temp<'d> {
     /// The temporary tables of `db`, made empty.
     pub(super) fn new(db: &'d Connection) -> Result<Self, String> {
         for t in [ENTRIES, MEASUREMENTS] {
+            // The key typed as its table's is: a key without INTEGER affinity is not searched by
+            // the rebuild's join, which then scans the whole temporary table for each row.
+            let key: Vec<String> = t.key.iter().map(|c| format!("{c} INTEGER")).collect();
             let sql = format!(
                 "DROP TABLE IF EXISTS temp.{0}; CREATE TEMP TABLE {0} ({1}, {2}, \
-                 PRIMARY KEY ({1})) WITHOUT ROWID;",
+                 PRIMARY KEY ({3})) WITHOUT ROWID;",
                 t.name,
-                t.key.join(", "),
-                t.columns.join(", ")
+                key.join(", "),
+                t.columns.join(", "),
+                t.key.join(", ")
             );
             db.execute_batch(&sql).map_err(sql_err(&sql))?;
         }
@@ -179,6 +183,32 @@ impl<'d> Temp<'d> {
     }
 }
 
+/// The join of a rebuilt table `o` to the temporary table `t` of its replacing columns.
+fn joined(t: TempTable) -> String {
+    format!(" LEFT JOIN temp.{} t USING ({})", t.name, t.key.join(", "))
+}
+
+/// The plan of each rebuild's join on `db`, whose tables are of schema 7, one line a step.
+///
+/// # Errors
+///
+/// Fails when a plan cannot be read.
+pub(super) fn rebuild_plans(db: &Connection) -> Result<Vec<String>, String> {
+    Temp::new(db)?;
+    let mut steps = Vec::new();
+    for t in [ENTRIES, MEASUREMENTS] {
+        let sql = format!("EXPLAIN QUERY PLAN SELECT * FROM {} o{}", t.of, joined(t));
+        let mut q = db.prepare(&sql).map_err(sql_err(&sql))?;
+        let rows = q
+            .query_map([], |r| r.get::<_, String>(3))
+            .map_err(sql_err(&sql))?;
+        for row in rows {
+            steps.push(row.map_err(sql_err(&sql))?);
+        }
+    }
+    Ok(steps)
+}
+
 /// Rebuilds `table` of `db` in schema 8's shape: each of its columns from the old table where
 /// it has it, from the temporary table of its replacing columns, or NULL; the old table's
 /// other columns, its JSON, left behind.
@@ -204,9 +234,7 @@ pub(super) fn rebuild(
         }
     };
     let selected: Vec<String> = columns.iter().map(|c| from(c)).collect();
-    let join = temp.map_or_else(String::new, |t| {
-        format!(" LEFT JOIN temp.{} t USING ({})", t.name, t.key.join(", "))
-    });
+    let join = temp.map_or_else(String::new, joined);
     let sql = format!(
         "DROP TABLE IF EXISTS {next};\n{};\nINSERT INTO {next} ({}) SELECT {} FROM {name} o{join};\n\
          DROP TABLE {name};\nALTER TABLE {next} RENAME TO {name};\n",
