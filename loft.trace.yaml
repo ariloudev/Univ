@@ -2426,7 +2426,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
-        body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
+        body: c43ec39d412656868f13133650320ed0d2b90f079813484141b7fa0b3d8e3f4e
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
         body: 435d98a083f7eb1a153b38630dceeaaca68da936c9a3946fccf977954aaa91b4
@@ -2435,7 +2435,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
-        body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
+        body: c43ec39d412656868f13133650320ed0d2b90f079813484141b7fa0b3d8e3f4e
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_names_each_source_fetched_failed_or_not_reached"
         body: acc99abf98df95f902ca6f48024fc0bac906d77f2d82d54fc6c8a29b01e7f102
@@ -2447,7 +2447,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/display.rs"
         name: "the_summary_gives_bytes_time_rate_entries_per_source_and_how_the_run_ended"
-        body: bd797289c4eea65bf7391ea3d228a8171489239c0b3db1831e59c384053590ee
+        body: c43ec39d412656868f13133650320ed0d2b90f079813484141b7fa0b3d8e3f4e
       - file: "crates/univ-ingest/tests/cli.rs"
         name: "an_offline_fetch_prints_plain_lines_and_a_summary_and_fails_on_a_missing_chunk"
         body: 3c4566d86e5e7b71ba175859e0e526267ffd40d0a0c35abcd42232304f8eda7d
@@ -6759,15 +6759,51 @@ links:
       - file: "clients/explorer/src/ui/inside.test.ts"
         name: "is named in the address by the structure it culls to"
         body: 7665828ee4ed91a37092c6c24760fcc830d9489f939ec269e8731992d2510874
+  - node: 01a1cca1-1789-7424-a53b-b6caaaba436f
+    reviewed: b6fe7fe7c6248a7b143f481299b3d23a81335f35e64fdfce24afd3629862f529
+    tests:
+      - file: "xtask/src/science/tests.rs"
+        name: "each_kind_of_check_is_judged_against_the_fixture_release"
+        body: c198688e661101c7f817228d2b8a7fedb849d26c4b7554c36102b95754d61518
+      - file: "xtask/src/science/tests.rs"
+        name: "every_query_of_the_repository_s_checks_searches_its_tables_at_scale_on_the_fixture_release"
+        body: 90df19f414b4c344d2b5aa6226abc1192ada70dbe5e37e3bd2f71392a86598cc
+      - file: "xtask/src/science/tests.rs"
+        name: "a_join_on_a_column_no_index_holds_reads_its_table_whole_whatever_its_alias"
+        body: 8e0563ff6e4c533d54550f868c5cc18ccf3cc72e644cf284d80ff8a26ecbd51e
   - node: 01a1cca1-1789-7424-a53b-b6cb86c7b7f5
     reviewed: 2811142c91cb7826b8296d5fdb719551cbb9be65e013657b6e2ca3905e400cc4
     tests:
       - file: "crates/univ-model/src/release/tests.rs"
         name: "version_8_keeps_json_out_of_every_table_per_object_or_per_entry"
-        body: 9216190bcaeb584c1a5b7853be81811484299ce30e3024cfeacd457b8aa9d4d3
+        body: 524c542e2038773d26dc80e6d7f4b4cf723d77bd8b47c8b4da2cce52f5a157f9
       - file: "crates/univ-ingest/tests/schema8.rs"
         name: "a_store_of_schema_7_reads_every_object_as_schema_8_once_migrated_and_again_changes_nothing"
         body: 981877292588507f96ff190a452d5b47713e662b3924354197ec5f6c391ef5af
+      - file: "xtask/src/json/tests.rs"
+        name: "a_json_column_in_a_table_per_object_or_entry_is_refused_and_one_per_source_is_not"
+        body: 4ad1ee545b3ab93c7f2b6296a9ca25f319cfa0e1480ba68afb7462f48ada858d
+      - file: "xtask/src/json/tests.rs"
+        name: "the_release_schema_holds_no_json_at_scale"
+        body: 47befa59daf1d04189c6035dce2d652932d37f9f756edef9ed1fccaa5f51e6b6
+  - node: 01a1cca1-1789-7424-a53b-b6ccd16f6358
+    reviewed: 703dd83939b097ff5f812b3cb56f63f86bd0fd8bac06e828b6451660a86bdb9a
+    tests:
+      - file: "xtask/src/json/tests.rs"
+        name: "each_refused_form_is_refused_with_its_call_and_reason"
+        body: 0154a9cb74c4314719ada93105bc6bf4efc0484f20e93ad999a1a5d90d601c8d
+      - file: "xtask/src/json/tests.rs"
+        name: "each_allowed_form_passes"
+        body: 7646ac128a2bf593c355cddb18e0515625e452934a49318ce244578a789b7669
+      - file: "xtask/src/json/tests.rs"
+        name: "each_statement_names_its_own_tables"
+        body: 9c27527a88ebca1a43ea9f71e4d2ab8761952eae4de13f4d9a8d3c6286be4d58
+      - file: "xtask/src/json/tests.rs"
+        name: "a_refusal_in_rust_is_placed_at_its_line_in_the_file"
+        body: 93e8dacfa52b0d46564ba805dba39c0d2d5e31d366a741ce587205eebe2ce933
+      - file: "xtask/src/json/tests.rs"
+        name: "a_refusal_in_yaml_is_placed_at_its_line_in_the_file"
+        body: 28b79c097013ad6ec570c61b1b2e9cd2ce4da13b1bdcf20cdd2e0681369421f2
   - node: 01a1cca1-61b4-7169-8060-dc09bd8ff146
     reviewed: 1de9e40623a7d1fbe0a457eadd6674b6fe0966982ad6e0ffeef240ea5c6387b7
     tests:

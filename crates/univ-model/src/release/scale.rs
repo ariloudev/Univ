@@ -27,10 +27,17 @@ impl Scale {
         }
     }
 
+    /// Whether a table of this scale grows with the release's objects or catalogue entries,
+    /// which run to tens of millions: read only through an index.
+    #[must_use]
+    pub fn grows_with_objects(self) -> bool {
+        matches!(self, Self::Object | Self::Entry)
+    }
+
     /// Whether a table of this scale may hold a JSON column: only those bounded by the
     /// release's sources, structures and chains, never one that grows with its objects.
     #[must_use]
     pub fn allows_json(self) -> bool {
-        !matches!(self, Self::Object | Self::Entry)
+        !self.grows_with_objects()
     }
 }

@@ -1,0 +1,280 @@
+key: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+id: guards
+versions:
+  - key: 01a1ce1a-151d-7544-ab8c-3aeb4dea142b
+    at: 2026-11-12T04:52:58Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Guards and checks"
+    goal: "cargo xtask json refuses JSON at scale, the scan guard fails a science check that scans an object- or entry-scale table, and every science check reads indexed rows"
+    status: active
+  - key: 01a1ce5f-f580-7376-8465-3e9b5abcc6fe
+    at: 2026-11-12T06:09:17Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Guards and checks"
+    goal: "cargo xtask json refuses JSON at scale, the scan guard fails a science check that scans an object- or entry-scale table, and every science check reads indexed rows"
+    status: done
+blocks:
+  - key: 01a1ce1a-151d-7544-ab8c-3ae4a6f8abd5
+    id: t7
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aecc36b0766
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T7 Schema gate and SQL gate (cargo xtask json)"
+        detail: "A GATES entry after Lines and its own subcommand; refuses a Json column at Object/Entry scale and json_* readers on anything but bound parameters, json_each's value or small-table Json columns."
+        state: open
+      - key: 01a1ce23-41fb-7729-bc4f-fb78156b04c9
+        at: 2026-11-12T05:02:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T7 Schema gate and SQL gate (cargo xtask json)"
+        detail: "xtask/src/json: the schema gate over univ-model's TABLES, and the SQL gate over Rust string literals, rules/*.yaml strings and .sql files. On the tree it refuses exactly the six science checks T9 rewrites (rules/science-checks.yaml 347, 392, 414, 431, 452, 1109)."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3ae5ea606194
+    id: t8
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aedfb362f67
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8 Scan guard in xtask science"
+        detail: "EXPLAIN QUERY PLAN before each query check; a SCAN of an Object or Entry table fails it."
+        state: open
+      - key: 01a1ce23-41fb-7729-bc4f-fb79a070d95c
+        at: 2026-11-12T05:02:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8 Scan guard in xtask science"
+        detail: "EXPLAIN QUERY PLAN before each query check; a SCAN of an Object or Entry table fails it."
+        state: active
+      - key: 01a1ce2a-273d-73b1-acbd-9cf6f9536e2a
+        at: 2026-11-12T05:10:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8 Scan guard in xtask science"
+        detail: "xtask/src/science/plan.rs: EXPLAIN QUERY PLAN before each query and report; a SCAN (through an index or not) or a SEARCH by release alone of an Object or Entry table fails the check, naming it. The scratch database gets its own check indexes (entries by source, measurements by quantity, objects by domain/placing/kind/preferred quantity), not D1."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3ae6b6395438
+    id: t9
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aee35ec4eab
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T9 Every science check reads indexed rows"
+        detail: "Rules on entries.flags/extra read entry_flags and entry_references; masers-on-their-model-arms reads memberships; every check passes the guard on a fixture."
+        state: open
+      - key: 01a1ce2a-273d-73b1-acbd-9cf79de2a02f
+        at: 2026-11-12T05:10:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T9 Every science check reads indexed rows"
+        detail: "Rewritten onto entry_flags, entry_references and memberships; counts-by-scale-domain searches each domain; new check masers-members-of-their-arms (182). Every repository check passes the guard on the fixture; the run on the migrated release 15 remains."
+        state: active
+      - key: 01a1ce4e-c566-74db-ae1f-f74bbdc97e32
+        at: 2026-11-12T05:50:31Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T9 Every science check reads indexed rows"
+        detail: "On migrated release 15: 52 checks in 210 s (742 s on schema 7). Same findings as release 15's own run; the maser membership checks fail as expected until release 16 writes memberships."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3ae7c460eb87
+    id: t9b
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aef7384d082
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate's summary names the 7→8 move"
+        detail: "'Migrated the store to shared rows' is printed after a 7→8 move; say what was moved."
+        state: open
+      - key: 01a1ce2d-fb56-7184-8d2d-891a1b7f9928
+        at: 2026-11-12T05:14:42Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate's summary names the 7→8 move"
+        detail: "Outcome::Migrated { shared, rows }: four wordings, tested in display.rs."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3ae86d67b1f0
+    id: t10
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3af0774190fa
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T10 Rules recorded, and traces"
+        detail: "CLAUDE.md rule, memory note, loft.trace.yaml links for the four Constraints and the membership criteria."
+        state: open
+      - key: 01a1ce2d-fb56-7184-8d2d-891b78c1c2fa
+        at: 2026-11-12T05:14:42Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T10 Rules recorded, and traces"
+        detail: "AGENTS.md: cargo xtask json, the scan guard and CHECK_INDEXES under Commands, and a 'No JSON at scale' rule; memory note no-json-at-scale; loft.trace.yaml links the SQL gate and scan guard Constraints to their tests, and the schema gate's tests to the schema Constraint."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3ae99051120f
+    id: t11
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3af1c317dfcd
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11 Wave review"
+        detail: "/simplify and /code-review in parallel, fixes, then cargo xtask check and cargo xtask integration once each."
+        state: open
+      - key: 01a1ce2d-fb56-7184-8d2d-891c0cbb74ad
+        at: 2026-11-12T05:14:42Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11 Wave review"
+        detail: "/simplify and /code-review in parallel, fixes, then cargo xtask check and cargo xtask integration once each."
+        state: active
+      - key: 01a1ce5f-f580-7376-8465-3e99f1f704c0
+        at: 2026-11-12T06:09:17Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11 Wave review"
+        detail: "/simplify (4 angles) and /code-review: findings fixed (see build issues). cargo xtask check: 14 gates passed. cargo xtask integration: passed (Rust end-to-end and 26 Playwright)."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3aea243ce743
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3af226b79bb7
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | — | | | |
+      - key: 01a1ce2a-273d-73b1-acbd-9cf8a1a0a654
+        at: 2026-11-12T05:10:31Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | 24 checks scanned entries, objects or measurements: D1 indexes none of them by source, quantity, domain or kind | the scan guard on the fixture release | indexes made in the science scratch database only (D1 keeps the API's) | fixed |
+          | Two checks (virgo-group-cites-kt17, betelgeuse-names-joyce) searched the JSON text with `instr`, which the SQL gate cannot see | the plan test: no such column | rewritten onto entry_flags (`position_source`) and entry_references (`bibcode`) | fixed |
+          | `counts-by-scale-domain` is a census of every object | the scan guard | counts each domain by a search of objects (scale_domain, placed) | fixed |
+          | The arm-distance check would pass on a release with no memberships | review of the rewrite | new check `masers-members-of-their-arms`, 182 from Table 1 | fixed |
+          | `migrate` says "Migrated the store to shared rows" after 7→8 | wave 1 | t9b | open |
+      - key: 01a1ce38-80e3-72ad-8143-9e4d15b046eb
+        at: 2026-11-12T05:26:11Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | 24 checks scanned entries, objects or measurements: D1 indexes none of them by source, quantity, domain or kind | the scan guard on the fixture release | indexes made in the science scratch database only (D1 keeps the API's) | fixed |
+          | Two checks (virgo-group-cites-kt17, betelgeuse-names-joyce) searched the JSON text with `instr`, which the SQL gate cannot see | the plan test: no such column | rewritten onto entry_flags (`position_source`) and entry_references (`bibcode`) | fixed |
+          | The arm-distance check would pass on a release with no memberships | review of the rewrite | `masers-members-of-their-arms` (182) and `masers-on-the-arm-their-code-names` | fixed |
+          | `migrate` said "Migrated the store to shared rows" after 7→8 | wave 1 | `Outcome::Migrated { shared, rows }` | fixed |
+          | The guard read plan text by alias: automatic indexes passed, an unresolved or reused alias passed silently | /simplify (altitude), /code-review | guard reads bytecode: a rewound or counted cursor on a table per object or entry | fixed |
+          | Check indexes named by position: a kept `--db` keeps stale ones | /code-review | named by their columns | fixed |
+          | Researched-star check no longer required the first reference | /code-review | `r.n = 0` again | fixed |
+          | Census by terms hid objects of an unknown domain | /code-review | distinct domains walked through the index, unknown as `-` | fixed |
+          | `->` with a parameter on its right went unchecked | /code-review | checked | fixed |
+          | Duplicated code: listed-file read, `:release` binding, JSON-column filter, paren scanners | /simplify (reuse, simplification) | shared helpers | fixed |
+          | A SEARCH that barely narrows (e.g. `placed = 1`) passes the guard | /simplify (efficiency), /code-review | to judge from the timings of the full run on release 15 | open |
+      - key: 01a1ce4e-c566-74db-ae1f-f74c43e93017
+        at: 2026-11-12T05:50:31Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | 24 checks scanned entries, objects or measurements: D1 indexes none of them by source, quantity, domain or kind | the scan guard on the fixture release | indexes made in the science scratch database only | fixed |
+          | Two checks searched the JSON text with `instr`, which the SQL gate cannot see | the plan test: no such column | rewritten onto entry_flags and entry_references | fixed |
+          | The arm-distance check would pass on a release with no memberships | review of the rewrite | `masers-members-of-their-arms` (181) and `masers-on-the-arm-their-code-names` | fixed |
+          | `migrate` said "Migrated the store to shared rows" after 7→8 | wave 1 | `Outcome::Migrated { shared, rows }` | fixed |
+          | The guard read plan text by alias: automatic indexes and unresolved aliases passed | /simplify, /code-review | guard reads bytecode | fixed |
+          | Check indexes named by position | /code-review | fixed names, remade when their definition changes, stale ones dropped | fixed |
+          | Researched-star check no longer required the first reference | /code-review | `r.n = 0` | fixed |
+          | Census by terms hid objects of an unknown domain | /code-review | distinct domains walked through the index | fixed |
+          | `->` with a parameter went unchecked | /code-review | checked | fixed |
+          | Duplicated helpers | /simplify | shared | fixed |
+          | A search on a key most rows share passed the guard and ran slower than a scan: no-negative-or-missing-distances 4.6 → 97 s, tracers-in-tracer-domain 22 → 172 s, masers 95 s | the run on release 15 | release 15's statistics loaded into every scratch database; a partial index; `CROSS JOIN`/`INDEXED BY`. Now 0.0, 0.9 and 0.0 s; all checks 210 s | fixed |
+          | Table 1 gives two masers (NGC281, NGC281W) the Name G123.06-06.30; the release keeps one entry | the arm check on release 15 | count set to 181; the ingest fold is older than this wave | noted |
+          | `fingerprints` errors on release 15: its manifest names schema 7's columns | the run on release 15 | none: release 16's manifest is of schema 8 | noted |
+  - key: 01a1ce5f-f580-7376-8465-3e98777f9407
+    id: produced
+    kind: note
+    versions:
+      - key: 01a1ce5f-f580-7376-8465-3e9a9af7a6dd
+        at: 2026-11-12T06:09:17Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "What wave 2 produced"
+        markdown: |-
+          - **`cargo xtask json`**, in the gate after the 500-line rule: refuses a JSON column in a table per object or per entry, and a JSON function or arrow over anything but a parameter, a literal, a `json_each` value or a JSON column of a small table, in Rust string literals, `rules/*.yaml` and `.sql`.
+          - **Scan guard** in `xtask science`: reads each query's bytecode and fails a check that rewinds or counts a table per object or per entry (scans, whole-index walks, automatic indexes). Partial indexes pass.
+          - **Scratch indexes and statistics**: `CHECK_INDEXES` (by source, quantity, domain, kind, preferred quantity, and the misplaced objects), and release 15's `ANALYZE` in `rules/science-statistics.yaml`, loaded everywhere.
+          - **Checks**: all on rows (`entry_flags`, `entry_references`, `memberships`); two new maser checks.
+
+          | Release 15 | checks took |
+          |---|---|
+          | schema 7 (before) | 742 s |
+          | schema 8, first rewrite | 609 s |
+          | schema 8, final | 210 s |
+
+          Open for the owner: merge, release 16 (memberships), deleting the schema-7 copies; the G123.06-06.30 fold in ingest.
+        tone: success
