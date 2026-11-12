@@ -1,0 +1,97 @@
+key: 01a1cf68-094a-72a6-bdad-4399a86662ff
+id: fix
+versions:
+  - key: 01a1cf68-094a-72a6-bdad-439d8bc9dd60
+    at: 2026-11-12T10:57:44Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Fingerprints of a release built as a change"
+    goal: "xtask science's fingerprints check passes on a release built as a change, comparing the rows as the store holds them with the manifest"
+    status: active
+  - key: 01a1cf85-1922-75eb-8386-964cd99fd20d
+    at: 2026-11-12T11:29:28Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Fingerprints of a release built as a change"
+    goal: "xtask science's fingerprints check passes on a release built as a change, comparing the rows as the store holds them with the manifest"
+    status: done
+blocks:
+  - key: 01a1cf68-094a-72a6-bdad-439ac0f3ce1b
+    id: t1-record
+    kind: task
+    versions:
+      - key: 01a1cf68-094a-72a6-bdad-439ef0221481
+        at: 2026-11-12T10:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The loaders record the fingerprints before the stamp"
+        detail: "`fingerprints::Recorder` measures each table as the builds (after the rows not valid are dropped) or each local D1 file hold it, before the loader takes shared rows as the release's own; the measures go into `science_fingerprints` and `science_contents` in the scratch database, which the check compares with the manifest. Tests: the altered-row test alters the SQL before the load; the change test asserts objects.release totals release 1's and the terms digest is release 1's."
+        state: done
+        type: fix
+  - key: 01a1cf68-094a-72a6-bdad-439bf1603f63
+    id: t2-verify
+    kind: task
+    versions:
+      - key: 01a1cf68-094a-72a6-bdad-439f0f1d9096
+        at: 2026-11-12T10:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Verify on release 16's store"
+        detail: "Science on an APFS clone of the live store, fresh scratch database: expected fingerprints PASS, the rest as before."
+        state: active
+        type: fix
+      - key: 01a1cf7a-423c-72ad-b28f-1a06dd6f2183
+        at: 2026-11-12T11:17:38Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Verify on release 16's store"
+        detail: "Science on an APFS clone of the live store with a fresh scratch database: fingerprints PASS, 0 differences over 33 tables (the four lookup tables' digests included); 42 PASS, 2 FAIL (the two accepted), 3 CONCERN, as before. The load takes 682 s against 361 s, since it reads each table once more to measure it; the checks 214 s against 368 s."
+        state: done
+        type: fix
+  - key: 01a1cf68-094a-72a6-bdad-439ca3200e3f
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1cf68-094a-72a6-bdad-43a07b8f331b
+        at: 2026-11-12T10:57:44Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | clippy `filter(..).next_back()` in the reworked test | clippy | `rfind` | fixed |
+  - key: 01a1cf7a-423c-72ad-b28f-1a05e333de14
+    id: t3-gate
+    kind: task
+    versions:
+      - key: 01a1cf7a-423c-72ad-b28f-1a07881f0a62
+        at: 2026-11-12T11:17:38Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Full gate"
+        detail: "`cargo xtask check`, once, at the branch's end."
+        state: active
+      - key: 01a1cf85-1922-75eb-8386-964b5758e7ca
+        at: 2026-11-12T11:29:28Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Full gate"
+        detail: "`cargo xtask check`: 14 gates passed (loft verify skipped off develop)."
+        state: done

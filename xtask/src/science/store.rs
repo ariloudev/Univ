@@ -10,6 +10,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use super::fingerprints::Recorder;
 use rusqlite::{Connection, OpenFlags, OptionalExtension};
 use univ_model::release::{LOCAL_D1_FILES, SCHEMA, Scope, SqlValue, TABLES, valid_in};
 
@@ -106,7 +107,16 @@ pub fn load(db: &Connection, persist_to: &Path, n: u32) -> Result<usize, String>
         .map_err(|e| format!("cannot create the schema: {e}"))?;
     // No transaction: SQLite attaches no database within one, and the scratch database keeps
     // no journal.
+    let mut recorder = Recorder::new(n);
+    let flags = OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX;
     for file in &files {
+        // Measured as the local D1 holds the rows, before each is taken as the release's own.
+        let store = Connection::open_with_flags(file, flags)
+            .map_err(|e| format!("{}: {e}", file.display()))?;
+        recorder
+            .add(&store)
+            .map_err(|e| format!("{}: {e}", file.display()))?;
+        drop(store);
         let uri = SqlValue::from(format!("file:{}?mode=ro", file.display())).literal();
         db.execute_batch(&format!("ATTACH DATABASE {uri} AS store"))
             .map_err(|e| format!("{}: {e}", file.display()))?;
@@ -139,5 +149,6 @@ pub fn load(db: &Connection, persist_to: &Path, n: u32) -> Result<usize, String>
         db.execute_batch("DETACH DATABASE store")
             .map_err(|e| format!("{}: {e}", file.display()))?;
     }
+    recorder.record(db)?;
     Ok(files.len())
 }
