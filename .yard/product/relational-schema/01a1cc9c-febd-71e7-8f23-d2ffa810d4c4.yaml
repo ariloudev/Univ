@@ -28,6 +28,15 @@ versions:
     title: "The store and release 16"
     goal: "The real store is migrated to schema 8 and release 16 is published with the masers' memberships, every check passing under the scan guard"
     status: active
+  - key: 01a1cf62-a9ea-76a5-ad97-83b2f8609796
+    at: 2026-11-12T10:51:52Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "The store and release 16"
+    goal: "The real store is migrated to schema 8 and release 16 is published with the masers' memberships, every check passing under the scan guard"
+    status: done
 blocks:
   - key: 01a1cd59-d701-730c-9402-f7d673f8e7bb
     id: s1-fix-migrate-state
@@ -140,6 +149,37 @@ blocks:
           | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
           | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
           | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+      - key: 01a1cf38-dbfb-76f3-a488-008d2cf90418
+        at: 2026-11-12T10:06:12Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+          | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget: release 16's shards give up cells to shard 14, whose objects' rows are retired and written again | release 16's D1 step ran past release 15's 16 min; shard 14 wrote more measurement files than release 15's whole shard 14; `placing.rs` `give_up` | none needed: the packer moves cells by design; the build and publish run longer | open: counted when the build ends |
+      - key: 01a1cf62-a9ea-76a5-ad97-83b1fcf7af8a
+        at: 2026-11-12T10:51:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | four messages by what moved (b13a58b, wave 2) | fixed |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+          | Wave 1's size check (+2% a shard) called it "well inside the 4.5 GB budget", but release 15's full shards sit at the budget | release 16's D1 step took 38 min against release 15's 16 | none needed: the packer moved about 220,000 objects from shards 0 and 8–13 into shard 14 (89,204 → 306,810), every shard now within 4.29–4.49 GB | closed |
+          | The `fingerprints` check fails on any release built as a change: both loaders stamp each shared row with the loaded release (`store.rs:117`, `load.rs:98`), the manifest fingerprints the rows' own releases (objects: 16 × 53,546,060 against 599,515,117) | release 16's science run; release 14's failed the same way | to propose: fingerprint the rows before the stamp, or the manifest without `release` | open |
   - key: 01a1cd7b-0d70-7108-8940-0ef4a88c731e
     id: store-migrated
     kind: note
@@ -197,3 +237,34 @@ blocks:
         title: "Build release 16, publish to a clone, run the science checks, swap"
         detail: "A change on migrated release 15 adding the masers' memberships, from ca1be6f: `.cache/univ-ingest/r16/run.sh` clones the state, builds offline, publishes to a clone of the local D1 and runs the science checks there."
         state: active
+      - key: 01a1cf62-a9ea-76a5-ad97-83b00dc7cc48
+        at: 2026-11-12T10:51:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build release 16, publish to a clone, run the science checks, swap"
+        detail: "Build 55 min (D1 rows 38 min), publish to the clone 13 min (463 MB), science 16 min: 41 PASS, 3 FAIL, 3 CONCERN, 5 INFO. All three maser checks pass with 181 memberships. Swapped at 10:50 UTC; release 15's local D1 kept in r16/wrangler-r15, its state in r16/state-r15. The explorer serves release 16."
+        state: done
+  - key: 01a1cf62-a9ea-76a5-ad97-83afa13cfe17
+    id: release-16-result
+    kind: note
+    versions:
+      - key: 01a1cf62-a9ea-76a5-ad97-83b34f5cdc36
+        at: 2026-11-12T10:51:52Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Release 16 published"
+        markdown: |-
+          | Check | Release 16 |
+          |---|---|
+          | `masers-members-of-their-arms` | PASS: 181 of 181 |
+          | `masers-on-the-arm-their-code-names` | PASS: 0 mismatches |
+          | `masers-on-their-model-arms` | PASS: 1 more than 1.5 kpc off, ≤ 2 allowed (0.0 s; 20+ min on release 15) |
+          | FAILs | `twompp-sdss-sourced` 0.9727 and `local-group-duplicates` 33 (both accepted), `fingerprints` (the loader's release stamp) |
+          | CONCERNs | coma-ngc4889, redshift-conflicts 288, placed-high 110, as on release 15 |
+
+          Scan guard passed every check; the checks took 368 s, 229 of them the fingerprint pass.
+        tone: success
