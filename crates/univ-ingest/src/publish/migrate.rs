@@ -29,13 +29,16 @@ use std::path::Path;
 use serde_json::Value;
 use univ_model::release::manifest::Target;
 use univ_model::release::shards::Database;
-use univ_model::release::{RETIRED, SCHEMA, SCHEMA_VERSION, Scope, TABLES, Table, keys};
+use univ_model::release::{
+    RETIRED, SCHEMA, SCHEMA_VERSION, SHARED_ROWS_SINCE, Scope, TABLES, Table, keys,
+};
 
 use super::Store;
 use super::check::{
     Tables, execute_sql, kept_releases, published_status, r2_manifest, schema_version, sql_text,
     tables_of,
 };
+use super::columns::{Beyond, differences};
 use super::progress::{Lines, Progress};
 use super::upload::put_checked;
 use crate::tiles::sha256;
@@ -48,7 +51,7 @@ const WORK: &str = "migrate";
 
 /// The statement that creates `table` in [`SCHEMA`], named `name`: from its `CREATE TABLE` to
 /// the first `;` ending a line.
-fn create_as(table: &Table, name: &str) -> Result<String, String> {
+pub(crate) fn create_as(table: &Table, name: &str) -> Result<String, String> {
     let head = format!("CREATE TABLE IF NOT EXISTS {} (", table.name);
     let at = SCHEMA
         .find(&head)
@@ -64,9 +67,13 @@ fn create_as(table: &Table, name: &str) -> Result<String, String> {
 /// schema 6, the rows of each release before `latest` retired at the release after it as they
 /// are copied: those of a release after it, which a publish stopped part way loaded, stay valid
 /// from their release. A run stopped after it dropped a table, before it renamed the rebuilt one, left the
-/// rows only in the rebuilt one: it takes the table's name back first.
+/// rows only in the rebuilt one: it takes the table's name back first. A table keeps the columns
+/// `beyond` gives it, which a later migration reads ([`crate::release::schema8`]); a column of
+/// [`SCHEMA`] the table lacks is NULL.
 fn rebuild(
     held: &std::collections::BTreeSet<String>,
+    beyond: &Beyond,
+    lacks: &BTreeMap<String, Vec<String>>,
     latest: Option<u32>,
 ) -> Result<String, String> {
     let retired = latest.map_or_else(
@@ -83,13 +90,28 @@ fn rebuild(
             }
             let _ = writeln!(sql, "ALTER TABLE {next} RENAME TO {name};");
         }
-        let columns = table.columns.join(", ");
+        let missing = lacks.get(name).map(Vec::as_slice).unwrap_or_default();
+        let kept = beyond.get(name).map(Vec::as_slice).unwrap_or_default();
+        let mut columns: Vec<&str> = table
+            .columns
+            .iter()
+            .copied()
+            .filter(|c| !missing.iter().any(|m| m == c))
+            .collect();
+        columns.extend(kept.iter().map(|(c, _)| c.as_str()));
+        let columns = columns.join(", ");
+        let _ = writeln!(
+            sql,
+            "DROP TABLE IF EXISTS {next};\n{};",
+            create_as(table, &next)?
+        );
+        for (column, kind) in kept {
+            let _ = writeln!(sql, "ALTER TABLE {next} ADD COLUMN {column} {kind};");
+        }
         let _ = write!(
             sql,
-            "DROP TABLE IF EXISTS {next};\n{};\nINSERT INTO {next} ({columns}, {RETIRED}) SELECT \
-             {columns}, {retired} FROM {name};\nDROP TABLE {name};\nALTER TABLE {next} RENAME TO \
-             {name};\n",
-            create_as(table, &next)?
+            "INSERT INTO {next} ({columns}, {RETIRED}) SELECT {columns}, {retired} FROM {name};\n\
+             DROP TABLE {name};\nALTER TABLE {next} RENAME TO {name};\n"
         );
     }
     Ok(sql)
@@ -386,12 +408,13 @@ fn rebuild_one(
     progress: &mut dyn Progress,
 ) -> Result<(), String> {
     stop_if_asked(progress)?;
-    let mut sql = rebuild(held, latest)?;
+    let (beyond, lacks) = differences(store, database, held)?;
+    let mut sql = rebuild(held, &beyond, &lacks, latest)?;
     sql.push_str(SCHEMA);
     sql.push_str(extra);
     let _ = write!(
         sql,
-        "\nINSERT OR IGNORE INTO schema_version (version) VALUES ({SCHEMA_VERSION});\n"
+        "\nINSERT OR IGNORE INTO schema_version (version) VALUES ({SHARED_ROWS_SINCE});\n"
     );
     std::fs::create_dir_all(work).map_err(|e| format!("{}: {e}", work.display()))?;
     let file = work.join(format!("migrate-{}.sql", database.dir()));

@@ -45,6 +45,7 @@ mod placing;
 mod pointers;
 pub mod reindex;
 mod rescaled;
+pub mod schema8;
 mod shapes;
 mod sharded;
 mod sky;

@@ -1,8 +1,12 @@
 //! What refuses a publish before anything is uploaded: the release already published, pruned
 //! or older than `latest`'s; more object shards than Univ Server binds; a database of an older
-//! schema version; or a parent latest does not point to. The CON-3 cap is checked in `cap`.
+//! schema version, or one holding the JSON schema 8 keeps as rows; or a parent latest does not
+//! point to. The CON-3 cap is checked in `cap`.
 
+use univ_model::release::shards::Database;
 use univ_model::release::{ReleaseManifest, SHARED_ROWS_SINCE};
+
+use crate::release::schema8;
 
 use super::check::{Tables, published_status, schema_version};
 use super::upload::record_published;
@@ -60,6 +64,41 @@ pub(super) fn older_schema(
                 database: database.to_string(),
                 holds: u32::try_from(holds).unwrap_or(u32::MAX),
                 needs,
+            }));
+        }
+        if needs >= schema8::TO {
+            json_at_scale(store, manifest.release, *database, held)?;
+        }
+    }
+    Ok(())
+}
+
+/// Refuses release `number` when `database`, which holds the tables `held`, holds a JSON column
+/// that schema 8 keeps as rows: its rows would not load, and `univ-ingest migrate` moves them.
+fn json_at_scale(
+    store: &mut dyn Store,
+    number: u32,
+    database: Database,
+    held: &std::collections::BTreeSet<String>,
+) -> Result<(), Refused> {
+    for (table, column) in schema8::JSON_COLUMNS {
+        if !held.contains(table) {
+            continue;
+        }
+        let sql = format!(
+            "SELECT COUNT(*) AS n FROM pragma_table_info('{table}') WHERE name = '{column}'"
+        );
+        let rows = store.query(database, &sql).map_err(Refused::Query)?;
+        if rows
+            .first()
+            .and_then(|r| r.get("n"))
+            .and_then(serde_json::Value::as_i64)
+            == Some(1)
+        {
+            return Err(Refused::Error(PublishError::JsonAtScale {
+                number,
+                database: database.to_string(),
+                column: format!("{table}.{column}"),
             }));
         }
     }

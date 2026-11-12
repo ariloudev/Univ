@@ -13,7 +13,7 @@ use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty, Value};
 
 use super::d1::D1Writer;
-use super::extras::{detail_row, flag_rows, reason, reference_rows};
+use super::extras::{Codes, detail_row, flag_rows, reason, reference_rows};
 use super::kept::Kept;
 use super::terms::{Chains, SourceIndex, Terms};
 
@@ -189,6 +189,95 @@ pub struct Measurements<'w, 's> {
     pub entry: u32,
 }
 
+/// The row of measurement `n` of `quantity` of entry `entry` of object `object_id`: its values
+/// and kind, with what `detail` gives of its columns.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "a row's own columns, each named where it is written"
+)]
+fn measurement_row(
+    codes: &mut impl Codes,
+    (object_id, entry): (u64, u32),
+    quantity: &str,
+    n: usize,
+    kind_of_value: KindOfValue,
+    native: &Quantity,
+    normalized: &Quantity,
+    detail: &Detail<'_>,
+) -> Result<MeasurementRow, String> {
+    let u = UncertaintyColumns::from(native.uncertainty);
+    let same = normalized == native;
+    let v = UncertaintyColumns::from(normalized.uncertainty);
+    let cmb = detail
+        .cmb
+        .map(|q| (q.value, UncertaintyColumns::from(q.uncertainty)));
+    Ok(MeasurementRow {
+        release: codes.release(),
+        object_id,
+        entry,
+        quantity: codes.term(quantity),
+        n: small(n),
+        kind_of_value: codes.term_of(&kind_of_value)?,
+        native_value: native.value,
+        native_unit: codes.term_of(&native.unit)?,
+        native_form: codes.term(u.form),
+        native_minus: u.minus,
+        native_plus: u.plus,
+        native_level: u.level,
+        value: (!same).then_some(normalized.value),
+        unit: (!same)
+            .then(|| codes.term_of(&normalized.unit))
+            .transpose()?,
+        form: (!same).then(|| codes.term(v.form)),
+        minus: v.minus.filter(|_| !same),
+        plus: v.plus.filter(|_| !same),
+        level: v.level.filter(|_| !same),
+        kind: detail.kind,
+        method: detail.method,
+        measure: detail.measure,
+        cmb: cmb.map(|(z, _)| z),
+        cmb_form: cmb.map(|(_, c)| codes.term(c.form)),
+        cmb_minus: cmb.and_then(|(_, c)| c.minus),
+        cmb_plus: cmb.and_then(|(_, c)| c.plus),
+        cmb_level: cmb.and_then(|(_, c)| c.level),
+        published_frame: detail.published_frame,
+    })
+}
+
+/// The rows of the published errors of entry `entry`'s position that its row cannot hold, as
+/// the measurements `position_error_ra` and `position_error_dec`; none when it has none.
+///
+/// # Errors
+///
+/// Fails when a value cannot be written as a term.
+pub fn position_error_rows(
+    codes: &mut impl Codes,
+    (object_id, entry): (u64, u32),
+    uncertainty: &PositionUncertainty,
+) -> Result<Vec<MeasurementRow>, String> {
+    let PositionUncertainty::Published(errors) = uncertainty else {
+        return Ok(Vec::new());
+    };
+    [
+        ("position_error_ra", &errors.ra),
+        ("position_error_dec", &errors.dec),
+    ]
+    .into_iter()
+    .map(|(quantity, v)| {
+        measurement_row(
+            codes,
+            (object_id, entry),
+            quantity,
+            0,
+            v.kind,
+            &v.native,
+            &v.normalized,
+            &Detail::default(),
+        )
+    })
+    .collect()
+}
+
 impl Measurements<'_, '_> {
     #[expect(
         clippy::too_many_arguments,
@@ -204,42 +293,17 @@ impl Measurements<'_, '_> {
         normalized: &Quantity,
         detail: Detail<'_>,
     ) -> Result<(), String> {
-        let terms = &mut numbering.terms;
-        let u = UncertaintyColumns::from(native.uncertainty);
-        let same = normalized == native;
-        let v = UncertaintyColumns::from(normalized.uncertainty);
-        let cmb = detail
-            .cmb
-            .map(|q| (q.value, UncertaintyColumns::from(q.uncertainty)));
-        let row = MeasurementRow {
-            release: numbering.release,
-            object_id: self.object_id,
-            entry: self.entry,
-            quantity: terms.id(quantity),
-            n: small(n),
-            kind_of_value: terms.of(&kind_of_value)?,
-            native_value: native.value,
-            native_unit: terms.of(&native.unit)?,
-            native_form: terms.id(u.form),
-            native_minus: u.minus,
-            native_plus: u.plus,
-            native_level: u.level,
-            value: (!same).then_some(normalized.value),
-            unit: (!same).then(|| terms.of(&normalized.unit)).transpose()?,
-            form: (!same).then(|| terms.id(v.form)),
-            minus: v.minus.filter(|_| !same),
-            plus: v.plus.filter(|_| !same),
-            level: v.level.filter(|_| !same),
-            kind: detail.kind,
-            method: detail.method,
-            measure: detail.measure,
-            cmb: cmb.map(|(z, _)| z),
-            cmb_form: cmb.map(|(_, c)| terms.id(c.form)),
-            cmb_minus: cmb.and_then(|(_, c)| c.minus),
-            cmb_plus: cmb.and_then(|(_, c)| c.plus),
-            cmb_level: cmb.and_then(|(_, c)| c.level),
-            published_frame: detail.published_frame,
-        };
+        let key = (self.object_id, self.entry);
+        let row = measurement_row(
+            numbering,
+            key,
+            quantity,
+            n,
+            kind_of_value,
+            native,
+            normalized,
+            &detail,
+        )?;
         self.writer.add(&row)?;
         let details = detail_row(
             numbering,
@@ -268,11 +332,8 @@ impl Measurements<'_, '_> {
         numbering: &mut Numbering,
         uncertainty: &PositionUncertainty,
     ) -> Result<(), String> {
-        if let PositionUncertainty::Published(errors) = uncertainty {
-            self.value(numbering, "position_error_ra", &errors.ra, None)?;
-            self.value(numbering, "position_error_dec", &errors.dec, None)?;
-        }
-        Ok(())
+        let rows = position_error_rows(numbering, (self.object_id, self.entry), uncertainty)?;
+        self.writer.add_all(&rows)
     }
 
     /// A plain value: its native and normalized quantities and kind.

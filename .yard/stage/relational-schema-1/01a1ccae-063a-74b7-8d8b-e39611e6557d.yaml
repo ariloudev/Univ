@@ -139,6 +139,15 @@ blocks:
         title: "T5. migrate brings a schema-7 store to 8 in place"
         detail: "JSON parsed in Rust into rows, tables rebuilt without the columns, schema_version 8; idempotent. Done when the round-trip, twice-run and already-8 tests pass."
         state: active
+      - key: 01a1cd15-70b5-7309-9c18-598c0f9e0b40
+        at: 2026-11-12T00:08:16Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T5. migrate brings a schema-7 store to 8 in place"
+        detail: "release/schema8: each database in one transaction, shards then catalogue; JSON read with univ-model's types (the old `method`-tagged link shape retagged) and written through the build's builders, each row with its parent's release and retired; entries, measurements, objects and ids_replaced rebuilt in schema 8's shape; new terms numbered after every term and written to the catalogue before the database using them commits. `univ-ingest migrate` runs it on the local D1's files after the step to shared rows; a publish refuses a database still holding the JSON. Tests (tests/schema8.rs): release 2 of schema 7 (from a0de3e0) reads every object as schema 8 once migrated; each JSON shape reads back; twice and at 8 change nothing; a failed run leaves the database in hand at 7 and the next finishes it. publish_checks: refused until migrated."
+        state: done
   - key: 01a1ccae-063a-74b7-8d8b-e39cb5d5267d
     id: t6-review
     kind: task
@@ -152,6 +161,15 @@ blocks:
         title: "T6. Wave review"
         detail: "/simplify and /code-review in parallel, findings fixed; cargo xtask check and integration once each; traces linked; Yard Log closed."
         state: open
+      - key: 01a1cd15-70b5-7309-9c18-598dc464d09a
+        at: 2026-11-12T00:08:16Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T6. Wave review"
+        detail: "/simplify and /code-review in parallel, findings fixed; cargo xtask check and integration once each; traces linked; Yard Log closed."
+        state: active
   - key: 01a1ccae-063a-74b7-8d8b-e39d5b37fe59
     id: build-issues
     kind: note
@@ -197,6 +215,28 @@ blocks:
           | The D1 tests named files by table number; six new tables shift them | `release::d1::tests` | numbers updated; the estimate found by table name | fixed |
           | `shared_rows_tests` named velocity by term id 37, which the regenerated fixture renumbers | the test | looks the term up by name | fixed |
           | `rules/science-checks.yaml` still reads `entries.flags`/`extra` (:104, :274, :347, :392, :414, :431, :452, :1109) | grep | rewritten in wave 2, T9; no test runs them on a store meanwhile | open |
+      - key: 01a1cd15-70b5-7309-9c18-598e3f6823e6
+        at: 2026-11-12T00:08:16Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | The survey missed JSON columns: `releases.sources`, `sources.access`/`cuts`/`fixes`, `normalizations.left_out`/`fixes`, `grids.fields`, `structures.bounds` | typing JSON as `Json` in T1: the compiler named each | all in release- or source-scale tables, typed `Json` | fixed |
+          | `ids_replaced.replaced_by` is a JSON array in an object-scale table | the same | `id_replacements(id, n, release, replaced_by)` rows; API, prune test and testkit read them | fixed |
+          | `sql.rs` went to 501 lines | `cargo xtask lines` | `Scale` in `release/scale.rs` | fixed |
+          | Flag names first written as text | my own review against the plan | coded as terms: the name sits in the key and the index of ~3.5 M rows a shard | fixed |
+          | `candidate_links_are_written_with_no_duplicate_key` checked the JSON text of links, which no longer exists | compile | replaced by `candidate_links_are_written_as_rows_of_their_own`; trace to relink in T6 | fixed |
+          | The D1 tests named files by table number; six new tables shift them | `release::d1::tests` | numbers updated; the estimate found by table name | fixed |
+          | `shared_rows_tests` named velocity by term id 37, which the regenerated fixture renumbers | the test | looks the term up by name | fixed |
+          | The 5→6 migration rebuilt tables from the current schema: on schema 8 it failed, or would have dropped a schema-5 store's JSON | `migrate_store` tests, which an earlier run of mine hid behind `head` | 5→6 keeps a table's columns beyond the schema and records 6; the 7→8 step converts them; the tests compare the columns schema 5 and 8 share | fixed |
+          | A publish of schema 8 onto a database of 7 would fail loading rows | reading `refuse.rs` | refused before anything is uploaded, naming the column and `univ-ingest migrate` | fixed |
+          | The build lists 39 files, not 37 (the new tables' SQL) | `release_cli` | count updated | fixed |
+          | `cargo xtask serve`/`explore` on an unmigrated schema-7 state would serve object reads that fail on the missing columns | review of the path | a guard to add in T6 | open |
+          | `rules/science-checks.yaml` still reads `entries.flags`/`extra` (:104, :274, :347, :392, :414, :431, :452, :1109) | grep | rewritten in wave 2, T9 | open |
   - key: 01a1ccfd-3e6a-709a-86c9-17c3eb04b0b7
     id: size-projection
     kind: note

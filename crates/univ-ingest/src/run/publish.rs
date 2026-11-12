@@ -182,24 +182,30 @@ pub fn store_command(
     let done = match command {
         StoreCommand::Publish => publish_command(&mut store, run.number, &options, &mut shown),
         StoreCommand::Prune => prune_command(&mut store, run.number, &options, &mut shown),
-        StoreCommand::Migrate => migrate_command(&mut store, &journals, &mut shown),
+        StoreCommand::Migrate => {
+            migrate_command(&mut store, &journals, &run.persist_to, &mut shown)
+        }
     };
     done.unwrap_or_else(stopped)
 }
 
-/// Brings the store under shared rows, ending its stage with whether there was anything to do.
+/// Brings the store under shared rows through Wrangler, then its JSON at scale into rows of
+/// schema 8 on the local D1's own files, in `persist_to`, ending its stage with whether there
+/// was anything to do. No Worker may have the state open meanwhile.
 ///
 /// # Errors
 ///
-/// Fails, saying why, when D1 or R2 refuses a step.
+/// Fails, saying why, when D1 or R2 refuses a step or a database cannot be migrated.
 fn migrate_command(
     store: &mut dyn Store,
     journals: &std::path::Path,
+    persist_to: &std::path::Path,
     shown: &mut Shown<'_>,
 ) -> Result<Outcome, String> {
-    let migrated = migrate_with(store, journals, shown)?;
+    let shared = migrate_with(store, journals, shown)?;
+    let rows = crate::release::schema8::migrate_local_d1(persist_to, &mut |line| shown.note(line))?;
     shown.ended(Vec::new());
-    Ok(Outcome::Migrated(migrated))
+    Ok(Outcome::Migrated(shared || rows))
 }
 
 /// Publishes the release, ending its stage with what it uploaded: the files of each kind, the
