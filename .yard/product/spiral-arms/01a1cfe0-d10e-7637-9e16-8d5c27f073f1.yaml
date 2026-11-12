@@ -49,3 +49,64 @@ blocks:
 
           Release 16 is live in the real store. 42 checks pass, the 2 FAILs are already accepted, and the fingerprint check passes. On the owner's word, release 15's rollback copies (`r16/wrangler-r15`, `r16/state-r15`) were deleted before this branch merged into develop. The details are in product/relational-schema's Yard Log.
         tone: success
+  - key: 01a1cfff-3133-7086-a914-57252c7e8944
+    id: published
+    kind: loft
+    versions:
+      - key: 01a1cfff-3133-7086-a914-5726fd85c4d7
+        at: 2026-11-12T13:42:50Z
+        revision: 17
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        view: publish
+        note: "Published as sequence 10 on develop: F-45, RQ-196 to RQ-202, AC-726 to AC-772, CON-9 to CON-12 and ADR-38 to ADR-41."
+        recorded:
+          commit: "6a122275cce257a9f90e8dc42bcdf3c7f31b5f7b"
+          branch: "develop"
+          loft: 2.3.0
+          at: 2026-11-12T13:42:50Z
+        report: |
+          {
+            "counts": {
+              "status.base.added": 0,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "labels": {
+              "component": 71,
+              "constraint": 12,
+              "criterion": 772,
+              "decision": 41,
+              "feature": 45,
+              "feature_group": 13,
+              "product": 3,
+              "quality_attribute": 4,
+              "requirement": 202
+            },
+            "leftOut": {},
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [],
+                "commit": "6a122275cce257a9f90e8dc42bcdf3c7f31b5f7b",
+                "removed": [],
+                "revision": "6a122275cce257a9f90e8dc42bcdf3c7f31b5f7b"
+              },
+              "errors": [],
+              "lock": {
+                "differs": null,
+                "matches": true,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "develop",
+                "modified": [],
+                "stopped": null
+              },
+              "schema": "loft-status/2"
+            }
+          }
