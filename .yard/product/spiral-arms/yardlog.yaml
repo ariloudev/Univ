@@ -3,7 +3,7 @@ key: 01a1cba0-4f98-7602-a8cc-28b4c34bd49e
 branch: "product/spiral-arms"
 base: "develop"
 title: "product/spiral-arms"
-revision: 13
+revision: 14
 opened:
   at: 2026-11-11T17:20:43Z
   revision: 1
@@ -23,6 +23,8 @@ stages:
     id: release-15
   - key: 01a1cbc0-d4ed-7191-a3da-63a232fb89cf
     id: wave-2
+  - key: 01a1cfe0-d10e-7637-9e16-8d5c27f073f1
+    id: relational-schema
 submissions:
   - key: 01a1cbae-346d-7107-8b88-3f8f1b25363a
     blocks:
@@ -138,6 +140,11 @@ acts:
       session: "733ab034-0172-4107-897d-a9a3752e1525"
   - at: 2026-11-11T21:59:16Z
     revision: 13
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T13:09:39Z
+    revision: 14
     by:
       host: claude-code
       session: "733ab034-0172-4107-897d-a9a3752e1525"
