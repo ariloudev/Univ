@@ -55,6 +55,15 @@ blocks:
         title: "Migrate clones of the real local D1 and state"
         detail: "APFS clones of `.cache/univ-ingest/wrangler` and `state` in `.cache/univ-ingest/schema8/`; `univ-ingest migrate --state … --persist-to …`, timed, in the background."
         state: active
+      - key: 01a1cd7b-0d70-7108-8940-0ef54806b13d
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate clones of the real local D1 and state"
+        detail: "The first run sat on shard 1 for 9 min: each rebuild's join scanned the untyped temporary table for every row (quadratic). Stopped, fixed (eadaa52, with a plan test), clones made again. Second run: 15 shards and the catalogue in 11 min, reindex of release 15 (545 M rows) in 3 min; 14 min 40 s in all."
+        state: done
   - key: 01a1cd59-d701-730c-9402-f7d8a9bd66e3
     id: s3-check-clone
     kind: task
@@ -68,6 +77,15 @@ blocks:
         title: "Check the migrated clone against the real state"
         detail: "A sample of objects read through the Worker on both states, compared field by field; every database at 8; integrity checked."
         state: open
+      - key: 01a1cd7b-0d70-7108-8940-0ef6771eaae4
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Check the migrated clone against the real state"
+        detail: "Every database at version 8, no schema-7 JSON left, `PRAGMA quick_check` ok on all 19 files; 42.3 → 39.5 GB. 1,304 objects (301 with links, 307 with relations, entries with flags, references, spectral types, via and position errors, and a random 300) read through the Worker: identical field by field to the old code on the old state. The 1,591 replaced ids match; 9 replaced by nothing keep their ids_replaced row and read as before."
+        state: done
   - key: 01a1cd59-d701-730c-9402-f7d9353d9646
     id: s4-swap
     kind: task
@@ -81,3 +99,43 @@ blocks:
         title: "Swap the migrated clone in"
         detail: "Stop my explorer (task bi8axoops), carry the univ-layers database over from the real state, swap the directories keeping the old ones beside them, and restart the explorer on the new code."
         state: open
+      - key: 01a1cd7b-0d70-7108-8940-0ef75d7fabee
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Swap the migrated clone in"
+        detail: "Explorer stopped; the real univ-layers database put back in the clone; `wrangler` and `state` swapped, the old ones kept as `wrangler-schema7` and `state-schema7`. The explorer runs on the migrated state on the new code at http://127.0.0.1:5317/."
+        state: done
+  - key: 01a1cd7b-0d70-7108-8940-0ef36733fb1f
+    id: store-issues
+    kind: note
+    versions:
+      - key: 01a1cd7b-0d70-7108-8940-0ef885c01b25
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | `migrate` on a clone would reindex the real state, not the clone's | reading the command before the run | `--state` (8c5b378) | fixed |
+          | The rebuild's join scanned the temporary table for each row: days on a real shard | the run sat 9 min on shard 1; `sample` and the plan (`SCAN t LEFT-JOIN`) | the temporary keys typed INTEGER; a test of both plans (eadaa52) | fixed |
+          | `migrate`'s summary says "Migrated the store to shared rows" after a 7→8 move too | the run's last line | to fix with wave 2 | open |
+          | `sqlite3` on the command line cannot open files under `.cache` here | the first integrity check | checked through Python's sqlite3 | worked around |
+  - key: 01a1cd7b-0d70-7108-8940-0ef4a88c731e
+    id: store-migrated
+    kind: note
+    versions:
+      - key: 01a1cd7b-0d70-7108-8940-0ef96f3549af
+        at: 2026-11-12T01:59:16Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "The real store is at schema 8"
+        markdown: "Release 15's local D1 and state are migrated and swapped in; the old ones are kept beside them until you say they can go. Release 16 (memberships) waits for your word, and the science checks still read the old JSON columns until wave 2 rewrites them."
+        tone: success

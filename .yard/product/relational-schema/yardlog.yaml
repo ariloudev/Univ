@@ -3,7 +3,7 @@ key: 01a1cc9c-febd-71e7-8f23-d2fb0f923e28
 branch: "product/relational-schema"
 base: "develop"
 title: "product/relational-schema"
-revision: 10
+revision: 11
 opened:
   at: 2026-11-11T21:56:43Z
   revision: 1
@@ -118,6 +118,11 @@ acts:
       session: "733ab034-0172-4107-897d-a9a3752e1525"
   - at: 2026-11-12T01:22:59Z
     revision: 10
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+  - at: 2026-11-12T01:59:16Z
+    revision: 11
     by:
       host: claude-code
       session: "733ab034-0172-4107-897d-a9a3752e1525"
