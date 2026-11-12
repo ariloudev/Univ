@@ -1,0 +1,124 @@
+key: 01a1ce1a-151d-7544-ab8c-3ae34cea7004
+id: guards
+versions:
+  - key: 01a1ce1a-151d-7544-ab8c-3aeb4dea142b
+    at: 2026-11-12T04:52:58Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "733ab034-0172-4107-897d-a9a3752e1525"
+    title: "Guards and checks"
+    goal: "cargo xtask json refuses JSON at scale, the scan guard fails a science check that scans an object- or entry-scale table, and every science check reads indexed rows"
+    status: active
+blocks:
+  - key: 01a1ce1a-151d-7544-ab8c-3ae4a6f8abd5
+    id: t7
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aecc36b0766
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T7 Schema gate and SQL gate (cargo xtask json)"
+        detail: "A GATES entry after Lines and its own subcommand; refuses a Json column at Object/Entry scale and json_* readers on anything but bound parameters, json_each's value or small-table Json columns."
+        state: open
+      - key: 01a1ce23-41fb-7729-bc4f-fb78156b04c9
+        at: 2026-11-12T05:02:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T7 Schema gate and SQL gate (cargo xtask json)"
+        detail: "xtask/src/json: the schema gate over univ-model's TABLES, and the SQL gate over Rust string literals, rules/*.yaml strings and .sql files. On the tree it refuses exactly the six science checks T9 rewrites (rules/science-checks.yaml 347, 392, 414, 431, 452, 1109)."
+        state: done
+  - key: 01a1ce1a-151d-7544-ab8c-3ae5ea606194
+    id: t8
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aedfb362f67
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8 Scan guard in xtask science"
+        detail: "EXPLAIN QUERY PLAN before each query check; a SCAN of an Object or Entry table fails it."
+        state: open
+      - key: 01a1ce23-41fb-7729-bc4f-fb79a070d95c
+        at: 2026-11-12T05:02:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T8 Scan guard in xtask science"
+        detail: "EXPLAIN QUERY PLAN before each query check; a SCAN of an Object or Entry table fails it."
+        state: active
+  - key: 01a1ce1a-151d-7544-ab8c-3ae6b6395438
+    id: t9
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aee35ec4eab
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T9 Every science check reads indexed rows"
+        detail: "Rules on entries.flags/extra read entry_flags and entry_references; masers-on-their-model-arms reads memberships; every check passes the guard on a fixture."
+        state: open
+  - key: 01a1ce1a-151d-7544-ab8c-3ae7c460eb87
+    id: t9b
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3aef7384d082
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Migrate's summary names the 7→8 move"
+        detail: "'Migrated the store to shared rows' is printed after a 7→8 move; say what was moved."
+        state: open
+  - key: 01a1ce1a-151d-7544-ab8c-3ae86d67b1f0
+    id: t10
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3af0774190fa
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T10 Rules recorded, and traces"
+        detail: "CLAUDE.md rule, memory note, loft.trace.yaml links for the four Constraints and the membership criteria."
+        state: open
+  - key: 01a1ce1a-151d-7544-ab8c-3ae99051120f
+    id: t11
+    kind: task
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3af1c317dfcd
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "T11 Wave review"
+        detail: "/simplify and /code-review in parallel, fixes, then cargo xtask check and cargo xtask integration once each."
+        state: open
+  - key: 01a1ce1a-151d-7544-ab8c-3aea243ce743
+    id: build-issues
+    kind: note
+    versions:
+      - key: 01a1ce1a-151d-7544-ab8c-3af226b79bb7
+        at: 2026-11-12T04:52:58Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "733ab034-0172-4107-897d-a9a3752e1525"
+        title: "Build issues"
+        markdown: |-
+          | Issue | Found by | Fix | State |
+          |---|---|---|---|
+          | — | | | |
