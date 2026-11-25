@@ -99,6 +99,27 @@ requirements:
         name: "A maser whose `Arm` code names no arm of the model, such as a spur, is a member of no structure."
       - key: 01a1cca1-1789-7424-a53b-b6dbc4924644
         name: "A membership keeps the source that gave it and the value of the column as the source publishes it."
+  - key: 01a21314-fe0f-732a-a1ca-639beba146fe
+    statement:
+      form: optional
+      where: "a build takes none of the researched structures"
+      system: "Univ Ingest"
+      shall: "build the release without the memberships that its sources assign to researched structures."
+    body: "A build of only the Galaxy's own sources may leave out the researched structures, whose files are mostly of the cosmic web; the masers of Reid et al. 2019 are then kept as objects of the release without their arms."
+    criteria:
+      - key: 01a21314-fe0f-732a-a1ca-639c6f768cc8
+        name: "A build of Reid et al. 2019's masers that takes none of the researched structures completes."
+      - key: 01a21314-fe0f-732a-a1ca-639de2377029
+        name: "In such a build each maser is an object of the release and a member of no structure."
+  - key: 01a21314-fe0f-732a-a1ca-639e5dcf3c8b
+    statement:
+      form: unwanted
+      if: "a build that takes the researched structures meets a membership naming a structure that none of them is"
+      system: "Univ Ingest"
+      shall: "refuse the build before writing its release, and name the source, its column, the value and the structure."
+    criteria:
+      - key: 01a21314-fe0f-732a-a1ca-639fd715a93e
+        name: "The refusal names the source, the column, the value and the structure that the membership names."
   - key: 01a19f23-636f-72bd-b194-15129323b215
     statement:
       form: ubiquitous

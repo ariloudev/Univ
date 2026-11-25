@@ -1,0 +1,12 @@
+key: 01a21314-dbf1-73fc-98fc-aec409b398b6
+id: mw
+versions:
+  - key: 01a21314-dbf1-73fc-98fc-aec8180a1288
+    at: 2026-11-25T14:21:03Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Milky Way build"
+    goal: "scripts/mw-build.sh builds a release of the 15 Milky Way sources into its own state and output, and it has been run once to completion"
+    status: planned
