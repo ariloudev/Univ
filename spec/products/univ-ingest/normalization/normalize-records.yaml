@@ -162,7 +162,7 @@ requirements:
       shall: "keep for each Galaxy tracer the kind of object it is and the distance its source publishes, with that source's uncertainty, method and kind of value."
     criteria:
       - key: 01a1c319-7860-76e8-92ac-c609c99b51a3
-        name: "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region or luminous hot star."
+        name: "Each Galaxy tracer names its kind of object: open cluster, globular cluster, classical Cepheid, RR Lyrae star, star-forming region, luminous hot star or molecular cloud."
       - key: 01a1c319-7860-76e8-92ac-c60af84ad06b
         name: "A Cepheid or RR Lyrae star keeps its pulsation type as its source publishes it."
       - key: 01a1c319-7860-76e8-92ac-c60bab2a9a0e

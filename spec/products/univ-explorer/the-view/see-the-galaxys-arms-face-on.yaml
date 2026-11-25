@@ -47,7 +47,7 @@ requirements:
       - key: 01a1cbb8-4b9e-71c0-8bbe-c90774284032
         name: "The arms view turns the Galaxy tracers and Galaxy model domains on and every other scale domain off."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
-        name: "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on."
+        name: "The arms view turns the luminous hot stars, the open clusters, the star-forming regions and the molecular clouds on."
       - key: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664
         name: "The arms view turns the classical Cepheids, the RR Lyrae stars and the globular clusters off."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1
