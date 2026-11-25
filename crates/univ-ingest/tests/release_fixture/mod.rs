@@ -39,6 +39,8 @@ pub struct Fixture {
     pub definitions: Vec<SourceDefinition>,
     pub normalized: Vec<Normalized>,
     pub structures: Vec<(String, Structure)>,
+    /// The scale domains of the researched structures the build takes; all where empty.
+    pub structures_of: Vec<univ_ingest::source::ScaleDomain>,
     pub cache: TempDir,
     pub state: TempDir,
     pub out: TempDir,
@@ -76,6 +78,7 @@ pub fn fixture_with(more: &[&str]) -> Fixture {
         definitions,
         normalized,
         structures: read_all_named(&workspace().join("structures")).unwrap(),
+        structures_of: vec![],
         cache,
         state: tempfile::tempdir().unwrap(),
         out: tempfile::tempdir().unwrap(),
@@ -95,6 +98,7 @@ pub fn cross(f: &Fixture) -> CrossMatched {
     let mut basis = Basis::read(&workspace().join("rules"), &[]).unwrap();
     basis.matching = basis.matching.with_object_kinds(&f.definitions);
     basis.structures.clone_from(&f.structures);
+    basis.keep_domains(&f.structures_of);
     // Small enough that the fixture's objects take more than one object shard.
     basis.config.shard_budget_bytes = Some(SHARD_BUDGET);
     let release =
@@ -145,6 +149,7 @@ pub fn built(
 ) -> Result<BuiltRelease, BuildError> {
     let mut crossed = crossed.clone();
     crossed.basis.structures = structures.to_vec();
+    crossed.basis.keep_domains(&f.structures_of);
     let inputs = Inputs {
         crossed: &crossed,
         tiles,

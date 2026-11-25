@@ -201,3 +201,10 @@ fn the_far_side_fits_lie_where_their_papers_place_their_arms() {
         assert!((240.0..330.0).contains(&l), "{beta}: {l}");
     }
 }
+
+#[test]
+fn each_arms_slug_is_its_name_in_a_structure_file() {
+    for arm in Arm::ALL {
+        assert_eq!(serde_json::to_value(arm).unwrap(), arm.slug(), "{arm:?}");
+    }
+}

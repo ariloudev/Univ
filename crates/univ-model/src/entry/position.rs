@@ -103,6 +103,11 @@ impl Position {
         } else {
             lon_lat(between(native.frame, Frame::Icrs).apply(unit_vector(lon, lat)))
         };
+        // Published errors are in right ascension and declination: a galactic position takes
+        // none, rather than errors in l and b stored as if they were.
+        if native.frame == Frame::Galactic && uncertainty != PositionUncertainty::NoneReported {
+            return Err(EntryError::UnsupportedFrame(native.frame));
+        }
         if let PositionUncertainty::Published(errors) = &uncertainty {
             for error in [&errors.ra, &errors.dec] {
                 in_unit("position error", error, Unit::Degree)?;
@@ -160,6 +165,31 @@ mod tests {
         assert_eq!(
             Position::new(native(Frame::Supergalactic, 10.0, 10.0), none),
             Err(EntryError::UnsupportedFrame(Frame::Supergalactic))
+        );
+    }
+
+    #[test]
+    fn a_galactic_position_with_published_errors_is_refused() {
+        // Errors are published in right ascension and declination; errors in l and b would be
+        // stored as if they were.
+        let error = Value::normalize(
+            crate::value::Quantity::new(
+                1.0,
+                Unit::Arcsecond,
+                crate::value::Uncertainty::NoneReported,
+            )
+            .unwrap(),
+            Unit::Degree,
+            crate::value::KindOfValue::Measured,
+        )
+        .unwrap();
+        let published = PositionUncertainty::Published(Box::new(PositionErrors {
+            ra: error,
+            dec: error,
+        }));
+        assert_eq!(
+            Position::new(native(Frame::Galactic, 10.0, 10.0), published),
+            Err(EntryError::UnsupportedFrame(Frame::Galactic))
         );
     }
 

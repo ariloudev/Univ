@@ -21,6 +21,7 @@ use super::kept::Kept;
 use super::objects::ObjectWriter;
 use super::packing::{CellLoad, Packing, pack};
 use super::terms::Terms;
+use crate::structures::Structure;
 use crate::crossmatch::ReleaseObject;
 use crate::source::SourceDefinition;
 use crate::watch::Watch;
@@ -41,9 +42,17 @@ pub struct Sharding<'a> {
     pub definitions: &'a [SourceDefinition],
     pub cosmology: &'a Cosmology,
     pub cells: &'a ObjectCells,
+    /// The release's researched structures, which memberships may name.
+    pub structures: &'a [(String, Structure)],
 }
 
-impl Sharding<'_> {
+impl<'a> Sharding<'a> {
+    /// The writer of the objects' rows, as `numbering` numbers them.
+    #[must_use]
+    pub fn writer(&self, numbering: Numbering) -> ObjectWriter<'a> {
+        ObjectWriter::new(numbering, self.definitions, self.cosmology, self.structures)
+    }
+
     /// The cell of the object at `place`, with its place among the cells.
     fn cell(&self, place: usize) -> Option<(usize, &DomainCell)> {
         self.cells.of(place).map(|i| (i, &self.cells.cells[i]))
@@ -65,7 +74,7 @@ impl Sharding<'_> {
         watch: Watch<'_>,
     ) -> Result<Packing, String> {
         let mut writer = D1Writer::measuring(1);
-        let mut rows = ObjectWriter::new(numbering.clone(), self.definitions, self.cosmology);
+        let mut rows = self.writer(numbering.clone());
         let mut loads: Vec<CellLoad> = self
             .cells
             .cells

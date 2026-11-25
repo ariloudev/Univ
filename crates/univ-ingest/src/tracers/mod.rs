@@ -37,6 +37,9 @@ use crate::yaml::{FileError, read_checked, read_dir, slug_of};
 /// The flag that holds a tracer's arm, which the source's memberships read.
 pub const ARM_FLAG: &str = "Arm";
 
+/// The flag that holds what a tracer's distance assumes, as its paper states it.
+pub const ASSUMES_FLAG: &str = "distance_assumes";
+
 /// A tracer as its file describes it.
 #[derive(Clone, Debug, PartialEq, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -123,8 +126,11 @@ impl TracerFile {
     /// takes, in degrees; it has a positive parallax, measured, or a positive distance,
     /// inferred and stating what it assumes, or both; and every number of the free text is cited.
     fn check(&self) -> Result<(), Problem> {
-        if self.name.trim().is_empty() || self.notes.trim().is_empty() {
-            return problem("name", "the name and the notes must not be empty");
+        if self.name.trim().is_empty() {
+            return problem("name", "is empty");
+        }
+        if self.notes.trim().is_empty() {
+            return problem("notes", "are empty");
         }
         if !matches!(
             self.kind,
@@ -147,6 +153,11 @@ impl TracerFile {
             if c.unit() != Unit::Degree {
                 return problem(field, "is given in degrees");
             }
+        }
+        if let Some(v) = &self.velocity_lsr
+            && v.unit() != Unit::KilometrePerSecond
+        {
+            return problem("velocity_lsr.unit", "is given in kilometres per second");
         }
         for (field, c) in pair.into_iter().chain(self.velocity()) {
             self.check_citation(field, &c.cite, Some(c))?;
@@ -176,11 +187,15 @@ impl TracerFile {
             if !matches!(d.value.unit(), Unit::Parsec | Unit::Kiloparsec) {
                 return problem("distance.unit", "is given in parsecs or kiloparsecs");
             }
-            if d.value.kind != KindOfValue::Inferred || d.value.assumes.is_none() {
+            if d.value.kind != KindOfValue::Inferred
+                || d.value.assumes.is_none()
+                || d.distance_kind == DistanceKind::Parallax
+            {
                 return problem(
                     "distance",
-                    "a distance resting on a rotation curve is inferred, and states in assumes \
-                     the rotation curve and the Galactic Centre's distance it takes",
+                    "a distance resting on a rotation curve is inferred, of a kind other than \
+                     parallax, and states in assumes the rotation curve and the Galactic \
+                     Centre's distance it takes",
                 );
             }
         }
@@ -277,9 +292,16 @@ impl TracerFile {
             .as_ref()
             .map(Researched::parallax)
             .transpose()?;
-        // A parallax keeps its method, as a distance does in its own.
+        // A parallax keeps its method, as a distance does in its own; the distance keeps what
+        // it assumes, the rotation curve and the Galactic Centre's distance, as its paper states.
+        let assumes = self
+            .distance
+            .as_ref()
+            .and_then(|d| d.value.assumes.as_deref())
+            .map(|a| (ASSUMES_FLAG, a.stated.clone()));
         let flags: Flags = std::iter::once((ARM_FLAG, self.arm.slug().to_owned()))
             .chain(self.parallax.iter().map(|p| ("method", p.method.clone())))
+            .chain(assumes)
             .collect();
         let entry = CatalogueEntry {
             cross_ids: Flags::default(),

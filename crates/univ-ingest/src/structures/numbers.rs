@@ -337,6 +337,14 @@ pub fn figures(text: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let mut current = String::new();
     let mut minus = false;
+    // A point that ends a figure, such as a full stop after it, is not part of it.
+    let end = |current: &mut String, out: &mut Vec<String>| {
+        let figure = current.trim_end_matches('.');
+        if !figure.is_empty() && figure != "-" {
+            out.push(figure.to_owned());
+        }
+        current.clear();
+    };
     for c in text.chars() {
         if c.is_ascii_digit() || (c == '.' && !current.is_empty()) {
             if current.is_empty() && minus {
@@ -344,15 +352,11 @@ pub fn figures(text: &str) -> Vec<String> {
             }
             current.push(c);
         } else {
-            if !current.is_empty() {
-                out.push(std::mem::take(&mut current));
-            }
+            end(&mut current, &mut out);
             minus = c == '-';
         }
     }
-    if !current.is_empty() {
-        out.push(current);
-    }
+    end(&mut current, &mut out);
     out
 }
 
@@ -378,6 +382,8 @@ mod tests {
         assert_eq!(figures("18h12m02.6822s"), figures("18 12 02.6822"));
         assert_eq!(figures("\u{2212}18°40′25.002″"), ["-18", "40", "25.002"]);
         assert_ne!(figures("18h12m02.6822s"), figures("18 12 02.682"));
+        // A full stop after the last figure ends the sentence, not the figure.
+        assert_eq!(figures("at 18 12 02.6822."), figures("18h12m02.6822s"));
     }
 
     #[test]

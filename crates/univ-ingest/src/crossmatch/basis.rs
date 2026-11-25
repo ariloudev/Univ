@@ -7,6 +7,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use crate::source::ScaleDomain;
 use crate::designations::DesignationRules;
 use crate::matching::MatchingRules;
 use crate::ranking::RankingRules;
@@ -31,6 +32,9 @@ pub struct Basis {
     pub files: BTreeMap<String, Vec<u8>>,
     /// The researched structures, each by its id.
     pub structures: Vec<(String, Structure)>,
+    /// The ids of the researched structures a build left out for their scale domain
+    /// ([`Basis::keep_domains`]), which a membership may name without being refused.
+    pub left_out: Vec<String>,
 }
 
 /// The text of `file`, read once, parsed with `check`.
@@ -100,7 +104,21 @@ impl Basis {
             designations,
             files,
             structures: named,
+            left_out: Vec::new(),
         })
+    }
+
+    /// Keeps only the researched structures of `domains`, leaving out the others and naming
+    /// them in [`Basis::left_out`]; keeps every one where `domains` is empty.
+    pub fn keep_domains(&mut self, domains: &[ScaleDomain]) {
+        if domains.is_empty() {
+            return;
+        }
+        let (kept, left): (Vec<_>, Vec<_>) = std::mem::take(&mut self.structures)
+            .into_iter()
+            .partition(|(_, s)| domains.contains(&s.scale_domain));
+        self.structures = kept;
+        self.left_out = left.into_iter().map(|(id, _)| id).collect();
     }
 
     /// The text of the rules file `name`, as read.

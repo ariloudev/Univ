@@ -15,11 +15,11 @@ use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use common::{definition_of, structures_dir, workspace};
-use release_fixture::{build_next, fixture, loaded, record, terms};
+use release_fixture::{build_next, fixture, fixture_with, loaded, record, terms};
 use univ_ingest::normalize::Normalized;
-use univ_ingest::source::SourceDefinition;
+use univ_ingest::source::{ScaleDomain, SourceDefinition};
 use univ_ingest::structures::{Arm, StructureGeometry, read_all_named};
-use univ_ingest::tracers::{ARM_FLAG, TracerFile, normalize, read_all};
+use univ_ingest::tracers::{ARM_FLAG, ASSUMES_FLAG, TracerFile, normalize, read_all};
 use univ_model::distance::DistanceKind;
 use univ_model::object::ObjectKind;
 use univ_model::value::KindOfValue;
@@ -108,6 +108,9 @@ fn a_parallax_is_measured_and_a_distance_resting_on_a_rotation_curve_is_inferred
     assert!(sanna.parallax.is_some());
     assert_eq!(sanna.distances.len(), 1);
     assert_eq!(sanna.distances[0].kind_of_value, KindOfValue::Inferred);
+    // The entry keeps what the distance assumes, as the paper states it.
+    let assumes = sanna.flags.get(ASSUMES_FLAG).unwrap();
+    assert!(assumes.contains("rotation curve"), "{assumes}");
     // Dame & Thaddeus 2011's clouds give only a kinematic distance.
     for e in &normalized("researched-arm-clouds").entries {
         assert!(e.parallax.is_none());
@@ -182,6 +185,32 @@ fn a_tracer_with_an_uncited_number_or_no_distance_is_refused_naming_it() {
     );
     let measured = edited(|t| t.replacen("kind: inferred", "kind: measured", 1)).unwrap_err();
     assert!(measured.contains("inferred"), "{measured}");
+    let parallax_kind = edited(|t| {
+        t.replacen(
+            "distance_kind: secondary_indicator",
+            "distance_kind: parallax",
+            1,
+        )
+    })
+    .unwrap_err();
+    assert!(parallax_kind.contains("other than"), "{parallax_kind}");
+    let velocity = edited(|t| {
+        let at = t.find("velocity_lsr:").unwrap();
+        let unit = at + t[at..].find("unit: kilometre_per_second").unwrap();
+        format!(
+            "{}unit: kiloparsec{}",
+            &t[..unit],
+            &t[unit + "unit: kilometre_per_second".len()..]
+        )
+    })
+    .unwrap_err();
+    assert!(velocity.contains("velocity_lsr.unit"), "{velocity}");
+    let notes = edited(|t| {
+        let at = t.find("\nnotes:").unwrap();
+        format!("{}\nnotes: \" \"\n", &t[..at])
+    })
+    .unwrap_err();
+    assert!(notes.contains("notes"), "{notes}");
 }
 
 #[test]
@@ -218,4 +247,65 @@ fn a_release_holds_the_tracers_as_galaxy_tracers_members_of_their_arms() {
             assert!(members >= 2, "{id}: a fit and its extrapolation");
         }
     }
+}
+
+/// The structures and memberships of a fixture release with the arm tracers and Reid et al.
+/// 2019's masers, taking only the researched structures of `domains`.
+fn built_taking(domains: &[ScaleDomain]) -> (Vec<String>, Vec<(String, String)>) {
+    let mut f = fixture_with(&["reid-2019-masers"]);
+    f.structures_of = domains.to_vec();
+    for (id, _) in SOURCES {
+        let n = normalized(id);
+        record(f.cache.path(), id, &n.report);
+        f.definitions.push(definition(id).clone());
+        f.normalized.push(n.clone());
+    }
+    let release = build_next(&f);
+    let db = loaded(&release.dir, &release.manifest);
+    let structures = db
+        .prepare("SELECT id FROM structures WHERE release = 1 ORDER BY id")
+        .unwrap()
+        .query_map([], |r| r.get(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
+    let memberships = db
+        .prepare(
+            "SELECT s.id, m.structure FROM memberships m JOIN sources s ON s.release = m.release \
+             AND s.n = m.source WHERE m.release = 1",
+        )
+        .unwrap()
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
+    (structures, memberships)
+}
+
+#[test]
+fn a_build_taking_the_galaxy_tracers_structures_holds_the_arms_and_their_memberships_only() {
+    let (structures, memberships) = built_taking(&[ScaleDomain::GalaxyTracers]);
+    let mut arms: Vec<String> = read_all_named(&structures_dir())
+        .unwrap()
+        .into_iter()
+        .filter(|(_, s)| s.scale_domain == ScaleDomain::GalaxyTracers)
+        .map(|(id, _)| id)
+        .collect();
+    arms.sort();
+    assert_eq!(structures, arms);
+    assert!(structures.iter().any(|id| id.starts_with("sun-2024-")));
+    for (id, _) in SOURCES {
+        assert!(memberships.iter().any(|(s, _)| s == id), "{id}");
+    }
+    assert!(memberships.iter().any(|(s, _)| s == "reid-2019-masers"));
+    assert!(memberships.iter().all(|(_, m)| structures.contains(m)));
+}
+
+#[test]
+fn a_membership_naming_a_structure_the_build_leaves_out_is_left_out_not_refused() {
+    // Taking only the cosmic web's structures, the arms that every membership names are left
+    // out: the build completes, with no membership.
+    let (structures, memberships) = built_taking(&[ScaleDomain::CosmicWeb]);
+    assert!(!structures.iter().any(|id| id.contains("-arm")));
+    assert_eq!(memberships, []);
 }
