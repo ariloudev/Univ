@@ -147,8 +147,9 @@ impl Until {
 
 /// A scale domain as a build's options name it, such as `galaxy_tracers`.
 fn scale_domain(name: &str) -> Result<ScaleDomain, String> {
-    serde_json::from_value(serde_json::Value::String(name.to_owned()))
-        .map_err(|_| format!("{name:?} is no scale domain: stars, nearby_galaxies, cosmic_web or galaxy_tracers"))
+    serde_json::from_value(serde_json::Value::String(name.to_owned())).map_err(|_| {
+        format!("{name:?} is no scale domain: stars, nearby_galaxies, cosmic_web or galaxy_tracers")
+    })
 }
 
 #[derive(Args)]

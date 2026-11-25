@@ -28,10 +28,10 @@ use univ_model::value::Quantity;
 use super::d1::D1Writer;
 use super::entries::{Measurements, Numbering, entry_number, small, write_entry};
 use super::extras::{link_rows, membership_rows, relation_rows, replacement_rows};
-use crate::structures::Structure;
 use crate::crossmatch::ReleaseObject;
 use crate::source::Membership;
 use crate::source::{ScaleDomain, SourceDefinition};
+use crate::structures::Structure;
 use crate::tiles::{domain_of, name_of};
 
 /// `value` as JSON.

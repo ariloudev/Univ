@@ -21,9 +21,9 @@ use super::kept::Kept;
 use super::objects::ObjectWriter;
 use super::packing::{CellLoad, Packing, pack};
 use super::terms::Terms;
-use crate::structures::Structure;
 use crate::crossmatch::ReleaseObject;
 use crate::source::SourceDefinition;
+use crate::structures::Structure;
 use crate::watch::Watch;
 
 /// Objects turned into rows between two looks at the build's stop flag.

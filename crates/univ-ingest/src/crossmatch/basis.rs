@@ -7,11 +7,11 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use crate::source::ScaleDomain;
 use crate::designations::DesignationRules;
 use crate::matching::MatchingRules;
 use crate::ranking::RankingRules;
 use crate::release::{CONFIG_FILE, ReleaseConfig};
+use crate::source::ScaleDomain;
 use crate::structures::{Structure, read_all_named};
 use crate::tiles::TileRules;
 use crate::yaml::{FileError, parse_checked};
