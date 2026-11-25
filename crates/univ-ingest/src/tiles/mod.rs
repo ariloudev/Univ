@@ -36,9 +36,6 @@ mod octree;
 mod rules;
 mod write;
 
-use std::borrow::Cow;
-use std::collections::BTreeMap;
-
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 use univ_model::cosmology::Cosmology;
@@ -55,6 +52,7 @@ pub use manifest::{
     MODEL_ENCODING, NodeEntry, PopulationCode, Rotations, Sampling, SourceEntry, SourceRole,
     TRACERS_ENCODING, TileManifest, rotations, sampling,
 };
+use manifest::{Laid, manifest_of};
 pub use model::{Galaxy, ModelDomain, SampledModel, build_model_domain, counts, fits, tile_model};
 pub use octree::{Node, Octree, Positioned, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
@@ -349,14 +347,6 @@ pub fn build_domain(
     tile_domain(domain, points, laid, encode, context)
 }
 
-/// What a domain's manifest records beside its octree: its sources, its encoding and, for the
-/// Galaxy model, the seed its points were sampled with.
-struct Laid {
-    sources: Vec<SourceEntry>,
-    encoding: Encoding,
-    model_seed: Option<u64>,
-}
-
 /// The octree of `domain`'s `points`, each node's tile written by `encode` from the points it
 /// keeps, as indices into `points`, and the domain's manifest, under `context`'s rules.
 ///
@@ -443,65 +433,4 @@ fn radius<P: Positioned>(points: &[P]) -> f64 {
         .iter()
         .map(|p| p.position().iter().map(|c| c * c).sum::<f64>().sqrt())
         .fold(0.0_f64, f64::max)
-}
-
-/// The manifest of a domain's built nodes, of `points` many points whose farthest lies `radius`
-/// from the barycentre, recording what `laid` gives.
-fn manifest_of(
-    domain: ScaleDomain,
-    stream: u64,
-    (points, radius): (usize, f64),
-    laid: Laid,
-    fractions: &[f64],
-    nodes: &[BuiltNode],
-    context: &Context<'_>,
-) -> Result<TileManifest, TilesError> {
-    // The first node of each level, whose cube gives the level's edge and step.
-    let mut first: BTreeMap<u8, &NodeBox> = BTreeMap::new();
-    for n in nodes {
-        first.entry(n.level).or_insert(&n.bounds);
-    }
-    let levels = first
-        .into_iter()
-        .map(|(level, bounds)| Level {
-            level,
-            edge: bounds.edge(),
-            step: bounds.step(),
-            fraction: fractions.get(usize::from(level)).copied().unwrap_or(1.0),
-        })
-        .collect();
-    Ok(TileManifest {
-        format: Cow::Borrowed(FORMAT),
-        manifest_version: MANIFEST_VERSION,
-        release: context.release.to_owned(),
-        scale_domain: Cow::Borrowed(name_of(domain)),
-        frame: FRAME,
-        unit: Cow::Borrowed(unit_symbol(domain)),
-        cosmology: context.cosmology.clone(),
-        rotations: rotations()?,
-        encoding: laid.encoding,
-        levels,
-        sampling: Sampling {
-            model_seed: laid.model_seed,
-            ..sampling(context.rules, stream)
-        },
-        points,
-        radius,
-        sources: laid.sources,
-        nodes: nodes
-            .iter()
-            .map(|n| NodeEntry {
-                address: n.address.clone(),
-                level: n.level,
-                bounds: Bounds {
-                    min: n.bounds.min(),
-                    max: n.bounds.max(),
-                },
-                points: n.points,
-                sampled_from: n.sampled_from,
-                bytes: n.tile.len(),
-                sha256: n.sha256.clone(),
-            })
-            .collect(),
-    })
 }

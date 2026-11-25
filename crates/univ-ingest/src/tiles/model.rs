@@ -11,8 +11,8 @@ use univ_model::tile::{ModelPoint, NodeBox, encode_model};
 use univ_model::units::Unit;
 
 use super::domain::DomainPoints;
-use super::manifest::PopulationCode;
-use super::{BuiltDomain, Context, Laid, TilesError, encoding_of, tile_domain};
+use super::manifest::{Laid, PopulationCode};
+use super::{BuiltDomain, Context, TilesError, encoding_of, tile_domain};
 use crate::source::ScaleDomain;
 use crate::structures::{Extent, Structure, StructureGeometry};
 
