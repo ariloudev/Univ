@@ -26,7 +26,7 @@ pub const RULES: [&str; 6] = [
     "tiles",
     "designations",
     "release",
-    "galaxy-model",
+    RULES_NAME,
 ];
 
 /// What a cross-match works under.
@@ -100,7 +100,7 @@ impl Basis {
             config.map_err(|e| e.to_string())?,
         );
         let designations = designations.map_err(|e| e.to_string())?;
-        let galaxy_model = parsed(&at(RULES_NAME), text(RULES_NAME), ModelFile::checks)
+        let galaxy_model = parsed(&at(RULES_NAME), text(RULES_NAME), ModelFile::check)
             .map_err(|e| e.to_string())?
             .model()?;
         if !files.contains_key("release") {

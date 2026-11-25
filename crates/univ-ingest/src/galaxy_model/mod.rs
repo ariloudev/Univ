@@ -83,21 +83,12 @@ impl ModelFile {
         out
     }
 
-    /// [`ModelFile::check`], as a rules file's checks are given.
-    ///
-    /// # Errors
-    ///
-    /// The field and the problem of the first check that fails.
-    pub fn checks(&self) -> Result<(), (String, String)> {
-        self.check()
-    }
-
     /// The checks serde cannot make: the papers stand and every citation names one of them and
     /// holds its number; every choice gives its reason; every number is in a unit of the
     /// dimension the model reads it in, and within the range its density can be drawn from;
     /// the populations' codes and ids are distinct, from 1; each colour is derived from its
     /// colour index or chosen; and every number of the free text is cited.
-    fn check(&self) -> Result<(), Problem> {
+    pub(crate) fn check(&self) -> Result<(), Problem> {
         self.check_papers()?;
         if self.points == 0 {
             return problem("points", "is not positive");

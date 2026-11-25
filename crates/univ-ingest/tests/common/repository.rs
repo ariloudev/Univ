@@ -72,3 +72,14 @@ fn mirror() -> std::io::Result<PathBuf> {
         Err(e) => Err(e),
     }
 }
+
+/// The repository's Galaxy model, at the CLI tests' size.
+pub fn repository_model() -> univ_model::galaxy_model::Model {
+    let file = workspace().join("rules/galaxy-model.yaml");
+    let mut model = univ_ingest::galaxy_model::ModelFile::read(&file)
+        .expect("the definition reads")
+        .model()
+        .expect("the definition gives a model");
+    model.points = MODEL_POINTS;
+    model
+}

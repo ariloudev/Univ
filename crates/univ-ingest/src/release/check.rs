@@ -15,12 +15,12 @@ use univ_model::ids::{ObjectId, SourceId};
 use univ_model::release::D1_CAP_BYTES;
 use univ_model::release::manifest::{D1Estimate, TableEstimate};
 use univ_model::release::shards::Database;
-use univ_model::tile::{decode, decode_model};
+use univ_model::tile::{MODEL_VERSION, decode, decode_model};
 
 use crate::crossmatch::ReleaseObject;
 use crate::normalize::reads_rows;
 use crate::provenance::Provenance;
-use crate::source::{Review, ScaleDomain, SourceDefinition};
+use crate::source::{Review, SourceDefinition};
 use crate::structures::Structure;
 use crate::tiles::{Built, name_of};
 
@@ -98,14 +98,14 @@ pub fn provisional(definitions: &[SourceDefinition]) -> Vec<SourceId> {
         .collect()
 }
 
-/// AC-86: each tile decoded, each of its object ids looked up. The Galaxy model's tiles hold
-/// model points, no object's, and are only decoded.
+/// AC-86: each tile decoded, each of its object ids looked up. A tile of model points (encoding
+/// version 5) holds no object's, and is only decoded.
 fn tile_objects(subject: &Subject<'_>, failed: &mut Vec<Failed>) {
     let ids: BTreeSet<ObjectId> = subject.objects.iter().map(|o| o.id).collect();
     for domain in &subject.tiles.domains {
         for node in &domain.nodes {
             let at = format!("{} tile {}", name_of(domain.domain), node.address);
-            if domain.domain == ScaleDomain::GalaxyModel {
+            if domain.manifest.encoding.version == MODEL_VERSION {
                 if let Err(e) = decode_model(&node.tile) {
                     failed.push(Failed {
                         check: TILE_OBJECTS,

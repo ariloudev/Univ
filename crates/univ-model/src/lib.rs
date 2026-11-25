@@ -20,6 +20,7 @@ pub mod object;
 pub mod position;
 pub mod redshift;
 pub mod release;
+pub mod seeded;
 pub mod tile;
 pub mod time;
 pub mod units;

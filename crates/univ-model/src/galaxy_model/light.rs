@@ -12,43 +12,40 @@ use super::model::{Light, Model};
 /// Fails on a mass or ratio that is not positive, shares that leave no light to the others, or
 /// a model with no light.
 pub fn lights(model: &Model) -> Result<Vec<f64>, ModelError> {
+    let positive = |x: f64| x.partial_cmp(&0.0) == Some(std::cmp::Ordering::Greater);
     let mut massive = 0.0;
     let mut shared = 0.0;
+    // Each population's light, or its share where its light waits on the others'.
+    let mut each = Vec::with_capacity(model.populations.len());
     for p in &model.populations {
         match &p.light {
             Light::Mass {
                 mass,
                 mass_to_light,
             } => {
-                if mass.value.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater)
-                    || mass_to_light.value.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater)
-                {
+                if !positive(mass.value) || !positive(mass_to_light.value) {
                     return Err(ModelError::Light(p.id.clone()));
                 }
-                massive += mass.value / mass_to_light.value;
+                let light = mass.value / mass_to_light.value;
+                massive += light;
+                each.push(Ok(light));
             }
             Light::Share { share } => {
                 if share.value.is_nan() || share.value < 0.0 {
                     return Err(ModelError::Light(p.id.clone()));
                 }
                 shared += share.value;
+                each.push(Err(share.value));
             }
         }
     }
-    if shared >= 1.0 || massive.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater) {
+    if shared >= 1.0 || !positive(massive) {
         return Err(ModelError::NoLight);
     }
     let total = massive / (1.0 - shared);
-    Ok(model
-        .populations
-        .iter()
-        .map(|p| match &p.light {
-            Light::Mass {
-                mass,
-                mass_to_light,
-            } => mass.value / mass_to_light.value,
-            Light::Share { share } => share.value * total,
-        })
+    Ok(each
+        .into_iter()
+        .map(|light| light.unwrap_or_else(|share| share * total))
         .collect())
 }
 

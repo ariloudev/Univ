@@ -8,10 +8,9 @@
 mod common;
 mod release_fixture;
 
-use common::repository::MODEL_POINTS;
+use common::repository::{MODEL_POINTS, repository_model};
 use common::workspace;
 use release_fixture::{build_next, cross, fixture, loaded, tiles};
-use univ_ingest::galaxy_model::ModelFile;
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::structures::{Structure, StructureGeometry, read_all_named};
 use univ_ingest::tiles::{
@@ -24,12 +23,8 @@ use univ_model::object::ObjectKind;
 use univ_model::tile::{MODEL_VERSION, TileError, decode, decode_model};
 use univ_model::value::KindOfValue;
 
-/// The repository's definition, at the fixture's size.
 fn model() -> Model {
-    let file = ModelFile::read(&workspace().join("rules/galaxy-model.yaml")).unwrap();
-    let mut model = file.model().unwrap();
-    model.points = MODEL_POINTS;
-    model
+    repository_model()
 }
 
 fn structures() -> Vec<(String, Structure)> {
@@ -52,7 +47,7 @@ fn built(structures: &[(String, Structure)], counts: &Counts) -> Option<BuiltDom
         definitions: &[],
         galaxy: Some(galaxy),
     };
-    build_model_domain(&galaxy, counts, &context)
+    build_model_domain(counts, &context)
         .unwrap()
         .map(|d| d.built)
 }

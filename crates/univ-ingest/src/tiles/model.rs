@@ -7,13 +7,12 @@ use univ_model::galaxy_model::{
     Counterpart, Counts, Fit, Model, Placement, Stretch, counterpart, covered, sample, stretches,
 };
 use univ_model::object::ObjectKind;
-use univ_model::tile::{MODEL_POINT_BYTES, ModelPoint, encode_model};
+use univ_model::tile::{ModelPoint, NodeBox, encode_model};
 use univ_model::units::Unit;
 
-use super::domain::{DOMAINS, DomainPoints, name_of};
-use super::manifest::{MODEL_ENCODING, PopulationCode};
-use super::octree::{self, generator, root_box};
-use super::{BuiltDomain, BuiltNode, Context, TilesError, manifest, manifest_of, radius, sha256};
+use super::domain::DomainPoints;
+use super::manifest::PopulationCode;
+use super::{BuiltDomain, Context, Laid, TilesError, encoding_of, tile_domain};
 use crate::source::ScaleDomain;
 use crate::structures::{Extent, Structure, StructureGeometry};
 
@@ -88,7 +87,8 @@ pub fn counts(stars: Option<&DomainPoints>, tracers: Option<&DomainPoints>) -> C
     counts
 }
 
-/// The model's points sampled along `stretches`, each covered as `counts` give, in the order sampled.
+/// The model's points sampled along `stretches`, each covered as `counts` give, in the order
+/// sampled.
 ///
 /// # Errors
 ///
@@ -99,20 +99,19 @@ fn model_points(
     counts: &Counts,
 ) -> Result<Vec<ModelPoint>, TilesError> {
     let sampled = sample(model, stretches).map_err(|e| TilesError::Model(e.to_string()))?;
-    let counterpart = |code: u8| {
-        model
-            .populations
-            .iter()
-            .find(|p| p.code == code)
-            .map_or(Counterpart::Stars, |p| counterpart(&p.density))
-    };
+    // Each population's counterpart by its code, looked up once.
+    let mut of_code = [Counterpart::Stars; 256];
+    for p in &model.populations {
+        of_code[usize::from(p.code)] = counterpart(&p.density);
+    }
+    let covered = covered(
+        sampled.iter().map(|s| (s.position, s.population)),
+        |code| of_code[usize::from(code)],
+        counts,
+    );
     Ok(sampled
-        .iter()
-        .zip(covered(
-            sampled.iter().map(|s| (s.position, s.population)),
-            counterpart,
-            counts,
-        ))
+        .into_iter()
+        .zip(covered)
         .map(|(s, covered)| ModelPoint {
             position: s.position,
             population: s.population,
@@ -121,19 +120,21 @@ fn model_points(
         .collect())
 }
 
-/// The Galaxy model's domain: `galaxy`'s model sampled along its arms, each point covered as
-/// `counts` give, tiled under `context`'s rules; none where no arm of its rules has a stretch
-/// among the release's structures.
+/// The Galaxy model's domain: the model of `context`'s Galaxy sampled along its arms, each point
+/// covered as `counts` give, tiled under `context`'s rules; none where the build was given no
+/// model, or no arm of its rules has a stretch among the release's structures.
 ///
 /// # Errors
 ///
 /// Fails when the model cannot be sampled, a leaf would hold a tile beyond 1 MiB, or a tile
 /// cannot be encoded.
 pub fn build_model_domain(
-    galaxy: &Galaxy<'_>,
     counts: &Counts,
     context: &Context<'_>,
 ) -> Result<Option<ModelDomain>, TilesError> {
+    let Some(galaxy) = &context.galaxy else {
+        return Ok(None);
+    };
     let model = galaxy.model;
     let placement = Placement::new(model.r0.value, model.sun_height.value);
     let stretches = stretches(&model.arms, &fits(galaxy.structures, &placement));
@@ -147,15 +148,7 @@ pub fn build_model_domain(
         }
     }
     let points = model_points(model, &stretches, counts)?;
-    let populations = model
-        .populations
-        .iter()
-        .map(|p| PopulationCode {
-            code: p.code,
-            id: p.id.clone(),
-            name: p.name.clone(),
-        })
-        .collect();
+    let populations = model.populations.iter().map(PopulationCode::from).collect();
     let built = tile_model(&points, populations, model.seed, context)?;
     Ok(Some(ModelDomain {
         built,
@@ -180,58 +173,14 @@ pub fn tile_model(
     context: &Context<'_>,
 ) -> Result<BuiltDomain, TilesError> {
     let domain = ScaleDomain::GalaxyModel;
-    let name = name_of(domain);
-    let stream = DOMAINS
-        .iter()
-        .position(|d| *d == domain)
-        .and_then(|n| u64::try_from(n).ok())
-        .unwrap_or_default();
-    let encode_error = |address: &str, error| TilesError::Encode {
-        domain: name.to_owned(),
-        address: address.to_owned(),
-        error,
+    let laid = Laid {
+        sources: Vec::new(),
+        encoding: encoding_of(domain).with_populations(populations),
+        model_seed: Some(model_seed),
     };
-    let root = root_box(points).map_err(|e| encode_error("r", e))?;
-    let mut rng = generator(context.rules.seed, stream);
-    let tree = octree::build(
-        name,
-        MODEL_POINT_BYTES,
-        points,
-        root,
-        context.rules,
-        &mut rng,
-    )?;
-    let mut built = Vec::with_capacity(tree.nodes.len());
-    for node in tree.nodes {
-        let tile_points: Vec<ModelPoint> = node.points.iter().map(|&i| points[i]).collect();
-        let tile =
-            encode_model(&node.bounds, &tile_points).map_err(|e| encode_error(&node.address, e))?;
-        built.push(BuiltNode {
-            sha256: sha256(&tile),
-            points: tile_points.len(),
-            address: node.address,
-            level: node.level,
-            bounds: node.bounds,
-            sampled_from: node.sampled_from,
-            tile,
-        });
-    }
-    let mut manifest = manifest_of(
-        domain,
-        stream,
-        (points.len(), radius(points)),
-        Vec::new(),
-        &tree.fractions,
-        &built,
-        context,
-    )?;
-    manifest.encoding = MODEL_ENCODING.with_populations(populations);
-    manifest.sampling.model_seed = Some(model_seed);
-    let json = manifest::to_json(&manifest)?;
-    Ok(BuiltDomain {
-        domain,
-        nodes: built,
-        manifest,
-        json,
-    })
+    let encode = |bounds: &NodeBox, kept: &[usize]| {
+        let tile_points: Vec<ModelPoint> = kept.iter().map(|&i| points[i]).collect();
+        encode_model(bounds, &tile_points)
+    };
+    tile_domain(domain, points, laid, encode, context)
 }

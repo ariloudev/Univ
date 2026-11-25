@@ -17,12 +17,12 @@ mod simulated;
 use std::collections::BTreeMap;
 use std::path::Path;
 
+use common::repository::repository_model;
 use common::{source_id, workspace};
 use release_fixture::{cross, fixture, tiles};
 use serde::Serialize;
 use simulated::tiles::{Lcg, context, rules};
 use univ_ingest::fetch::hex;
-use univ_ingest::galaxy_model::ModelFile;
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::tiles::{
     BuiltDomain, DomainPoint, PopulationCode, assign, build_domain, name_of, tile_model,
@@ -226,19 +226,8 @@ fn simulated_model() -> (BuiltDomain, Vec<ModelPoint>) {
             covered: n % 4 == 0,
         })
         .collect();
-    let model = ModelFile::read(&workspace().join("rules/galaxy-model.yaml"))
-        .unwrap()
-        .model()
-        .unwrap();
-    let populations = model
-        .populations
-        .iter()
-        .map(|p| PopulationCode {
-            code: p.code,
-            id: p.id.clone(),
-            name: p.name.clone(),
-        })
-        .collect();
+    let model = repository_model();
+    let populations = model.populations.iter().map(PopulationCode::from).collect();
     let (cosmology, definitions) = (Cosmology::planck_2018(), common::read_sources());
     let rules = rules(12, 8, 3, 5);
     let built = tile_model(

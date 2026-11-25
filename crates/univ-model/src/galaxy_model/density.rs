@@ -6,10 +6,10 @@ use super::arms::{ArmSampler, Nearness};
 use super::model::{Density, LongBar};
 use super::random::Random;
 
-/// What drawing a population's points needs beside its density: the arms' segments and their
-/// nearness, and the arm rules' contrast of the old disc.
+/// What drawing a population's points needs beside its density: the arms' segments, for an arm
+/// population, and their nearness, and the arm rules' contrast of the old disc.
 pub struct Context<'a> {
-    pub arms: &'a ArmSampler<'a>,
+    pub arms: Option<&'a ArmSampler<'a>>,
     pub nearness: &'a Nearness,
     pub old_arm_contrast: f64,
 }
@@ -45,7 +45,7 @@ pub fn draw(density: &Density, context: &Context<'_>, random: &mut Random) -> Op
         } => Some(if random.uniform() < long_bar_share.value {
             long_bar_point(random, long_bar)
         } else {
-            let [a, b, c] = bulge_scales.clone().map(|p| p.value);
+            let [a, b, c] = bulge_scales.each_ref().map(|p| p.value);
             rotated(
                 [random.laplace(a), random.laplace(b), random.laplace(c)],
                 angle.value,
@@ -70,10 +70,8 @@ pub fn draw(density: &Density, context: &Context<'_>, random: &mut Random) -> Op
             width_factor,
             ..
         } => {
-            if context.arms.is_empty() {
-                return None;
-            }
-            let [x, y] = context.arms.draw(random, width_factor.value);
+            let arms = context.arms.filter(|a| !a.is_empty())?;
+            let [x, y] = arms.draw(random, width_factor.value);
             Some([x, y, random.laplace(scale_height.value)])
         }
     }
@@ -134,9 +132,15 @@ fn long_bar_point(random: &mut Random, bar: &LongBar) -> [f64; 3] {
         let x = (2.0 * random.uniform() - 1.0) * extent;
         let y = (2.0 * random.uniform() - 1.0) * extent;
         let r = x.hypot(y);
+        let cuts = cut((r - r_out) / s_out) * cut((r_in - r) / s_in);
+        let draw = random.uniform();
+        // The norm is at least the larger of |x|/x0 and |y|/y0, so this bounds the density from
+        // above: most draws are refused before the powers are taken.
+        if draw >= (-(x.abs() / x0).max(y.abs() / y0)).exp() * cuts {
+            continue;
+        }
         let inplane = ((x.abs() / x0).powf(c) + (y.abs() / y0).powf(c)).powf(1.0 / c);
-        let density = (-inplane).exp() * cut((r - r_out) / s_out) * cut((r_in - r) / s_in);
-        if random.uniform() < density {
+        if draw < (-inplane).exp() * cuts {
             return rotated([x, y, random.laplace(bar.z0.value)], bar.angle.value);
         }
     }
@@ -163,8 +167,8 @@ fn halo(
     let outer_mass = shell(outer, break_radius, m_max, outer_scale);
     let draw_m = |random: &mut Random, slope: f64, a: f64, b: f64| {
         let k = slope + 3.0;
-        let u = random.uniform();
-        (a.powf(k) + u * (b.powf(k) - a.powf(k))).powf(1.0 / k)
+        let draw = random.uniform();
+        (a.powf(k) + draw * (b.powf(k) - a.powf(k))).powf(1.0 / k)
     };
     let m = if random.uniform() * (inner_mass + outer_mass) < inner_mass {
         draw_m(random, inner, m_min, break_radius)

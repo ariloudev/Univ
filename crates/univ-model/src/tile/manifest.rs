@@ -188,6 +188,16 @@ pub struct PopulationCode {
     pub name: String,
 }
 
+impl From<&crate::galaxy_model::Population> for PopulationCode {
+    fn from(p: &crate::galaxy_model::Population) -> Self {
+        Self {
+            code: p.code,
+            id: p.id.clone(),
+            name: p.name.clone(),
+        }
+    }
+}
+
 /// The encoding of [`BASE_VERSION`], which every scale domain's tiles take but the Galaxy
 /// tracers'.
 pub const ENCODING: Encoding = Encoding {

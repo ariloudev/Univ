@@ -3,7 +3,9 @@
 //! own stream, its code, so that a population's points do not depend on any other's.
 
 use rand_chacha::ChaCha20Rng;
-use rand_chacha::rand_core::{Rng, SeedableRng};
+use rand_chacha::rand_core::Rng;
+
+use crate::seeded::generator;
 
 /// A seeded source of the draws the model's sampling makes.
 pub struct Random {
@@ -16,11 +18,10 @@ impl Random {
     /// The draws of stream `stream` under `seed`.
     #[must_use]
     pub fn new(seed: u64, stream: u64) -> Self {
-        let mut key = [0u8; 32];
-        key[..8].copy_from_slice(&seed.to_le_bytes());
-        let mut rng = ChaCha20Rng::from_seed(key);
-        rng.set_stream(stream);
-        Self { rng, spare: None }
+        Self {
+            rng: generator(seed, stream),
+            spare: None,
+        }
     }
 
     /// A number in [0, 1), from the top 53 bits of a 64-bit draw.

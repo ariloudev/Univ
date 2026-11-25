@@ -86,24 +86,24 @@ pub fn sample(model: &Model, stretches: &[Stretch]) -> Result<Vec<Sampled>, Mode
     let nearness = Nearness::new(stretches, model.arms.old_arm_spread.value);
     let mut out = Vec::with_capacity(usize::try_from(model.points).unwrap_or_default());
     for (population, n) in model.populations.iter().zip(counts) {
-        // Only the arms' populations draw along the stretches.
-        let arm_sampler = match &population.density {
+        // Only the arms' populations draw along the stretches, and their knots gather.
+        let (arm_sampler, knots) = match &population.density {
             Density::Arms {
                 radial_scale_length,
+                knots,
                 ..
-            } => ArmSampler::new(stretches, radial_scale_length.value),
-            _ => ArmSampler::new(&[], 1.0),
+            } => (
+                Some(ArmSampler::new(stretches, radial_scale_length.value)),
+                knots.as_ref(),
+            ),
+            _ => (None, None),
         };
         let context = density::Context {
-            arms: &arm_sampler,
+            arms: arm_sampler.as_ref(),
             nearness: &nearness,
             old_arm_contrast: model.arms.old_arm_contrast.value,
         };
         let mut random = Random::new(model.seed, u64::from(population.code));
-        let knots = match &population.density {
-            Density::Arms { knots: Some(k), .. } => Some(k),
-            _ => None,
-        };
         let mut left = n;
         while left > 0 {
             let centre = density::draw(&population.density, &context, &mut random)

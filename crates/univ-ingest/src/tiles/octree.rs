@@ -2,7 +2,7 @@
 //! and the seeded subsample each inner node keeps, one fraction for each level.
 
 use rand_chacha::ChaCha20Rng;
-use rand_chacha::rand_core::{Rng, SeedableRng};
+use rand_chacha::rand_core::Rng;
 use univ_model::tile::{NodeBox, TileError, max_points, tile_bytes};
 
 use univ_model::position::Vec3;
@@ -73,16 +73,8 @@ pub fn root_box<P: Positioned>(points: &[P]) -> Result<NodeBox, TileError> {
     NodeBox::new([-half; 3], 2.0 * half)
 }
 
-/// The `ChaCha20` generator of a domain: keyed by the seed's eight little-endian bytes and 24
-/// zero bytes, its stream the domain's number.
-#[must_use]
-pub fn generator(seed: u64, stream: u64) -> ChaCha20Rng {
-    let mut key = [0u8; 32];
-    key[..8].copy_from_slice(&seed.to_le_bytes());
-    let mut rng = ChaCha20Rng::from_seed(key);
-    rng.set_stream(stream);
-    rng
-}
+/// The `ChaCha20` generator of a domain, its stream the domain's number.
+pub use univ_model::seeded::generator;
 
 /// A number below `n` (positive), each equally likely: a 64-bit draw, redrawn while it falls in
 /// the 2^64 mod `n` values that would favour the smallest.

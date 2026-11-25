@@ -187,16 +187,16 @@ const HEADER_BYTES = 48;
 const V1_POINT_BYTES = 17;
 /** The bytes of a version 2 or 3 point: version 1's, then a value and its code. */
 const V3_POINT_BYTES = 20;
+/** The encoding version of the Galaxy model's tiles. */
+const MODEL_VERSION = 5;
 /** The bytes a point takes, by encoding version: the versions this decoder knows. */
 const POINT_BYTES: Readonly<Record<number, number>> = {
   1: V1_POINT_BYTES,
   2: V3_POINT_BYTES,
   3: V3_POINT_BYTES,
   4: V3_POINT_BYTES + 1,
-  5: 8,
+  [MODEL_VERSION]: 8,
 };
-/** The encoding version of the Galaxy model's tiles. */
-const MODEL_VERSION = 5;
 /** The flag of a model point that real objects cover. */
 const COVERED = 1;
 
