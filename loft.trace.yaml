@@ -242,7 +242,7 @@ links:
         body: cc102f86e7c4e73a2f3c94a0bd6016e7590b0d1835f2dac6d0dcb5140fc643a0
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object"
-        body: 2f540c2471db123234828755c6e6af27ea2a22e849b7ff9e9f3cacf94cc8334f
+        body: eb78c18a06c10d1bb606710774619e158b1b764f00d1b0fea210281d52bf54e8
   - node: 01a1cbb8-4b9e-71c0-8bbe-c912e8e751fd
     reviewed: 52014ce5113c6797812ce5b338df0b10ab54013a3e3d9e9e726989b3d00e463b
     tests:
@@ -257,7 +257,7 @@ links:
         body: c1e9f1ba3586d89f5e9a44048b9083cdd0aa4c0bd27c9cd19b8c0d0141f97cd7
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object"
-        body: 2f540c2471db123234828755c6e6af27ea2a22e849b7ff9e9f3cacf94cc8334f
+        body: eb78c18a06c10d1bb606710774619e158b1b764f00d1b0fea210281d52bf54e8
   - node: 01a1cbb8-4b9e-71c0-8bbe-c914edbba15b
     reviewed: 6e3307f0eb36563a4d11f5ff9cb47a69bda784f239ece82b9cd39d96bfb96f27
     tests:
@@ -916,11 +916,11 @@ links:
         name: "an_estimated_distance_too_uncertain_to_place_does_not_set_an_inferred_one_aside"
         body: a9afdb9466da29e7d196888f615c1b9bf29a55f3fe862ebed9d631320e87d267
   - node: 01a1c319-7860-76e8-92ac-c609c99b51a3
-    reviewed: 63700834c6c3cdbbe02c5fa8e53216c310e7fa62a41097407b2d247843da9ed0
+    reviewed: d04e67b0709191325d02522a241306a083cc1cba4c55bb7b67bc458cb91556ee
     tests:
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object"
-        body: 2f540c2471db123234828755c6e6af27ea2a22e849b7ff9e9f3cacf94cc8334f
+        body: eb78c18a06c10d1bb606710774619e158b1b764f00d1b0fea210281d52bf54e8
       - file: "crates/univ-ingest/tests/source_tracer_kinds.rs"
         name: "a_tracer_source_without_a_kind_or_another_source_with_one_is_refused"
         body: 9d202913bc88db5f5c6b35d8e8f8481e08535c87a048f3282cf87defee4887a1
@@ -5761,11 +5761,11 @@ links:
     reviewed: 1033915a9673b60c988eb75e711c941c56d066bebd8220c878ecc13b10034a11
     unverified: "The specification of product/galaxy-model adds the arms view turning the Galaxy model domain on, which wave 4 (stage/galaxy-model-4) builds; it restores the tests \"turns the Galaxy tracers domain on and every other off\" in clients/explorer/src/ui/arms.test.ts; \"opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation\" in clients/explorer/e2e/explorer.spec.ts, which verify the rest."
   - node: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
-    reviewed: e966f8461372113a48646f7e4aab632e03cbc8bb315cf9349a518dd36745a608
+    reviewed: 0fe5ee917bce0ddc5b7d651d6aa8aaf66f4a6a1e69928cdc6d36e966107e48cd
     tests:
       - file: "clients/explorer/src/ui/arms.test.ts"
-        name: "turns the luminous hot stars, open clusters and star-forming regions on, and the Cepheids, RR Lyrae stars and globular clusters off"
-        body: b3a5bf0df95212a78fce1b834193854c470a6d29eadf211e24aff1919b47bc09
+        name: "turns the luminous hot stars, open clusters, star-forming regions and molecular clouds on, and the Cepheids, RR Lyrae stars and globular clusters off"
+        body: 73ae81b6e970c80d5663fef5bd5522298ef4b53f96f5773afc2460ed66c0875f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
         body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
@@ -5773,8 +5773,8 @@ links:
     reviewed: 0c8a3730b93494da479eeab20e52b7fc4c73c8619903536b8cc5e58e2a0b7365
     tests:
       - file: "clients/explorer/src/ui/arms.test.ts"
-        name: "turns the luminous hot stars, open clusters and star-forming regions on, and the Cepheids, RR Lyrae stars and globular clusters off"
-        body: b3a5bf0df95212a78fce1b834193854c470a6d29eadf211e24aff1919b47bc09
+        name: "turns the luminous hot stars, open clusters, star-forming regions and molecular clouds on, and the Cepheids, RR Lyrae stars and globular clusters off"
+        body: 73ae81b6e970c80d5663fef5bd5522298ef4b53f96f5773afc2460ed66c0875f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
         body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
