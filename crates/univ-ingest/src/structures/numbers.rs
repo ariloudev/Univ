@@ -169,7 +169,108 @@ fn read_number(chars: &[char], i: usize) -> (usize, String) {
 /// Whether `text` holds `x` as a standalone number.
 #[must_use]
 pub fn has_number(text: &str, x: f64) -> bool {
-    numbers(text).contains(&x)
+    every_number(text).contains(&x)
+}
+
+/// The numbers `text` states as a citation shows them: [`numbers`], those LaTeX glues to a
+/// macro (`$2.0\pm0.2$`, `\narreq1.4`), and those written with a power of ten
+/// ([`scaled_numbers`]).
+fn every_number(text: &str) -> Vec<f64> {
+    let mut out = numbers(text);
+    if text.contains('\\') {
+        out.extend(numbers(&macros_apart(text)));
+    }
+    out.extend(scaled_numbers(text));
+    out
+}
+
+/// `text` with a space after each LaTeX macro's name, such as `\pm` or `\narreq`, so that a
+/// number the macro is glued to stands as a number.
+fn macros_apart(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 8);
+    let mut in_name = false;
+    for c in text.chars() {
+        if in_name && !c.is_ascii_alphabetic() {
+            out.push(' ');
+            in_name = false;
+        }
+        if c == '\\' {
+            in_name = true;
+        }
+        out.push(c);
+    }
+    out
+}
+
+/// The numbers `text` writes with a power of ten, as papers write masses: `A × 10^C`,
+/// `A\times 10^{C}`, and `A ± B × 10^C`, which states both `A·10^C` and `B·10^C`, `\pm` or
+/// `{\small\pm}` standing for the plus-minus sign as LaTeX writes it.
+#[must_use]
+pub fn scaled_numbers(text: &str) -> Vec<f64> {
+    let mut out = Vec::new();
+    for (at, _) in text.match_indices("10^") {
+        let rest = &text[at + 3..];
+        let exponent: String = match rest.strip_prefix('{') {
+            Some(inner) => inner
+                .split('}')
+                .next()
+                .unwrap_or_default()
+                .trim()
+                .to_owned(),
+            None => rest
+                .chars()
+                .take_while(|c| c.is_ascii_digit() || matches!(c, '-' | '+' | '\u{2212}'))
+                .collect(),
+        };
+        let exponent = exponent.replace('\u{2212}', "-").replace('+', "");
+        if exponent.parse::<i32>().is_err() {
+            continue;
+        }
+        let Some(before) = ["\\times", "×", "\\cdot", "·"]
+            .iter()
+            .find_map(|m| text[..at].trim_end().strip_suffix(m))
+        else {
+            continue;
+        };
+        let Some((b, rest)) = trailing_number(before.trim_end()) else {
+            continue;
+        };
+        let scaled = |mantissa: &str| format!("{mantissa}e{exponent}").parse::<f64>().ok();
+        // A value before a plus-minus sign shares the power of the error after it: the value
+        // first, as written.
+        let rest = rest.trim_end().trim_end_matches('}').trim_end();
+        let value = ["\\pm", "±"]
+            .iter()
+            .find_map(|m| rest.strip_suffix(m))
+            .map(|before| {
+                before
+                    .trim_end()
+                    .trim_end_matches("\\small")
+                    .trim_end()
+                    .trim_end_matches('{')
+                    .trim_end()
+            })
+            .and_then(trailing_number)
+            .and_then(|(a, _)| scaled(a));
+        out.extend(value);
+        out.extend(scaled(b));
+    }
+    out
+}
+
+/// The number that ends `text`, digits and a point, and what comes before it.
+fn trailing_number(text: &str) -> Option<(&str, &str)> {
+    let start = text
+        .char_indices()
+        .rev()
+        .take_while(|(_, c)| c.is_ascii_digit() || *c == '.')
+        .last()
+        .map(|(i, _)| i)?;
+    let number = &text[start..];
+    number
+        .chars()
+        .any(|c| c.is_ascii_digit())
+        .then_some((number, &text[..start]))
 }
 
 /// Whether `text` holds `x` as a standalone number of either sign, as an error is printed.
@@ -179,7 +280,7 @@ pub fn has_number(text: &str, x: f64) -> bool {
     reason = "the same number as written, not a near one"
 )]
 pub fn has_magnitude(text: &str, x: f64) -> bool {
-    numbers(text).iter().any(|n| n.abs() == x.abs())
+    every_number(text).into_iter().any(|n| n.abs() == x.abs())
 }
 
 /// Whether `text` holds `needle` as a whole: not inside a longer number or word.
@@ -459,6 +560,24 @@ mod tests {
         assert!(!contains_whole("about 1650 km/s", "165"));
         assert!(!contains_whole("about 2165 km/s", "165"));
         assert_eq!(published("2 x 10^5"), None);
+    }
+
+    #[test]
+    fn a_number_written_with_a_power_of_ten_is_read_with_its_uncertainty() {
+        let thin =
+            "\\entry{$\\Mthin$}{$3.5{\\small\\pm}1\\times 10^{10}\\Msun$, thin disk stellar mass}";
+        assert_eq!(scaled_numbers(thin), [3.5e10, 1e10]);
+        assert!(has_number(thin, 3.5e10) && has_magnitude(thin, 1e10));
+        assert_eq!(scaled_numbers("a mass of 6 × 10^9 solar masses"), [6e9]);
+        assert_eq!(
+            scaled_numbers("$0.91\\pm0.07\\times10^{10}$"),
+            [0.91e10, 0.07e10]
+        );
+        // LaTeX's plus-minus glued to its error.
+        assert!(has_number("$2.0\\pm0.2$ kpc", 2.0) && has_magnitude("$46\\pm3$", 3.0));
+        assert!(has_number("$M/L_V\\narreq1.4\\pm0.5$", 1.4));
+        // A power alone states nothing.
+        assert_eq!(scaled_numbers("a contrast of 10^{-3}"), Vec::<f64>::new());
     }
 
     #[test]

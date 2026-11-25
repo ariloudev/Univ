@@ -1,0 +1,37 @@
+key: 01a21466-c82a-7676-a10d-d66252e59419
+id: review
+versions:
+  - key: 01a21466-c82a-7676-a10d-d6653952bcc2
+    at: 2026-11-25T20:30:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Review and gate"
+    goal: "/simplify and /code-review findings fixed, cargo xtask check green, the trace linked"
+    status: planned
+blocks:
+  - key: 01a21499-e418-7114-ab74-6f8790fca876
+    id: t-review
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f9184a44d37
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run /simplify and /code-review and fix their findings"
+        state: open
+  - key: 01a21499-e418-7114-ab74-6f887599d61e
+    id: t-gate
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f92f0423170
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run cargo xtask check and link the trace"
+        state: open

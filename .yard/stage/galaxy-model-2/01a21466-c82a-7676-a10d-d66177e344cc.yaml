@@ -1,0 +1,145 @@
+key: 01a21466-c82a-7676-a10d-d66177e344cc
+id: build
+versions:
+  - key: 01a21466-c82a-7676-a10d-d6640ab6f977
+    at: 2026-11-25T20:30:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Build the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition; the Milky Way release holds it"
+    status: planned
+  - key: 01a21499-e418-7114-ab74-6f8a3eb5b6f3
+    at: 2026-11-25T21:25:59Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Build the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition; the Milky Way release holds it"
+    status: active
+blocks:
+  - key: 01a21499-e418-7114-ab74-6f815781eb9a
+    id: t-v5
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f8bae405bd4
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Tile encoding 5 in univ-model and the TypeScript decoder"
+        detail: "8 bytes a point: position, population, flags (bit 0 covered); encode_model/decode_model; format layout(5); MODEL_ENCODING in the manifest; decodeModelTile and a simulated_model fixture."
+        state: active
+      - key: 01a214a4-52f6-72e1-bd9c-cb202b3e98bc
+        at: 2026-11-25T21:37:23Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Tile encoding 5 in univ-model and the TypeScript decoder"
+        detail: "8 bytes a point: position, population, flags (bit 0 covered); encode_model/decode_model; format layout(5); MODEL_ENCODING in the manifest; decodeModelTile and a simulated_model fixture."
+        state: done
+  - key: 01a21499-e418-7114-ab74-6f825ad92960
+    id: t-model
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f8c431dad3c
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "univ_model::galaxy_model: definition, densities, arms, light shares, frame, coverage"
+        detail: "Pure, wasm32, seeded rand_chacha; unit tests per criterion."
+        state: open
+      - key: 01a214a4-5349-7763-a30e-9c8abe3e86f7
+        at: 2026-11-25T21:37:23Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "univ_model::galaxy_model: definition, densities, arms, light shares, frame, coverage"
+        detail: "Pure, wasm32, seeded rand_chacha; unit tests per criterion."
+        state: done
+  - key: 01a21499-e418-7114-ab74-6f83719eacfc
+    id: t-file
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f8da9ac4fbf
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "rules/galaxy-model.yaml and its reader"
+        detail: "Cited values from the research note; choices with reasons; refusal of an unmarked number; RULES gains galaxy-model."
+        state: open
+      - key: 01a214a4-538b-7531-af20-173da446565f
+        at: 2026-11-25T21:37:23Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "rules/galaxy-model.yaml and its reader"
+        detail: "Cited values from the research note; choices with reasons; refusal of an unmarked number; RULES gains galaxy-model."
+        state: active
+      - key: 01a214cd-c49d-7780-9ebc-659a4e1a4a85
+        at: 2026-11-25T22:22:39Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "rules/galaxy-model.yaml and its reader"
+        detail: "Cited values from the research note; choices with reasons; refusal of an unmarked number; RULES gains galaxy-model."
+        state: done
+  - key: 01a21499-e418-7114-ab74-6f84434d970b
+    id: t-domain
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f8eff4bef61
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The galaxy_model domain in Univ Ingest"
+        detail: "ScaleDomain::GalaxyModel, generic octree, build_model_domain in the tiles stage with coverage counts, TILE_OBJECTS skips v5, small fixture model."
+        state: open
+      - key: 01a214cd-c4ec-70b1-b964-32bf981f1e1d
+        at: 2026-11-25T22:22:39Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The galaxy_model domain in Univ Ingest"
+        detail: "ScaleDomain::GalaxyModel, generic octree, build_model_domain in the tiles stage with coverage counts, TILE_OBJECTS skips v5, small fixture model."
+        state: active
+  - key: 01a21499-e418-7114-ab74-6f85e4142920
+    id: t-schema9
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f8f1b1d1136
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The definition in the release: galaxy_models, schema 9"
+        detail: "GalaxyModelRow, TABLES 34, schema.sql, SCHEMA_VERSION 9, science loading of older releases."
+        state: open
+  - key: 01a21499-e418-7114-ab74-6f86aed30498
+    id: t-look
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f906fbdc890
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Rebuild the Milky Way release and render the model"
+        detail: "mw-build.sh, a face-on render of the v5 tiles, cargo xtask science."
+        state: open

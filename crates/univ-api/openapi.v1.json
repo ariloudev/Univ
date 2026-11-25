@@ -6153,7 +6153,9 @@
           "dimensionless",
           "extinction_zgr23_per_parsec",
           "year",
-          "log_year"
+          "log_year",
+          "solar_mass",
+          "solar_mass_per_solar_luminosity"
         ],
         "type": "string"
       },

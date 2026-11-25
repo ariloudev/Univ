@@ -28,6 +28,8 @@ pub enum ParameterSource {
     Cited { paper: String, locator: String },
     /// This project's choice, which no paper makes, and why.
     Choice { reason: String },
+    /// Derived from other numbers of the model, and how.
+    Derived { how: String },
 }
 
 impl Parameter {
