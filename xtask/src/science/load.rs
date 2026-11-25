@@ -139,7 +139,8 @@ fn user_error(message: String) -> rusqlite::Error {
 /// - `term(name)`: the release's id of a term, such as `term('redshift')`;
 /// - `source(id)`: the release's number of a source, such as `source('twomrs')`;
 /// - `sep_arcmin(ra1, dec1, ra2, dec2)`: the angle between two directions, arcmin;
-/// - `comoving_mpc(z)`: the comoving distance of redshift `z` under the release cosmology.
+/// - `comoving_mpc(z)`: the comoving distance of redshift `z` under the release cosmology;
+/// - `sqrt(x)`: the square root, which SQLite builds without its maths functions lack.
 ///
 /// `term` and `source` fail on a name the release does not hold, so that a misspelt name is
 /// an error rather than a check that selects nothing.
@@ -165,6 +166,11 @@ pub fn register(db: &Connection, release: u32, cosmology: &Cosmology) -> Result<
         let (ra1, dec1, ra2, dec2): (f64, f64, f64, f64) =
             (ctx.get(0)?, ctx.get(1)?, ctx.get(2)?, ctx.get(3)?);
         Ok(60.0 * separation_degrees(unit_vector(ra1, dec1), unit_vector(ra2, dec2)))
+    })
+    .map_err(|e| e.to_string())?;
+    db.create_scalar_function("sqrt", 1, flags, |ctx| {
+        let x: f64 = ctx.get(0)?;
+        Ok(x.sqrt())
     })
     .map_err(|e| e.to_string())?;
     // Tabulated as the release places distances: within 1e-9 of the integral.

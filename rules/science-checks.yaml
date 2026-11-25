@@ -1073,7 +1073,7 @@ checks:
       scalar: true
       sql: >-
         SELECT count(*) FROM structures s WHERE s.release = :release AND s.status = 'model'
-        AND s.kind IN ('spiral_arm', 'spiral_arm_extrapolation')
+        AND s.kind IN ('spiral_arm', 'spiral_arm_extrapolation') AND s.id LIKE 'reid-2019-%'
         AND s.scale_domain = 'galaxy_tracers' AND s.geometry_kind = 'path'
     expect: { equals: 14 }
     cite:
@@ -1139,6 +1139,62 @@ checks:
       sign of azimuth, a wrong frame or unit, or a wrong parameter: mirrored, a third of them
       lie farther than 1 kpc. The 3-kpc far arm, the Outer Scutum-Centaurus arm, the connecting
       arm and the Galactic Centre region have no model and are not checked.
+
+  - id: arm-tracers-near-their-arms
+    title: Each researched arm tracer lies within 2 kpc of a path of the arm its paper assigns it to
+    severity: fail
+    select:
+      kind: query
+      sql: >-
+        SELECT o.id FROM structure_details d JOIN memberships s ON s.structure = d.id
+        AND s.release = :release
+        AND s.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
+        JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
+        json_each(d.shape, '$.geometry.points') p
+        WHERE d.release = :release
+        GROUP BY o.id HAVING min((o.x * 1e6 - json_extract(p.value, '$[0]')) * (o.x * 1e6 - json_extract(p.value, '$[0]'))
+        + (o.y * 1e6 - json_extract(p.value, '$[1]')) * (o.y * 1e6 - json_extract(p.value, '$[1]'))
+        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]'))) > 4000000
+    expect: { at_most: 0 }
+    cite:
+      - paper: "univ-server specification, Record a researched arm tracer"
+        locator: "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+        quote: >-
+          "The check fails where a tracer lies more than 2 kpc from every path of its arm, which
+          shows a wrong conversion of its position rather than a disagreement between papers."
+        fetched: "this repository, spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+    note: >-
+      Each tracer is a member of every fit and extrapolation of the arm its paper names (the
+      memberships of sources/researched-arm-masers.yaml and researched-arm-clouds.yaml), so the
+      nearest point of any of them counts. A wrong sign of azimuth or a wrong frame moves a
+      far-side tracer by many kiloparsecs; the bound is in parsecs squared, as the shapes are
+      stored in parsecs in the ICRS.
+
+  - id: arm-tracers-distance-from-their-arms
+    title: Each researched arm tracer's distance from the nearest path of its arm, and that path
+    severity: report
+    select:
+      kind: report
+      sql: >-
+        SELECT (SELECT identifier FROM entries e WHERE e.release = o.release AND e.object_id = o.id
+        LIMIT 1) AS tracer, d.id AS nearest_path,
+        round(sqrt(min((o.x * 1e6 - json_extract(p.value, '$[0]')) * (o.x * 1e6 - json_extract(p.value, '$[0]'))
+        + (o.y * 1e6 - json_extract(p.value, '$[1]')) * (o.y * 1e6 - json_extract(p.value, '$[1]'))
+        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]')))) / 1000, 2) AS kpc
+        FROM structure_details d JOIN memberships s ON s.structure = d.id
+        AND s.release = :release
+        AND s.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
+        JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
+        json_each(d.shape, '$.geometry.points') p
+        WHERE d.release = :release
+        GROUP BY o.id ORDER BY 1
+    cite:
+      - paper: "univ-server specification, Record a researched arm tracer"
+        locator: "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+        quote: >-
+          "The check gives each tracer's distance from the nearest point of each spiral arm and
+          extrapolation of its arm, in kiloparsecs."
+        fetched: "this repository, spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
 
   - id: masers-members-of-their-arms
     title: Each of the 181 Reid 2019 masers on a modelled arm is a member of that arm
