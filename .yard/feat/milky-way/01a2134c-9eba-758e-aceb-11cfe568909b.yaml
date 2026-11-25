@@ -1,0 +1,223 @@
+key: 01a2134c-9eba-758e-aceb-11cfe568909b
+id: pub
+versions:
+  - key: 01a2134c-9eba-758e-aceb-11d2dd1fc0ea
+    at: 2026-11-25T15:21:58Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Publish straight into local D1"
+    goal: "A publish writes each SQL file of a release into the local D1 database's own file in one transaction and leaves its write-ahead log empty, specified, approved, built and tested"
+    status: active
+blocks:
+  - key: 01a2134c-9eba-758e-aceb-11d00084b44d
+    id: pub-why
+    kind: note
+    versions:
+      - key: 01a2134c-9eba-758e-aceb-11d363b893e6
+        at: 2026-11-25T15:21:58Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Why"
+        markdown: "Publishing Milky Way release 1 ran one `wrangler d1 execute` per SQL file (~1,300 files). No process empties the write-ahead log, so shard 0's log reached 28 GB with nothing in it that the database file lacked, and every new process read it again: 6 s per file at first, 10–11 s by file 80. Measured on a clone of shard 0: one 33 MB file in one transaction with SQLite takes 2.1 s, and an offline `wal_checkpoint(TRUNCATE)` of the 28 GB log took 7.6 s and freed it. Miniflare names each database's file from its id, recomputed for all 17 files of the store. The person chose to write the files directly (option 2)."
+  - key: 01a2134c-d578-7039-b70c-09a8d6a0e15e
+    id: spec-change-2
+    kind: loft
+    versions:
+      - key: 01a2134c-d578-7039-b70c-09a961af0317
+        at: 2026-11-25T15:22:12Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        view: spec-change
+        note: "One Requirement under Publish a release locally: each file of rows written straight into the database file `wrangler dev` reads, in one transaction, with its write-ahead log emptied."
+        base: "0cc24bf"
+        recorded:
+          commit: "ac6b11c95ae3b7107a88ec6146e33cc2362ce36d"
+          branch: "feat/milky-way"
+          dirty: true
+          loft: 2.4.1
+          at: 2026-11-25T15:22:12Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 4,
+              "graph.edges": 0,
+              "graph.nodes": 7,
+              "status.base.added": 4,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07e8db6c3be4",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall write each file of a release's rows into the local D1 database that `wrangler dev` reads for the file's database, in one transaction, and leave that database's write-ahead log empty once the file is written.",
+                  "words": {
+                    "after": "Univ Ingest shall write each file of a release's rows into the local D1 database that `wrangler dev` reads for the file's database, in one transaction, and leave that database's write-ahead log empty once the file is written."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07e9b56218ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The database file written for a database is the one `wrangler dev` opens for that database's id.",
+                  "words": {
+                    "after": "The database file written for a database is the one `wrangler dev` opens for that database's id."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07ea7b73c17c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once a file is written, its rows are in the database and the database's write-ahead log is empty.",
+                  "words": {
+                    "after": "Once a file is written, its rows are in the database and the database's write-ahead log is empty."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07eb5ad552c9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A file that fails part way leaves none of its rows in the database.",
+                  "words": {
+                    "after": "A file that fails part way leaves none of its rows in the database."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-153d515c188e",
+                  "kind": "feature",
+                  "label": "F-12",
+                  "name": "Publish a release locally",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07e8db6c3be4",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall write each file of a release's rows into the local D1 database that `wrangler dev` reads for the file's database, in one transaction, and leave that database's write-ahead log empty once the file is written.",
+                  "parent": "01a19f23-636f-72bd-b194-153d515c188e"
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07e9b56218ef",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The database file written for a database is the one `wrangler dev` opens for that database's id.",
+                  "parent": "01a2134c-be65-729f-bbd9-07e8db6c3be4"
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07ea7b73c17c",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Once a file is written, its rows are in the database and the database's write-ahead log is empty.",
+                  "parent": "01a2134c-be65-729f-bbd9-07e8db6c3be4"
+                },
+                {
+                  "change": "added",
+                  "key": "01a2134c-be65-729f-bbd9-07eb5ad552c9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A file that fails part way leaves none of its rows in the database.",
+                  "parent": "01a2134c-be65-729f-bbd9-07e8db6c3be4"
+                }
+              ]
+            },
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a2134c-be65-729f-bbd9-07e8db6c3be4",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 32,
+                    "name": "Univ Ingest shall write each file of a release's rows into the local D1 database that `wrangler dev` reads for the file's database, in one transaction, and leave that database's write-ahead log empty once the file is written.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a2134c-be65-729f-bbd9-07e9b56218ef",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 39,
+                    "name": "The database file written for a database is the one `wrangler dev` opens for that database's id.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a2134c-be65-729f-bbd9-07ea7b73c17c",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 41,
+                    "name": "Once a file is written, its rows are in the database and the database's write-ahead log is empty.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a2134c-be65-729f-bbd9-07eb5ad552c9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 43,
+                    "name": "A file that fails part way leaves none of its rows in the database.",
+                    "path": "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "0cc24bf5cdbb95e67cb9206d1c921ac069ee893b",
+                "removed": [],
+                "revision": "0cc24bf"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "feat/milky-way",
+                "modified": [
+                  "spec/products/univ-ingest/releases/publish-a-release-locally.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/3"
+            }
+          }

@@ -29,6 +29,19 @@ requirements:
         name: "Until latest moves, reads that name no release answer from the previous release."
       - key: 01a19f23-636f-72bd-b194-154133241de5
         name: "Latest moves in a single write, so no read sees a release partly published."
+  - key: 01a2134c-be65-729f-bbd9-07e8db6c3be4
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "write each file of a release's rows into the local D1 database that `wrangler dev` reads for the file's database, in one transaction, and leave that database's write-ahead log empty once the file is written."
+    body: "Each file was once given to its own Wrangler process, and none of them emptied the write-ahead log: publishing a release of 17 million objects grew one object shard's log to 28 GB, and every process read it again before writing. No Worker may have the local D1 open during a publish, as during a migration."
+    criteria:
+      - key: 01a2134c-be65-729f-bbd9-07e9b56218ef
+        name: "The database file written for a database is the one `wrangler dev` opens for that database's id."
+      - key: 01a2134c-be65-729f-bbd9-07ea7b73c17c
+        name: "Once a file is written, its rows are in the database and the database's write-ahead log is empty."
+      - key: 01a2134c-be65-729f-bbd9-07eb5ad552c9
+        name: "A file that fails part way leaves none of its rows in the database."
   - key: 01a19f23-636f-72bd-b194-1542bf149fa0
     statement:
       form: unwanted
