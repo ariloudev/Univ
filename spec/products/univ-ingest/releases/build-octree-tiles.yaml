@@ -12,10 +12,10 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Ingest"
-      shall: "build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects."
+      shall: "build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects, or of its model points for the Galaxy model."
     criteria:
       - key: 01a19f23-636f-72bd-b194-152c99726521
-        name: "Each scale domain has its own root: stars and Galaxy tracers in parsecs, nearby galaxies and cosmic web in megaparsecs."
+        name: "Each scale domain has its own root: stars, Galaxy tracers and the Galaxy model in parsecs, nearby galaxies and cosmic web in megaparsecs."
       - key: 01a19f23-636f-72bd-b194-152dec6f0f74
         name: "Each object belongs to one scale domain: Galaxy tracers where any of its catalogue entries comes from a source whose definition names Galaxy tracers, otherwise stars where the source definition of the catalogue entry that holds its preferred distance names stars, and otherwise nearby galaxies where its placed distance is within 11 Mpc, the depth of the Updated Nearby Galaxy Catalog (Karachentsev et al. 2013), and cosmic web beyond, whatever source the distance came from."
       - key: 01a19f23-636f-72bd-b194-152e3b4f79ee
@@ -28,7 +28,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "Univ Ingest"
-      shall: "encode each point of a tile with its position, object id, source and kind of value."
+      shall: "encode each point of a tile of an object's scale domain with its position, object id, source and kind of value."
     criteria:
       - key: 01a19f23-636f-72bd-b194-15326d1a7654
         name: "Positions are quantized relative to their node, with a step no coarser than 1/65,536 of the node's edge."

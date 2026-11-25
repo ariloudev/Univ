@@ -1,0 +1,85 @@
+key: 01a213c1-93e0-7343-9f8d-9b757779b671
+slug: follow-the-best-published-fit-of-each-stretch-of-an-arm
+title: "Follow the best published fit of each stretch of an arm"
+context: "Reid et al. 2019 fit the arms only over the azimuths their masers cover, about −23° to 115°, so the far side of the Galactic Centre has no fit of theirs. A few papers reach beyond: Sanna et al. 2017 measured a maser's parallax on the far side of the Scutum-Centaurus arm, about 0.25 kpc from Reid's own fit of that arm carried on to β = −192°; Dame & Thaddeus 2011 and Sun et al. 2024 fit the outer Scutum-Centaurus arm in CO; Hyland et al. 2026 fit the Perseus arm out to β ≈ 180°; Dame & Thaddeus 2008 found the far 3-kpc arm. Others argue against a simply symmetric Galaxy: Xu et al. 2023 pair Perseus with Norma rather than with Scutum-Centaurus, and Lin et al. 2026 find the far Sagittarius and Perseus arms converging."
+state:
+  kind: accepted
+  selectedOption: 01a213c1-93e0-7343-9f8d-9b799b06ddc7
+  outcome: "Each stretch of an arm follows the fit whose fitted range covers it, Reid et al. 2019's first and then the far-side papers', and an extrapolation only where no fit covers it; the far-side papers' tracers enter the release as objects, and a science check measures how far each lies from its arm."
+drivers:
+  - key: 01a213c1-93e0-7343-9f8d-9b76e9104e5b
+    kind: local
+    label: "Cited"
+    statement: "Each stretch of an arm rests on a paper that fit it, or says it does not."
+  - key: 01a213c1-93e0-7343-9f8d-9b77463ce530
+    kind: local
+    label: "Whole disc"
+    statement: "The arms reach round the disc, the far side of the Galactic Centre included."
+  - key: 01a213c1-93e0-7343-9f8d-9b78b20e9519
+    kind: local
+    label: "Tested"
+    statement: "Where the arms are guessed, real tracers show how far the guess is off."
+options:
+  - key: 01a213c1-93e0-7343-9f8d-9b799b06ddc7
+    title: "Best fit of each stretch"
+    description: "Reid et al. 2019 where it fit; beyond, the far-side papers' fits; an extrapolation of a fit, up to 90° beyond its end, only where no fit covers the stretch."
+  - key: 01a213c1-93e0-7343-9f8d-9b7a518a034d
+    title: "Reid's fits carried on"
+    description: "Every arm of Reid et al. 2019 carried on along its own formula round the disc."
+  - key: 01a213c1-93e0-7343-9f8d-9b7bb4312c85
+    title: "Two arms mirrored"
+    description: "The Perseus and Scutum-Centaurus arms turned 180° about the Galactic Centre, as an assumed two-fold symmetry."
+assessments:
+  - option: 01a213c1-93e0-7343-9f8d-9b799b06ddc7
+    driver: 01a213c1-93e0-7343-9f8d-9b76e9104e5b
+    rating: supports
+    rationale: "each stretch names the paper whose fit it follows"
+  - option: 01a213c1-93e0-7343-9f8d-9b799b06ddc7
+    driver: 01a213c1-93e0-7343-9f8d-9b77463ce530
+    rating: neutral
+    rationale: "the published far-side fits and the extrapolations leave some of the fourth quadrant's far side thin"
+  - option: 01a213c1-93e0-7343-9f8d-9b799b06ddc7
+    driver: 01a213c1-93e0-7343-9f8d-9b78b20e9519
+    rating: supports
+    rationale: "Sanna, Dame & Thaddeus 2011 and Lin's masers lie on stretches that their papers did not fit, so the check means something"
+  - option: 01a213c1-93e0-7343-9f8d-9b7a518a034d
+    driver: 01a213c1-93e0-7343-9f8d-9b76e9104e5b
+    rating: neutral
+    rationale: "one paper throughout, but most of the disc is its formula beyond its data"
+  - option: 01a213c1-93e0-7343-9f8d-9b7a518a034d
+    driver: 01a213c1-93e0-7343-9f8d-9b77463ce530
+    rating: supports
+    rationale: "every azimuth has arms, though the two arms with pitch near zero close into rings"
+  - option: 01a213c1-93e0-7343-9f8d-9b7a518a034d
+    driver: 01a213c1-93e0-7343-9f8d-9b78b20e9519
+    rating: supports
+    rationale: "Sanna's maser lies 0.25 kpc from the carried-on Scutum-Centaurus arm"
+  - option: 01a213c1-93e0-7343-9f8d-9b7bb4312c85
+    driver: 01a213c1-93e0-7343-9f8d-9b76e9104e5b
+    rating: conflicts
+    rationale: "no paper fits the mirrored arms, and Xu et al. 2023 pair the arms otherwise"
+  - option: 01a213c1-93e0-7343-9f8d-9b7bb4312c85
+    driver: 01a213c1-93e0-7343-9f8d-9b77463ce530
+    rating: supports
+    rationale: "the far side gets two arms"
+  - option: 01a213c1-93e0-7343-9f8d-9b7bb4312c85
+    driver: 01a213c1-93e0-7343-9f8d-9b78b20e9519
+    rating: conflicts
+    rationale: "the mirrored Perseus arm misses Sanna's maser by about 2 kpc"
+consequences:
+  - key: 01a213c1-93e0-7343-9f8d-9b7cc5a91493
+    kind: obligation
+    statement: "Each spiral arm's structure file names the arm it is a stretch of, and gives its fit in Reid et al. 2019's convention of azimuth, citing its paper's own."
+  - key: 01a213c1-93e0-7343-9f8d-9b7d1d1f3d27
+    kind: cost
+    statement: "Each far-side paper's fit and tracers are read by hand into structure and tracer files."
+  - key: 01a213c1-93e0-7343-9f8d-9b7e4567da1f
+    kind: risk
+    statement: "The far side stays the least certain part of the model: newer parallaxes may move its arms, and a release that reads them changes the model."
+subjects:
+  - role: affected
+    node: 01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9b9fe243e919
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9bbb91a65512

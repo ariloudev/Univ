@@ -3,10 +3,11 @@ slug: see-the-galaxys-arms-face-on
 name: "See the Galaxy's arms face-on"
 body: |
   Looking down on the Milky Way's disk to see its spiral arms: the young tracers that lie along them
-  within a few kiloparsecs of the Sun, and the Reid et al. 2019 model of the arms over the whole
-  disk. The stars of the stars domain are hidden in this view, since millions of overlapping stars
-  around the Sun drown the tracers, and the old tracers, RR Lyrae stars and globular clusters, belong
-  to the halo and the bulge rather than to the arms.
+  within a few kiloparsecs of the Sun, the model arms of Reid et al. 2019 and of the papers that fit
+  the arms beyond them, and the Galaxy model's light, which shows the disk as a spiral galaxy. The
+  stars of the stars domain are hidden in this view, since millions of overlapping stars around the
+  Sun drown the tracers; the model points they cover are drawn in their place. The old tracers, RR
+  Lyrae stars and globular clusters, belong to the halo and the bulge rather than to the arms.
 
   The Galactic Centre lies 8.15 kpc from the Sun toward l = 0°, b = 0°, the distance Reid et al.
   2019 adopt (ApJ 885, 131, Table 3, fit A5) and fit their arms with, so that the model arms and the
@@ -41,10 +42,10 @@ requirements:
       form: event_driven
       when: "the person chooses the arms view"
       system: "Univ Explorer"
-      shall: "draw only the Galaxy's young tracers and its spiral arms."
+      shall: "draw only the Galaxy's young tracers, its spiral arms and the Galaxy model."
     criteria:
       - key: 01a1cbb8-4b9e-71c0-8bbe-c90774284032
-        name: "The arms view turns the Galaxy tracers domain on and every other scale domain off."
+        name: "The arms view turns the Galaxy tracers and Galaxy model domains on and every other scale domain off."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
         name: "The arms view turns the luminous hot stars, the open clusters and the star-forming regions on."
       - key: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664

@@ -1,0 +1,12 @@
+key: 01a213bc-6148-7228-b0fc-442a59adc77d
+id: wave-3
+versions:
+  - key: 01a213bc-6148-7228-b0fc-4430c065c14a
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 3: explorer"
+    goal: "Univ Explorer draws the model Galaxy, marked as a model, and the arms view shows it"
+    status: planned

@@ -1,0 +1,12 @@
+key: 01a213bc-6148-7228-b0fc-442702c8012d
+id: plan
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442d7e566693
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the waves"
+    goal: "An approved build plan splits the work into waves with bounded tasks"
+    status: planned

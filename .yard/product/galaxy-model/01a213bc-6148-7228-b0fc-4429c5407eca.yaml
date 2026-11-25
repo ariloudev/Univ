@@ -1,0 +1,12 @@
+key: 01a213bc-6148-7228-b0fc-4429c5407eca
+id: wave-2
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442f174bd6ac
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 2: server"
+    goal: "Univ Server lists and serves the galaxy_model domain and the model's parameters"
+    status: planned

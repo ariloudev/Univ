@@ -26,6 +26,7 @@ featureGroups:
       - 01a19f22-2ad9-716e-876f-187ab1b6831a
       - 01a1a825-fb4e-702c-a84f-bf71f70beb40
       - 01a1c319-7860-76e8-92ac-c60f36189336
+      - 01a213c1-93e0-7343-9f8d-9b9e2c34b07c
   - key: 01a19f1a-685d-7357-b67e-d65bef1ca65c
     slug: identity
     name: "Identity"
@@ -43,6 +44,7 @@ featureGroups:
       - 01a19f23-636f-72bd-b194-152a40334d81
       - 01a19f23-636f-72bd-b194-15372421c144
       - 01a19f23-636f-72bd-b194-153d515c188e
+      - 01a213c1-93e0-7343-9f8d-9bad6b74f088
   - key: 01a19f22-b0bc-76da-bac8-97900e1d406e
     slug: operation
     name: "Operation"

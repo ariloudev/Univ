@@ -1,6 +1,9 @@
 - key: 01a19f1e-d177-716d-b124-3d5520df63a6
   name: "API key"
   definition: "A secret the owner issues that lets a client write layers and read its own private layers."
+- key: 01a213c1-93e0-7343-9f8d-9bd6b72eb623
+  name: "Galaxy model"
+  definition: "A model of the whole Milky Way's light, from cited parameters: its populations, their densities and the arms they follow, sampled into model points."
 - key: 01a1c319-7860-76e8-92ac-c618055b700e
   name: "Galaxy tracer"
   definition: "An object that traces the structure of the Milky Way farther than a magnitude-limited sample of stars shows it: an open or globular cluster, a classical Cepheid, an RR Lyrae star or the star-forming region of a maser."
@@ -37,6 +40,9 @@
 - key: 01a19f1e-d177-716d-b124-3d447261783d
   name: "measurement"
   definition: "A value a source published for a catalogue entry, in its native unit, with its uncertainty and kind of value."
+- key: 01a213c1-93e0-7343-9f8d-9bd7cef2d6c8
+  name: "model point"
+  definition: "A point of the Galaxy model that stands for an equal share of the Galaxy's light in the V band, not for an observed star."
 - key: 01a19f1e-d177-716d-b124-3d468c2bc86e
   name: "native value"
   definition: "A value as its source published it, in the source's unit and frame."
@@ -63,7 +69,7 @@
   definition: "The cosmological model a release derives distances under: Planck 2018 unless the release names another."
 - key: 01a19f1e-d177-716d-b124-3d4a0a1729ef
   name: "scale domain"
-  definition: "A set of placed objects with its own octree and unit: stars, Galaxy tracers, nearby galaxies or cosmic web."
+  definition: "A set of points with its own octree and unit: the placed objects of the stars, Galaxy tracers, nearby galaxies or cosmic web, or the model points of the Galaxy model."
 - key: 01a19f1e-d177-716d-b124-3d4066093457
   name: "source"
   definition: "One catalogue, survey table, grid or paper that a release draws on, with its citation and terms of use."

@@ -1,0 +1,2796 @@
+key: 01a213bc-6148-7228-b0fc-442639bae689
+id: spec
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442c3fd64686
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Specify the galaxy model"
+    goal: "spec/ describes the model Galaxy's points, its arms over the whole disc with the published far-side fits, the far-side tracers, and how Univ Server and Univ Explorer serve and draw them; approved and committed"
+    status: active
+blocks:
+  - key: 01a213bc-6148-7228-b0fc-442be3a5ceb6
+    id: choices-so-far
+    kind: note
+    versions:
+      - key: 01a213bc-6148-7228-b0fc-44311c64b522
+        at: 2026-11-25T17:24:02Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Choices made before the branch was cut"
+        markdown: |-
+          Asked in the session on `feat/milky-way`, before this branch was cut from it:
+
+          | Question | Choice |
+          |---|---|
+          | What each model star holds | Visual points only: position, colour, brightness weight, population |
+          | How many | About 10 million points per release |
+          | Near the Sun | The model fills gaps: it adds only what real catalogues lack, per population |
+          | The far side's arms | C: the best published fit for each stretch (Reid 2019; Sun et al. 2024, Hyland et al. 2026, Dame & Thaddeus 2008 beyond), continuing a Reid fit only where no paper covers it; Sanna 2017, Dame & Thaddeus 2011, McClure-Griffiths 2004 and Lin et al. 2026 as tracers with a science check |
+          | Branch | `product/galaxy-model`, cut from `feat/milky-way` |
+
+          Purpose: the dataset lives in Univ so that a separate sci-fi project can reuse it.
+
+          Prototype renders (Python, scratchpad): Reid fits with a disc, bar and bulge from Bland-Hawthorn & Gerhard 2016. Reid's Scutum–Centaurus continued to β = −192° passes 0.25 kpc from Sanna 2017's far-side maser.
+        tone: info
+  - key: 01a213c1-fbf5-775d-9b02-27ba751169c1
+    id: spec-change-1
+    kind: loft
+    versions:
+      - key: 01a213c1-fbf6-7727-a46d-0aa0187460e8
+        at: 2026-11-25T17:30:09Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        view: spec-change
+        note: "The Galaxy model as a fifth scale domain of model points (encoding 5), the arms' far side by the best published fit of each stretch, researched far-side tracers, and covered model points kept and marked. Three new decisions record the choices made in the session."
+        base: "feat/milky-way"
+        recorded:
+          commit: "b6541777cf027564368ec3184c5490c81bbf89c0"
+          branch: "product/galaxy-model"
+          dirty: true
+          loft: 2.4.1
+          at: 2026-11-25T17:30:09Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 3,
+              "graph.diff": 86,
+              "graph.edges": 12,
+              "graph.nodes": 101,
+              "status.base.added": 73,
+              "status.base.changed": 13,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b757779b671",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Follow the best published fit of each stretch of an arm",
+                  "words": {
+                    "after": "Follow the best published fit of each stretch of an arm\n\nEach stretch of an arm follows the fit whose fitted range covers it, Reid et al. 2019's first and then the far-side papers', and an extrapolation only where no fit covers it; the far-side papers' tracers enter the release as objects, and a science check measures how far each lies from its arm."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b7f788de5b5",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Keep the model points that real objects cover, and mark them",
+                  "words": {
+                    "after": "Keep the model points that real objects cover, and mark them\n\nIn each cube of 250 pc, as many of a population's model points as the cube holds real objects of that population's counterpart are marked covered, and a client draws a covered point only while the counterparts' scale domain is off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Publish the Galaxy model as a scale domain of model points",
+                  "words": {
+                    "after": "Publish the Galaxy model as a scale domain of model points\n\nUniv Ingest samples 10,000,000 model points from a cited definition into a Galaxy model scale domain, tiled in encoding version 5, and publishes the definition with the release; univ-model holds the sampler."
+                  }
+                }
+              ],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                  "kind": "criterion",
+                  "label": "AC-733",
+                  "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to the table of the paper whose fit it is.",
+                  "words": {
+                    "after": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to the table of the paper whose fit it is.",
+                    "before": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to Table 2 of Reid et al. 2019."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91a110700f5",
+                  "kind": "criterion",
+                  "label": "AC-734",
+                  "name": "A spiral arm's structure file gives the Galactic Centre's distance its fit assumes and the Sun's height above the Galactic plane, each cited to the paper it comes from.",
+                  "words": {
+                    "after": "A spiral arm's structure file gives the Galactic Centre's distance its fit assumes and the Sun's height above the Galactic plane, each cited to the paper it comes from.",
+                    "before": "A spiral arm's structure file gives the Galactic Centre's distance of 8.15 kpc and the Sun's height above the Galactic plane, each cited to Reid et al. 2019."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7",
+                  "kind": "criterion",
+                  "label": "AC-736",
+                  "name": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and at the Galactic Centre's distance its fit assumes, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                  "words": {
+                    "after": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and at the Galactic Centre's distance its fit assumes, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                    "before": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and 8.15 kpc from the Galactic Centre, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9baafa27f49f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's structure file names the arm it is a stretch of, by one name for every paper's fit of that arm.",
+                  "words": {
+                    "after": "A spiral arm's structure file names the arm it is a stretch of, by one name for every paper's fit of that arm."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bab79c57a03",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A fit that its paper gives in another convention of azimuth is converted to this one, and the structure file cites the paper's convention.",
+                  "words": {
+                    "after": "A fit that its paper gives in another convention of azimuth is converted to this one, and the structure file cites the paper's convention."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bacc384c466",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A radius that a paper assumes for an arm, rather than fitting it, is inferred, and the structure file cites where the paper says it assumed it.",
+                  "words": {
+                    "after": "A radius that a paper assumes for an arm, rather than fitting it, is inferred, and the structure file cites where the paper says it assumed it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched arm tracer",
+                  "words": {
+                    "after": "Record a researched arm tracer\n\nTurning what papers say about the few tracers of the spiral arms beyond the reach of Reid et al.\n2019, such as the maser whose parallax Sanna et al. 2017 measured on the far side of the\nGalactic Centre, or the molecular clouds of the outer Scutum-Centaurus arm, into objects of the\nrelease, without a single uncited number. These tracers test the arms that the Galaxy model\nfollows where no star or maser of a survey reaches."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9fe243e919",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read each researched arm tracer from a tracer file in which every number cites where it comes from.",
+                  "words": {
+                    "after": "Univ Ingest shall read each researched arm tracer from a tracer file in which every number cites where it comes from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba0270490c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tracer file gives the tracer's sky position, its parallax or distance with the kind of value and uncertainty its paper gives, and the arm its paper assigns it to.",
+                  "words": {
+                    "after": "A tracer file gives the tracer's sky position, its parallax or distance with the kind of value and uncertainty its paper gives, and the arm its paper assigns it to."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba1c490b7d9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                  "words": {
+                    "after": "Each number cites its paper and the sentence or table cell it was taken from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba2ca5e7413",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A distance from a trigonometric parallax is measured.",
+                  "words": {
+                    "after": "A distance from a trigonometric parallax is measured."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba3871875ea",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A kinematic distance is inferred, and names the rotation curve and the Galactic Centre's distance it assumes.",
+                  "words": {
+                    "after": "A kinematic distance is inferred, and names the rotation curve and the Galactic Centre's distance it assumes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba49435103a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each researched arm tracer is an object of the Galaxy tracers domain, a star-forming region for a maser and a molecular cloud for a cloud traced by its CO emission.",
+                  "words": {
+                    "after": "Each researched arm tracer is an object of the Galaxy tracers domain, a star-forming region for a maser and a molecular cloud for a cloud traced by its CO emission."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba59d19c7e5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in a tracer file cites nothing, then Univ Ingest shall refuse the tracer and name the number.",
+                  "words": {
+                    "after": "If a number in a tracer file cites nothing, then Univ Ingest shall refuse the tracer and name the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba6054a10b8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the tracer file, the field and the number.",
+                  "words": {
+                    "after": "The message names the tracer file, the field and the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba77bd99190",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "The science checks shall report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to.",
+                  "words": {
+                    "after": "The science checks shall report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba8fc3cbde2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check gives each tracer's distance from the nearest point of each spiral arm and extrapolation of its arm, in kiloparsecs.",
+                  "words": {
+                    "after": "The check gives each tracer's distance from the nearest point of each spiral arm and extrapolation of its arm, in kiloparsecs."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                  "words": {
+                    "after": "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                  "kind": "requirement",
+                  "label": "RQ-36",
+                  "name": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects, or of its model points for the Galaxy model.",
+                  "words": {
+                    "after": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects, or of its model points for the Galaxy model.",
+                    "before": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-152c99726521",
+                  "kind": "criterion",
+                  "label": "AC-91",
+                  "name": "Each scale domain has its own root: stars, Galaxy tracers and the Galaxy model in parsecs, nearby galaxies and cosmic web in megaparsecs.",
+                  "words": {
+                    "after": "Each scale domain has its own root: stars, Galaxy tracers and the Galaxy model in parsecs, nearby galaxies and cosmic web in megaparsecs.",
+                    "before": "Each scale domain has its own root: stars and Galaxy tracers in parsecs, nearby galaxies and cosmic web in megaparsecs."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1531af0609ed",
+                  "kind": "requirement",
+                  "label": "RQ-37",
+                  "name": "Univ Ingest shall encode each point of a tile of an object's scale domain with its position, object id, source and kind of value.",
+                  "words": {
+                    "after": "Univ Ingest shall encode each point of a tile of an object's scale domain with its position, object id, source and kind of value.",
+                    "before": "Univ Ingest shall encode each point of a tile with its position, object id, source and kind of value."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bad6b74f088",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Build the Galaxy model",
+                  "words": {
+                    "after": "Build the Galaxy model\n\nSampling a model of the whole Milky Way into points, so that the Galaxy can be seen and reused\nas a spiral galaxy beyond the few kiloparsecs that its observed stars and tracers reach. The\nmodel is cited, not observed: its populations, densities and arms come from papers, each number\nof its definition cites one, and the few choices that no paper makes are marked as this\nproject's, each with its reason.\n\nA model point stands for an equal share of the Galaxy's light in the V band, not for one star:\nthe populations take points in proportion to their light, so the young stars of the arms, few\nby mass but bright, take far more points than their mass would give them.\n\nNear the Sun, the release already holds real stars and tracers. A model point that real objects\ncover is kept and marked, rather than left out, so that a client drawing the real objects hides\nit and a client drawing the model alone still draws a whole Galaxy."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9baebd200763",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read the Galaxy model from its definition file, in which every number cites the paper it comes from or is marked as this project's choice with its reason.",
+                  "words": {
+                    "after": "Univ Ingest shall read the Galaxy model from its definition file, in which every number cites the paper it comes from or is marked as this project's choice with its reason."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bafb71adc50",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each cited number of the definition names its paper and the sentence, table or figure it was taken from.",
+                  "words": {
+                    "after": "Each cited number of the definition names its paper and the sentence, table or figure it was taken from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb0c0e51a9d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number that is this project's choice is marked as such and gives the reason for it.",
+                  "words": {
+                    "after": "Each number that is this project's choice is marked as such and gives the reason for it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb1aeebce25",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The definition gives six populations: the thin disc, the thick disc, the bar and bulge, the stellar halo, the young stars of the arms and the star-forming knots of the arms.",
+                  "words": {
+                    "after": "The definition gives six populations: the thin disc, the thick disc, the bar and bulge, the stellar halo, the young stars of the arms and the star-forming knots of the arms."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb2d2a3511b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The definition gives each population its density in the Galaxy, its height above and below the Galactic plane, and either its stellar mass and mass-to-light ratio in the V band or its share of the Galaxy's light.",
+                  "words": {
+                    "after": "The definition gives each population its density in the Galaxy, its height above and below the Galactic plane, and either its stellar mass and mass-to-light ratio in the V band or its share of the Galaxy's light."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb39faba952",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The definition gives each population a display colour in sRGB, derived from a cited colour index or marked as this project's choice.",
+                  "words": {
+                    "after": "The definition gives each population a display colour in sRGB, derived from a cited colour index or marked as this project's choice."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb4d6fea283",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in the Galaxy model's definition neither cites a paper nor is marked as this project's choice, then Univ Ingest shall refuse the Galaxy model and name the number.",
+                  "words": {
+                    "after": "If a number in the Galaxy model's definition neither cites a paper nor is marked as this project's choice, then Univ Ingest shall refuse the Galaxy model and name the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb542535a8b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the definition file, the field and the number.",
+                  "words": {
+                    "after": "The message names the definition file, the field and the number."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb6e4e48489",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall sample 10,000,000 model points from the Galaxy model, each standing for an equal share of the Galaxy's light in the V band.",
+                  "words": {
+                    "after": "Univ Ingest shall sample 10,000,000 model points from the Galaxy model, each standing for an equal share of the Galaxy's light in the V band."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb7a4016439",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The populations share the model points in proportion to their light in the V band, each population's light being its stellar mass divided by its mass-to-light ratio, or the share of the light its definition gives.",
+                  "words": {
+                    "after": "The populations share the model points in proportion to their light in the V band, each population's light being its stellar mass divided by its mass-to-light ratio, or the share of the light its definition gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb84543dd7a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The points of each population are drawn from its density, in Galactocentric coordinates.",
+                  "words": {
+                    "after": "The points of each population are drawn from its density, in Galactocentric coordinates."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb9af0bce6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each model point's position is converted to ICRS Cartesian parsecs about the Solar System barycentre, with the Galactic Centre 8.15 kpc from the Sun toward l = 0°, b = 0° and the Sun above the Galactic plane by the height Reid et al. 2019 give.",
+                  "words": {
+                    "after": "Each model point's position is converted to ICRS Cartesian parsecs about the Solar System barycentre, with the Galactic Centre 8.15 kpc from the Sun toward l = 0°, b = 0° and the Sun above the Galactic plane by the height Reid et al. 2019 give."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bba9db761af",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The sampling is seeded, with the seed recorded in the Galaxy model's tile manifest, so that building the release again gives the same model points.",
+                  "words": {
+                    "after": "The sampling is seeded, with the seed recorded in the Galaxy model's tile manifest, so that building the release again gives the same model points."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbb91a65512",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth.",
+                  "words": {
+                    "after": "Univ Ingest shall place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbc75cfbc04",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "At each azimuth of an arm, the model follows the fit whose fitted range covers it, Reid et al. 2019's first, then each other paper's in the order the definition names them for that arm.",
+                  "words": {
+                    "after": "At each azimuth of an arm, the model follows the fit whose fitted range covers it, Reid et al. 2019's first, then each other paper's in the order the definition names them for that arm."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbd9e6223e0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "At an azimuth that no fit of the arm covers, the model follows an extrapolation of one of its fits, in the same order, with the weight the definition gives an extrapolation.",
+                  "words": {
+                    "after": "At an azimuth that no fit of the arm covers, the model follows an extrapolation of one of its fits, in the same order, with the weight the definition gives an extrapolation."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbe211c23a8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Beyond every fit and every extrapolation of an arm, the model places none of that arm's young stars or star-forming knots.",
+                  "words": {
+                    "after": "Beyond every fit and every extrapolation of an arm, the model places none of that arm's young stars or star-forming knots."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbfb0d5452a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each young star and star-forming knot is spread across its arm by a Gaussian whose width is the arm's cited width, scaled by the factor the definition gives its population.",
+                  "words": {
+                    "after": "Each young star and star-forming knot is spread across its arm by a Gaussian whose width is the arm's cited width, scaled by the factor the definition gives its population."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc09db31c03",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The thin disc's density along each arm's path rises by the arm contrast the definition gives.",
+                  "words": {
+                    "after": "The thin disc's density along each arm's path rises by the arm contrast the definition gives."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc13ee5d632",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall mark each model point that the real objects of the release cover.",
+                  "words": {
+                    "after": "Univ Ingest shall mark each model point that the real objects of the release cover."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc2311c3ec6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In each cube of 250 pc, the first n of a population's model points, in the order they were sampled, are marked covered, n being the number of real objects of that population's counterpart in the cube.",
+                  "words": {
+                    "after": "In each cube of 250 pc, the first n of a population's model points, in the order they were sampled, are marked covered, n being the number of real objects of that population's counterpart in the cube."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc342e650c3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The counterparts of the young stars and the star-forming knots of the arms are the luminous hot stars, open clusters and star-forming regions of the Galaxy tracers domain.",
+                  "words": {
+                    "after": "The counterparts of the young stars and the star-forming knots of the arms are the luminous hot stars, open clusters and star-forming regions of the Galaxy tracers domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc4c1df698a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The counterparts of the thin disc, the thick disc, the bar and bulge and the stellar halo are the objects of the stars domain.",
+                  "words": {
+                    "after": "The counterparts of the thin disc, the thick disc, the bar and bulge and the stellar halo are the objects of the stars domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc5e95311fd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A covered model point stays in its tile.",
+                  "words": {
+                    "after": "A covered model point stays in its tile."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc69071f733",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall tile the model points as the Galaxy model scale domain, in encoding version 5.",
+                  "words": {
+                    "after": "Univ Ingest shall tile the model points as the Galaxy model scale domain, in encoding version 5."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc7e4b77947",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Galaxy model domain is in parsecs, with its own octree, built by the rule every scale domain's octree is built by.",
+                  "words": {
+                    "after": "The Galaxy model domain is in parsecs, with its own octree, built by the rule every scale domain's octree is built by."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc87f205531",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of a version 5 tile carries its quantized position, its population and whether real objects cover it, and no object id, source or kind of value.",
+                  "words": {
+                    "after": "A point of a version 5 tile carries its quantized position, its population and whether real objects cover it, and no object id, source or kind of value."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc9e98850cd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Only the tiles of the Galaxy model domain take version 5.",
+                  "words": {
+                    "after": "Only the tiles of the Galaxy model domain take version 5."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bca88c3df17",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall publish with each release the Galaxy model's definition as it was sampled.",
+                  "words": {
+                    "after": "Univ Ingest shall publish with each release the Galaxy model's definition as it was sampled."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcb236f6459",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release holds the Galaxy model's populations, each number with its citation or its reason as this project's choice, the structures of the arms it followed, its number of model points and its seed.",
+                  "words": {
+                    "after": "The release holds the Galaxy model's populations, each number with its citation or its reason as this project's choice, the structures of the arms it followed, its number of model points and its seed."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcc817decda",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each population is named by the code its model points carry in the tiles.",
+                  "words": {
+                    "after": "Each population is named by the code its model points carry in the tiles."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcecdd53029",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Read the Galaxy model",
+                  "words": {
+                    "after": "Read the Galaxy model\n\nReading the definition a release's Galaxy model was sampled from, so that a client can draw its model points by their populations, credit the papers the model rests on, and sample more of the same model with univ-model's sampler."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcfb256c935",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client requests the Galaxy model of a release, Univ Server shall return the Galaxy model's definition as the release holds it.",
+                  "words": {
+                    "after": "When a client requests the Galaxy model of a release, Univ Server shall return the Galaxy model's definition as the release holds it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd08943e485",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives each population with its code, its display colour and its parameters, each with its value, unit, kind of value, uncertainty and citation.",
+                  "words": {
+                    "after": "The response gives each population with its code, its display colour and its parameters, each with its value, unit, kind of value, uncertainty and citation."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd16fd3923b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives each number that is this project's choice with the reason for it.",
+                  "words": {
+                    "after": "The response gives each number that is this project's choice with the reason for it."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd2da4e6351",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the structures of the arms the model followed, by their ids.",
+                  "words": {
+                    "after": "The response names the structures of the arms the model followed, by their ids."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd345455523",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the model's number of model points, its seed and the scale domain its points are tiled in.",
+                  "words": {
+                    "after": "The response gives the model's number of model points, its seed and the scale domain its points are tiled in."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd482300d10",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the release holds no Galaxy model, then Univ Server shall answer that the Galaxy model was not found.",
+                  "words": {
+                    "after": "If the release holds no Galaxy model, then Univ Server shall answer that the Galaxy model was not found."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd59822c913",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response status is 404 with problem details that name the release.",
+                  "words": {
+                    "after": "The response status is 404 with problem details that name the release."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd6-77e0-931c-f98491ea6241",
+                  "kind": "feature",
+                  "label": "F-18",
+                  "name": "Fetch a tile manifest",
+                  "words": {
+                    "after": "Fetch a tile manifest\n\nLearning how one scale domain's points are tiled before fetching any tile. The scale domains of\nthe first version were stars, nearby galaxies and cosmic web; Galaxy tracers and the Galaxy model\ncame after. Each has its own octree and unit.",
+                    "before": "Fetch a tile manifest\n\nLearning how one scale domain's points are tiled before fetching any tile. The scale domains of\nthe first version are stars, nearby galaxies and cosmic web; each has its own octree and unit."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd6-77e0-931c-f9865de3a042",
+                  "kind": "criterion",
+                  "label": "AC-166",
+                  "name": "The listing holds the stars, Galaxy tracers, Galaxy model, nearby galaxies and cosmic web scale domains.",
+                  "words": {
+                    "after": "The listing holds the stars, Galaxy tracers, Galaxy model, nearby galaxies and cosmic web scale domains.",
+                    "before": "The listing holds the stars, Galaxy tracers, nearby galaxies and cosmic web scale domains."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-ac037abf14fd",
+                  "kind": "criterion",
+                  "label": "AC-283",
+                  "name": "Each decoded point of a version 1 to 4 tile gives its object id, its source and its kind of value.",
+                  "words": {
+                    "after": "Each decoded point of a version 1 to 4 tile gives its object id, its source and its kind of value.",
+                    "before": "Each decoded point gives its object id, its source and its kind of value."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": "AC-345",
+                  "name": "The decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5.",
+                  "words": {
+                    "after": "The decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5.",
+                    "before": "The decoder decodes tiles of encoding versions 1, 2, 3 and 4."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcd54b44ccc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 5 tile gives its population and whether real objects cover it.",
+                  "words": {
+                    "after": "Each decoded point of a version 5 tile gives its population and whether real objects cover it."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed",
+                  "kind": "feature",
+                  "label": "F-45",
+                  "name": "See the Galaxy's arms face-on",
+                  "words": {
+                    "after": "See the Galaxy's arms face-on\n\nLooking down on the Milky Way's disk to see its spiral arms: the young tracers that lie along them\nwithin a few kiloparsecs of the Sun, the model arms of Reid et al. 2019 and of the papers that fit\nthe arms beyond them, and the Galaxy model's light, which shows the disk as a spiral galaxy. The\nstars of the stars domain are hidden in this view, since millions of overlapping stars around the\nSun drown the tracers; the model points they cover are drawn in their place. The old tracers, RR\nLyrae stars and globular clusters, belong to the halo and the bulge rather than to the arms.\n\nThe Galactic Centre lies 8.15 kpc from the Sun toward l = 0°, b = 0°, the distance Reid et al.\n2019 adopt (ApJ 885, 131, Table 3, fit A5) and fit their arms with, so that the model arms and the\nview share one centre.",
+                    "before": "See the Galaxy's arms face-on\n\nLooking down on the Milky Way's disk to see its spiral arms: the young tracers that lie along them\nwithin a few kiloparsecs of the Sun, and the Reid et al. 2019 model of the arms over the whole\ndisk. The stars of the stars domain are hidden in this view, since millions of overlapping stars\naround the Sun drown the tracers, and the old tracers, RR Lyrae stars and globular clusters, belong\nto the halo and the bulge rather than to the arms.\n\nThe Galactic Centre lies 8.15 kpc from the Sun toward l = 0°, b = 0°, the distance Reid et al.\n2019 adopt (ApJ 885, 131, Table 3, fit A5) and fit their arms with, so that the model arms and the\nview share one centre."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85",
+                  "kind": "requirement",
+                  "label": "RQ-201",
+                  "name": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers, its spiral arms and the Galaxy model.",
+                  "words": {
+                    "after": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers, its spiral arms and the Galaxy model.",
+                    "before": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers and its spiral arms."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90774284032",
+                  "kind": "criterion",
+                  "label": "AC-760",
+                  "name": "The arms view turns the Galaxy tracers and Galaxy model domains on and every other scale domain off.",
+                  "words": {
+                    "after": "The arms view turns the Galaxy tracers and Galaxy model domains on and every other scale domain off.",
+                    "before": "The arms view turns the Galaxy tracers domain on and every other scale domain off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b92bac26aaa",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "See the Galaxy model",
+                  "words": {
+                    "after": "See the Galaxy model\n\nSeeing the whole Milky Way as a spiral galaxy: its disc, bar, bulge and halo, and the young\nstars and star-forming knots of its arms, drawn from the model points of the Galaxy model\nbeyond the few kiloparsecs that its observed stars and tracers reach. The model's points stand\nfor light, not for stars, so they are drawn as light: each as bright as the next, adding up\nwhere they crowd. Near the Sun, the real objects stand in for the model points they cover,\nwhile their scale domain is drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b934b63897f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw the model points of the Galaxy model domain as light, in the display colour of each one's population.",
+                  "words": {
+                    "after": "Univ Explorer shall draw the model points of the Galaxy model domain as light, in the display colour of each one's population."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b94c1b7d454",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every model point is drawn with the same brightness, and the light of model points that overlap on screen adds up.",
+                  "words": {
+                    "after": "Every model point is drawn with the same brightness, and the light of model points that overlap on screen adds up."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b95b48b1af3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each model point is drawn in the display colour the Galaxy model's definition gives its population.",
+                  "words": {
+                    "after": "Each model point is drawn in the display colour the Galaxy model's definition gives its population."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b96e3363efe",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A model point is drawn while the Galaxy model domain is on, whatever the switches of sources and kinds of value say.",
+                  "words": {
+                    "after": "A model point is drawn while the Galaxy model domain is on, whatever the switches of sources and kinds of value say."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b977e9963be",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw a model point that real objects cover only while the scale domain of its population's counterparts is off.",
+                  "words": {
+                    "after": "Univ Explorer shall draw a model point that real objects cover only while the scale domain of its population's counterparts is off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9882bfc8e0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A covered model point of the young stars or the star-forming knots of the arms is drawn only while the Galaxy tracers domain is off.",
+                  "words": {
+                    "after": "A covered model point of the young stars or the star-forming knots of the arms is drawn only while the Galaxy tracers domain is off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9985b0e904",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A covered model point of any other population is drawn only while the stars domain is off.",
+                  "words": {
+                    "after": "A covered model point of any other population is drawn only while the stars domain is off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9a0f698dee",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall mark the Galaxy model's points as a model, apart from observed objects.",
+                  "words": {
+                    "after": "Univ Explorer shall mark the Galaxy model's points as a model, apart from observed objects."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9b9ac1d575",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The key names the Galaxy model's points as a model, not observed stars, and counts them apart from the objects drawn.",
+                  "words": {
+                    "after": "The key names the Galaxy model's points as a model, not observed stars, and counts them apart from the objects drawn."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9c98eef163",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A model point is not named by the pointer nor chosen by a click.",
+                  "words": {
+                    "after": "A model point is not named by the pointer nor chosen by a click."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9dba1301d7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The credits list each paper the Galaxy model's definition cites, while the Galaxy model domain is on.",
+                  "words": {
+                    "after": "The credits list each paper the Galaxy model's definition cites, while the Galaxy model domain is on."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b739c9f85f2",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Researched arm tracers",
+                  "words": {
+                    "after": "Researched arm tracers\n\nMasers and molecular clouds that trace the Milky Way's spiral arms beyond the reach of Reid et al. 2019, on the far side of the Galactic Centre and in the outer disc, read from their papers, with each number cited to the sentence or table cell it comes from."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b74cebead06",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Galaxy model sampler",
+                  "words": {
+                    "after": "Galaxy model sampler\n\nThe Galaxy model's populations, their densities and the arms they follow, read from a definition, with the seeded sampler that draws model points from them, so that any client built on univ-model can sample the same model."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b757779b671",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Follow the best published fit of each stretch of an arm",
+                  "subjects": [
+                    {
+                      "change": "added",
+                      "key": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32",
+                      "kind": "requirement",
+                      "label": "RQ-197",
+                      "name": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them.",
+                      "role": "affected"
+                    },
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9b9fe243e919",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "Univ Ingest shall read each researched arm tracer from a tracer file in which every number cites where it comes from.",
+                      "role": "outcome"
+                    },
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9bbb91a65512",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "Univ Ingest shall place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth.",
+                      "role": "outcome"
+                    }
+                  ],
+                  "words": {
+                    "after": "Follow the best published fit of each stretch of an arm\n\nEach stretch of an arm follows the fit whose fitted range covers it, Reid et al. 2019's first and then the far-side papers', and an extrapolation only where no fit covers it; the far-side papers' tracers enter the release as objects, and a science check measures how far each lies from its arm."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b7f788de5b5",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Keep the model points that real objects cover, and mark them",
+                  "subjects": [
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9b977e9963be",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "Univ Explorer shall draw a model point that real objects cover only while the scale domain of its population's counterparts is off.",
+                      "role": "outcome"
+                    },
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9bc13ee5d632",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "Univ Ingest shall mark each model point that the real objects of the release cover.",
+                      "role": "outcome"
+                    }
+                  ],
+                  "words": {
+                    "after": "Keep the model points that real objects cover, and mark them\n\nIn each cube of 250 pc, as many of a population's model points as the cube holds real objects of that population's counterpart are marked covered, and a client draws a covered point only while the counterparts' scale domain is off."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                  "kind": "decision",
+                  "label": null,
+                  "name": "Publish the Galaxy model as a scale domain of model points",
+                  "subjects": [
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9bb6e4e48489",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "Univ Ingest shall sample 10,000,000 model points from the Galaxy model, each standing for an equal share of the Galaxy's light in the V band.",
+                      "role": "outcome"
+                    },
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9bc69071f733",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "Univ Ingest shall tile the model points as the Galaxy model scale domain, in encoding version 5.",
+                      "role": "outcome"
+                    },
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9bcfb256c935",
+                      "kind": "requirement",
+                      "label": null,
+                      "name": "When a client requests the Galaxy model of a release, Univ Server shall return the Galaxy model's definition as the release holds it.",
+                      "role": "outcome"
+                    },
+                    {
+                      "change": "added",
+                      "key": "01a213c1-93e0-7343-9f8d-9b74cebead06",
+                      "kind": "component",
+                      "label": null,
+                      "name": "Galaxy model sampler",
+                      "role": "affected"
+                    }
+                  ],
+                  "words": {
+                    "after": "Publish the Galaxy model as a scale domain of model points\n\nUniv Ingest samples 10,000,000 model points from a cited definition into a Galaxy model scale domain, tiled in encoding version 5, and publishes the definition with the release; univ-model holds the sampler."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "from": "01a19f22-2ad9-716e-876f-187ab1b6831a",
+                  "kind": "realizes",
+                  "to": "01a19f1e-d177-716d-b124-3cf3def064d0"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b757779b671",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b757779b671",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9b9fe243e919"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b757779b671",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9bbb91a65512"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b7f788de5b5",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9b977e9963be"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b7f788de5b5",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9bc13ee5d632"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                  "kind": "subject",
+                  "role": "affected",
+                  "to": "01a213c1-93e0-7343-9f8d-9b74cebead06"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9bb6e4e48489"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9bc69071f733"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                  "kind": "subject",
+                  "role": "outcome",
+                  "to": "01a213c1-93e0-7343-9f8d-9bcfb256c935"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c",
+                  "kind": "realizes",
+                  "to": "01a213c1-93e0-7343-9f8d-9b739c9f85f2"
+                },
+                {
+                  "from": "01a213c1-93e0-7343-9f8d-9bad6b74f088",
+                  "kind": "realizes",
+                  "to": "01a213c1-93e0-7343-9f8d-9b74cebead06"
+                }
+              ],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-187ab1b6831a",
+                  "kind": "feature",
+                  "label": "F-5",
+                  "name": "Record a researched structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32",
+                  "kind": "requirement",
+                  "label": "RQ-197",
+                  "name": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them.",
+                  "parent": "01a19f22-2ad9-716e-876f-187ab1b6831a"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                  "kind": "criterion",
+                  "label": "AC-733",
+                  "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to the table of the paper whose fit it is.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91a110700f5",
+                  "kind": "criterion",
+                  "label": "AC-734",
+                  "name": "A spiral arm's structure file gives the Galactic Centre's distance its fit assumes and the Sun's height above the Galactic plane, each cited to the paper it comes from.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7",
+                  "kind": "criterion",
+                  "label": "AC-736",
+                  "name": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and at the Galactic Centre's distance its fit assumes, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9baafa27f49f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A spiral arm's structure file names the arm it is a stretch of, by one name for every paper's fit of that arm.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bab79c57a03",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A fit that its paper gives in another convention of azimuth is converted to this one, and the structure file cites the paper's convention.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bacc384c466",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A radius that a paper assumes for an arm, rather than fitting it, is inferred, and the structure file cites where the paper says it assumed it.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched arm tracer",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9fe243e919",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read each researched arm tracer from a tracer file in which every number cites where it comes from.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba0270490c4",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A tracer file gives the tracer's sky position, its parallax or distance with the kind of value and uncertainty its paper gives, and the arm its paper assigns it to.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9fe243e919"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba1c490b7d9",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9fe243e919"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba2ca5e7413",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A distance from a trigonometric parallax is measured.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9fe243e919"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba3871875ea",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A kinematic distance is inferred, and names the rotation curve and the Galactic Centre's distance it assumes.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9fe243e919"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba49435103a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each researched arm tracer is an object of the Galaxy tracers domain, a star-forming region for a maser and a molecular cloud for a cloud traced by its CO emission.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9fe243e919"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba59d19c7e5",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in a tracer file cites nothing, then Univ Ingest shall refuse the tracer and name the number.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba6054a10b8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the tracer file, the field and the number.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9ba59d19c7e5"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba77bd99190",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "The science checks shall report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba8fc3cbde2",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check gives each tracer's distance from the nearest point of each spiral arm and extrapolation of its arm, in kiloparsecs.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9ba77bd99190"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9ba77bd99190"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65c50ba74e7",
+                  "kind": "feature_group",
+                  "label": "FG-4",
+                  "name": "Releases",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636f-72bd-b194-152a40334d81",
+                  "kind": "feature",
+                  "label": "F-10",
+                  "name": "Build octree tiles",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                  "kind": "requirement",
+                  "label": "RQ-36",
+                  "name": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects, or of its model points for the Galaxy model.",
+                  "parent": "01a19f23-636f-72bd-b194-152a40334d81"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-152c99726521",
+                  "kind": "criterion",
+                  "label": "AC-91",
+                  "name": "Each scale domain has its own root: stars, Galaxy tracers and the Galaxy model in parsecs, nearby galaxies and cosmic web in megaparsecs.",
+                  "parent": "01a19f23-636f-72bd-b194-152b36f5a5b5"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f23-636f-72bd-b194-1531af0609ed",
+                  "kind": "requirement",
+                  "label": "RQ-37",
+                  "name": "Univ Ingest shall encode each point of a tile of an object's scale domain with its position, object id, source and kind of value.",
+                  "parent": "01a19f23-636f-72bd-b194-152a40334d81"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bad6b74f088",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Build the Galaxy model",
+                  "parent": "01a19f1a-685d-7357-b67e-d65c50ba74e7"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9baebd200763",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall read the Galaxy model from its definition file, in which every number cites the paper it comes from or is marked as this project's choice with its reason.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bafb71adc50",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each cited number of the definition names its paper and the sentence, table or figure it was taken from.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9baebd200763"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb0c0e51a9d",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each number that is this project's choice is marked as such and gives the reason for it.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9baebd200763"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb1aeebce25",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The definition gives six populations: the thin disc, the thick disc, the bar and bulge, the stellar halo, the young stars of the arms and the star-forming knots of the arms.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9baebd200763"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb2d2a3511b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The definition gives each population its density in the Galaxy, its height above and below the Galactic plane, and either its stellar mass and mass-to-light ratio in the V band or its share of the Galaxy's light.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9baebd200763"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb39faba952",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The definition gives each population a display colour in sRGB, derived from a cited colour index or marked as this project's choice.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9baebd200763"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb4d6fea283",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a number in the Galaxy model's definition neither cites a paper nor is marked as this project's choice, then Univ Ingest shall refuse the Galaxy model and name the number.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb542535a8b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The message names the definition file, the field and the number.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bb4d6fea283"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb6e4e48489",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall sample 10,000,000 model points from the Galaxy model, each standing for an equal share of the Galaxy's light in the V band.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb7a4016439",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The populations share the model points in proportion to their light in the V band, each population's light being its stellar mass divided by its mass-to-light ratio, or the share of the light its definition gives.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bb6e4e48489"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb84543dd7a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The points of each population are drawn from its density, in Galactocentric coordinates.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bb6e4e48489"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bb9af0bce6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each model point's position is converted to ICRS Cartesian parsecs about the Solar System barycentre, with the Galactic Centre 8.15 kpc from the Sun toward l = 0°, b = 0° and the Sun above the Galactic plane by the height Reid et al. 2019 give.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bb6e4e48489"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bba9db761af",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The sampling is seeded, with the seed recorded in the Galaxy model's tile manifest, so that building the release again gives the same model points.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bb6e4e48489"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbb91a65512",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbc75cfbc04",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "At each azimuth of an arm, the model follows the fit whose fitted range covers it, Reid et al. 2019's first, then each other paper's in the order the definition names them for that arm.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bbb91a65512"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbd9e6223e0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "At an azimuth that no fit of the arm covers, the model follows an extrapolation of one of its fits, in the same order, with the weight the definition gives an extrapolation.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bbb91a65512"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbe211c23a8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Beyond every fit and every extrapolation of an arm, the model places none of that arm's young stars or star-forming knots.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bbb91a65512"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bbfb0d5452a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each young star and star-forming knot is spread across its arm by a Gaussian whose width is the arm's cited width, scaled by the factor the definition gives its population.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bbb91a65512"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc09db31c03",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The thin disc's density along each arm's path rises by the arm contrast the definition gives.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bbb91a65512"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc13ee5d632",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall mark each model point that the real objects of the release cover.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc2311c3ec6",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In each cube of 250 pc, the first n of a population's model points, in the order they were sampled, are marked covered, n being the number of real objects of that population's counterpart in the cube.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc13ee5d632"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc342e650c3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The counterparts of the young stars and the star-forming knots of the arms are the luminous hot stars, open clusters and star-forming regions of the Galaxy tracers domain.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc13ee5d632"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc4c1df698a",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The counterparts of the thin disc, the thick disc, the bar and bulge and the stellar halo are the objects of the stars domain.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc13ee5d632"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc5e95311fd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A covered model point stays in its tile.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc13ee5d632"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc69071f733",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall tile the model points as the Galaxy model scale domain, in encoding version 5.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc7e4b77947",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The Galaxy model domain is in parsecs, with its own octree, built by the rule every scale domain's octree is built by.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc69071f733"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc87f205531",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A point of a version 5 tile carries its quantized position, its population and whether real objects cover it, and no object id, source or kind of value.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc69071f733"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bc9e98850cd",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Only the tiles of the Galaxy model domain take version 5.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bc69071f733"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bca88c3df17",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Ingest shall publish with each release the Galaxy model's definition as it was sampled.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bad6b74f088"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcb236f6459",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The release holds the Galaxy model's populations, each number with its citation or its reason as this project's choice, the structures of the arms it followed, its number of model points and its seed.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bca88c3df17"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcc817decda",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each population is named by the code its model points carry in the tiles.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bca88c3df17"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65e20557892",
+                  "kind": "product",
+                  "label": "P-2",
+                  "name": "Univ Server",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65f1c690202",
+                  "kind": "feature_group",
+                  "label": "FG-6",
+                  "name": "Reference data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcecdd53029",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Read the Galaxy model",
+                  "parent": "01a19f1a-685d-7357-b67e-d65f1c690202"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcfb256c935",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "When a client requests the Galaxy model of a release, Univ Server shall return the Galaxy model's definition as the release holds it.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bcecdd53029"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd08943e485",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives each population with its code, its display colour and its parameters, each with its value, unit, kind of value, uncertainty and citation.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bcfb256c935"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd16fd3923b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives each number that is this project's choice with the reason for it.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bcfb256c935"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd2da4e6351",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response names the structures of the arms the model followed, by their ids.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bcfb256c935"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd345455523",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response gives the model's number of model points, its seed and the scale domain its points are tiled in.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bcfb256c935"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd482300d10",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If the release holds no Galaxy model, then Univ Server shall answer that the Galaxy model was not found.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bcecdd53029"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bd59822c913",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The response status is 404 with problem details that name the release.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9bd482300d10"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d660e2178068",
+                  "kind": "feature_group",
+                  "label": "FG-7",
+                  "name": "Bulk data",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd6-77e0-931c-f98491ea6241",
+                  "kind": "feature",
+                  "label": "F-18",
+                  "name": "Fetch a tile manifest",
+                  "parent": "01a19f1a-685d-7357-b67e-d660e2178068"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1f-9fd6-77e0-931c-f985aa2ecbff",
+                  "kind": "requirement",
+                  "label": "RQ-62",
+                  "name": "When a client lists scale domains, Univ Server shall return each scale domain of the release with its extent, unit and point count.",
+                  "parent": "01a19f1f-9fd6-77e0-931c-f98491ea6241"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f1f-9fd6-77e0-931c-f9865de3a042",
+                  "kind": "criterion",
+                  "label": "AC-166",
+                  "name": "The listing holds the stars, Galaxy tracers, Galaxy model, nearby galaxies and cosmic web scale domains.",
+                  "parent": "01a19f1f-9fd6-77e0-931c-f985aa2ecbff"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d664d79c25f9",
+                  "kind": "feature_group",
+                  "label": "FG-11",
+                  "name": "API contract",
+                  "parent": "01a19f1a-685d-7357-b67e-d65e20557892"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-abfe741c359f",
+                  "kind": "feature",
+                  "label": "F-32",
+                  "name": "Decode the tile format",
+                  "parent": "01a19f1a-685d-7357-b67e-d664d79c25f9"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f20-8e6c-7039-b16f-ac01cf25aa34",
+                  "kind": "requirement",
+                  "label": "RQ-109",
+                  "name": "The Tile codec shall provide a reference TypeScript decoder that decodes every tile of a release into the points it encodes.",
+                  "parent": "01a19f20-8e6c-7039-b16f-abfe741c359f"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a19f20-8e6c-7039-b16f-ac037abf14fd",
+                  "kind": "criterion",
+                  "label": "AC-283",
+                  "name": "Each decoded point of a version 1 to 4 tile gives its object id, its source and its kind of value.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                  "kind": "criterion",
+                  "label": "AC-345",
+                  "name": "The decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9bcd54b44ccc",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each decoded point of a version 5 tile gives its population and whether real objects cover it.",
+                  "parent": "01a19f20-8e6c-7039-b16f-ac01cf25aa34"
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffb8e7533cb",
+                  "kind": "product",
+                  "label": "P-3",
+                  "name": "Univ Explorer",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a1a497-e843-728a-bce8-3ffc32e7ed9d",
+                  "kind": "feature_group",
+                  "label": "FG-12",
+                  "name": "The view",
+                  "parent": "01a1a497-e843-728a-bce8-3ffb8e7533cb"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed",
+                  "kind": "feature",
+                  "label": "F-45",
+                  "name": "See the Galaxy's arms face-on",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85",
+                  "kind": "requirement",
+                  "label": "RQ-201",
+                  "name": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers, its spiral arms and the Galaxy model.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c90774284032",
+                  "kind": "criterion",
+                  "label": "AC-760",
+                  "name": "The arms view turns the Galaxy tracers and Galaxy model domains on and every other scale domain off.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b92bac26aaa",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "See the Galaxy model",
+                  "parent": "01a1a497-e843-728a-bce8-3ffc32e7ed9d"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b934b63897f",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw the model points of the Galaxy model domain as light, in the display colour of each one's population.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b92bac26aaa"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b94c1b7d454",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Every model point is drawn with the same brightness, and the light of model points that overlap on screen adds up.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b934b63897f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b95b48b1af3",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "Each model point is drawn in the display colour the Galaxy model's definition gives its population.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b934b63897f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b96e3363efe",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A model point is drawn while the Galaxy model domain is on, whatever the switches of sources and kinds of value say.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b934b63897f"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b977e9963be",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall draw a model point that real objects cover only while the scale domain of its population's counterparts is off.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b92bac26aaa"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9882bfc8e0",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A covered model point of the young stars or the star-forming knots of the arms is drawn only while the Galaxy tracers domain is off.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b977e9963be"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9985b0e904",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A covered model point of any other population is drawn only while the stars domain is off.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b977e9963be"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9a0f698dee",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Univ Explorer shall mark the Galaxy model's points as a model, apart from observed objects.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b92bac26aaa"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9b9ac1d575",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The key names the Galaxy model's points as a model, not observed stars, and counts them apart from the objects drawn.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9a0f698dee"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9c98eef163",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A model point is not named by the pointer nor chosen by a click.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9a0f698dee"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b9dba1301d7",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The credits list each paper the Galaxy model's definition cites, while the Galaxy model domain is on.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9a0f698dee"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3ce7c64960ab",
+                  "kind": "component",
+                  "label": "CMP-7",
+                  "name": "Data providers",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-182f41fd2c08",
+                  "kind": "component",
+                  "label": "CMP-31",
+                  "name": "Literature",
+                  "parent": "01a19f1e-d177-716d-b124-3ce7c64960ab"
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b739c9f85f2",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Researched arm tracers",
+                  "parent": "01a19f22-2ad9-716e-876f-182f41fd2c08"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1e-d177-716d-b124-3cf3def064d0",
+                  "kind": "component",
+                  "label": "CMP-39",
+                  "name": "univ-model",
+                  "parent": null
+                },
+                {
+                  "change": "added",
+                  "key": "01a213c1-93e0-7343-9f8d-9b74cebead06",
+                  "kind": "component",
+                  "label": null,
+                  "name": "Galaxy model sampler",
+                  "parent": "01a19f1e-d177-716d-b124-3cf3def064d0"
+                }
+              ]
+            },
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9baafa27f49f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 70,
+                    "name": "A spiral arm's structure file names the arm it is a stretch of, by one name for every paper's fit of that arm.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bab79c57a03",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 72,
+                    "name": "A fit that its paper gives in another convention of azimuth is converted to this one, and the structure file cites the paper's convention.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bacc384c466",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 74,
+                    "name": "A radius that a paper assumes for an arm, rather than fitting it, is inferred, and the structure file cites where the paper says it assumed it.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Record a researched arm tracer",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9fe243e919",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 14,
+                    "name": "Univ Ingest shall read each researched arm tracer from a tracer file in which every number cites where it comes from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba0270490c4",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 20,
+                    "name": "A tracer file gives the tracer's sky position, its parallax or distance with the kind of value and uncertainty its paper gives, and the arm its paper assigns it to.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba1c490b7d9",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 22,
+                    "name": "Each number cites its paper and the sentence or table cell it was taken from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba2ca5e7413",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 24,
+                    "name": "A distance from a trigonometric parallax is measured.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba3871875ea",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 26,
+                    "name": "A kinematic distance is inferred, and names the rotation curve and the Galactic Centre's distance it assumes.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba49435103a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 28,
+                    "name": "Each researched arm tracer is an object of the Galaxy tracers domain, a star-forming region for a maser and a molecular cloud for a cloud traced by its CO emission.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba59d19c7e5",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 30,
+                    "name": "If a number in a tracer file cites nothing, then Univ Ingest shall refuse the tracer and name the number.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba6054a10b8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 37,
+                    "name": "The message names the tracer file, the field and the number.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba77bd99190",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 39,
+                    "name": "The science checks shall report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba8fc3cbde2",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 45,
+                    "name": "The check gives each tracer's distance from the nearest point of each spiral arm and extrapolation of its arm, in kiloparsecs.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9bad6b74f088",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Build the Galaxy model",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9baebd200763",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 22,
+                    "name": "Univ Ingest shall read the Galaxy model from its definition file, in which every number cites the paper it comes from or is marked as this project's choice with its reason.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bafb71adc50",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 28,
+                    "name": "Each cited number of the definition names its paper and the sentence, table or figure it was taken from.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb0c0e51a9d",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 30,
+                    "name": "Each number that is this project's choice is marked as such and gives the reason for it.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb1aeebce25",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 32,
+                    "name": "The definition gives six populations: the thin disc, the thick disc, the bar and bulge, the stellar halo, the young stars of the arms and the star-forming knots of the arms.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb2d2a3511b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 34,
+                    "name": "The definition gives each population its density in the Galaxy, its height above and below the Galactic plane, and either its stellar mass and mass-to-light ratio in the V band or its share of the Galaxy's light.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb39faba952",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 36,
+                    "name": "The definition gives each population a display colour in sRGB, derived from a cited colour index or marked as this project's choice.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb4d6fea283",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 38,
+                    "name": "If a number in the Galaxy model's definition neither cites a paper nor is marked as this project's choice, then Univ Ingest shall refuse the Galaxy model and name the number.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb542535a8b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 45,
+                    "name": "The message names the definition file, the field and the number.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb6e4e48489",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 47,
+                    "name": "Univ Ingest shall sample 10,000,000 model points from the Galaxy model, each standing for an equal share of the Galaxy's light in the V band.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb7a4016439",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 53,
+                    "name": "The populations share the model points in proportion to their light in the V band, each population's light being its stellar mass divided by its mass-to-light ratio, or the share of the light its definition gives.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb84543dd7a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 55,
+                    "name": "The points of each population are drawn from its density, in Galactocentric coordinates.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bb9af0bce6b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 57,
+                    "name": "Each model point's position is converted to ICRS Cartesian parsecs about the Solar System barycentre, with the Galactic Centre 8.15 kpc from the Sun toward l = 0°, b = 0° and the Sun above the Galactic plane by the height Reid et al. 2019 give.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bba9db761af",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 59,
+                    "name": "The sampling is seeded, with the seed recorded in the Galaxy model's tile manifest, so that building the release again gives the same model points.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bbb91a65512",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 61,
+                    "name": "Univ Ingest shall place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bbc75cfbc04",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 67,
+                    "name": "At each azimuth of an arm, the model follows the fit whose fitted range covers it, Reid et al. 2019's first, then each other paper's in the order the definition names them for that arm.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bbd9e6223e0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 69,
+                    "name": "At an azimuth that no fit of the arm covers, the model follows an extrapolation of one of its fits, in the same order, with the weight the definition gives an extrapolation.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bbe211c23a8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 71,
+                    "name": "Beyond every fit and every extrapolation of an arm, the model places none of that arm's young stars or star-forming knots.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bbfb0d5452a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 73,
+                    "name": "Each young star and star-forming knot is spread across its arm by a Gaussian whose width is the arm's cited width, scaled by the factor the definition gives its population.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc09db31c03",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 75,
+                    "name": "The thin disc's density along each arm's path rises by the arm contrast the definition gives.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc13ee5d632",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 77,
+                    "name": "Univ Ingest shall mark each model point that the real objects of the release cover.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc2311c3ec6",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 83,
+                    "name": "In each cube of 250 pc, the first n of a population's model points, in the order they were sampled, are marked covered, n being the number of real objects of that population's counterpart in the cube.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc342e650c3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 85,
+                    "name": "The counterparts of the young stars and the star-forming knots of the arms are the luminous hot stars, open clusters and star-forming regions of the Galaxy tracers domain.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc4c1df698a",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 87,
+                    "name": "The counterparts of the thin disc, the thick disc, the bar and bulge and the stellar halo are the objects of the stars domain.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc5e95311fd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 89,
+                    "name": "A covered model point stays in its tile.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc69071f733",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 91,
+                    "name": "Univ Ingest shall tile the model points as the Galaxy model scale domain, in encoding version 5.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc7e4b77947",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 97,
+                    "name": "The Galaxy model domain is in parsecs, with its own octree, built by the rule every scale domain's octree is built by.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc87f205531",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 99,
+                    "name": "A point of a version 5 tile carries its quantized position, its population and whether real objects cover it, and no object id, source or kind of value.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bc9e98850cd",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 101,
+                    "name": "Only the tiles of the Galaxy model domain take version 5.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bca88c3df17",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 103,
+                    "name": "Univ Ingest shall publish with each release the Galaxy model's definition as it was sampled.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bcb236f6459",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 109,
+                    "name": "The release holds the Galaxy model's populations, each number with its citation or its reason as this project's choice, the structures of the arms it followed, its number of model points and its seed.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bcc817decda",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 111,
+                    "name": "Each population is named by the code its model points carry in the tiles.",
+                    "path": "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9bcecdd53029",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "Read the Galaxy model",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bcfb256c935",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 11,
+                    "name": "When a client requests the Galaxy model of a release, Univ Server shall return the Galaxy model's definition as the release holds it.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bd08943e485",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 18,
+                    "name": "The response gives each population with its code, its display colour and its parameters, each with its value, unit, kind of value, uncertainty and citation.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bd16fd3923b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 20,
+                    "name": "The response gives each number that is this project's choice with the reason for it.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bd2da4e6351",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 22,
+                    "name": "The response names the structures of the arms the model followed, by their ids.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bd345455523",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 24,
+                    "name": "The response gives the model's number of model points, its seed and the scale domain its points are tiled in.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9bd482300d10",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 26,
+                    "name": "If the release holds no Galaxy model, then Univ Server shall answer that the Galaxy model was not found.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bd59822c913",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 33,
+                    "name": "The response status is 404 with problem details that name the release.",
+                    "path": "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9bcd54b44ccc",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 38,
+                    "name": "Each decoded point of a version 5 tile gives its population and whether real objects cover it.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9b92bac26aaa",
+                    "kind": "feature",
+                    "label": null,
+                    "line": 1,
+                    "name": "See the Galaxy model",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9b934b63897f",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 16,
+                    "name": "Univ Explorer shall draw the model points of the Galaxy model domain as light, in the display colour of each one's population.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b94c1b7d454",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 22,
+                    "name": "Every model point is drawn with the same brightness, and the light of model points that overlap on screen adds up.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b95b48b1af3",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 24,
+                    "name": "Each model point is drawn in the display colour the Galaxy model's definition gives its population.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b96e3363efe",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 26,
+                    "name": "A model point is drawn while the Galaxy model domain is on, whatever the switches of sources and kinds of value say.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9b977e9963be",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 28,
+                    "name": "Univ Explorer shall draw a model point that real objects cover only while the scale domain of its population's counterparts is off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9882bfc8e0",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 34,
+                    "name": "A covered model point of the young stars or the star-forming knots of the arms is drawn only while the Galaxy tracers domain is off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9985b0e904",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 36,
+                    "name": "A covered model point of any other population is drawn only while the stars domain is off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9a0f698dee",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 38,
+                    "name": "Univ Explorer shall mark the Galaxy model's points as a model, apart from observed objects.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9b9ac1d575",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 44,
+                    "name": "The key names the Galaxy model's points as a model, not observed stars, and counts them apart from the objects drawn.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9c98eef163",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 46,
+                    "name": "A model point is not named by the pointer nor chosen by a click.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b9dba1301d7",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 48,
+                    "name": "The credits list each paper the Galaxy model's definition cites, while the Galaxy model domain is on.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9b739c9f85f2",
+                    "kind": "component",
+                    "label": null,
+                    "line": 194,
+                    "name": "Researched arm tracers",
+                    "path": "spec/components/data-providers.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a213c1-93e0-7343-9f8d-9b74cebead06",
+                    "kind": "component",
+                    "label": null,
+                    "line": 12,
+                    "name": "Galaxy model sampler",
+                    "path": "spec/components/univ-model.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9b757779b671",
+                    "kind": "decision",
+                    "label": null,
+                    "line": 1,
+                    "name": "Follow the best published fit of each stretch of an arm",
+                    "path": "spec/decisions/follow-the-best-published-fit-of-each-stretch-of-an-arm.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9b7f788de5b5",
+                    "kind": "decision",
+                    "label": null,
+                    "line": 1,
+                    "name": "Keep the model points that real objects cover, and mark them",
+                    "path": "spec/decisions/keep-model-points-that-real-objects-cover-and-mark-them.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a213c1-93e0-7343-9f8d-9b8834d491e0",
+                    "kind": "decision",
+                    "label": null,
+                    "line": 1,
+                    "name": "Publish the Galaxy model as a scale domain of model points",
+                    "path": "spec/decisions/publish-the-galaxy-model-as-a-scale-domain-of-model-points.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                    "kind": "criterion",
+                    "label": "AC-733",
+                    "line": 54,
+                    "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to the table of the paper whose fit it is.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91a110700f5",
+                    "kind": "criterion",
+                    "label": "AC-734",
+                    "line": 56,
+                    "name": "A spiral arm's structure file gives the Galactic Centre's distance its fit assumes and the Sun's height above the Galactic plane, each cited to the paper it comes from.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c91c1ebda9f7",
+                    "kind": "criterion",
+                    "label": "AC-736",
+                    "line": 60,
+                    "name": "The path is given in heliocentric galactic Cartesian kiloparsecs, with the Sun at azimuth 0 and at the Galactic Centre's distance its fit assumes, azimuth increasing toward l = 90°, and the Galactic plane below the Sun by the Sun's cited height.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-152b36f5a5b5",
+                    "kind": "requirement",
+                    "label": "RQ-36",
+                    "line": 11,
+                    "name": "Univ Ingest shall build for each scale domain an octree of tiles over the derived ICRS Cartesian positions of its objects, or of its model points for the Galaxy model.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f23-636f-72bd-b194-152c99726521",
+                    "kind": "criterion",
+                    "label": "AC-91",
+                    "line": 17,
+                    "name": "Each scale domain has its own root: stars, Galaxy tracers and the Galaxy model in parsecs, nearby galaxies and cosmic web in megaparsecs.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a19f23-636f-72bd-b194-1531af0609ed",
+                    "kind": "requirement",
+                    "label": "RQ-37",
+                    "line": 27,
+                    "name": "Univ Ingest shall encode each point of a tile of an object's scale domain with its position, object id, source and kind of value.",
+                    "path": "spec/products/univ-ingest/releases/build-octree-tiles.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a19f1f-9fd6-77e0-931c-f98491ea6241",
+                    "kind": "feature",
+                    "label": "F-18",
+                    "line": 1,
+                    "name": "Fetch a tile manifest",
+                    "path": "spec/products/univ-server/bulk-data/fetch-a-tile-manifest.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f1f-9fd6-77e0-931c-f9865de3a042",
+                    "kind": "criterion",
+                    "label": "AC-166",
+                    "line": 22,
+                    "name": "The listing holds the stars, Galaxy tracers, Galaxy model, nearby galaxies and cosmic web scale domains.",
+                    "path": "spec/products/univ-server/bulk-data/fetch-a-tile-manifest.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a19f20-8e6c-7039-b16f-ac037abf14fd",
+                    "kind": "criterion",
+                    "label": "AC-283",
+                    "line": 26,
+                    "name": "Each decoded point of a version 1 to 4 tile gives its object id, its source and its kind of value.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1a6e4-22e1-765d-b404-01feaa3330ef",
+                    "kind": "criterion",
+                    "label": "AC-345",
+                    "line": 30,
+                    "name": "The decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5.",
+                    "path": "spec/products/univ-server/api-contract/decode-the-tile-format.yaml"
+                  },
+                  {
+                    "column": 6,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c8fd742ec9ed",
+                    "kind": "feature",
+                    "label": "F-45",
+                    "line": 1,
+                    "name": "See the Galaxy's arms face-on",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c906af0f3f85",
+                    "kind": "requirement",
+                    "label": "RQ-201",
+                    "line": 40,
+                    "name": "When the person chooses the arms view, Univ Explorer shall draw only the Galaxy's young tracers, its spiral arms and the Galaxy model.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c90774284032",
+                    "kind": "criterion",
+                    "label": "AC-760",
+                    "line": 47,
+                    "name": "The arms view turns the Galaxy tracers and Galaxy model domains on and every other scale domain off.",
+                    "path": "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml"
+                  }
+                ],
+                "commit": "b6541777cf027564368ec3184c5490c81bbf89c0",
+                "removed": [],
+                "revision": "feat/milky-way"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "product/galaxy-model",
+                "modified": [
+                  "spec/components/data-providers.yaml",
+                  "spec/components/univ-model.yaml",
+                  "spec/decisions/follow-the-best-published-fit-of-each-stretch-of-an-arm.yaml",
+                  "spec/decisions/keep-model-points-that-real-objects-cover-and-mark-them.yaml",
+                  "spec/decisions/publish-the-galaxy-model-as-a-scale-domain-of-model-points.yaml",
+                  "spec/products/univ-explorer/product.yaml",
+                  "spec/products/univ-explorer/the-view/see-the-galaxy-model.yaml",
+                  "spec/products/univ-explorer/the-view/see-the-galaxys-arms-face-on.yaml",
+                  "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml",
+                  "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml",
+                  "spec/products/univ-ingest/product.yaml",
+                  "spec/products/univ-ingest/releases/build-octree-tiles.yaml",
+                  "spec/products/univ-ingest/releases/build-the-galaxy-model.yaml",
+                  "spec/products/univ-server/api-contract/decode-the-tile-format.yaml",
+                  "spec/products/univ-server/bulk-data/fetch-a-tile-manifest.yaml",
+                  "spec/products/univ-server/product.yaml",
+                  "spec/products/univ-server/reference-data/read-the-galaxy-model.yaml",
+                  "spec/terms.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/3"
+            }
+          }
+  - key: 01a213c1-fbf5-775d-9b02-27bbc0248a48
+    id: spec-approval-1
+    kind: approval
+    versions:
+      - key: 01a213c1-fbf6-7727-a46d-0aa1f52511d1
+        at: 2026-11-25T17:30:09Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Approve the Galaxy model specification"
+        markdown: |-
+          **What changed**
+
+          - **New in Univ Ingest:** *Build the Galaxy model*. A cited definition file. Six populations: thin disc, thick disc, bar and bulge, stellar halo, the arms' young stars, the arms' star-forming knots. 10,000,000 model points, each an equal share of the Galaxy's V-band light. Seeded and deterministic. Points that real objects cover are marked. Tiles in encoding 5. The definition is published with the release.
+          - **New in Univ Ingest:** *Record a researched arm tracer*. Hand-read tracer files for Sanna 2017, Dame & Thaddeus 2011, Lin 2026 and others. A science check fails where a tracer lies more than 2 kpc from its arm.
+          - **Changed:** *Record a researched structure*. Spiral-arm fits may now come from any paper, not only Reid 2019 Table 2. They are converted to Reid's azimuth convention, each names the arm it is a stretch of, and an assumed radius is marked inferred.
+          - **Changed:** *Build octree tiles*, *Fetch a tile manifest* and *Decode the tile format*, to add a fifth domain and encoding version 5.
+          - **New in Univ Server:** *Read the Galaxy model*, which returns the definition of a release.
+          - **New in Univ Explorer:** *See the Galaxy model*. Model points are drawn as additive light in each population's colour. They are not pickable, are counted apart, and are credited. A covered point is drawn only while its counterparts' domain is off.
+          - **Changed:** *See the Galaxy's arms face-on*. The arms view also turns the Galaxy model on.
+          - **Three decisions:** publish the model as a scale domain of model points; follow the best published fit of each stretch of an arm; keep covered model points and mark them.
+          - **Terms:** a new *Galaxy model* and *model point*, and *scale domain* widened to cover them.
+
+          **Please look at**
+
+          1. **Covered points are kept and marked, not removed.** This refines your choice that the model fills gaps. The arms view hides the real stars, so removing the points would leave a hole around the Sun. Marked points let each client choose.
+          2. **Points stand for light, not mass.** That is why the young arm stars get about 8% of the points instead of about 0.3%. It is what makes the arms show.
+          3. **Some values are marked as this project's choices, not papers'.** These are the arm contrast of the old disc, the spread of the young stars across an arm, the extrapolation weight, the knots' share of light and their colour. Each carries a reason.
+          4. **The tracer check fails only beyond 2 kpc.** It catches a wrong conversion, not a disagreement between papers.
+    responses:
+      - key: 01a213cf-05b0-7100-9ba6-ef61af14a55f
+        at: 2026-11-25T17:44:24Z
+        revision: 3
+        by:
+          name: "Sergey Lobko-Lobanovsky"
+          email: "2330548+ariloudev@users.noreply.github.com"
+        channel: terminal
+        verdict: approved

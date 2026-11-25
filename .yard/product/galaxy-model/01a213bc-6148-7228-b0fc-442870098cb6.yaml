@@ -1,0 +1,12 @@
+key: 01a213bc-6148-7228-b0fc-442870098cb6
+id: wave-1
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442e13da0e36
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 1: model and ingest"
+    goal: "Univ Ingest builds the far-side arms and tracers and the galaxy_model scale domain's tiles (encoding 5) from cited parameters, deterministically"
+    status: planned
