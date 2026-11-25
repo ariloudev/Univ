@@ -55,6 +55,15 @@ blocks:
         title: "Read the far-side fits into structure files"
         detail: "Sun et al. 2024 (outer Scutum-Centaurus), Hyland et al. 2026 (Perseus), Dame & Thaddeus 2008 (far 3-kpc arm, radius inferred), McClure-Griffiths et al. 2004 (distant arm, digitised). Each fit and its extrapolation, every number cited from the paper itself. Done when each file reads, its path matches its paper's own points, and an assumed radius is inferred."
         state: open
+      - key: 01a213f2-b95d-77ec-bba4-b85d2e9b37b4
+        at: 2026-11-25T18:23:23Z
+        revision: 6
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Read the far-side fits into structure files"
+        detail: "Sun et al. 2024 (outer Scutum-Centaurus), Hyland et al. 2026 (Perseus), Dame & Thaddeus 2008 (far 3-kpc arm, radius inferred), McClure-Griffiths et al. 2004 (distant arm, digitised). Each fit and its extrapolation, every number cited from the paper itself. Done when each file reads, its path matches its paper's own points, and an assumed radius is inferred."
+        state: done
   - key: 01a213da-38fd-75ec-93a5-9f573d619c73
     id: t-tracers
     kind: task
@@ -77,6 +86,15 @@ blocks:
         title: "Add the researched arm tracers source and its reader"
         detail: "sources/researched-arm-tracers.yaml, tracers/*.yaml (Sanna 2017, Dame & Thaddeus 2011 Table 1, Lin et al. 2026 if readable), Holds::ArmTracers with cited sky positions and an object kind per entry; refusal of an uncited number. Done when the fixture release holds them as Galaxy tracers with the right kinds of value."
         state: active
+      - key: 01a213f2-b99d-7771-9b4b-624de83df3b5
+        at: 2026-11-25T18:23:24Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Add the researched arm tracers source and its reader"
+        detail: "sources/researched-arm-tracers.yaml, tracers/*.yaml (Sanna 2017, Dame & Thaddeus 2011 Table 1, Lin et al. 2026 if readable), Holds::ArmTracers with cited sky positions and an object kind per entry; refusal of an uncited number. Done when the fixture release holds them as Galaxy tracers with the right kinds of value."
+        state: done
   - key: 01a213da-38fd-75ec-93a5-9f582321262e
     id: t-cloud-kind
     kind: task
@@ -112,6 +130,15 @@ blocks:
         title: "Add the tracer-to-arm science check"
         detail: "A Rust Select variant in xtask/src/science giving each researched arm tracer's distance from the nearest path point of each structure of its arm, failing beyond 2 kpc; a rule in rules/science-checks.yaml. Done when it passes on a fixture and fails on a displaced tracer."
         state: open
+      - key: 01a213f2-b9d7-76d3-a153-8feda0de2fd6
+        at: 2026-11-25T18:23:24Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Add the tracer-to-arm science check"
+        detail: "A Rust Select variant in xtask/src/science giving each researched arm tracer's distance from the nearest path point of each structure of its arm, failing beyond 2 kpc; a rule in rules/science-checks.yaml. Done when it passes on a fixture and fails on a displaced tracer."
+        state: active
   - key: 01a213da-38fd-75ec-93a5-9f5af632c03d
     id: t-mw
     kind: task
@@ -125,6 +152,15 @@ blocks:
         title: "Rebuild the Milky Way release with the tracers and run the science checks"
         detail: "Add the source to scripts/mw-build.sh, build and publish, run cargo xtask science. Done when the tracer check passes and Sanna's maser lies about 0.25 kpc from Scutum-Centaurus."
         state: open
+      - key: 01a213f2-ba12-7257-9b96-96d40363e9c8
+        at: 2026-11-25T18:23:24Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Rebuild the Milky Way release with the tracers and run the science checks"
+        detail: "Add the source to scripts/mw-build.sh, build and publish, run cargo xtask science. Done when the tracer check passes and Sanna's maser lies about 0.25 kpc from Scutum-Centaurus."
+        state: active
   - key: 01a213e0-731d-7518-b608-6e56d48b0cdc
     id: build-issues
     kind: note
@@ -141,3 +177,171 @@ blocks:
           |---|---|---|---|
           | Clippy of rustc 1.100 (2026-11-09) rejects `map(..).unwrap_or_default()` (8 places) and a `format!` collected into a String (1 test), in code this wave did not touch, so the gate fails | `cargo clippy --workspace --all-targets -D warnings` | `map_or_default`, and `fold` with `writeln!` | fixed |
           | Azimuth conventions of the far-side papers are not yet known; converting a value in the file would break the cell check (a value must appear in its cited cell) | reading `structures/check.rs` | the files keep each value as printed; the convention is a cited field the code applies | open |
+      - key: 01a213f3-ecc3-7356-a1be-83bb4beb8bdc
+        at: 2026-11-25T18:24:42Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Issues met while building"
+        markdown: |-
+          | Issue | How found | Fix | State |
+          |---|---|---|---|
+          | Clippy of rustc 1.100 rejects `map(..).unwrap_or_default()` (8 places) and a `format!` collected into a String, in code this wave did not touch | `cargo clippy --workspace` | `map_or_default`; `fold` with `writeln!` | fixed |
+          | Node 26's own `localStorage` hides jsdom's: 22 explorer tests failed before this wave | `pnpm exec vitest run` on the base | `--no-experimental-webstorage` for the tests | fixed |
+          | An entry's position had to be equatorial; Sanna's and Dame's papers give l and b | reading `entry/position.rs` | galactic positions allowed, rotated by the Hipparcos rotation | fixed |
+          | `assumes` with a citation took only `cosmology:` | the tracer files | `stated:` accepted as an alias | fixed |
+          | A sexagesimal value failed its cell check (`18h12m02.6822s` vs `18 12 02.6822`) | the Lin files | a cell holds the published form when their figures match in order | fixed |
+          | Tracer files named with dots are not slugs | the reader | dots became hyphens | fixed |
+          | Free text of the tracer files held uncited numbers | the reader's free-text rule | reworded by the tracer reader | fixed |
+          | `width` was required; Sun 2024 and McClure-Griffiths 2004 give none | the far-fit drafts | optional | fixed |
+          | Dame & Thaddeus 2008's far 3-kpc arm states no pitch | the far-fit drafts | left out, as decided | settled |
+          | Sun 2024 does not define φ's zero point or sense; read as Reid's β, the only reading within 5 kpc of the tracers | conventions tested against Dame's clouds | `convention` note in the files | settled |
+          | McClure-Griffiths 2004's own radii and distances do not agree with each other; the arm is read from its figure, estimated, and is the Outer arm only by the literature's reading | the far-fit reader | noted in the file | open, for the model's weighting |
+          | The `model-spiral-arms` check counted every spiral structure as Reid's 14 | the new structures | counts Reid's ids | fixed |
+          | The checks' SQLite has no `sqrt` | the scan-guard test | registered like `sep_arcmin` | fixed |
+  - key: 01a213f3-ecc3-7356-a1be-83b7a1e0fafc
+    id: decided-in-session
+    kind: note
+    versions:
+      - key: 01a213f3-ecc3-7356-a1be-83b9650df614
+        at: 2026-11-25T18:24:42Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Decided in the session"
+        markdown: |-
+          Asked in the session (the dialog's answers did not reach Yard Log):
+
+          | Question | Choice |
+          |---|---|
+          | The tracer check's bound: Dame & Thaddeus 2011's clouds lie 1.4–4.7 kpc (median 3) from Sun et al. 2024's fit of the outer Scutum–Centaurus arm, a disagreement between the papers; a wrong conversion lies 8 kpc or more off | Fail beyond **5 kpc**; the report check lists every tracer's distance |
+          | Dame & Thaddeus 2008's far 3-kpc arm, which states no pitch | **Left out for now**, recorded with the reason |
+        tone: info
+  - key: 01a213f3-ecc3-7356-a1be-83b89bb6b8aa
+    id: spec-change-2
+    kind: loft
+    versions:
+      - key: 01a213f3-ecc3-7356-a1be-83bab656ba9c
+        at: 2026-11-25T18:24:42Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        view: spec-change
+        note: "The tracer check fails beyond 5 kpc, not 2, as decided in the session: the papers disagree on the outer Scutum–Centaurus arm's distance by up to 4.7 kpc."
+        base: "product/galaxy-model"
+        recorded:
+          commit: "cf223461c2dd78028110938b24d492baa57c34b9"
+          branch: "stage/galaxy-model-1"
+          dirty: true
+          loft: 2.4.1
+          at: 2026-11-25T18:24:42Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 1,
+              "graph.edges": 0,
+              "graph.nodes": 5,
+              "status.base.added": 0,
+              "status.base.changed": 1,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                  "words": {
+                    "after": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                    "before": "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched arm tracer",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a213c1-93e0-7343-9f8d-9ba77bd99190",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "The science checks shall report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9ba77bd99190"
+                }
+              ]
+            },
+            "status": {
+              "base": {
+                "added": [],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  }
+                ],
+                "commit": "49112e3c848119b2d14cf14deb44e51a8693fe8b",
+                "removed": [],
+                "revision": "product/galaxy-model"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/galaxy-model-1",
+                "modified": [
+                  "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/3"
+            }
+          }
