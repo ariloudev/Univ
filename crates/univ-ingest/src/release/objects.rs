@@ -125,6 +125,8 @@ impl<'a> ObjectWriter<'a> {
         definitions: &'a [SourceDefinition],
         cosmology: &'a Cosmology,
     ) -> Self {
+        // A build that takes none of the researched structures records no membership.
+        let takes_structures = crate::source::takes_structures(definitions);
         Self {
             numbering,
             counts: ObjectCounts::default(),
@@ -135,7 +137,7 @@ impl<'a> ObjectWriter<'a> {
                 .collect(),
             memberships: definitions
                 .iter()
-                .filter(|d| !d.memberships.is_empty())
+                .filter(|d| takes_structures && !d.memberships.is_empty())
                 .map(|d| (&d.id, d.memberships.as_slice()))
                 .collect(),
         }

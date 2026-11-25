@@ -113,7 +113,7 @@ pub struct Inputs<'a> {
 
 impl Inputs<'_> {
     /// What the build refuses before anything is written: a membership of a source that names
-    /// a structure the release does not hold.
+    /// a structure the release does not hold, where the build takes the researched structures.
     ///
     /// # Errors
     ///

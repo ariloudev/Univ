@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 use univ_model::api::sources::FlagMeanings;
 
-use super::{Column, Field, SourceDefinition};
+use super::{Column, Field, Holds, SourceDefinition};
 
 /// A flag column whose values assign a row to a structure.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -89,8 +89,18 @@ pub(super) fn check(
     Ok(())
 }
 
+/// Whether a build of `definitions` takes the researched structures: one of them is the
+/// repository source of the structure files. A build that takes none records no membership.
+#[must_use]
+pub fn takes_structures(definitions: &[SourceDefinition]) -> bool {
+    definitions
+        .iter()
+        .any(|d| matches!(d.access.repository(), Some((Holds::Structures, _))))
+}
+
 /// Refuses a membership of `definitions` that names a structure not among `structures`, the
-/// ids of the release's researched structures.
+/// ids of the release's researched structures, where the build takes them
+/// ([`takes_structures`]); a build that takes none refuses nothing.
 ///
 /// # Errors
 ///
@@ -99,6 +109,9 @@ pub fn check_structures<'s>(
     definitions: &[SourceDefinition],
     structures: impl IntoIterator<Item = &'s str>,
 ) -> Result<(), String> {
+    if !takes_structures(definitions) {
+        return Ok(());
+    }
     let known: BTreeSet<&str> = structures.into_iter().collect();
     for d in definitions {
         for m in &d.memberships {

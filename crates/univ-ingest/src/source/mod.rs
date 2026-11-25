@@ -9,7 +9,7 @@ mod reference;
 mod rules;
 
 pub use access::{Access, Holds, PreparedFile, RemoteFile, Slices, TapRun};
-pub use memberships::{Membership, check_structures};
+pub use memberships::{Membership, check_structures, takes_structures};
 pub use reference::{Reference, is_bibcode, is_doi};
 
 pub use normalization::{

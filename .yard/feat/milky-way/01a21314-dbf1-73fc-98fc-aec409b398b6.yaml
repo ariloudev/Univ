@@ -10,3 +10,52 @@ versions:
     title: "Milky Way build"
     goal: "scripts/mw-build.sh builds a release of the 15 Milky Way sources into its own state and output, and it has been run once to completion"
     status: planned
+  - key: 01a2131b-cc74-7757-a42f-2d705c17ca4d
+    at: 2026-11-25T14:28:38Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Milky Way build"
+    goal: "scripts/mw-build.sh builds a release of the 15 Milky Way sources into its own state and output, and it has been run once to completion"
+    status: active
+blocks:
+  - key: 01a2131b-cc74-7757-a42f-2d68bd13b0a9
+    id: t-script
+    kind: task
+    versions:
+      - key: 01a2131b-cc74-7757-a42f-2d714df274fa
+        at: 2026-11-25T14:28:38Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Write scripts/mw-build.sh"
+        detail: "The 15 sources, its own state, build and local store under .cache/univ-ingest/milky-way/, --publish to that store. Done when bash -n passes and a run builds."
+        state: done
+  - key: 01a2131b-cc74-7757-a42f-2d69a840f659
+    id: t-fetch
+    kind: task
+    versions:
+      - key: 01a2131b-cc74-7757-a42f-2d72794b0e1b
+        at: 2026-11-25T14:28:38Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Download the 15 sources"
+        detail: "univ-ingest fetch of the 15 sources into the shared cache, ../downloads/univ-ingest; Gaia DR3 G < 14 is 768 TAP jobs."
+        state: active
+  - key: 01a2131b-cc74-7757-a42f-2d6a4fb5d7a6
+    id: t-run
+    kind: task
+    versions:
+      - key: 01a2131b-cc74-7757-a42f-2d73104a4c32
+        at: 2026-11-25T14:28:38Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Run the Milky Way build"
+        detail: "scripts/mw-build.sh --offline once the fetch is done. Done when a release is complete under .cache/univ-ingest/milky-way/build."
+        state: open

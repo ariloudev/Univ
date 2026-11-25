@@ -1641,6 +1641,30 @@ links:
       - file: "crates/univ-ingest/tests/release_tracers.rs"
         name: "a_maser_whose_arm_code_names_a_model_arm_is_its_member_with_the_source_and_code"
         body: 28333b056ab004c3cbb9eb0876df45e7fb5622ca01c23881d902bd2f996d2812
+  - node: 01a21314-fe0f-732a-a1ca-639c6f768cc8
+    reviewed: 2902eb667af2d196df444740a2e57228673fd6adb38f80603b9cf117a7d91a01
+    tests:
+      - file: "crates/univ-ingest/tests/release_memberships.rs"
+        name: "a_build_of_the_masers_that_takes_no_researched_structures_completes"
+        body: 419015f931ac795e8b0f00b6e952e7e5421bebb9787720dd812c007f9bfb0811
+      - file: "crates/univ-ingest/tests/source_reading.rs"
+        name: "a_build_that_takes_no_researched_structures_refuses_no_membership"
+        body: 3c042479361cf6f10e4ade8534cfc2982741153c30e078bcdbd5be3de5b0b407
+  - node: 01a21314-fe0f-732a-a1ca-639de2377029
+    reviewed: 0aad3b48690ae332ff0a98c1d15a48f33d3bf2853e5e1f45cd3a3fc652a7b591
+    tests:
+      - file: "crates/univ-ingest/tests/release_memberships.rs"
+        name: "in_a_build_without_the_structures_each_maser_is_an_object_and_a_member_of_none"
+        body: 010a5d48a3d326e0e5f7b7c9f00e648ef48f98ec0bab8bfb69ef7754d4d509f0
+  - node: 01a21314-fe0f-732a-a1ca-639fd715a93e
+    reviewed: bc53c80880cb1262fc61b3d0d4937960b1c56430903f636e588036c553b7ef78
+    tests:
+      - file: "crates/univ-ingest/tests/release_memberships.rs"
+        name: "a_build_that_takes_the_structures_refuses_a_membership_naming_none_of_them"
+        body: 3d93ccac2ffcb376cc35a6cf141027c65af2992ade201427d21ab364076f7570
+      - file: "crates/univ-ingest/tests/source_reading.rs"
+        name: "a_membership_naming_a_structure_the_release_does_not_hold_is_refused"
+        body: 8ac89f7fbe27c1b05cfd03003fcad47fca96084e343f275da4762f3a140486a1
   - node: 01a19f23-636f-72bd-b194-1513f385222f
     reviewed: 0a32635315e91663ef96bd021d87c572308e8183d5913be71869d6383cc85af6
     tests:
