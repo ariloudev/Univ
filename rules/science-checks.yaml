@@ -1151,10 +1151,11 @@ checks:
         o.z * 1e6 - json_extract(p.value, '$[2]') AS dz
         FROM structure_details d JOIN memberships s ON s.structure = d.id
         AND s.release = :release
-        AND s.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
         JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
         json_each(d.shape, '$.geometry.points') p
-        WHERE d.release = :release)
+        WHERE d.release = :release AND EXISTS (SELECT 1 FROM entries t
+        WHERE t.release = o.release AND t.object_id = o.id
+        AND t.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))))
         GROUP BY id HAVING min(dx * dx + dy * dy + dz * dz) > 25000000
     expect: { at_most: 0 }
     cite:
@@ -1167,10 +1168,36 @@ checks:
     note: >-
       Each tracer is a member of every fit and extrapolation of the arm its paper names (the
       memberships of sources/researched-arm-masers.yaml and researched-arm-clouds.yaml), so the
-      nearest point of any of them counts. A wrong sign of azimuth or a wrong frame moves a
+      nearest point of any of them counts; an object that also holds another source's entry,
+      such as a Reid et al. 2019 maser, counts that source's memberships too, as the release
+      keeps one membership of an object in a structure. A wrong sign of azimuth or a wrong frame moves a
       far-side tracer by 8 kpc or more, while the papers disagree by up to 4.7 kpc: Dame &
       Thaddeus 2011's clouds lie 1.4 to 4.7 kpc from Sun et al. 2024's fit of the same arm. The
       bound is in parsecs squared, as the shapes are stored in parsecs in the ICRS.
+
+  - id: arm-tracers-placed-on-their-arms
+    title: Every researched arm tracer is placed and a member of a path of its arm
+    severity: fail
+    select:
+      kind: query
+      scalar: true
+      sql: >-
+        SELECT count(*) FROM entries e INDEXED BY check_entries_by_source
+        WHERE e.release = :release
+        AND e.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
+        AND NOT EXISTS (SELECT 1 FROM objects o JOIN memberships s ON s.release = o.release
+        AND s.object_id = o.id WHERE o.release = e.release AND o.id = e.object_id AND o.placed = 1)
+    expect: { equals: 0 }
+    cite:
+      - paper: "univ-server specification, Record a researched arm tracer"
+        locator: "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+        quote: >-
+          "The check fails where a tracer lies more than 5 kpc from every path of its arm"
+        fetched: "this repository, spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+    note: >-
+      The distance check reads only placed tracers that are members of a path: one left
+      unplaced, or whose arm names no structure, would drop out of it and let it pass. Every
+      tracer file names an arm whose fits the release holds, and a distance its paper adopts.
 
   - id: arm-tracers-distance-from-their-arms
     title: Each researched arm tracer's distance from the nearest path of its arm, and that path
@@ -1179,17 +1206,19 @@ checks:
       kind: report
       sql: >-
         SELECT (SELECT identifier FROM entries e WHERE e.release = :release AND e.object_id = id
-        LIMIT 1) AS tracer, path AS nearest_path,
+        AND e.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
+        ORDER BY e.entry LIMIT 1) AS tracer, path AS nearest_path,
         round(sqrt(min(dx * dx + dy * dy + dz * dz)) / 1000, 2) AS kpc
         FROM (SELECT o.id, d.id AS path, o.x * 1e6 - json_extract(p.value, '$[0]') AS dx,
         o.y * 1e6 - json_extract(p.value, '$[1]') AS dy,
         o.z * 1e6 - json_extract(p.value, '$[2]') AS dz
         FROM structure_details d JOIN memberships s ON s.structure = d.id
         AND s.release = :release
-        AND s.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
         JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
         json_each(d.shape, '$.geometry.points') p
-        WHERE d.release = :release)
+        WHERE d.release = :release AND EXISTS (SELECT 1 FROM entries t
+        WHERE t.release = o.release AND t.object_id = o.id
+        AND t.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))))
         GROUP BY id ORDER BY 1
     cite:
       - paper: "univ-server specification, Record a researched arm tracer"

@@ -174,9 +174,10 @@ fn source(rows: &mut Rows, n: i64, id: &str, domain: &str) {
     rows.add("sources", &source);
 }
 
-/// Two researched arm tracers and the path of their arm: a straight path along x from the
-/// origin to 10 kpc, in pc as shapes are stored; tracer `near` 1 kpc from it and tracer `far` 6
-/// kpc from it, both members of it through the masers' source.
+/// Researched arm tracers and the path of their arm: a straight path along x from the origin to
+/// 10 kpc, in pc as shapes are stored; tracer `near` 1 kpc from it and tracer `far` 6 kpc from
+/// it, both members of it through the masers' source; and tracer `lone`, placed but a member of
+/// no path.
 pub fn arm_tracers(rows: &mut Rows) {
     source(rows, 2, "researched-arm-masers", "galaxy_tracers");
     source(rows, 3, "researched-arm-clouds", "galaxy_tracers");
@@ -192,7 +193,7 @@ pub fn arm_tracers(rows: &mut Rows) {
             ("shape", text(&shape.to_string())),
         ],
     );
-    for (id, identifier, y_pc) in [(10, "near", 1000.0), (11, "far", 6000.0)] {
+    for (id, identifier, y_pc) in [(10, "near", 1000.0), (11, "far", 6000.0), (12, "lone", 0.0)] {
         rows.add(
             "objects",
             &[
@@ -216,6 +217,9 @@ pub fn arm_tracers(rows: &mut Rows) {
                 ("resolution", term("anchor")),
             ],
         );
+        if identifier == "lone" {
+            continue;
+        }
         rows.add(
             "memberships",
             &[

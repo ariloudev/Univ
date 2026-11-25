@@ -364,8 +364,9 @@ fn the_arm_tracer_checks_give_each_tracers_distance_and_fail_beyond_5_kpc() {
     build_with(dir.path(), arm_tracers);
     let rules = dir.path().join("checks.yaml");
     let body = format!(
-        "checks:\n{}{}",
+        "checks:\n{}{}{}",
         repository_check("arm-tracers-near-their-arms"),
+        repository_check("arm-tracers-placed-on-their-arms"),
         repository_check("arm-tracers-distance-from-their-arms")
     );
     std::fs::write(&rules, body).unwrap();
@@ -378,7 +379,10 @@ fn the_arm_tracer_checks_give_each_tracers_distance_and_fail_beyond_5_kpc() {
     let passed = science(dir.path(), &args, &mut out).unwrap();
     let out = String::from_utf8(out).unwrap();
     assert!(!passed, "{out}");
-    assert!(out.contains("1 FAIL"), "{out}");
+    // The far tracer fails the distance, and the lone tracer, placed but on no arm, the
+    // placement.
+    assert!(out.contains("2 FAIL"), "{out}");
+    assert!(out.contains("arm-tracers-placed-on-their-arms"), "{out}");
     assert!(out.contains("id=11"), "the far tracer fails: {out}");
     assert!(
         out.contains("tracer=near nearest_path=test-arm kpc=1"),
