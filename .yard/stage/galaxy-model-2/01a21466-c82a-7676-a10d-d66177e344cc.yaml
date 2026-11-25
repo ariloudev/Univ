@@ -117,6 +117,15 @@ blocks:
         title: "The galaxy_model domain in Univ Ingest"
         detail: "ScaleDomain::GalaxyModel, generic octree, build_model_domain in the tiles stage with coverage counts, TILE_OBJECTS skips v5, small fixture model."
         state: active
+      - key: 01a214d1-3d19-70e1-8669-93f6298c2121
+        at: 2026-11-25T22:26:26Z
+        revision: 10
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The galaxy_model domain in Univ Ingest"
+        detail: "ScaleDomain::GalaxyModel, generic octree, build_model_domain in the tiles stage with coverage counts, TILE_OBJECTS skips v5, small fixture model."
+        state: done
   - key: 01a21499-e418-7114-ab74-6f85e4142920
     id: t-schema9
     kind: task
@@ -130,6 +139,15 @@ blocks:
         title: "The definition in the release: galaxy_models, schema 9"
         detail: "GalaxyModelRow, TABLES 34, schema.sql, SCHEMA_VERSION 9, science loading of older releases."
         state: open
+      - key: 01a214d1-3d5c-75c1-b90c-55d4457022e9
+        at: 2026-11-25T22:26:26Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The definition in the release: galaxy_models, schema 9"
+        detail: "GalaxyModelRow, TABLES 34, schema.sql, SCHEMA_VERSION 9, science loading of older releases."
+        state: done
   - key: 01a21499-e418-7114-ab74-6f86aed30498
     id: t-look
     kind: task

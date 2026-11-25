@@ -5,9 +5,29 @@ use rand_chacha::ChaCha20Rng;
 use rand_chacha::rand_core::{Rng, SeedableRng};
 use univ_model::tile::{NodeBox, TileError, max_points, tile_bytes};
 
+use univ_model::position::Vec3;
+use univ_model::tile::ModelPoint;
+
 use super::TilesError;
 use super::domain::DomainPoint;
 use super::rules::TileRules;
+
+/// A point an octree lays out: only its position matters to the octree.
+pub trait Positioned {
+    fn position(&self) -> Vec3;
+}
+
+impl Positioned for DomainPoint {
+    fn position(&self) -> Vec3 {
+        self.position
+    }
+}
+
+impl Positioned for ModelPoint {
+    fn position(&self) -> Vec3 {
+        self.position
+    }
+}
 
 /// One node of an octree: its address, level and cube, how many points reached it, and the
 /// points it keeps, as indices into the domain's points in increasing order.
@@ -38,10 +58,10 @@ pub struct Octree {
 /// # Errors
 ///
 /// Fails only on a coordinate too large for a cube to hold it.
-pub fn root_box(points: &[DomainPoint]) -> Result<NodeBox, TileError> {
+pub fn root_box<P: Positioned>(points: &[P]) -> Result<NodeBox, TileError> {
     let largest = points
         .iter()
-        .flat_map(|p| p.position)
+        .flat_map(Positioned::position)
         .fold(0.0_f64, |m, c| m.max(c.abs()));
     let mut half = 1.0_f64;
     while half < largest && half.is_finite() {
@@ -125,10 +145,10 @@ struct Pending {
 ///
 /// Fails when a leaf at the maximum depth holds more points than a tile of `point_bytes` a
 /// point, the domain's encoding's, can within 1 MiB, naming it.
-pub fn build(
+pub fn build<P: Positioned>(
     domain: &str,
     point_bytes: usize,
-    points: &[DomainPoint],
+    points: &[P],
     root: NodeBox,
     rules: &TileRules,
     rng: &mut ChaCha20Rng,
@@ -184,7 +204,7 @@ pub fn build(
             members.sort_unstable();
             let mut children: [Vec<usize>; 8] = Default::default();
             for i in rest {
-                children[usize::from(bounds.octant_of(points[i].position))].push(i);
+                children[usize::from(bounds.octant_of(points[i].position()))].push(i);
             }
             for (octant, mut child) in (0u8..8).zip(children) {
                 if !child.is_empty() {

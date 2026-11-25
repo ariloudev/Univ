@@ -73,6 +73,12 @@
 //! replaced an id, and the memberships of objects in structures are rows of tables of their own,
 //! and an entry's via and spectral type and a redshift's published frame are columns.
 //! `univ-ingest migrate` brings a database of version 7 to version 8 in place.
+//!
+//! # The Galaxy model (schema version 9)
+//!
+//! Version 9 adds one table, changing none of version 8's: `galaxy_models`, the definition of
+//! the Galaxy model each release sampled, as it was sampled (build-the-galaxy-model). A database
+//! of version 8 takes it as the next publish creates it: nothing is migrated.
 
 pub mod cells;
 pub mod chains;
@@ -108,7 +114,7 @@ pub use statements::Statements;
 pub use uncertainty::UncertaintyColumns;
 
 /// The version of the D1 schema in [`SCHEMA`].
-pub const SCHEMA_VERSION: u32 = 8;
+pub const SCHEMA_VERSION: u32 = 9;
 
 /// The first schema version whose tables share rows between releases. Version 7 only added
 /// tables, which a publish creates; version 8 moved [`SCHEMA_7_JSON`] into rows, so a database

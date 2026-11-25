@@ -31,6 +31,7 @@
 
 mod domain;
 mod manifest;
+mod model;
 mod octree;
 mod rules;
 mod write;
@@ -51,10 +52,11 @@ pub use domain::{
 };
 pub use manifest::{
     Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, GENERATOR, Level, MANIFEST_VERSION,
-    NodeEntry, Rotations, Sampling, SourceEntry, SourceRole, TRACERS_ENCODING, TileManifest,
-    rotations, sampling,
+    MODEL_ENCODING, NodeEntry, PopulationCode, Rotations, Sampling, SourceEntry, SourceRole,
+    TRACERS_ENCODING, TileManifest, rotations, sampling,
 };
-pub use octree::{Node, Octree, generator, root_box};
+pub use model::{Galaxy, ModelDomain, SampledModel, build_model_domain, counts, fits, tile_model};
+pub use octree::{Node, Octree, Positioned, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
 pub use write::{MANIFEST_FILE, tile_file, write_all};
 
@@ -99,6 +101,8 @@ pub enum TilesError {
     NoRotation(Frame),
     #[error("the manifest cannot be written: {0}")]
     Manifest(String),
+    #[error("the Galaxy model cannot be sampled: {0}")]
+    Model(String),
     #[error("{0}")]
     Stopped(String),
 }
@@ -113,6 +117,8 @@ pub struct Context<'a> {
     pub rules: &'a TileRules,
     /// The source definitions, which name each source's domain and credit.
     pub definitions: &'a [SourceDefinition],
+    /// The Galaxy model and the structures whose arms it follows; none builds no model.
+    pub galaxy: Option<Galaxy<'a>>,
 }
 
 /// One node's tile.
@@ -171,6 +177,8 @@ pub struct Built {
     pub domains: Vec<BuiltDomain>,
     /// Objects without a derived position, in no tile.
     pub unplaced: usize,
+    /// The Galaxy model the build sampled, if any.
+    pub galaxy_model: Option<SampledModel>,
 }
 
 /// Builds every scale domain's tiles from the release's `objects`, in memory.
@@ -198,14 +206,40 @@ pub fn build_watched(
     let mut domains = Vec::with_capacity(DOMAINS.len());
     for d in &DOMAINS {
         watch.check().map_err(TilesError::Stopped)?;
+        if *d == ScaleDomain::GalaxyModel {
+            continue;
+        }
         let points = assigned.domains.get(d).unwrap_or(&none);
         let built = build_domain(*d, &points.points, &points.sources, context)?;
         watch.step(built.line());
         domains.push(built);
     }
+    watch.check().map_err(TilesError::Stopped)?;
+    let model = match &context.galaxy {
+        Some(galaxy) => {
+            let counts = counts(
+                assigned.domains.get(&ScaleDomain::Stars),
+                assigned.domains.get(&ScaleDomain::GalaxyTracers),
+            );
+            build_model_domain(galaxy, &counts, context)?
+        }
+        None => None,
+    };
+    let galaxy_model = if let Some(ModelDomain { built, sampled }) = model {
+        watch.step(built.line());
+        domains.push(built);
+        Some(sampled)
+    } else {
+        watch.step(
+            "galaxy model: not built, as the release holds no spiral arm for it to follow"
+                .to_owned(),
+        );
+        None
+    };
     Ok(Built {
         domains,
         unplaced: assigned.unplaced,
+        galaxy_model,
     })
 }
 
@@ -343,10 +377,11 @@ pub fn build_domain(
             tile,
         });
     }
+    let radius = radius(points);
     let manifest = manifest_of(
         domain,
         stream,
-        points,
+        (points.len(), radius),
         sources,
         &tree.fractions,
         &built,
@@ -373,11 +408,20 @@ pub fn encoding_of(domain: ScaleDomain) -> Encoding {
     }
 }
 
-/// The manifest of a domain's built nodes.
+/// How far the farthest of `points` lies from the barycentre; 0 for none.
+fn radius<P: Positioned>(points: &[P]) -> f64 {
+    points
+        .iter()
+        .map(|p| p.position().iter().map(|c| c * c).sum::<f64>().sqrt())
+        .fold(0.0_f64, f64::max)
+}
+
+/// The manifest of a domain's built nodes, of `points` many points whose farthest lies `radius`
+/// from the barycentre.
 fn manifest_of(
     domain: ScaleDomain,
     stream: u64,
-    points: &[DomainPoint],
+    (points, radius): (usize, f64),
     sources: Vec<SourceEntry>,
     fractions: &[f64],
     nodes: &[BuiltNode],
@@ -397,10 +441,6 @@ fn manifest_of(
             fraction: fractions.get(usize::from(level)).copied().unwrap_or(1.0),
         })
         .collect();
-    let radius = points
-        .iter()
-        .map(|p| p.position.iter().map(|c| c * c).sum::<f64>().sqrt())
-        .fold(0.0_f64, f64::max);
     Ok(TileManifest {
         format: Cow::Borrowed(FORMAT),
         manifest_version: MANIFEST_VERSION,
@@ -413,7 +453,7 @@ fn manifest_of(
         encoding: encoding_of(domain),
         levels,
         sampling: sampling(context.rules, stream),
-        points: points.len(),
+        points,
         radius,
         sources,
         nodes: nodes

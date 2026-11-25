@@ -1,0 +1,234 @@
+//! The Galaxy model's scale domain (build-the-galaxy-model): its model points sampled from the
+//! model's definition along the arms the release holds, those that the release's real objects
+//! cover marked, and tiled by the octree rule every scale domain's tiles are, in encoding
+//! version 5.
+
+use univ_model::galaxy_model::{
+    Counterpart, Counts, Fit, Model, Placement, counterpart, covered, sample, stretches,
+};
+use univ_model::object::ObjectKind;
+use univ_model::position::Vec3;
+use univ_model::tile::{MODEL_POINT_BYTES, ModelPoint, encode_model};
+use univ_model::units::Unit;
+
+use super::domain::{DOMAINS, DomainPoints, name_of};
+use super::manifest::{MODEL_ENCODING, PopulationCode};
+use super::octree::{self, generator, root_box};
+use super::{BuiltDomain, BuiltNode, Context, TilesError, manifest, manifest_of, radius, sha256};
+use crate::source::ScaleDomain;
+use crate::structures::{Extent, Structure, StructureGeometry};
+
+/// What the Galaxy model is built from: its definition and the release's researched structures,
+/// whose spiral arms it follows.
+#[derive(Clone, Copy, Debug)]
+pub struct Galaxy<'a> {
+    pub model: &'a Model,
+    pub structures: &'a [(String, Structure)],
+}
+
+/// The Galaxy model a build sampled: its definition, and the ids of the structures of the arms
+/// it followed, in the order of its arm rules.
+#[derive(Clone, Debug)]
+pub struct SampledModel {
+    pub model: Model,
+    pub followed: Vec<String>,
+}
+
+/// The Galaxy model's domain and what it was sampled from.
+#[derive(Clone, Debug)]
+pub struct ModelDomain {
+    pub built: BuiltDomain,
+    pub sampled: SampledModel,
+}
+
+/// The kinds of object of the Galaxy tracers that are the young populations' counterparts.
+const YOUNG: [ObjectKind; 3] = [
+    ObjectKind::LuminousHotStar,
+    ObjectKind::OpenCluster,
+    ObjectKind::StarFormingRegion,
+];
+
+/// The arms' fits among `structures`, each path in the plane of `placement`'s frame.
+#[must_use]
+pub fn fits(structures: &[(String, Structure)], placement: &Placement) -> Vec<Fit> {
+    structures
+        .iter()
+        .filter_map(|(id, s)| match &s.geometry {
+            Some(StructureGeometry::LogSpiral(l)) => Some(Fit {
+                structure: id.clone(),
+                extrapolated: l.extent == Extent::Extrapolated,
+                path: l
+                    .path_galactic_kpc()
+                    .into_iter()
+                    .map(|p| placement.in_plane(p))
+                    .collect(),
+                width: l
+                    .width
+                    .as_ref()
+                    .and_then(|w| w.quantity.to(Unit::Kiloparsec).ok())
+                    .map(|q| q.value),
+            }),
+            _ => None,
+        })
+        .collect()
+}
+
+/// The real objects of each counterpart in each cube: the stars domain's points and the young
+/// Galaxy tracers.
+#[must_use]
+pub fn counts(stars: Option<&DomainPoints>, tracers: Option<&DomainPoints>) -> Counts {
+    let mut counts = Counts::default();
+    for p in stars.into_iter().flat_map(|d| &d.points) {
+        counts.add(p.position, Counterpart::Stars);
+    }
+    for p in tracers.into_iter().flat_map(|d| &d.points) {
+        if p.object.is_some_and(|k| YOUNG.contains(&k)) {
+            counts.add(p.position, Counterpart::YoungTracers);
+        }
+    }
+    counts
+}
+
+/// The model's points sampled along `fits`, each covered as `counts` give, in the order sampled.
+///
+/// # Errors
+///
+/// Fails when the model cannot be sampled.
+fn model_points(
+    model: &Model,
+    fits: &[Fit],
+    counts: &Counts,
+) -> Result<Vec<ModelPoint>, TilesError> {
+    let sampled = sample(model, fits).map_err(|e| TilesError::Model(e.to_string()))?;
+    let codes: Vec<(Vec3, u8)> = sampled.iter().map(|s| (s.position, s.population)).collect();
+    let counterpart = |code: u8| {
+        model
+            .populations
+            .iter()
+            .find(|p| p.code == code)
+            .map_or(Counterpart::Stars, |p| counterpart(&p.density))
+    };
+    Ok(sampled
+        .iter()
+        .zip(covered(&codes, counterpart, counts))
+        .map(|(s, covered)| ModelPoint {
+            position: s.position,
+            population: s.population,
+            covered,
+        })
+        .collect())
+}
+
+/// The Galaxy model's domain: `galaxy`'s model sampled along its arms, each point covered as
+/// `counts` give, tiled under `context`'s rules; none where the release holds no arm to follow.
+///
+/// # Errors
+///
+/// Fails when the model cannot be sampled, a leaf would hold a tile beyond 1 MiB, or a tile
+/// cannot be encoded.
+pub fn build_model_domain(
+    galaxy: &Galaxy<'_>,
+    counts: &Counts,
+    context: &Context<'_>,
+) -> Result<Option<ModelDomain>, TilesError> {
+    let model = galaxy.model;
+    let placement = Placement::new(model.r0.value, model.sun_height.value);
+    let fits = fits(galaxy.structures, &placement);
+    if fits.is_empty() {
+        return Ok(None);
+    }
+    let mut followed: Vec<String> = Vec::new();
+    for s in stretches(&model.arms, &fits) {
+        if !followed.contains(&s.structure) {
+            followed.push(s.structure);
+        }
+    }
+    let points = model_points(model, &fits, counts)?;
+    let populations = model
+        .populations
+        .iter()
+        .map(|p| PopulationCode {
+            code: p.code,
+            id: p.id.clone(),
+            name: p.name.clone(),
+        })
+        .collect();
+    let built = tile_model(&points, populations, model.seed, context)?;
+    Ok(Some(ModelDomain {
+        built,
+        sampled: SampledModel {
+            model: model.clone(),
+            followed,
+        },
+    }))
+}
+
+/// The Galaxy model's domain of `points`, in the order sampled, whose populations are
+/// `populations`, sampled under `model_seed`: tiled by the octree rule every scale domain's tiles
+/// are, under `context`'s rules, in encoding version 5.
+///
+/// # Errors
+///
+/// Fails when a leaf would hold a tile beyond 1 MiB, or a tile cannot be encoded.
+pub fn tile_model(
+    points: &[ModelPoint],
+    populations: Vec<PopulationCode>,
+    model_seed: u64,
+    context: &Context<'_>,
+) -> Result<BuiltDomain, TilesError> {
+    let domain = ScaleDomain::GalaxyModel;
+    let name = name_of(domain);
+    let stream = DOMAINS
+        .iter()
+        .position(|d| *d == domain)
+        .and_then(|n| u64::try_from(n).ok())
+        .unwrap_or_default();
+    let encode_error = |address: &str, error| TilesError::Encode {
+        domain: name.to_owned(),
+        address: address.to_owned(),
+        error,
+    };
+    let root = root_box(points).map_err(|e| encode_error("r", e))?;
+    let mut rng = generator(context.rules.seed, stream);
+    let tree = octree::build(
+        name,
+        MODEL_POINT_BYTES,
+        points,
+        root,
+        context.rules,
+        &mut rng,
+    )?;
+    let mut built = Vec::with_capacity(tree.nodes.len());
+    for node in tree.nodes {
+        let tile_points: Vec<ModelPoint> = node.points.iter().map(|&i| points[i]).collect();
+        let tile =
+            encode_model(&node.bounds, &tile_points).map_err(|e| encode_error(&node.address, e))?;
+        built.push(BuiltNode {
+            sha256: sha256(&tile),
+            points: tile_points.len(),
+            address: node.address,
+            level: node.level,
+            bounds: node.bounds,
+            sampled_from: node.sampled_from,
+            tile,
+        });
+    }
+    let mut manifest = manifest_of(
+        domain,
+        stream,
+        (points.len(), radius(points)),
+        Vec::new(),
+        &tree.fractions,
+        &built,
+        context,
+    )?;
+    manifest.encoding = MODEL_ENCODING.with_populations(populations);
+    manifest.sampling.model_seed = Some(model_seed);
+    let json = manifest::to_json(&manifest)?;
+    Ok(BuiltDomain {
+        domain,
+        nodes: built,
+        manifest,
+        json,
+    })
+}

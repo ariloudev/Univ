@@ -14,7 +14,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use sha2::{Digest, Sha256};
 use univ_model::release::fingerprint::{ROWS, alias, canonical_row, non_null_alias};
 use univ_model::release::manifest::TableEstimate;
-use univ_model::release::{ReleaseManifest, SqlValue, TABLES, Table};
+use univ_model::release::{ReleaseManifest, SCHEMA_VERSION, SqlValue, TABLES, Table};
 
 /// The scratch tables the loaders record the fingerprints in: each column's total and count of
 /// values not NULL (the row count as the column `''`), and each lookup table's digest.
@@ -159,10 +159,13 @@ pub fn differences(
     for table in &TABLES {
         // The catalogue's and every object shard's rows, all loaded into one database.
         let Some(want) = manifest.table_estimate(table.name) else {
-            out.push(format!(
-                "the manifest gives no fingerprint of {}",
-                table.name
-            ));
+            // A table of a later schema than the release's, which the release cannot hold.
+            if manifest.versions.d1_schema >= SCHEMA_VERSION {
+                out.push(format!(
+                    "the manifest gives no fingerprint of {}",
+                    table.name
+                ));
+            }
             continue;
         };
         compared += 1;

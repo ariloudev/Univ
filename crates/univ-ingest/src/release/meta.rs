@@ -9,8 +9,8 @@ use univ_model::ids::SourceId;
 use univ_model::release::keys;
 use univ_model::release::manifest::ManifestSource;
 use univ_model::release::rows::{
-    CatalogueUncertainty, NormalizationRow, PayloadRow, ScaleDomainRow, SourceReadingRow,
-    SourceRow, SourceTermRow, StructureRow,
+    CatalogueUncertainty, GalaxyModelRow, NormalizationRow, PayloadRow, ScaleDomainRow,
+    SourceReadingRow, SourceRow, SourceTermRow, StructureRow,
 };
 
 use super::objects::{json, snake};
@@ -18,7 +18,7 @@ use super::placement::Placement;
 use super::terms::SourceIndex;
 use crate::designations::DesignationRules;
 use crate::provenance::Provenance;
-use crate::source::SourceDefinition;
+use crate::source::{ScaleDomain, SourceDefinition};
 use crate::tiles::{Built, name_of, sha256, unit_symbol};
 
 /// The rows of a release's sources and their provenance.
@@ -218,6 +218,28 @@ pub fn domain_rows(release: u32, tiles: &Built) -> Vec<ScaleDomainRow> {
                 nodes: d.nodes.len() as u64,
                 manifest_key: keys::file(&sha256(&d.json)),
             }
+        })
+        .collect()
+}
+
+/// The row of the Galaxy model the tiles sampled, if they sampled one.
+///
+/// # Errors
+///
+/// Fails only when the definition cannot be written as JSON.
+pub fn galaxy_model_rows(release: u32, tiles: &Built) -> Result<Vec<GalaxyModelRow>, String> {
+    tiles
+        .galaxy_model
+        .iter()
+        .map(|g| {
+            Ok(GalaxyModelRow {
+                release,
+                domain: name_of(ScaleDomain::GalaxyModel).to_owned(),
+                points: g.model.points,
+                seed: g.model.seed,
+                definition: json(&g.model)?,
+                followed: json(&g.followed)?,
+            })
         })
         .collect()
 }

@@ -71,9 +71,13 @@ fn a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_uncha
     migrate(&mut b, work.path(), &mut |_| {}).unwrap();
     let at = |v: u32| format!("SELECT COUNT(*) FROM schema_version WHERE version = {v}");
     assert_eq!(b.int_everywhere(&at(SHARED_ROWS_SINCE)), databases);
-    // Then the JSON the old tables kept, into the rows of schema 8.
+    // Then the JSON the old tables kept, into the rows of schema 8, the store given every table
+    // of the current schema.
     assert!(schema8(&b));
-    assert_eq!(b.int_everywhere(&at(8)), databases);
+    assert_eq!(
+        b.int_everywhere(&at(univ_model::release::SCHEMA_VERSION)),
+        databases
+    );
     // Nothing built or uploaded again: D1 runs only the migration's own files, and R2 is given
     // only the files it held, under their SHA-256.
     for op in &b.ops {

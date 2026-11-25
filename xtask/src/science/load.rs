@@ -11,7 +11,7 @@ use univ_model::cosmology::Cosmology;
 use univ_model::derive::ComovingTable;
 use univ_model::position::{separation_degrees, unit_vector};
 use univ_model::release::manifest::Target;
-use univ_model::release::{RETIRED, ReleaseManifest, Scope, TABLES, keys, valid_in};
+use univ_model::release::{RETIRED, ReleaseManifest, SCHEMA, Scope, TABLES, keys, valid_in};
 
 /// The scratch database: in memory, or at `file` when one is given. A file that exists already
 /// is taken as loaded and opened as it is.
@@ -92,6 +92,9 @@ pub fn load(db: &Connection, dir: &Path, manifest: &ReleaseManifest) -> Result<u
     if executed == 0 {
         return Err("the manifest lists no D1 files".to_owned());
     }
+    // The tables of a later schema than the chain's, empty, so that every table is there.
+    db.execute_batch(SCHEMA)
+        .map_err(|e| format!("cannot create the schema: {e}"))?;
     let n = manifest.release;
     let shared = || TABLES.iter().filter(|t| t.scope == Scope::PerRelease);
     for table in shared() {

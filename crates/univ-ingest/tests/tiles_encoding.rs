@@ -146,6 +146,7 @@ fn two_builds_from_the_same_inputs_and_seed_give_the_same_bytes() {
         let built = Built {
             domains: vec![stars(&points, &rules(300, 100, 6, 5))],
             unplaced: 0,
+            galaxy_model: None,
         };
         write_all(dir, &built).unwrap();
         built

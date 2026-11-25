@@ -41,7 +41,9 @@ impl Counts {
         *self.0.entry((cube_of(p), counterpart)).or_default() += 1;
     }
 
-    fn get(&self, cube: [i64; 3], counterpart: Counterpart) -> u32 {
+    /// The real objects of `counterpart` in `cube`.
+    #[must_use]
+    pub fn get(&self, cube: [i64; 3], counterpart: Counterpart) -> u32 {
         self.0
             .get(&(cube, counterpart))
             .copied()
