@@ -10,6 +10,15 @@ versions:
     title: "Review and gate"
     goal: "/simplify and /code-review findings fixed, cargo xtask check green, the trace linked"
     status: planned
+  - key: 01a21466-6e98-742d-b2c8-1ca7571bcf40
+    at: 2026-11-25T20:29:47Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Review and gate"
+    goal: "/simplify and /code-review findings fixed, cargo xtask check green, the trace linked"
+    status: done
 blocks:
   - key: 01a213da-38fd-75ec-93a5-9f5b40c22638
     id: t-review
@@ -33,6 +42,15 @@ blocks:
         title: "Run /simplify and /code-review and fix their findings"
         detail: "Both on the wave's diff against product/galaxy-model."
         state: active
+      - key: 01a2140f-f6cf-76da-a1dc-1072e85bd5aa
+        at: 2026-11-25T18:55:20Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run /simplify and /code-review and fix their findings"
+        detail: "Both run on the wave's diff against product/galaxy-model; findings fixed or skipped with reasons in review-findings."
+        state: done
   - key: 01a213da-38fd-75ec-93a5-9f5c4f049e66
     id: t-gate
     kind: task
@@ -46,3 +64,82 @@ blocks:
         title: "Run cargo xtask check and link the trace"
         detail: "cargo xtask check green once; loft reconcile --accept for the new and changed criteria; spec stays clean."
         state: open
+      - key: 01a2140f-f6cf-76da-a1dc-1073479eca78
+        at: 2026-11-25T18:55:20Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run cargo xtask check and link the trace"
+        detail: "cargo xtask check green once; loft reconcile --accept for the new and changed criteria; spec stays clean."
+        state: active
+      - key: 01a21418-83d1-7795-9e5b-c345d9cc3aea
+        at: 2026-11-25T19:04:40Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run cargo xtask check and link the trace"
+        detail: "cargo xtask check passed: 14 gates, loft verify skipped off the publish branch. The trace's links accepted; loft reconcile --fail-on warning passes."
+        state: done
+  - key: 01a2140f-f6ce-754c-8923-de5e8e3cf5a0
+    id: review-findings
+    kind: note
+    versions:
+      - key: 01a2140f-f6cf-76da-a1dc-10715b06c842
+        at: 2026-11-25T18:55:20Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Review findings and what became of them"
+        markdown: |-
+          **/simplify** (four angles: reuse, simplification, efficiency, altitude)
+
+          | Finding | Outcome |
+          |---|---|
+          | The tracer reader copied the star reader's distance, parallax, checks and paper mapping | shared: `Researched::check`, `distance`, `parallax`; `PaperReference: From<&Paper>` |
+          | `figures` a second number reader beside `numbers.rs` | moved into `numbers.rs`, with a test |
+          | `LogSpiral::scalars` allocated a Vec | an iterator |
+          | The tracer checks extracted each coordinate twice | computed once in a subquery |
+          | `assumes` alias pointed the wrong way; `NotEquatorial` misnamed | `stated` the field, `cosmology` the alias; `UnsupportedFrame` |
+          | Unused `tracers::problems`; tests re-reading sources; copied test helpers | removed; read once; shared |
+          | Memberships derivable from each structure's `arm` | skipped: resolving memberships at build time is a wider change; a test holds the lists and the flag values to the arms |
+          | `reid-2019-%` filter in the Reid count check | skipped: the structures table has no paper column |
+          | Tagged position enum; hand-numbered `object_kind_code` | skipped: `pair()` is cheap; the match is deliberately exhaustive |
+
+          **/code-review** (the first run reviewed `feat/milky-way`'s publish code by mistake; run again on this wave's diff)
+
+          | Finding | Outcome |
+          |---|---|
+          | A tracer's distance lost what it assumes in the entry | kept as the flag `distance_assumes` |
+          | The distance check passed vacuously for unplaced or unmapped tracers | a third check: every tracer placed and a member of its arm |
+          | Memberships keep one row per (object, structure), whatever the source | the checks read every membership of an object holding a tracer entry |
+          | The report could name another catalogue's identifier | the tracer's own entry |
+          | `figures` kept a sentence's full stop | trimmed, with a test |
+          | A galactic position could carry errors stored as RA/Dec | refused |
+          | velocity unit, distance kind and empty notes unchecked | checked, with tests |
+          | `Arm::slug` beside the serde names | a test holds them equal |
+          | `source()` errors on releases without the tracer sources | not changed: every source-specific check does the same |
+          | The two checks repeat their join | not changed: a fail check and a report |
+
+          Also found while building: the Milky Way build took no structures, so it held no arm; the approved spec change adds `--structures-of`.
+  - key: 01a21418-83d1-7795-9e5b-c3447ac9db8c
+    id: gate-issues
+    kind: note
+    versions:
+      - key: 01a21418-83d1-7795-9e5b-c34689337e91
+        at: 2026-11-25T19:04:40Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The gate's environment"
+        markdown: |-
+          | Issue | Fix |
+          |---|---|
+          | `cargo-machete` and `cargo-deny` were not installed: the toolchain is now Homebrew's Rust 1.100 | `cargo install --locked cargo-machete cargo-deny` |
+          | Homebrew's `rust` has no `wasm32-unknown-unknown`; rustup's stable 1.100 has it | the gate runs with `/opt/homebrew/opt/rustup/bin` first on the path |
+          | RUSTSEC-2026-0592, a stack overflow in `url` 2.5.8 | `url` 2.5.9 |
+          | RUSTSEC-2026-0542, `humantime` unmaintained as chrono is, with no successor | ignored in `deny.toml` with its reason, as bincode's is; it only formats RFC 3339 timestamps |
+        tone: warning

@@ -10,6 +10,15 @@ versions:
     title: "Build the arms' far side and the tracers"
     goal: "The far-side fits are structures with arm names, the researched arm tracers are objects of the Galaxy tracers domain, and the tracer-to-arm science check passes on the Milky Way release"
     status: active
+  - key: 01a21465-2b54-7077-b4b8-ae21e61ce731
+    at: 2026-11-25T20:28:24Z
+    revision: 16
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Build the arms' far side and the tracers"
+    goal: "The far-side fits are structures with arm names, the researched arm tracers are objects of the Galaxy tracers domain, and the tracer-to-arm science check passes on the Milky Way release"
+    status: done
 blocks:
   - key: 01a213da-38fd-75ec-93a5-9f5546a352cc
     id: t-arm-field
@@ -170,6 +179,15 @@ blocks:
         title: "Rebuild the Milky Way release with the tracers and run the science checks"
         detail: "Add the source to scripts/mw-build.sh, build and publish, run cargo xtask science. Done when the tracer check passes and Sanna's maser lies about 0.25 kpc from Scutum-Centaurus."
         state: active
+      - key: 01a21465-2b54-7077-b4b8-ae20a2728273
+        at: 2026-11-25T20:28:24Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Rebuild the Milky Way release with the tracers and run the science checks"
+        detail: "Release 3 of .cache/univ-ingest/milky-way (built with --structures-of galaxy_tracers, 22 structures) published; every arm and tracer check passes."
+        state: done
   - key: 01a213e0-731d-7518-b608-6e56d48b0cdc
     id: build-issues
     kind: note
@@ -650,3 +668,27 @@ blocks:
               "schema": "loft-status/3"
             }
           }
+  - key: 01a21465-2b54-7077-b4b8-ae1f107b70ef
+    id: build-result
+    kind: note
+    versions:
+      - key: 01a21465-2b54-7077-b4b8-ae224b3db894
+        at: 2026-11-25T20:28:24Z
+        revision: 16
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "What the build produced"
+        markdown: |-
+          Milky Way release 3 (`scripts/mw-build.sh`, `--structures-of galaxy_tracers`): 17,390,649 objects, 17,260,573 placed, **22 structures** (Reid 2019's seven arms; Sun 2024's outer Scutum–Centaurus and Outer; Hyland 2026's Perseus; McClure-Griffiths 2004's distant arm; each fitted and extrapolated), 18 researched arm tracers.
+
+          | Tracer | Nearest path | kpc |
+          |---|---|---|
+          | Lin 2026, 7 masers | Reid Sgr–Car extrapolated, Reid Perseus extrapolated, Hyland Perseus | 0.19–0.88 |
+          | Sanna 2017 | Sun 2024 OSC extrapolated | 1.96 |
+          | Dame & Thaddeus 2011, 10 clouds | Sun 2024 OSC | 1.45–4.82 |
+
+          PASS: arm-tracers-near-their-arms, arm-tracers-placed-on-their-arms, model-spiral-arms (14 of Reid), masers-members-of-their-arms (181), masers-on-the-arm-their-code-names, tracers-name-their-kind (after molecular clouds joined its list, spec approved). The 25 other failing checks error for want of the extragalactic sources a Milky Way release does not take.
+
+          For wave 2: the release now holds the arms the Galaxy model follows.
+        tone: success
