@@ -78,7 +78,7 @@ fn model(points: u64, populations: Vec<Population>) -> Model {
         arms: ArmRules {
             order: vec![ArmOrder {
                 arm: "test".to_owned(),
-                structures: vec!["a".to_owned(), "b".to_owned(), "c".to_owned()],
+                structures: ["a", "b", "c", "d"].map(str::to_owned).to_vec(),
             }],
             extrapolation_weight: Parameter::choice(0.45, "1", "test"),
             same_stretch: Parameter::choice(2.0, "kiloparsec", "test"),
@@ -170,10 +170,10 @@ fn an_arm_population_lies_along_its_stretches_spread_by_the_arm_width() {
     let n = young.len() as f64;
     let spread = (young.iter().map(|g| (g[1] - 6.0).powi(2)).sum::<f64>() / n).sqrt();
     assert!((spread - 0.3).abs() < 0.02, "{spread}");
+    // None beyond the stretch's ends: a point is moved only across the arm.
     assert!(
-        young
-            .iter()
-            .all(|g| g[0].abs() <= 6.0 + 1e-9 || (g[1] - 6.0).abs() > 0.0)
+        young.iter().all(|g| g[0].abs() <= 6.0 + 1e-6),
+        "beyond the fit"
     );
     assert!(young.iter().all(|g| (g[1] - 6.0).abs() < 5.0 * 0.3 * 1.5));
 }
@@ -182,8 +182,10 @@ fn an_arm_population_lies_along_its_stretches_spread_by_the_arm_width() {
 fn a_later_fit_near_an_earlier_one_is_left_out_and_an_extrapolation_follows_the_fits() {
     let rules = model(1, vec![]).arms;
     // b lies 1 kpc from a, within the 2 kpc of one stretch: left out; c, an extrapolation 5 kpc
-    // away, is kept at its weight.
+    // away, is kept at its weight; d, an extrapolation alongside a, is left out as b is, though
+    // the rules name it after c.
     let fits = [
+        line_arm("d", 6.5, true),
         line_arm("b", 7.0, false),
         line_arm("a", 6.0, false),
         line_arm("c", 11.0, true),
