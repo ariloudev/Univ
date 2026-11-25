@@ -1146,15 +1146,16 @@ checks:
     select:
       kind: query
       sql: >-
-        SELECT o.id FROM structure_details d JOIN memberships s ON s.structure = d.id
+        SELECT id FROM (SELECT o.id, o.x * 1e6 - json_extract(p.value, '$[0]') AS dx,
+        o.y * 1e6 - json_extract(p.value, '$[1]') AS dy,
+        o.z * 1e6 - json_extract(p.value, '$[2]') AS dz
+        FROM structure_details d JOIN memberships s ON s.structure = d.id
         AND s.release = :release
         AND s.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
         JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
         json_each(d.shape, '$.geometry.points') p
-        WHERE d.release = :release
-        GROUP BY o.id HAVING min((o.x * 1e6 - json_extract(p.value, '$[0]')) * (o.x * 1e6 - json_extract(p.value, '$[0]'))
-        + (o.y * 1e6 - json_extract(p.value, '$[1]')) * (o.y * 1e6 - json_extract(p.value, '$[1]'))
-        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]'))) > 25000000
+        WHERE d.release = :release)
+        GROUP BY id HAVING min(dx * dx + dy * dy + dz * dz) > 25000000
     expect: { at_most: 0 }
     cite:
       - paper: "univ-server specification, Record a researched arm tracer"
@@ -1177,18 +1178,19 @@ checks:
     select:
       kind: report
       sql: >-
-        SELECT (SELECT identifier FROM entries e WHERE e.release = o.release AND e.object_id = o.id
-        LIMIT 1) AS tracer, d.id AS nearest_path,
-        round(sqrt(min((o.x * 1e6 - json_extract(p.value, '$[0]')) * (o.x * 1e6 - json_extract(p.value, '$[0]'))
-        + (o.y * 1e6 - json_extract(p.value, '$[1]')) * (o.y * 1e6 - json_extract(p.value, '$[1]'))
-        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]')))) / 1000, 2) AS kpc
+        SELECT (SELECT identifier FROM entries e WHERE e.release = :release AND e.object_id = id
+        LIMIT 1) AS tracer, path AS nearest_path,
+        round(sqrt(min(dx * dx + dy * dy + dz * dz)) / 1000, 2) AS kpc
+        FROM (SELECT o.id, d.id AS path, o.x * 1e6 - json_extract(p.value, '$[0]') AS dx,
+        o.y * 1e6 - json_extract(p.value, '$[1]') AS dy,
+        o.z * 1e6 - json_extract(p.value, '$[2]') AS dz
         FROM structure_details d JOIN memberships s ON s.structure = d.id
         AND s.release = :release
         AND s.source IN (source('researched-arm-masers'), source('researched-arm-clouds'))
         JOIN objects o ON o.release = s.release AND o.id = s.object_id AND o.placed = 1,
         json_each(d.shape, '$.geometry.points') p
-        WHERE d.release = :release
-        GROUP BY o.id ORDER BY 1
+        WHERE d.release = :release)
+        GROUP BY id ORDER BY 1
     cite:
       - paper: "univ-server specification, Record a researched arm tracer"
         locator: "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"

@@ -10,7 +10,7 @@ use univ_model::units::Unit;
 use univ_model::value::{KindOfValue, Quantity, Uncertainty};
 
 use super::citation::{Citation, Locator};
-use super::numbers::{consistent, contains_whole, has_magnitude, has_number, published};
+use super::numbers::{consistent, contains_whole, figures, has_magnitude, has_number, published};
 
 /// A number read from a paper: its quantity, kind of value and citation.
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -50,11 +50,11 @@ pub struct Assumes {
 #[serde(untagged)]
 enum RawAssumes {
     Stated(String),
-    /// Words with their citation: `cosmology` for a cosmology, `stated` for anything else a
-    /// value assumes, such as a rotation curve.
+    /// Words with their citation: what the value assumes, such as a rotation curve, written
+    /// `cosmology` where it is one.
     Cited {
-        #[serde(alias = "stated")]
-        cosmology: String,
+        #[serde(alias = "cosmology")]
+        stated: String,
         cite: Citation,
     },
 }
@@ -64,7 +64,7 @@ impl TryFrom<RawAssumes> for Assumes {
     fn try_from(raw: RawAssumes) -> Result<Self, String> {
         let (stated, cite) = match raw {
             RawAssumes::Stated(text) => (text, None),
-            RawAssumes::Cited { cosmology, cite } => (cosmology, Some(cite)),
+            RawAssumes::Cited { stated, cite } => (stated, Some(cite)),
         };
         Ok(Self {
             cosmology: stated_cosmology(&stated)?,
@@ -241,33 +241,6 @@ impl<'de> Deserialize<'de> for Cited {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         deserializer.deserialize_any(CitedVisitor)
     }
-}
-
-/// The figures of `text` in order, each run of digits and points with the minus before it,
-/// whatever letters or marks part them: `18h12m02.6822s` and `18 12 02.6822` give 18, 12 and
-/// 02.6822, `−18°40′25.002″` gives −18, 40 and 25.002.
-fn figures(text: &str) -> Vec<String> {
-    let text = text.replace('\u{2212}', "-");
-    let mut out: Vec<String> = Vec::new();
-    let mut current = String::new();
-    let mut minus = false;
-    for c in text.chars() {
-        if c.is_ascii_digit() || (c == '.' && !current.is_empty()) {
-            if current.is_empty() && minus {
-                current.push('-');
-            }
-            current.push(c);
-        } else {
-            if !current.is_empty() {
-                out.push(std::mem::take(&mut current));
-            }
-            minus = c == '-';
-        }
-    }
-    if !current.is_empty() {
-        out.push(current);
-    }
-    out
 }
 
 impl Cited {

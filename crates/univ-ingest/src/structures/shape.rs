@@ -133,7 +133,6 @@ impl StructureGeometry {
                 let mut out = indexed("log_spiral", l.pairs());
                 out.extend(
                     l.scalars()
-                        .into_iter()
                         .map(|(name, c)| (format!("log_spiral.{name}"), c)),
                 );
                 out

@@ -18,7 +18,7 @@
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
-use univ_model::distance::{Distance, DistanceKind, Measure, Method};
+use univ_model::distance::DistanceKind;
 use univ_model::entry::{
     CatalogueEntry, Flags, NativePosition, PaperReference, Position, PositionUncertainty,
 };
@@ -26,7 +26,7 @@ use univ_model::ids::Designation;
 use univ_model::object::ObjectKind;
 use univ_model::position::{Epoch, Frame};
 use univ_model::units::Unit;
-use univ_model::value::{KindOfValue, Uncertainty, Value};
+use univ_model::value::{KindOfValue, Uncertainty};
 
 use crate::normalize::{NormalizationReport, NormalizeError, Normalized};
 use crate::source::SourceDefinition;
@@ -143,27 +143,20 @@ impl TracerFile {
                 "a galactic position gives l and b, an equatorial one ra and dec, and nothing else",
             );
         };
-        for (field, c) in pair.iter().copied().chain(self.velocity()) {
-            self.check_citation(field, &c.cite, Some(c))?;
-            self.check_value(field, c)?;
-        }
         for (field, c) in pair {
             if c.unit() != Unit::Degree {
                 return problem(field, "is given in degrees");
             }
         }
+        for (field, c) in pair.into_iter().chain(self.velocity()) {
+            self.check_citation(field, &c.cite, Some(c))?;
+            self.check_value(field, c)?;
+        }
         if self.parallax.is_none() && self.distance.is_none() {
             return problem("distance", "give a parallax, a distance or both");
         }
         for (field, r) in self.researched() {
-            if r.method.trim().is_empty() {
-                return problem(&format!("{field}.method"), "is empty");
-            }
-            if r.value.value() <= 0.0 {
-                return problem(field, "is not positive");
-            }
-            self.check_citation(field, &r.value.cite, Some(&r.value))?;
-            self.check_value(field, &r.value)?;
+            r.check(self, field)?;
         }
         if let Some(p) = &self.parallax {
             let symmetric = matches!(p.value.quantity.uncertainty, Uncertainty::Symmetric { .. });
@@ -234,18 +227,6 @@ impl TracerFile {
         evidence
     }
 
-    /// The papers the tracer's values come from, each once, in the order the file lists them.
-    fn references(&self) -> Vec<PaperReference> {
-        self.papers
-            .iter()
-            .map(|p| PaperReference {
-                citation: p.reference.clone(),
-                doi: p.doi.clone(),
-                bibcode: p.bibcode.clone(),
-            })
-            .collect()
-    }
-
     /// The tracer's catalogue entry in `definition`'s source, identified by `slug`.
     ///
     /// # Errors
@@ -289,25 +270,13 @@ impl TracerFile {
         let distances = self
             .distance
             .as_ref()
-            .map(|d| {
-                Distance::new(
-                    d.value.quantity,
-                    None,
-                    Unit::Parsec,
-                    d.value.kind,
-                    (d.distance_kind, Method::Other(d.method.clone())),
-                    Measure::Euclidean,
-                    None,
-                )
-            })
-            .transpose()
-            .map_err(|e| e.to_string())?;
+            .map(Researched::distance)
+            .transpose()?;
         let parallax = self
             .parallax
             .as_ref()
-            .map(|p| Value::normalize(p.value.quantity, Unit::Degree, p.value.kind))
-            .transpose()
-            .map_err(|e| e.to_string())?;
+            .map(Researched::parallax)
+            .transpose()?;
         // A parallax keeps its method, as a distance does in its own.
         let flags: Flags = std::iter::once((ARM_FLAG, self.arm.slug().to_owned()))
             .chain(self.parallax.iter().map(|p| ("method", p.method.clone())))
@@ -329,7 +298,7 @@ impl TracerFile {
             group_id: None,
             supergalactic_velocity: None,
             flags,
-            references: self.references().into(),
+            references: self.papers.iter().map(PaperReference::from).collect(),
         };
         entry.check().map_err(|e| e.to_string())?;
         Ok(entry)
@@ -352,24 +321,6 @@ pub fn read_all(dir: &Path) -> Result<Vec<(PathBuf, String, TracerFile)>, Tracer
             Ok((file, slug, tracer))
         })
         .collect()
-}
-
-/// Every problem of the tracer files in `dir`, one line each, in file-name order: each file's
-/// first problem. Empty when every file can be used.
-///
-/// # Errors
-///
-/// Fails when the directory cannot be read.
-pub fn problems(dir: &Path) -> Result<Vec<String>, TracerError> {
-    Ok(read_dir(dir)?
-        .into_iter()
-        .filter_map(|file| {
-            slug_of(&file)
-                .and_then(|_| TracerFile::read(&file))
-                .err()
-                .map(|e| e.to_string())
-        })
-        .collect())
 }
 
 /// The researched arm tracers of `definition`, read from the tracer files in `dir`: an entry

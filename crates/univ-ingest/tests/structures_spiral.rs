@@ -10,7 +10,7 @@ mod common;
 
 use std::sync::LazyLock;
 
-use common::workspace;
+use common::{edited_norma_arm, structures_dir};
 use univ_ingest::release::{Placing, placed_shape, placements, structure_rows};
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::structures::{
@@ -26,7 +26,7 @@ use univ_model::value::KindOfValue;
 
 /// The repository's model arms, read once, by id.
 static ARMS: LazyLock<Vec<(String, Structure)>> = LazyLock::new(|| {
-    read_all_named(&workspace().join("structures"))
+    read_all_named(&structures_dir())
         .unwrap()
         .into_iter()
         .filter(|(id, _)| id.starts_with("reid-2019-"))
@@ -264,20 +264,10 @@ fn a_spiral_arms_path_is_placed_in_the_icrs_as_a_reconstructed_path_with_its_der
     }
 }
 
-/// A spiral arm file as written, `edit` applied to it.
-fn edited(edit: impl Fn(String) -> String) -> Result<Structure, String> {
-    let text =
-        std::fs::read_to_string(workspace().join("structures/reid-2019-norma-arm.yaml")).unwrap();
-    let dir = tempfile::tempdir().unwrap();
-    let file = dir.path().join("test-arm.yaml");
-    std::fs::write(&file, edit(text)).unwrap();
-    Structure::read(&file).map_err(|e| e.to_string())
-}
-
 #[test]
 fn a_spiral_arm_with_an_uncited_parameter_or_another_kind_status_or_domain_is_refused() {
-    assert!(edited(|t| t).is_ok());
-    let uncited = edited(|t| {
+    assert!(edited_norma_arm(|t| t).is_ok());
+    let uncited = edited_norma_arm(|t| {
         t.replace(
             "cite: { paper: reid-2019, table: \"2\", row: \"Norma\", column: \"R_kink\", cell: \"4.46 ± 0.19\" }",
             "",
@@ -289,17 +279,21 @@ fn a_spiral_arm_with_an_uncited_parameter_or_another_kind_status_or_domain_is_re
     })
     .unwrap_err();
     assert!(uncited.contains("4.46"), "{uncited}");
-    let other_kind = edited(|t| t.replace("kind: spiral_arm\n", "kind: filament\n")).unwrap_err();
+    let other_kind =
+        edited_norma_arm(|t| t.replace("kind: spiral_arm\n", "kind: filament\n")).unwrap_err();
     assert!(other_kind.contains("log spiral"), "{other_kind}");
-    let extent = edited(|t| t.replace("extent: fitted", "extent: extrapolated")).unwrap_err();
+    let extent =
+        edited_norma_arm(|t| t.replace("extent: fitted", "extent: extrapolated")).unwrap_err();
     assert!(extent.contains("spiral_arm_extrapolation"), "{extent}");
-    let status = edited(|t| t.replace("status: model", "status: observed")).unwrap_err();
+    let status = edited_norma_arm(|t| t.replace("status: model", "status: observed")).unwrap_err();
     assert!(status.contains("model"), "{status}");
-    let domain = edited(|t| t.replace("scale_domain: galaxy_tracers", "scale_domain: cosmic_web"))
-        .unwrap_err();
+    let domain =
+        edited_norma_arm(|t| t.replace("scale_domain: galaxy_tracers", "scale_domain: cosmic_web"))
+            .unwrap_err();
     assert!(domain.contains("Galaxy tracers"), "{domain}");
     let range =
-        edited(|t| t.replace("value: 5, unit: degree", "value: 60, unit: degree")).unwrap_err();
+        edited_norma_arm(|t| t.replace("value: 5, unit: degree", "value: 60, unit: degree"))
+            .unwrap_err();
     assert!(range.contains("fitted range"), "{range}");
 }
 
@@ -310,7 +304,11 @@ fn each_extrapolation_takes_every_cited_parameter_of_its_fitted_arm() {
     for (id, s) in ARMS.iter().filter(|(id, _)| !id.ends_with("-extrapolated")) {
         let fitted = spiral(id);
         let twin = spiral(&format!("{id}-extrapolated"));
-        assert_eq!(fitted.scalars(), twin.scalars(), "{id}");
+        assert_eq!(
+            fitted.scalars().collect::<Vec<_>>(),
+            twin.scalars().collect::<Vec<_>>(),
+            "{id}"
+        );
         assert_eq!(fitted.pairs(), twin.pairs(), "{id}");
         let name = s.name.replace(" (Reid 2019 model)", "");
         let twin_name = &ARMS

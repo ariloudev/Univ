@@ -236,8 +236,7 @@ impl TryFrom<RawSpiral> for LogSpiral {
 impl LogSpiral {
     /// Each cited parameter but the fitted range, with its name: the width only where the
     /// paper gives one.
-    #[must_use]
-    pub fn scalars(&self) -> Vec<(&'static str, &Cited)> {
+    pub fn scalars(&self) -> impl Iterator<Item = (&'static str, &Cited)> {
         [
             ("beta_kink", Some(&self.beta_kink)),
             ("r_kink", Some(&self.r_kink)),
@@ -249,7 +248,6 @@ impl LogSpiral {
         ]
         .into_iter()
         .filter_map(|(name, c)| Some((name, c?)))
-        .collect()
     }
 
     /// The fitted range, the one pair of bounds, with its name.

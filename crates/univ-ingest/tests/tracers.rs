@@ -10,14 +10,15 @@
 mod common;
 mod release_fixture;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
+use std::sync::LazyLock;
 
-use common::{definition_of, workspace};
+use common::{definition_of, structures_dir, workspace};
 use release_fixture::{build_next, fixture, loaded, record, terms};
 use univ_ingest::normalize::Normalized;
 use univ_ingest::source::SourceDefinition;
-use univ_ingest::structures::{StructureGeometry, read_all_named};
+use univ_ingest::structures::{Arm, StructureGeometry, read_all_named};
 use univ_ingest::tracers::{ARM_FLAG, TracerFile, normalize, read_all};
 use univ_model::distance::DistanceKind;
 use univ_model::object::ObjectKind;
@@ -35,20 +36,38 @@ fn dir_of(definition: &SourceDefinition) -> PathBuf {
     workspace().join(path)
 }
 
-/// The tracers of source `id`, normalized from the repository's files.
-fn normalized(id: &str) -> Normalized {
-    let d = definition_of(id);
-    normalize(&d, &dir_of(&d))
-        .map_err(|e| e.to_string())
-        .unwrap()
+/// Each source of [`SOURCES`] by id, with its tracers normalized from the repository's files,
+/// read once.
+static READ: LazyLock<BTreeMap<&'static str, (SourceDefinition, Normalized)>> =
+    LazyLock::new(|| {
+        SOURCES
+            .iter()
+            .map(|(id, _)| {
+                let d = definition_of(id);
+                let n = normalize(&d, &dir_of(&d))
+                    .map_err(|e| e.to_string())
+                    .unwrap();
+                (*id, (d, n))
+            })
+            .collect()
+    });
+
+/// Source `id`'s definition.
+fn definition(id: &str) -> &'static SourceDefinition {
+    &READ[id].0
+}
+
+/// Source `id`'s tracers, normalized.
+fn normalized(id: &str) -> &'static Normalized {
+    &READ[id].1
 }
 
 #[test]
 fn every_tracer_file_reads_and_is_of_its_sources_kind_and_frame() {
     for (id, kind) in SOURCES {
-        let d = definition_of(id);
+        let d = definition(id);
         assert_eq!(d.object_kind, Some(kind), "{id}");
-        let tracers = read_all(&dir_of(&d)).unwrap_or_else(|e| panic!("{e}"));
+        let tracers = read_all(&dir_of(d)).unwrap_or_else(|e| panic!("{e}"));
         assert!(!tracers.is_empty(), "{id}");
         for (file, _, t) in &tracers {
             assert_eq!(t.kind, kind, "{}", file.display());
@@ -61,8 +80,8 @@ fn every_tracer_file_reads_and_is_of_its_sources_kind_and_frame() {
 #[test]
 fn a_parallax_is_measured_and_a_distance_resting_on_a_rotation_curve_is_inferred() {
     for (id, _) in SOURCES {
-        let d = definition_of(id);
-        for (file, _, t) in read_all(&dir_of(&d)).unwrap() {
+        let d = definition(id);
+        for (file, _, t) in read_all(&dir_of(d)).unwrap() {
             if let Some(p) = &t.parallax {
                 assert_eq!(p.value.kind, KindOfValue::Measured, "{}", file.display());
                 assert_eq!(p.distance_kind, DistanceKind::Parallax);
@@ -90,7 +109,7 @@ fn a_parallax_is_measured_and_a_distance_resting_on_a_rotation_curve_is_inferred
     assert_eq!(sanna.distances.len(), 1);
     assert_eq!(sanna.distances[0].kind_of_value, KindOfValue::Inferred);
     // Dame & Thaddeus 2011's clouds give only a kinematic distance.
-    for e in normalized("researched-arm-clouds").entries {
+    for e in &normalized("researched-arm-clouds").entries {
         assert!(e.parallax.is_none());
         assert_eq!(e.distances[0].kind_of_value, KindOfValue::Inferred);
     }
@@ -98,23 +117,30 @@ fn a_parallax_is_measured_and_a_distance_resting_on_a_rotation_curve_is_inferred
 
 #[test]
 fn each_tracer_carries_its_arm_and_its_sources_memberships_name_every_structure_of_that_arm() {
-    let structures = read_all_named(&workspace().join("structures")).unwrap();
+    let structures = read_all_named(&structures_dir()).unwrap();
+    let mut of_arm: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
+    for (i, s) in &structures {
+        if let Some(StructureGeometry::LogSpiral(l)) = &s.geometry {
+            of_arm.entry(l.arm.slug()).or_default().insert(i.as_str());
+        }
+    }
+    let slugs: BTreeSet<&str> = Arm::ALL.iter().map(|a| a.slug()).collect();
     for (id, _) in SOURCES {
-        let d = definition_of(id);
+        let d = definition(id);
+        // The flag's values are the arms, every one and no other.
+        let values: BTreeSet<&str> = d.flags[ARM_FLAG]
+            .values
+            .keys()
+            .map(String::as_str)
+            .collect();
+        assert_eq!(values, slugs, "{id}");
         let m = &d.memberships[0];
         assert_eq!(m.column, ARM_FLAG);
-        for e in normalized(id).entries {
-            let arm = e.flags.get(ARM_FLAG).unwrap().to_owned();
-            let named: BTreeSet<&str> = m.structures(&arm).iter().map(String::as_str).collect();
-            let of_arm: BTreeSet<&str> = structures
-                .iter()
-                .filter(|(_, s)| {
-                    matches!(&s.geometry, Some(StructureGeometry::LogSpiral(l)) if l.arm.slug() == arm)
-                })
-                .map(|(i, _)| i.as_str())
-                .collect();
-            assert!(!of_arm.is_empty(), "{arm}");
-            assert_eq!(named, of_arm, "{id}: {arm}");
+        for e in &normalized(id).entries {
+            let arm = e.flags.get(ARM_FLAG).unwrap();
+            let named: BTreeSet<&str> = m.structures(arm).iter().map(String::as_str).collect();
+            let wanted = &of_arm[arm];
+            assert_eq!(&named, wanted, "{id}: {arm}");
         }
     }
 }
@@ -164,8 +190,8 @@ fn a_release_holds_the_tracers_as_galaxy_tracers_members_of_their_arms() {
     for (id, _) in SOURCES {
         let n = normalized(id);
         record(f.cache.path(), id, &n.report);
-        f.definitions.push(definition_of(id));
-        f.normalized.push(n);
+        f.definitions.push(definition(id).clone());
+        f.normalized.push(n.clone());
     }
     let release = build_next(&f);
     let db = loaded(&release.dir, &release.manifest);

@@ -89,7 +89,7 @@ impl Position {
             native.frame,
             Frame::Icrs | Frame::Fk5J2000 | Frame::Galactic
         ) {
-            return Err(EntryError::NotEquatorial(native.frame));
+            return Err(EntryError::UnsupportedFrame(native.frame));
         }
         let factor = native
             .unit
@@ -159,7 +159,7 @@ mod tests {
         assert!(Position::new(native(Frame::Fk5J2000, 10.0, 90.5), none.clone()).is_err());
         assert_eq!(
             Position::new(native(Frame::Supergalactic, 10.0, 10.0), none),
-            Err(EntryError::NotEquatorial(Frame::Supergalactic))
+            Err(EntryError::UnsupportedFrame(Frame::Supergalactic))
         );
     }
 

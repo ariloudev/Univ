@@ -151,6 +151,16 @@ pub struct Paper {
     pub read: String,
 }
 
+impl From<&Paper> for univ_model::entry::PaperReference {
+    fn from(p: &Paper) -> Self {
+        Self {
+            citation: p.reference.clone(),
+            doi: p.doi.clone(),
+            bibcode: p.bibcode.clone(),
+        }
+    }
+}
+
 /// A published dispute of the structure, quoted from the paper that makes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
