@@ -134,10 +134,26 @@ fn a_definition_may_assign_its_rows_to_structures_by_a_cited_flag_column() {
         (m.column.as_str(), m.cite.as_str()),
         ("Sn", "ReadMe of I/311, Note 1")
     );
-    assert_eq!(m.structure("5"), Some("test-structure"));
+    assert_eq!(m.structures("5"), ["test-structure"]);
     // A value the map does not list names no structure.
-    assert_eq!(m.structure("7"), None);
+    assert_eq!(m.structures("7"), [] as [String; 0]);
     assert_eq!(read(PLAIN).unwrap().memberships, []);
+}
+
+#[test]
+fn a_value_may_name_several_structures() {
+    let several = MEMBERSHIPS.replace(
+        "{ \"5\": test-structure }",
+        "{ \"5\": [test-structure, test-structure-extrapolated] }",
+    );
+    let d = read(&format!("{PLAIN}{FLAGS}{several}")).unwrap();
+    assert_eq!(
+        d.memberships[0].structures("5"),
+        ["test-structure", "test-structure-extrapolated"]
+    );
+    let none = MEMBERSHIPS.replace("{ \"5\": test-structure }", "{ \"5\": [] }");
+    let refused = refused(&format!("{PLAIN}{FLAGS}{none}")).to_string();
+    assert!(refused.contains("is empty"), "{refused}");
 }
 
 #[test]

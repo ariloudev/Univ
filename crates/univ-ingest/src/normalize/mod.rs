@@ -127,7 +127,8 @@ fn file_tables(files: &[RemoteFile]) -> Option<FileTables> {
 }
 
 /// Whether normalization gives `definition` entries: a provider's answers, files that are all
-/// FITS tables or all gzipped CSV tables, a prepared file, or the researched star distances, but
+/// FITS tables or all gzipped CSV tables, a prepared file, the researched star distances or arm
+/// tracers, but
 /// not grids, though their files be FITS, nor the researched structures.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
@@ -137,7 +138,10 @@ pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
         Access::Files { files } => file_tables(files).is_some(),
         Access::Repository { holds, .. } => {
-            matches!(holds, Holds::StarDistances | Holds::StarNames)
+            matches!(
+                holds,
+                Holds::StarDistances | Holds::StarNames | Holds::ArmTracers
+            )
         }
         _ => true,
     }
@@ -421,6 +425,9 @@ pub fn normalize_until(
     match (definition.access.repository(), files) {
         (Some((Holds::StarDistances, _)), [dir]) => {
             return crate::stars::normalize(definition, dir);
+        }
+        (Some((Holds::ArmTracers, _)), [dir]) => {
+            return crate::tracers::normalize(definition, dir);
         }
         (Some((Holds::StarNames, _)), [file]) => {
             return crate::star_names::normalize(definition, file);

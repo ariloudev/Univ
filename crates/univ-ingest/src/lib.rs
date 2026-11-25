@@ -28,5 +28,6 @@ pub mod state;
 pub mod structures;
 pub mod table;
 pub mod tiles;
+pub mod tracers;
 pub mod watch;
 pub mod yaml;

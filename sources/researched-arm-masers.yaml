@@ -1,0 +1,73 @@
+id: researched-arm-masers
+title: "Researched arm masers"
+provider: literature
+access:
+  method: repository
+  path: tracers/masers/
+  holds: arm_tracers
+cuts:
+  - "Every tracer file under tracers/masers/ in this repository; nothing is fetched."
+  - >-
+    The star-forming regions whose masers trace the spiral arms beyond the reach of Reid et al.
+    2019: on the far side of the Galactic Centre (Sanna et al. 2017; Lin et al. 2026). Each keeps
+    its trigonometric parallax, measured, and the distance its paper adopts, inferred from the
+    parallax and a rotation curve, with what that distance assumes.
+  - "The LSR velocities stay in the tracer files: relative to the local standard of rest, not heliocentric."
+columns:
+  - { column: Arm, field: quality, unit: dimensionless }
+frame: fk5_j2000
+epoch: 2000.0
+citation: >-
+  None for the source as a whole: each tracer file gives the full citation, with DOI, of the
+  papers its values come from, and the tracer's entry names those papers.
+reference:
+  none: >-
+    The researched arm masers are a compilation with no paper of their own: each tracer file
+    cites the papers its values come from, by DOI, and the tracer's entry names them.
+terms:
+  url: "tracers/masers/"
+  quote: "No provider terms: the values are read from published papers, and each tracer file cites its papers."
+  credit: "Cite the papers each tracer file lists."
+redistribution:
+  status: permitted_with_credit
+  review: provisional
+  reasoning: >-
+    Nothing is fetched from a provider: the tracer files hold values stated in published papers,
+    each with its citation, which is ordinary scholarly use. Lin et al. 2026 is CC BY 4.0; Sanna
+    et al. 2017 (Science) is used for its measured values only, with credit. Provisional: judged
+    again before any public deployment.
+scale_domain: galaxy_tracers
+object_kind: star_forming_region
+mirrors: []
+flags:
+  Arm:
+    cite: "Each tracer file's arm_cite: the sentence or table in which its paper assigns it to an arm."
+    values:
+      3-kpc-near: "The near 3-kpc arm."
+      3-kpc-far: "The far 3-kpc arm."
+      norma: "The Norma arm."
+      scutum-centaurus: "The Scutum-Centaurus arm, the Outer Scutum-Centaurus arm included."
+      sagittarius-carina: "The Sagittarius-Carina arm."
+      local: "The Local arm."
+      perseus: "The Perseus arm."
+      outer: "The Outer arm."
+# Each arm a tracer's paper assigns it to names every fit and extrapolation of that arm.
+memberships:
+  - column: Arm
+    cite: >-
+      Each tracer file's arm_cite, and each structure file's arm: the structures are every fit of
+      the arm the paper names, and their extrapolations.
+    structures:
+      scutum-centaurus:
+        - reid-2019-scutum-centaurus-arm
+        - reid-2019-scutum-centaurus-arm-extrapolated
+        - sun-2024-scutum-centaurus-arm
+        - sun-2024-scutum-centaurus-arm-extrapolated
+      sagittarius-carina:
+        - reid-2019-sagittarius-carina-arm
+        - reid-2019-sagittarius-carina-arm-extrapolated
+      perseus:
+        - reid-2019-perseus-arm
+        - reid-2019-perseus-arm-extrapolated
+        - hyland-2026-perseus-arm
+        - hyland-2026-perseus-arm-extrapolated

@@ -1,0 +1,58 @@
+# A CO detection of Dame & Thaddeus 2011 in the far outer arm they take for the Scutum-Centaurus arm's continuation.
+name: "Dame & Thaddeus 2011 CO cloud at l = 13.250, b = 0.000"
+alternative_names: []
+kind: molecular_cloud
+arm: scutum-centaurus
+arm_cite:
+  paper: dame-2011
+  sentence: "The new arm is best interpreted as the far northern extension of the Sct–Cen Arm, the main component of the so-called Molecular Ring collection of clouds about half way between the Sun and the Galactic center."
+papers:
+  - id: dame-2011
+    reference: "Dame & Thaddeus 2011, ApJ 734, L24"
+    title: "A Molecular Spiral Arm in the Far Outer Galaxy"
+    doi: 10.1088/2041-8205/734/1/L24
+    arxiv: "1105.2523"
+    read: "arXiv source (LaTeX) of 1105.2523v1, ms_DameThaddeus.tex: abstract, full text and Table 1 (CO Detections in the New Arm) with its notes; DOI from the arXiv record and Crossref"
+position:
+  frame: galactic
+  l:
+    value: 13.250
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: dame-2011, table: "1", row: "l = 13.250, b = 0.000", column: "l", cell: "13.250" }
+    note: "A position observed with the CfA telescope, whose beam is several arcminutes wide; no uncertainty given."
+  b:
+    value: 0.000
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    cite: { paper: dame-2011, table: "1", row: "l = 13.250, b = 0.000", column: "b", cell: "0.000" }
+    note: "A position observed with the CfA telescope, whose beam is several arcminutes wide; no uncertainty given."
+distance:
+  value: 22.7
+  unit: kiloparsec
+  kind: inferred
+  uncertainty: { form: none_reported }
+  cite: { paper: dame-2011, table: "1", row: "l = 13.250, b = 0.000", column: "d", cell: "22.7" }
+  note: "Table 1's note d: \"Kinematic distance (kpc)\". No uncertainty given."
+  distance_kind: secondary_indicator
+  method: "kinematic distance"
+  assumes:
+    stated: "a flat rotation curve beyond the solar circle, with the IAU values for R⊙ and V⊙ (no numbers given)"
+    cite:
+      paper: dame-2011
+      sentence: "Assuming the IAU values for R⊙ and V⊙ and a flat rotation curve beyond the solar circle, the arm's Galactic radius varies from ∼14 kpc at l = 10° to 17 kpc at 60°, its distance from the Sun decreasing slightly over the same range, from 23 to 20 kpc."
+velocity_lsr:
+  value: -20.9
+  unit: kilometre_per_second
+  kind: measured
+  uncertainty: { form: none_reported }
+  cite: { paper: dame-2011, table: "1", row: "l = 13.250, b = 0.000", column: "v_LSR", cell: "-20.9" }
+  note: "Table 1's note a: \"Velocity from Gaussian fit (km s−1)\". No uncertainty given."
+notes: >-
+  The paper names no clouds: each is a row of Table 1, a position of the CfA telescope's grid
+  at which CO was detected, named here by its l and b. Table 1 does not say how its
+  kinematic distances were computed; the assumptions cited with the distance are the paper's only
+  statement of a rotation curve, made of the arm as a whole. The paper gives no number for R⊙ or V⊙,
+  so none is given here rather than filling in the IAU values.

@@ -297,19 +297,18 @@ pub fn membership_rows<'m>(
             let Some(value) = e.entry.flags.get(&m.column) else {
                 continue;
             };
-            let Some(structure) = m.structure(value) else {
-                continue;
-            };
-            if rows.iter().any(|r| r.structure == structure) {
-                continue;
+            for structure in m.structures(value) {
+                if rows.iter().any(|r| &r.structure == structure) {
+                    continue;
+                }
+                rows.push(MembershipRow {
+                    release: codes.release(),
+                    object_id,
+                    structure: structure.clone(),
+                    source: codes.source(source),
+                    value: value.to_owned(),
+                });
             }
-            rows.push(MembershipRow {
-                release: codes.release(),
-                object_id,
-                structure: structure.to_owned(),
-                source: codes.source(source),
-                value: value.to_owned(),
-            });
         }
     }
     rows
