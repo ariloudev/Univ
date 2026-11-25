@@ -32,22 +32,20 @@ fn env_dir(name: &str, default: PathBuf) -> PathBuf {
 fn tables(definition: &SourceDefinition) -> Vec<PathBuf> {
     let cache = common::cache_dir();
     let dir = env_dir("UNIV_INGEST_CATALOGUES", cache).join(definition.id.as_str());
-    let mut chunks: Vec<PathBuf> = std::fs::read_dir(&dir)
-        .map(|entries| {
-            entries
-                .filter_map(Result::ok)
-                .map(|e| e.path())
-                // The row chunks, chunk-NNNN-*, not the answer to a count query.
-                .filter(|p| {
-                    p.file_name().is_some_and(|n| {
-                        n.to_string_lossy()
-                            .strip_prefix("chunk-")
-                            .is_some_and(|rest| rest.starts_with(|c: char| c.is_ascii_digit()))
-                    })
+    let mut chunks: Vec<PathBuf> = std::fs::read_dir(&dir).map_or_default(|entries| {
+        entries
+            .filter_map(Result::ok)
+            .map(|e| e.path())
+            // The row chunks, chunk-NNNN-*, not the answer to a count query.
+            .filter(|p| {
+                p.file_name().is_some_and(|n| {
+                    n.to_string_lossy()
+                        .strip_prefix("chunk-")
+                        .is_some_and(|rest| rest.starts_with(|c: char| c.is_ascii_digit()))
                 })
-                .collect()
-        })
-        .unwrap_or_default();
+            })
+            .collect()
+    });
     chunks.sort();
     if !chunks.is_empty() {
         return chunks;

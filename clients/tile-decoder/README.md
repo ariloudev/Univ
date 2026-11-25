@@ -67,7 +67,7 @@ const points = decodeTile(bytes, node, manifest);
     open cluster of the Galaxy tracers domain): the base-10 logarithm of its age in years, to
     the hundredth. Absent before version 3 and for a point with none.
   - `objectKind`, in a version 4 tile where the point's object names one: what the Galaxy
-    tracer is, such as `open_cluster` or `luminous_hot_star`, from
+    tracer is, such as `open_cluster`, `luminous_hot_star` or `molecular_cloud`, from
     `manifest.encoding.object_kinds`. Absent before version 4 and for one body.
 - `VERSIONS` lists the encoding versions the decoder knows: `[1, 2, 3, 4]`.
 

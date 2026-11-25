@@ -18,15 +18,36 @@ pub struct Membership {
     pub column: String,
     /// Where the source makes the assignment, and where the structures are defined, cited.
     pub cite: String,
-    /// The structure each value names, by its id; a value not listed names none.
-    pub structures: BTreeMap<String, String>,
+    /// The structure or structures each value names, by their ids; a value not listed names
+    /// none.
+    pub structures: BTreeMap<String, Named>,
+}
+
+/// The structures a value names: one, or several, such as every fit and extrapolation of the
+/// arm a tracer's paper assigns it to.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Named {
+    One(String),
+    Many(Vec<String>),
+}
+
+impl Named {
+    /// The structures' ids.
+    #[must_use]
+    pub fn ids(&self) -> &[String] {
+        match self {
+            Self::One(id) => std::slice::from_ref(id),
+            Self::Many(ids) => ids,
+        }
+    }
 }
 
 impl Membership {
-    /// The structure that `value` of the column names, if any.
+    /// The structures that `value` of the column names: none where it names none.
     #[must_use]
-    pub fn structure(&self, value: &str) -> Option<&str> {
-        self.structures.get(value).map(String::as_str)
+    pub fn structures(&self, value: &str) -> &[String] {
+        self.structures.get(value).map_or(&[], Named::ids)
     }
 }
 
@@ -74,14 +95,14 @@ pub(super) fn check(
         if m.structures.is_empty() {
             return Err((format!("{at}.structures"), "maps no value".to_owned()));
         }
-        for (value, structure) in &m.structures {
+        for (value, named) in &m.structures {
             if !meanings.values.contains_key(value) {
                 return Err((
                     format!("{at}.structures.{value}"),
                     format!("is no value flags.{} gives", m.column),
                 ));
             }
-            if structure.trim().is_empty() {
+            if named.ids().is_empty() || named.ids().iter().any(|id| id.trim().is_empty()) {
                 return Err((format!("{at}.structures.{value}"), "is empty".to_owned()));
             }
         }
@@ -118,6 +139,7 @@ pub fn check_structures<'s>(
             if let Some((value, id)) = m
                 .structures
                 .iter()
+                .flat_map(|(value, named)| named.ids().iter().map(move |id| (value, id)))
                 .find(|(_, id)| !known.contains(id.as_str()))
             {
                 return Err(format!(

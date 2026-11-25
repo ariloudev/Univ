@@ -169,11 +169,7 @@ pub fn place_on<E: Borrow<CatalogueEntry>>(
             Side::Below => "below",
             Side::Above => "above",
         };
-        let name = result
-            .seed
-            .as_ref()
-            .map(|s| s.name.as_str())
-            .unwrap_or_default();
+        let name = result.seed.as_ref().map_or_default(|s| s.name.as_str());
         let why = format!(
             "{name} lies in cell {cell:?} of {}, where {} is {value:.3}, not {side} the threshold \
              {threshold}",

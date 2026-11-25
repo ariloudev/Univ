@@ -1,0 +1,79 @@
+# G007.47+00.05, the water maser whose VLBA parallax places the Scutum-Centaurus (OSC) arm on the far side of the Galactic Centre.
+name: "G007.47+00.05"
+alternative_names: ["IRAS 17591-2228"]
+kind: star_forming_region
+arm: scutum-centaurus
+arm_cite:
+  paper: sanna-2017
+  sentence: "In summary, we have measured the distance to a water maser source in the OSC arm using both a direct trigonometric parallax and a statistical Bayesian analysis."
+papers:
+  - id: sanna-2017
+    reference: "Sanna, Reid, Dame, Menten & Brunthaler 2017, Science 358, 227"
+    title: "Mapping Spiral Structure on the far side of the Milky Way"
+    doi: 10.1126/science.aan5452
+    arxiv: "1710.06489"
+    read: "arXiv source (LaTeX) of 1710.06489v1, g7_science.tex: abstract, main text, Table 1 (Parameters used to calculate the distance PDFs), and the supplementary Materials and methods with Tables S1 (Source Information) and S2 (Parallax & Proper Motion modeled values); DOI and journal reference from the arXiv record and Crossref"
+position:
+  frame: fk5_j2000
+  ra:
+    value: 270.554925000
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "18h02m13.1820s"
+    cite: { paper: sanna-2017, table: "S1", row: "G007.47+00.05 (IRAS 17591−2228)", column: "R.A. (J2000)", cell: "18:02:13.1820" }
+    note: "The peak position of the phase-reference maser channel at the first epoch; the caption gives its accuracy in words and mas, not as a per-coordinate uncertainty."
+  dec:
+    value: -22.466382778
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "−22°27′58.978″"
+    cite: { paper: sanna-2017, table: "S1", row: "G007.47+00.05 (IRAS 17591−2228)", column: "Dec. (J2000)", cell: "−22:27:58.978" }
+    note: "The peak position of the phase-reference maser channel at the first epoch; the caption gives its accuracy in words and mas, not as a per-coordinate uncertainty."
+parallax:
+  value: 0.049
+  unit: milliarcsecond
+  kind: measured
+  uncertainty: { form: symmetric, sigma: 0.006 }
+  cite:
+    paper: sanna-2017
+    table: "S2"
+    row: "Combined parallax & corrected Galactic proper motion: D = 20.4 +2.8 −2.2 kpc"
+    column: "Parallax"
+    cell: "0.049 ± 0.006"
+  note: "The combined fit of two maser spots against the nearest calibrator, its uncertainty inflated for correlated atmospheric errors (Materials and methods). The same value is in the main text: \"parallax angle of 0.049 ± 0.006 milli-arcsecond (mas)\"."
+  distance_kind: parallax
+  method: "trigonometric parallax"
+distance:
+  value: 20.4
+  unit: kiloparsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 0.6 }
+  cite:
+    paper: sanna-2017
+    sentence: "In Figure 3, we show that the combined Bayesian distance of 20.4 ± 0.6 kpc agrees well with our trigonometric parallax measurement."
+  note: "The peak of the product of the spiral-arm, kinematic-distance, latitude and proper-motion PDFs (Figure 3); Figure 3's caption gives the same 20.4 ± 0.6 kpc."
+  distance_kind: secondary_indicator
+  method: "Bayesian combination of the parallax and kinematic distance"
+  assumes:
+    stated: "the Univ. rotation curve of Reid et al., Θ0 = 241 ± 8 km/s, R0 = 8.34 ± 0.16 kpc"
+    cite: { paper: sanna-2017, table: "1", row: "Univ.", column: "Priors: Θ(R), Θ0 (km s−1), R0 (kpc)", cell: "Univ. | 241 ± 8 | 8.34 ± 0.16" }
+velocity_lsr:
+  value: -16
+  unit: kilometre_per_second
+  kind: measured
+  uncertainty: { form: symmetric, sigma: 4 }
+  cite: { paper: sanna-2017, table: "1", row: "Univ.", column: "V_LSR", cell: "-16 ± 4" }
+  note: "The average velocity of the H2O maser emission, adopted as the source's velocity."
+notes: >-
+  The position is Table S1's: the peak of the phase-reference maser channel on the first epoch,
+  which the caption says is accurate to within a milliarcsecond. Table 1 also gives Galactic
+  l and b for the source, the inputs of the distance PDFs; they are not used here. Sanna et al. give
+  the parallax distance as well (abstract and Table S2, quoted in the parallax's row); the distance
+  recorded is their combined Bayesian one, which rests on Table 1's priors as the parallax does not.
+  The paper places the source in the Outer Scutum-Centaurus (OSC) arm, the far continuation of the
+  Scutum-Centaurus arm found by Dame & Thaddeus; the BeSSeL compilation of Reid et al. lists it in their Table 1 with arm
+  "OSC", the same parallax, a slightly different position and velocity, and fold the OSC into their
+  Scutum-Centaurus-OSC arm. Table numbers S1 and S2 are those the arXiv text uses; its list of
+  supplementary materials numbers them differently.

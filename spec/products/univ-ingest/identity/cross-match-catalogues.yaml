@@ -111,6 +111,20 @@ requirements:
         name: "A build of Reid et al. 2019's masers that takes none of the researched structures completes."
       - key: 01a21314-fe0f-732a-a1ca-639de2377029
         name: "In such a build each maser is an object of the release and a member of no structure."
+  - key: 01a21407-8bab-7326-83cb-b2e7e1ab2397
+    statement:
+      form: optional
+      where: "a build names the scale domains of the researched structures it takes"
+      system: "Univ Ingest"
+      shall: "take only the researched structures of those scale domains, with the memberships its sources assign to them."
+    body: "A build of the Milky Way names the Galaxy tracers domain, so that it takes the Galaxy's spiral arms and their extrapolations, and none of the structures of the cosmic web, whose grids and catalogues it does not take."
+    criteria:
+      - key: 01a21407-8bab-7326-83cb-b2e8cadbeb8f
+        name: "A build that names the Galaxy tracers domain holds every spiral arm and extrapolation of the repository and no structure of another scale domain."
+      - key: 01a21407-8bab-7326-83cb-b2e979115e6b
+        name: "In such a build each researched arm tracer is a member of every structure of its arm, and each Reid et al. 2019 maser on a modelled arm a member of its arm."
+      - key: 01a21407-8bab-7326-83cb-b2ea9e85ec1f
+        name: "A membership naming a structure of a scale domain the build does not take is left out, not refused."
   - key: 01a21314-fe0f-732a-a1ca-639e5dcf3c8b
     statement:
       form: unwanted

@@ -42,6 +42,7 @@ fn basis(
         })
         .collect();
     let mut basis = Basis::read(&options.repository.join("rules"), &dirs)?;
+    basis.keep_domains(&options.structures_of);
     basis.matching = basis.matching.with_object_kinds(definitions);
     Ok(basis)
 }

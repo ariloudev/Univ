@@ -30,11 +30,12 @@ describe("what the arms view draws (see-the-galaxys-arms-face-on)", () => {
     expect([...hidden.domain].sort()).toEqual(["cosmic_web", "nearby_galaxies", "stars"]);
   });
 
-  it("turns the luminous hot stars, open clusters and star-forming regions on, and the Cepheids, RR Lyrae stars and globular clusters off", () => {
+  it("turns the luminous hot stars, open clusters, star-forming regions and molecular clouds on, and the Cepheids, RR Lyrae stars and globular clusters off", () => {
     const start = hiddenInAddress("?hide=object:open_cluster");
     const hidden = applied(start, armsChanges(start, DOMAINS, []));
     expect([...hidden.object].sort()).toEqual(["classical_cepheid", "globular_cluster", "rr_lyrae_star"]);
     for (const kind of ARM_TRACERS) expect(hidden.object.has(kind)).toBe(false);
+    expect(ARM_TRACERS).toContain("molecular_cloud");
   });
 
   it("turns the spiral arms and their extrapolations on and every other kind of structure off, the release's own kinds too", () => {

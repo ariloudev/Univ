@@ -363,3 +363,16 @@ pub fn read_definition(
     std::fs::write(&path, text).expect("the definition written");
     SourceDefinition::read(&path)
 }
+
+/// The repository's Norma arm structure file as written, `edit` applied to it, read as a
+/// structure: what a test of the spiral-arm checks starts from.
+pub fn edited_norma_arm(
+    edit: impl Fn(String) -> String,
+) -> Result<univ_ingest::structures::Structure, String> {
+    let text = std::fs::read_to_string(structures_dir().join("reid-2019-norma-arm.yaml"))
+        .expect("the Norma arm's file");
+    let dir = tempfile::tempdir().expect("a temporary directory");
+    let file = dir.path().join("test-arm.yaml");
+    std::fs::write(&file, edit(text)).expect("the edited file written");
+    univ_ingest::structures::Structure::read(&file).map_err(|e| e.to_string())
+}

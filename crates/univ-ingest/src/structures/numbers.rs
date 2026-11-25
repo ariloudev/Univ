@@ -327,6 +327,39 @@ fn sexagesimal(text: &str, units: &[char; 3], scale: f64) -> Option<Published> {
     })
 }
 
+/// The figures of `text` in order, as a value printed in several parts is compared with a cell
+/// that prints it otherwise: each run of digits and points with the minus before it,
+/// whatever letters or marks part them: `18h12m02.6822s` and `18 12 02.6822` give 18, 12 and
+/// 02.6822, `−18°40′25.002″` gives −18, 40 and 25.002.
+#[must_use]
+pub fn figures(text: &str) -> Vec<String> {
+    let text = text.replace('\u{2212}', "-");
+    let mut out: Vec<String> = Vec::new();
+    let mut current = String::new();
+    let mut minus = false;
+    // A point that ends a figure, such as a full stop after it, is not part of it.
+    let end = |current: &mut String, out: &mut Vec<String>| {
+        let figure = current.trim_end_matches('.');
+        if !figure.is_empty() && figure != "-" {
+            out.push(figure.to_owned());
+        }
+        current.clear();
+    };
+    for c in text.chars() {
+        if c.is_ascii_digit() || (c == '.' && !current.is_empty()) {
+            if current.is_empty() && minus {
+                current.push('-');
+            }
+            current.push(c);
+        } else {
+            end(&mut current, &mut out);
+            minus = c == '-';
+        }
+    }
+    end(&mut current, &mut out);
+    out
+}
+
 /// Whether a value in `unit` equals what `published` stands for, within the rounding of its
 /// last digit. A published number without a unit is in the value's unit.
 #[must_use]
@@ -343,6 +376,15 @@ pub fn consistent(value: f64, unit: Unit, published: &Published) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_sexagesimal_value_has_the_same_figures_whatever_parts_them() {
+        assert_eq!(figures("18h12m02.6822s"), figures("18 12 02.6822"));
+        assert_eq!(figures("\u{2212}18°40′25.002″"), ["-18", "40", "25.002"]);
+        assert_ne!(figures("18h12m02.6822s"), figures("18 12 02.682"));
+        // A full stop after the last figure ends the sentence, not the figure.
+        assert_eq!(figures("at 18 12 02.6822."), figures("18h12m02.6822s"));
+    }
 
     #[test]
     fn numbers_are_whole_tokens_with_their_separators_and_signs() {

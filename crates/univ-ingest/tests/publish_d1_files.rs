@@ -7,6 +7,7 @@
     reason = "test helpers unwrap: a failure there is the test failing"
 )]
 
+use std::fmt::Write as _;
 use std::path::Path;
 
 use rusqlite::Connection;
@@ -73,9 +74,14 @@ fn once_a_file_is_written_its_rows_are_in_the_database_and_its_log_is_empty() {
     let dir = tempfile::tempdir().unwrap();
     let db = database(dir.path());
     let sql = dir.path().join("0001-rows-000.sql");
-    let inserts: String = (1..=500)
-        .map(|n| format!("INSERT OR IGNORE INTO rows (n, name) VALUES ({n}, 'row {n}');\n"))
-        .collect();
+    let inserts = (1..=500).fold(String::new(), |mut out, n| {
+        writeln!(
+            out,
+            "INSERT OR IGNORE INTO rows (n, name) VALUES ({n}, 'row {n}');"
+        )
+        .unwrap();
+        out
+    });
     std::fs::write(&sql, inserts).unwrap();
     write(&db, &sql).unwrap();
     let written = rows(&db);
@@ -99,5 +105,5 @@ fn a_file_that_fails_part_way_leaves_none_of_its_rows() {
     let error = write(&db, &sql).unwrap_err();
     assert!(error.contains("no_such_table"), "{error}");
     assert!(error.contains("0001-rows-000.sql"), "{error}");
-    assert!(rows(&db).is_empty());
+    assert_eq!(rows(&db), [] as [(i64, std::string::String); 0]);
 }

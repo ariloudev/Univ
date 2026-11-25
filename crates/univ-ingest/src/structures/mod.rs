@@ -54,7 +54,7 @@ pub use outline::{
     Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
 };
 pub use shape::{AxisBox, Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
-pub use spiral::{EXTRAPOLATION_DEGREES, Extent, LogSpiral, RADIUS_BAND_KPC};
+pub use spiral::{Arm, EXTRAPOLATION_DEGREES, Extent, LogSpiral, RADIUS_BAND_KPC};
 
 /// A researched structure as its file describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -149,6 +149,16 @@ pub struct Paper {
     pub arxiv: Option<String>,
     /// How the paper was read: the full text, the arXiv source or the abstract only.
     pub read: String,
+}
+
+impl From<&Paper> for univ_model::entry::PaperReference {
+    fn from(p: &Paper) -> Self {
+        Self {
+            citation: p.reference.clone(),
+            doi: p.doi.clone(),
+            bibcode: p.bibcode.clone(),
+        }
+    }
 }
 
 /// A published dispute of the structure, quoted from the paper that makes it.

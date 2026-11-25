@@ -5,7 +5,7 @@ mod store;
 
 use std::path::Path;
 
-use fixture::build;
+use fixture::{arm_tracers, build, build_with};
 use univ_model::release::{ReleaseManifest, TABLES, keys};
 
 use super::{fingerprints, indexes, load, num, plan, rules, science};
@@ -322,22 +322,13 @@ fn a_release_written_as_a_change_is_loaded_whole_through_its_parent() {
 
 #[test]
 fn the_age_checks_of_the_repository_run_against_the_fixture_release() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
-    let text = std::fs::read_to_string(root.join("rules/science-checks.yaml")).unwrap();
-    // Each check's block of the repository's file, from its id to the next check.
-    let block = |id: &str| {
-        let start = text.find(&format!("  - id: {id}\n")).unwrap();
-        let rest = &text[start + 1..];
-        let end = rest.find("\n  - id: ").map_or(rest.len(), |e| e + 1);
-        text[start..=start + end].to_owned()
-    };
     let dir = tempfile::tempdir().unwrap();
     build(dir.path());
     let rules = dir.path().join("checks.yaml");
     let body = format!(
         "checks:\n{}{}",
-        block("ages-normalized-to-years"),
-        block("open-cluster-ages")
+        repository_check("ages-normalized-to-years"),
+        repository_check("open-cluster-ages")
     );
     std::fs::write(&rules, body).unwrap();
     let args = [
@@ -351,6 +342,54 @@ fn the_age_checks_of_the_repository_run_against_the_fixture_release() {
     assert!(passed, "{out}");
     assert!(
         out.contains("2 checks: 1 PASS, 0 FAIL, 0 CONCERN, 1 INFO"),
+        "{out}"
+    );
+}
+
+/// The block of check `id` in the repository's checks file, from its id to the next check.
+fn repository_check(id: &str) -> String {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
+    let text = std::fs::read_to_string(root.join("rules/science-checks.yaml")).unwrap();
+    let start = text.find(&format!("  - id: {id}\n")).unwrap();
+    let rest = &text[start + 1..];
+    let end = rest.find("\n  - id: ").map_or(rest.len(), |e| e + 1);
+    text[start..=start + end].to_owned()
+}
+
+#[test]
+fn the_arm_tracer_checks_give_each_tracers_distance_and_fail_beyond_5_kpc() {
+    // record-a-researched-arm-tracer: a tracer 1 kpc from its arm's path passes, one 6 kpc from
+    // it fails, and the report gives each distance in kpc.
+    let dir = tempfile::tempdir().unwrap();
+    build_with(dir.path(), arm_tracers);
+    let rules = dir.path().join("checks.yaml");
+    let body = format!(
+        "checks:\n{}{}{}",
+        repository_check("arm-tracers-near-their-arms"),
+        repository_check("arm-tracers-placed-on-their-arms"),
+        repository_check("arm-tracers-distance-from-their-arms")
+    );
+    std::fs::write(&rules, body).unwrap();
+    let args = [
+        dir.path().to_string_lossy().into_owned(),
+        "--rules".to_owned(),
+        rules.to_string_lossy().into_owned(),
+    ];
+    let mut out = Vec::new();
+    let passed = science(dir.path(), &args, &mut out).unwrap();
+    let out = String::from_utf8(out).unwrap();
+    assert!(!passed, "{out}");
+    // The far tracer fails the distance, and the lone tracer, placed but on no arm, the
+    // placement.
+    assert!(out.contains("2 FAIL"), "{out}");
+    assert!(out.contains("arm-tracers-placed-on-their-arms"), "{out}");
+    assert!(out.contains("id=11"), "the far tracer fails: {out}");
+    assert!(
+        out.contains("tracer=near nearest_path=test-arm kpc=1"),
+        "{out}"
+    );
+    assert!(
+        out.contains("tracer=far nearest_path=test-arm kpc=6"),
         "{out}"
     );
 }

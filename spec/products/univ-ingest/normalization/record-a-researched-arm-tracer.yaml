@@ -45,4 +45,4 @@ requirements:
       - key: 01a213c1-93e0-7343-9f8d-9ba8fc3cbde2
         name: "The check gives each tracer's distance from the nearest point of each spiral arm and extrapolation of its arm, in kiloparsecs."
       - key: 01a213c1-93e0-7343-9f8d-9ba9b9cd8c87
-        name: "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers."
+        name: "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers."

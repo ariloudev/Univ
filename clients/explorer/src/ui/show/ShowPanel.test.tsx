@@ -181,7 +181,7 @@ describe("the Show drawer's dust map", () => {
     const probe = document.createElement("span");
     probe.style.background = css(tracerColour(1));
     expect((chips[0]?.querySelector("span") as HTMLElement).style.background).toBe(probe.style.background);
-    expect(screen.getByTestId("show-summary").textContent).toContain("5 of 6 kinds of object");
+    expect(screen.getByTestId("show-summary").textContent).toContain(`${lines.length - 1} of ${lines.length} kinds of object`);
     await userEvent.click(screen.getByRole("button", { name: "Luminous hot stars 1,000 drawn" }));
     expect(onApply).toHaveBeenCalledWith([{ group: "object", name: "luminous_hot_star", shown: false }]);
   });

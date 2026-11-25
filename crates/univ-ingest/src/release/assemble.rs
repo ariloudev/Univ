@@ -109,13 +109,14 @@ fn d1_rows(
         definitions: inputs.definitions,
         cosmology: &crossed.cosmology,
         cells: &cells,
+        structures: &crossed.basis.structures,
     };
     let budget = crossed.basis.config.shard_budget();
     let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
     let files = file_rows(number, &sink.files);
     let mut writer = D1Writer::new(sink, packing.count())?;
     writer.compare_with(before, number)?;
-    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
+    let mut objects = sharding.writer(numbering);
     sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
         numbering:

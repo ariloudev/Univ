@@ -16,9 +16,10 @@ import type { World } from "./useWorld.ts";
 /** The age below which the arms view draws the Galaxy's tracers, millions of years. */
 export const ARMS_AGE: AgeCut = 30;
 
-/** The kinds of object the arms view draws: the young tracers of the arms. Cepheids, RR Lyrae
- * stars and globular clusters, older, it turns off. */
-export const ARM_TRACERS: readonly TracerKind[] = ["luminous_hot_star", "open_cluster", "star_forming_region"];
+/** The kinds of object the arms view draws: the young tracers of the arms and the molecular
+ * clouds the arms' stars form in. Cepheids, RR Lyrae stars and globular clusters, older, it turns
+ * off. */
+export const ARM_TRACERS: readonly TracerKind[] = ["luminous_hot_star", "open_cluster", "star_forming_region", "molecular_cloud"];
 
 /** The kinds of structure the arms view draws: the family of the Galaxy's arms. */
 export const ARM_STRUCTURES: readonly string[] = STRUCTURE_FAMILIES.find((f) => f.family === "the Galaxy's arms")?.kinds ?? [];

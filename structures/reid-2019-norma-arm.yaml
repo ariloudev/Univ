@@ -15,6 +15,7 @@ geometry:
   kind: log_spiral
   log_spiral:
     extent: fitted
+    arm: norma
     beta_kink:
       { value: 18, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 4 },
         cite: { paper: reid-2019, table: "2", row: "Norma", column: "β_kink", cell: "18 ± 4" } }

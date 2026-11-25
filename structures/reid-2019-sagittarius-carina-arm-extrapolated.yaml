@@ -16,6 +16,7 @@ geometry:
   kind: log_spiral
   log_spiral:
     extent: extrapolated
+    arm: sagittarius-carina
     beta_kink:
       { value: 24, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 2 },
         cite: { paper: reid-2019, table: "2", row: "Sgr-Car", column: "β_kink", cell: "24 ± 2" } }
