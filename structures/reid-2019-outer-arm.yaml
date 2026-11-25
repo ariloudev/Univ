@@ -15,6 +15,7 @@ geometry:
   kind: log_spiral
   log_spiral:
     extent: fitted
+    arm: outer
     beta_kink:
       value: 18
       unit: degree

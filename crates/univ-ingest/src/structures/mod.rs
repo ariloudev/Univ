@@ -54,7 +54,7 @@ pub use outline::{
     Choice, ChosenBy, DensePlaces, GridOutline, OutlineTest, Rule, Seed, Side, Threshold,
 };
 pub use shape::{AxisBox, Sides, SkyBox, SphereSize, StructureGeometry, StructurePrimitive};
-pub use spiral::{EXTRAPOLATION_DEGREES, Extent, LogSpiral, RADIUS_BAND_KPC};
+pub use spiral::{Arm, EXTRAPOLATION_DEGREES, Extent, LogSpiral, RADIUS_BAND_KPC};
 
 /// A researched structure as its file describes it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

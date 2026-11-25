@@ -46,11 +46,62 @@ pub enum Extent {
     Extrapolated,
 }
 
+/// The spiral arm a fit is a stretch of: one name for every paper's fit of one arm, so that
+/// fits of the same arm from several papers are known as one arm.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Arm {
+    /// The near 3-kpc arm.
+    #[serde(rename = "3-kpc-near")]
+    ThreeKpcNear,
+    /// The far 3-kpc arm, beyond the Galactic Centre.
+    #[serde(rename = "3-kpc-far")]
+    ThreeKpcFar,
+    Norma,
+    /// The Scutum-Centaurus arm, its outer part beyond the Outer arm included.
+    ScutumCentaurus,
+    SagittariusCarina,
+    Local,
+    Perseus,
+    Outer,
+}
+
+impl Arm {
+    /// Every arm, in order from the Galactic Centre outward at the Sun's azimuth.
+    pub const ALL: [Self; 8] = [
+        Self::ThreeKpcNear,
+        Self::ThreeKpcFar,
+        Self::Norma,
+        Self::ScutumCentaurus,
+        Self::SagittariusCarina,
+        Self::Local,
+        Self::Perseus,
+        Self::Outer,
+    ];
+
+    /// Its name as structure files write it, such as `scutum-centaurus`.
+    #[must_use]
+    pub fn slug(self) -> &'static str {
+        match self {
+            Self::ThreeKpcNear => "3-kpc-near",
+            Self::ThreeKpcFar => "3-kpc-far",
+            Self::Norma => "norma",
+            Self::ScutumCentaurus => "scutum-centaurus",
+            Self::SagittariusCarina => "sagittarius-carina",
+            Self::Local => "local",
+            Self::Perseus => "perseus",
+            Self::Outer => "outer",
+        }
+    }
+}
+
 /// A log-spiral arm as its paper's table gives it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawSpiral")]
 pub struct LogSpiral {
     pub extent: Extent,
+    /// The arm the fit is a stretch of.
+    pub arm: Arm,
     /// The azimuth of the kink, an angle.
     pub beta_kink: Cited,
     /// The Galactocentric radius at the kink, a length.
@@ -89,6 +140,7 @@ struct Numbers {
 #[serde(deny_unknown_fields)]
 struct RawSpiral {
     extent: Extent,
+    arm: Arm,
     beta_kink: Cited,
     r_kink: Cited,
     pitch_inside: Cited,
@@ -156,6 +208,7 @@ impl TryFrom<RawSpiral> for LogSpiral {
         }
         Ok(Self {
             extent: r.extent,
+            arm: r.arm,
             beta_kink: r.beta_kink,
             r_kink: r.r_kink,
             pitch_inside: r.pitch_inside,
