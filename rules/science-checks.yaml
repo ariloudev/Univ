@@ -1141,7 +1141,7 @@ checks:
       arm and the Galactic Centre region have no model and are not checked.
 
   - id: arm-tracers-near-their-arms
-    title: Each researched arm tracer lies within 2 kpc of a path of the arm its paper assigns it to
+    title: Each researched arm tracer lies within 5 kpc of a path of the arm its paper assigns it to
     severity: fail
     select:
       kind: query
@@ -1154,21 +1154,22 @@ checks:
         WHERE d.release = :release
         GROUP BY o.id HAVING min((o.x * 1e6 - json_extract(p.value, '$[0]')) * (o.x * 1e6 - json_extract(p.value, '$[0]'))
         + (o.y * 1e6 - json_extract(p.value, '$[1]')) * (o.y * 1e6 - json_extract(p.value, '$[1]'))
-        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]'))) > 4000000
+        + (o.z * 1e6 - json_extract(p.value, '$[2]')) * (o.z * 1e6 - json_extract(p.value, '$[2]'))) > 25000000
     expect: { at_most: 0 }
     cite:
       - paper: "univ-server specification, Record a researched arm tracer"
         locator: "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
         quote: >-
-          "The check fails where a tracer lies more than 2 kpc from every path of its arm, which
+          "The check fails where a tracer lies more than 5 kpc from every path of its arm, which
           shows a wrong conversion of its position rather than a disagreement between papers."
         fetched: "this repository, spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
     note: >-
       Each tracer is a member of every fit and extrapolation of the arm its paper names (the
       memberships of sources/researched-arm-masers.yaml and researched-arm-clouds.yaml), so the
       nearest point of any of them counts. A wrong sign of azimuth or a wrong frame moves a
-      far-side tracer by many kiloparsecs; the bound is in parsecs squared, as the shapes are
-      stored in parsecs in the ICRS.
+      far-side tracer by 8 kpc or more, while the papers disagree by up to 4.7 kpc: Dame &
+      Thaddeus 2011's clouds lie 1.4 to 4.7 kpc from Sun et al. 2024's fit of the same arm. The
+      bound is in parsecs squared, as the shapes are stored in parsecs in the ICRS.
 
   - id: arm-tracers-distance-from-their-arms
     title: Each researched arm tracer's distance from the nearest path of its arm, and that path
