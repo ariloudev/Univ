@@ -4,8 +4,10 @@
 //! them; each fit is a fitted range or its extrapolation. Two fits of one arm can lie on the same
 //! stretch of it, a little apart where their papers disagree, or on different stretches at the
 //! same azimuth, a winding apart. So a stretch is resolved by place, not by azimuth: the fitted
-//! ranges of an arm first, in order, then its extrapolations, in order, each keeping only its
-//! points that lie farther than the arm rules' `same_stretch` from every point already kept.
+//! ranges of an arm first, in order, then its extrapolations, in order, each leaving out its
+//! points that run alongside a stretch already kept, within the arm rules' `same_stretch` of it.
+//! A point beyond the end of a kept stretch is not alongside it, so a fit that continues another
+//! starts where the other stops, without a gap.
 
 use super::model::ArmRules;
 use super::random::Random;
@@ -35,9 +37,32 @@ fn distance(a: [f64; 2], b: [f64; 2]) -> f64 {
     (a[0] - b[0]).hypot(a[1] - b[1])
 }
 
+/// Whether `p` runs alongside `run`: within `same` of it, its nearest point on the run lying
+/// within the run rather than at either end.
+fn alongside(p: [f64; 2], run: &[[f64; 2]], same: f64) -> bool {
+    let last = run.len().saturating_sub(2);
+    let mut nearest = (f64::INFINITY, false);
+    for (i, pair) in run.windows(2).enumerate() {
+        let (from, to) = (pair[0], pair[1]);
+        let (dx, dy) = (to[0] - from[0], to[1] - from[1]);
+        let length = dx * dx + dy * dy;
+        let t = if length > 0.0 {
+            (((p[0] - from[0]) * dx + (p[1] - from[1]) * dy) / length).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        let d = distance(p, [from[0] + t * dx, from[1] + t * dy]);
+        if d < nearest.0 {
+            let at_end = (i == 0 && t <= 0.0) || (i == last && t >= 1.0);
+            nearest = (d, !at_end);
+        }
+    }
+    nearest.0 <= same && nearest.1
+}
+
 /// The stretches of every arm the rules order, from `fits` by structure id: each fit's runs of
-/// points that lie farther than `same_stretch` from the points of the arm's fits preferred
-/// before it. A fit without a width takes the width of the arm's first fit that has one; an arm
+/// points that do not run alongside, within `same_stretch`, a stretch of the arm's fits
+/// preferred before it. A fit without a width takes the width of the arm's first fit that has one; an arm
 /// whose fits give none takes no stretch.
 #[must_use]
 pub fn stretches(rules: &ArmRules, fits: &[Fit]) -> Vec<Stretch> {
@@ -56,12 +81,17 @@ pub fn stretches(rules: &ArmRules, fits: &[Fit]) -> Vec<Stretch> {
             .iter()
             .filter(|f| !f.extrapolated)
             .chain(of_arm.iter().filter(|f| f.extrapolated));
-        let mut kept: Vec<[f64; 2]> = Vec::new();
+        let first = out.len();
         for fit in ordered {
+            let kept = &out[first..];
             let free: Vec<bool> = fit
                 .path
                 .iter()
-                .map(|p| kept.iter().all(|k| distance(*p, *k) > same))
+                .map(|p| {
+                    !kept
+                        .iter()
+                        .any(|k: &Stretch| alongside(*p, &k.points, same))
+                })
                 .collect();
             let mut run: Vec<[f64; 2]> = Vec::new();
             let flush = |run: &mut Vec<[f64; 2]>, out: &mut Vec<Stretch>| {
@@ -87,13 +117,6 @@ pub fn stretches(rules: &ArmRules, fits: &[Fit]) -> Vec<Stretch> {
                 }
             }
             flush(&mut run, &mut out);
-            kept.extend(
-                fit.path
-                    .iter()
-                    .zip(&free)
-                    .filter(|(_, f)| **f)
-                    .map(|(p, _)| *p),
-            );
         }
     }
     out

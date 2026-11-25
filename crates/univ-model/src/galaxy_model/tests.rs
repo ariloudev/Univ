@@ -197,6 +197,25 @@ fn a_later_fit_near_an_earlier_one_is_left_out_and_an_extrapolation_follows_the_
 }
 
 #[test]
+fn a_fit_that_continues_another_starts_where_it_stops_without_a_gap() {
+    let rules = model(1, vec![]).arms;
+    // a runs from x = -6 to 0; b, 0.3 kpc beside it, from -3 to 6: b's points alongside a are
+    // left out, and b follows on from a's end.
+    let mut a = line_arm("a", 6.0, false);
+    a.path.retain(|p| p[0] <= 0.0);
+    let mut b = line_arm("b", 6.3, false);
+    b.path.retain(|p| p[0] >= -3.0);
+    let s = stretches(&rules, &[a, b]);
+    let ids: Vec<&str> = s.iter().map(|s| s.structure.as_str()).collect();
+    assert_eq!(ids, ["a", "b"]);
+    let start = s[1].points[0][0];
+    assert!(
+        start > -0.05 && start < 0.15,
+        "b starts at x = {start}, a ends at 0"
+    );
+}
+
+#[test]
 fn a_model_of_the_arms_without_an_arm_is_refused() {
     let m = model(10, vec![disc(1, 1.0, 2.6, 0.3, false), young(2, 0.5, None)]);
     assert_eq!(
