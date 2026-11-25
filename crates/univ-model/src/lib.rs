@@ -10,6 +10,7 @@ pub mod derive;
 pub mod distance;
 pub mod encoding;
 pub mod entry;
+pub mod galaxy_model;
 pub mod geometry;
 pub mod grid;
 pub mod healpix;
