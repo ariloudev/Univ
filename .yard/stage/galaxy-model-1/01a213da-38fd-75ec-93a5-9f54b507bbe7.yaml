@@ -24,6 +24,15 @@ blocks:
         title: "Run /simplify and /code-review and fix their findings"
         detail: "Both on the wave's diff against product/galaxy-model."
         state: open
+      - key: 01a213f7-0add-72e2-b95a-3d0e8a2e705a
+        at: 2026-11-25T18:28:07Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run /simplify and /code-review and fix their findings"
+        detail: "Both on the wave's diff against product/galaxy-model."
+        state: active
   - key: 01a213da-38fd-75ec-93a5-9f5c4f049e66
     id: t-gate
     kind: task

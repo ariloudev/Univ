@@ -139,6 +139,15 @@ blocks:
         title: "Add the tracer-to-arm science check"
         detail: "A Rust Select variant in xtask/src/science giving each researched arm tracer's distance from the nearest path point of each structure of its arm, failing beyond 2 kpc; a rule in rules/science-checks.yaml. Done when it passes on a fixture and fails on a displaced tracer."
         state: active
+      - key: 01a213f7-0a92-753a-95c2-c20de640dd44
+        at: 2026-11-25T18:28:06Z
+        revision: 11
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Add the tracer-to-arm science check"
+        detail: "A Rust Select variant in xtask/src/science giving each researched arm tracer's distance from the nearest path point of each structure of its arm, failing beyond 2 kpc; a rule in rules/science-checks.yaml. Done when it passes on a fixture and fails on a displaced tracer."
+        state: done
   - key: 01a213da-38fd-75ec-93a5-9f5af632c03d
     id: t-mw
     kind: task
@@ -339,6 +348,302 @@ blocks:
                 "branch": "stage/galaxy-model-1",
                 "modified": [
                   "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/3"
+            }
+          }
+  - key: 01a21407-b348-75d8-8985-83f6d1511ef2
+    id: spec-change-3
+    kind: loft
+    versions:
+      - key: 01a21407-b348-75d8-8985-83f7b90ce6e5
+        at: 2026-11-25T18:46:18Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        view: spec-change
+        note: "Two changes met while building: a fit's parameters are cited to where its paper gives them (table, sentence or figure), since Hyland 2026's upper azimuth is a sentence and McClure-Griffiths 2004's values are read from its figure; and a build may take only the researched structures of named scale domains, since the Milky Way build takes none today and so holds no arm."
+        base: "product/galaxy-model"
+        recorded:
+          commit: "f18e4d72f62af69c7c5e13587ca75358393c0a42"
+          branch: "stage/galaxy-model-1"
+          dirty: true
+          loft: 2.4.1
+          at: 2026-11-25T18:46:18Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 6,
+              "graph.edges": 0,
+              "graph.nodes": 14,
+              "status.base.added": 4,
+              "status.base.changed": 2,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                  "kind": "criterion",
+                  "label": "AC-733",
+                  "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to where the paper whose fit it is gives it: a table, a sentence or a figure.",
+                  "words": {
+                    "after": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to where the paper whose fit it is gives it: a table, a sentence or a figure.",
+                    "before": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to the table of the paper whose fit it is."
+                  }
+                },
+                {
+                  "change": "changed",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                  "words": {
+                    "after": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                    "before": "The check fails where a tracer lies more than 2 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2e7e1ab2397",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Where a build names the scale domains of the researched structures it takes, Univ Ingest shall take only the researched structures of those scale domains, with the memberships its sources assign to them.",
+                  "words": {
+                    "after": "Where a build names the scale domains of the researched structures it takes, Univ Ingest shall take only the researched structures of those scale domains, with the memberships its sources assign to them."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2e8cadbeb8f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A build that names the Galaxy tracers domain holds every spiral arm and extrapolation of the repository and no structure of another scale domain.",
+                  "words": {
+                    "after": "A build that names the Galaxy tracers domain holds every spiral arm and extrapolation of the repository and no structure of another scale domain."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2e979115e6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In such a build each researched arm tracer is a member of every structure of its arm, and each Reid et al. 2019 maser on a modelled arm a member of its arm.",
+                  "words": {
+                    "after": "In such a build each researched arm tracer is a member of every structure of its arm, and each Reid et al. 2019 maser on a modelled arm a member of its arm."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2ea9e85ec1f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A membership naming a structure of a scale domain the build does not take is left out, not refused.",
+                  "words": {
+                    "after": "A membership naming a structure of a scale domain the build does not take is left out, not refused."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65aba28b58f",
+                  "kind": "feature_group",
+                  "label": "FG-2",
+                  "name": "Normalization",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f22-2ad9-716e-876f-187ab1b6831a",
+                  "kind": "feature",
+                  "label": "F-5",
+                  "name": "Record a researched structure",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32",
+                  "kind": "requirement",
+                  "label": "RQ-197",
+                  "name": "Univ Ingest shall compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them.",
+                  "parent": "01a19f22-2ad9-716e-876f-187ab1b6831a"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                  "kind": "criterion",
+                  "label": "AC-733",
+                  "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to where the paper whose fit it is gives it: a table, a sentence or a figure.",
+                  "parent": "01a1cbb8-4b9e-71c0-8bbe-c9186dc7de32"
+                },
+                {
+                  "change": null,
+                  "key": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c",
+                  "kind": "feature",
+                  "label": null,
+                  "name": "Record a researched arm tracer",
+                  "parent": "01a19f1a-685d-7357-b67e-d65aba28b58f"
+                },
+                {
+                  "change": null,
+                  "key": "01a213c1-93e0-7343-9f8d-9ba77bd99190",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "The science checks shall report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9b9e2c34b07c"
+                },
+                {
+                  "change": "changed",
+                  "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                  "parent": "01a213c1-93e0-7343-9f8d-9ba77bd99190"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": "FG-3",
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                  "kind": "feature",
+                  "label": "F-7",
+                  "name": "Cross-match catalogues",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2e7e1ab2397",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Where a build names the scale domains of the researched structures it takes, Univ Ingest shall take only the researched structures of those scale domains, with the memberships its sources assign to them.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2e8cadbeb8f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A build that names the Galaxy tracers domain holds every spiral arm and extrapolation of the repository and no structure of another scale domain.",
+                  "parent": "01a21407-8bab-7326-83cb-b2e7e1ab2397"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2e979115e6b",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In such a build each researched arm tracer is a member of every structure of its arm, and each Reid et al. 2019 maser on a modelled arm a member of its arm.",
+                  "parent": "01a21407-8bab-7326-83cb-b2e7e1ab2397"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21407-8bab-7326-83cb-b2ea9e85ec1f",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A membership naming a structure of a scale domain the build does not take is left out, not refused.",
+                  "parent": "01a21407-8bab-7326-83cb-b2e7e1ab2397"
+                }
+              ]
+            },
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a21407-8bab-7326-83cb-b2e7e1ab2397",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 114,
+                    "name": "Where a build names the scale domains of the researched structures it takes, Univ Ingest shall take only the researched structures of those scale domains, with the memberships its sources assign to them.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a21407-8bab-7326-83cb-b2e8cadbeb8f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 122,
+                    "name": "A build that names the Galaxy tracers domain holds every spiral arm and extrapolation of the repository and no structure of another scale domain.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a21407-8bab-7326-83cb-b2e979115e6b",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 124,
+                    "name": "In such a build each researched arm tracer is a member of every structure of its arm, and each Reid et al. 2019 maser on a modelled arm a member of its arm.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a21407-8bab-7326-83cb-b2ea9e85ec1f",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 126,
+                    "name": "A membership naming a structure of a scale domain the build does not take is left out, not refused.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  }
+                ],
+                "changed": [
+                  {
+                    "column": 14,
+                    "key": "01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5",
+                    "kind": "criterion",
+                    "label": "AC-733",
+                    "line": 54,
+                    "name": "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to where the paper whose fit it is gives it: a table, a sentence or a figure.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a213c1-93e0-7343-9f8d-9ba9b9cd8c87",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 47,
+                    "name": "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers.",
+                    "path": "spec/products/univ-ingest/normalization/record-a-researched-arm-tracer.yaml"
+                  }
+                ],
+                "commit": "49112e3c848119b2d14cf14deb44e51a8693fe8b",
+                "removed": [],
+                "revision": "product/galaxy-model"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "stage/galaxy-model-1",
+                "modified": [
+                  "spec/products/univ-ingest/identity/cross-match-catalogues.yaml",
+                  "spec/products/univ-ingest/normalization/record-a-researched-structure.yaml"
                 ],
                 "stopped": null
               },

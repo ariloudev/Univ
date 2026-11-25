@@ -52,7 +52,7 @@ requirements:
       shall: "compute each model spiral arm's path from the log-spiral parameters its structure file cites, as a spiral arm over the azimuths its fit covers and as an extrapolation beyond them."
     criteria:
       - key: 01a1cbb8-4b9e-71c0-8bbe-c919a9e453c5
-        name: "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to the table of the paper whose fit it is."
+        name: "A spiral arm's structure file gives the arm's kink azimuth, radius at the kink, pitch angles inside and outside the kink, width and the range of azimuth its fit covers, each cited to where the paper whose fit it is gives it: a table, a sentence or a figure."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c91a110700f5
         name: "A spiral arm's structure file gives the Galactic Centre's distance its fit assumes and the Sun's height above the Galactic plane, each cited to the paper it comes from."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c91b11550e21
