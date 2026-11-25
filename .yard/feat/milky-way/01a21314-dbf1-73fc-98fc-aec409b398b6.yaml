@@ -19,6 +19,15 @@ versions:
     title: "Milky Way build"
     goal: "scripts/mw-build.sh builds a release of the 15 Milky Way sources into its own state and output, and it has been run once to completion"
     status: active
+  - key: 01a21332-780f-776f-811e-50973c3225f8
+    at: 2026-11-25T14:53:24Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Milky Way build"
+    goal: "scripts/mw-build.sh builds a release of the 15 Milky Way sources into its own state and output, and it has been run once to completion"
+    status: done
 blocks:
   - key: 01a2131b-cc74-7757-a42f-2d68bd13b0a9
     id: t-script
@@ -46,6 +55,15 @@ blocks:
         title: "Download the 15 sources"
         detail: "univ-ingest fetch of the 15 sources into the shared cache, ../downloads/univ-ingest; Gaia DR3 G < 14 is 768 TAP jobs."
         state: active
+      - key: 01a21332-780f-776f-811e-509428066253
+        at: 2026-11-25T14:53:24Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Download the 15 sources"
+        detail: "Dropped: the Gaia TAP jobs had finished nothing in 8 minutes. The person had the files on macbook-pro, and the 15 source folders (8.17 GB, 1,645 files) were copied from there over Tailscale into ../downloads/univ-ingest."
+        state: dropped
   - key: 01a2131b-cc74-7757-a42f-2d6a4fb5d7a6
     id: t-run
     kind: task
@@ -59,3 +77,40 @@ blocks:
         title: "Run the Milky Way build"
         detail: "scripts/mw-build.sh --offline once the fetch is done. Done when a release is complete under .cache/univ-ingest/milky-way/build."
         state: open
+      - key: 01a21332-780f-776f-811e-5095c97f9e05
+        at: 2026-11-25T14:53:24Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Run the Milky Way build"
+        detail: "scripts/mw-build.sh --offline once the files were in place. Done when a release is complete under .cache/univ-ingest/milky-way/build."
+        state: done
+  - key: 01a21332-780f-776f-811e-5093266d278b
+    id: mw-result
+    kind: note
+    versions:
+      - key: 01a21332-780f-776f-811e-5096187c375a
+        at: 2026-11-25T14:53:24Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Milky Way release 1"
+        markdown: |-
+          `scripts/mw-build.sh --offline` built release 1 in `.cache/univ-ingest/milky-way/build/releases/1` in 16 minutes, every file from the cache.
+
+          | | |
+          |---|---|
+          | Entries | 34,791,954 (68 left out) |
+          | Objects | 17,390,631, of which 17,260,555 placed |
+          | Stars domain | 16,697,461 points in 2,204 tiles |
+          | Galaxy tracers domain | 563,094 points in 184 tiles |
+          | Nearby galaxies, cosmic web | empty |
+          | Structures | 0 |
+          | Volume grids | 1 (Edenhofer 2024 dust) |
+          | D1 estimate | 475 MB |
+          | On disk | 39 GB |
+
+          Not published: publishing needs Node and Wrangler, which this machine lacks.
+        tone: success
