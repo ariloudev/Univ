@@ -294,8 +294,21 @@ fn a_build_taking_the_galaxy_tracers_structures_holds_the_arms_and_their_members
     arms.sort();
     assert_eq!(structures, arms);
     assert!(structures.iter().any(|id| id.starts_with("sun-2024-")));
+    // Each tracer source's memberships reach every structure of each arm its tracers name.
     for (id, _) in SOURCES {
-        assert!(memberships.iter().any(|(s, _)| s == id), "{id}");
+        let m = &definition(id).memberships[0];
+        let wanted: BTreeSet<&str> = normalized(id)
+            .entries
+            .iter()
+            .flat_map(|e| m.structures(e.flags.get(ARM_FLAG).unwrap()))
+            .map(String::as_str)
+            .collect();
+        let held: BTreeSet<&str> = memberships
+            .iter()
+            .filter(|(s, _)| s == id)
+            .map(|(_, structure)| structure.as_str())
+            .collect();
+        assert_eq!(held, wanted, "{id}");
     }
     assert!(memberships.iter().any(|(s, _)| s == "reid-2019-masers"));
     assert!(memberships.iter().all(|(_, m)| structures.contains(m)));
