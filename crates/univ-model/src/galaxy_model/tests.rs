@@ -160,7 +160,7 @@ fn an_arm_population_lies_along_its_stretches_spread_by_the_arm_width() {
         5000,
         vec![disc(1, 1.0, 2.6, 0.3, false), young(2, 0.5, None)],
     );
-    let points = sample(&m, &[line_arm("a", 6.0, false)]).unwrap();
+    let points = sample(&m, &stretches(&m.arms, &[line_arm("a", 6.0, false)])).unwrap();
     let young: Vec<[f64; 3]> = points
         .iter()
         .filter(|p| p.population == 2)
@@ -234,7 +234,7 @@ fn knots_gather_their_points_close_together() {
         2000,
         vec![disc(1, 1.0, 2.6, 0.3, false), young(2, 0.5, Some(knots))],
     );
-    let points = sample(&m, &[line_arm("a", 6.0, false)]).unwrap();
+    let points = sample(&m, &stretches(&m.arms, &[line_arm("a", 6.0, false)])).unwrap();
     let knot: Vec<[f64; 3]> = points
         .iter()
         .filter(|p| p.population == 2)
@@ -269,7 +269,7 @@ fn the_first_points_of_a_population_in_a_cube_are_covered_as_many_as_its_counter
             Counterpart::Stars
         }
     };
-    let covered = covered(&points, side, &counts);
+    let covered = covered(points.iter().copied(), side, &counts);
     assert_eq!(covered, [true, false, true, false, true, false]);
     assert_eq!(cube_of([-1.0, 249.0, 250.0]), [-1, 0, 1]);
 }
@@ -279,7 +279,7 @@ fn the_thin_disc_is_denser_along_the_arms_by_its_contrast() {
     let mut m = model(20_000, vec![disc(1, 1.0, 6.0, 0.3, true)]);
     m.arms.old_arm_contrast = Parameter::choice(3.0, "1", "test");
     m.arms.old_arm_spread = Parameter::choice(1.0, "1", "test");
-    let points = sample(&m, &[line_arm("a", 6.0, false)]).unwrap();
+    let points = sample(&m, &stretches(&m.arms, &[line_arm("a", 6.0, false)])).unwrap();
     let band = |lo: f64, hi: f64| {
         points
             .iter()

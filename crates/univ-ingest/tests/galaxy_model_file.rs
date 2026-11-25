@@ -134,3 +134,22 @@ fn a_number_that_neither_cites_a_paper_nor_is_a_choice_is_refused_naming_it() {
     .unwrap_err();
     assert!(reasonless.contains("gives no reason"), "{reasonless}");
 }
+
+#[test]
+fn a_number_the_model_cannot_be_drawn_with_or_a_seed_beyond_2_53_is_refused() {
+    let negative = edited(|t| {
+        t.replacen(
+            "    value: 2\n    unit: kiloparsec",
+            "    value: -2\n    unit: kiloparsec",
+            1,
+        )
+    })
+    .unwrap_err();
+    assert!(negative.contains("arms.same_stretch"), "{negative}");
+    assert!(negative.contains("must be a positive number"), "{negative}");
+    let heavy = edited(|t| t.replacen("    value: 0.45\n", "    value: 1.45\n", 1)).unwrap_err();
+    assert!(heavy.contains("arms.extrapolation_weight"), "{heavy}");
+    assert!(heavy.contains("at most 1"), "{heavy}");
+    let seed = edited(|t| t.replacen("seed: 16\n", "seed: 9007199254740992\n", 1)).unwrap_err();
+    assert!(seed.contains("seed") && seed.contains("2^53 - 1"), "{seed}");
+}

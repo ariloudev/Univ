@@ -215,25 +215,25 @@ pub fn build_watched(
         domains.push(built);
     }
     watch.check().map_err(TilesError::Stopped)?;
-    let model = match &context.galaxy {
-        Some(galaxy) => {
-            let counts = counts(
-                assigned.domains.get(&ScaleDomain::Stars),
-                assigned.domains.get(&ScaleDomain::GalaxyTracers),
-            );
-            build_model_domain(galaxy, &counts, context)?
-        }
-        None => None,
-    };
-    let galaxy_model = if let Some(ModelDomain { built, sampled }) = model {
-        watch.step(built.line());
-        domains.push(built);
-        Some(sampled)
-    } else {
-        watch.step(
-            "galaxy model: not built, as the release holds no spiral arm for it to follow"
-                .to_owned(),
+    let galaxy_model = if let Some(galaxy) = &context.galaxy {
+        let counts = counts(
+            assigned.domains.get(&ScaleDomain::Stars),
+            assigned.domains.get(&ScaleDomain::GalaxyTracers),
         );
+        if let Some(ModelDomain { built, sampled }) = build_model_domain(galaxy, &counts, context)?
+        {
+            watch.step(built.line());
+            domains.push(built);
+            Some(sampled)
+        } else {
+            watch.step(
+                "galaxy model: not built, as the release holds no spiral arm for it to follow"
+                    .to_owned(),
+            );
+            None
+        }
+    } else {
+        watch.step("galaxy model: not built, as the build was given no model".to_owned());
         None
     };
     Ok(Built {

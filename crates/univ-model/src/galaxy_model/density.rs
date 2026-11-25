@@ -129,7 +129,7 @@ fn long_bar_point(random: &mut Random, bar: &LongBar) -> [f64; 3] {
         bar.sigma_in.value,
     );
     let extent = r_out + 3.0 * s_out;
-    let cut = |x: f64| if x > 1.0 { (-x * x).exp() } else { 1.0 };
+    let cut = |x: f64| if x > 0.0 { (-x * x).exp() } else { 1.0 };
     loop {
         let x = (2.0 * random.uniform() - 1.0) * extent;
         let y = (2.0 * random.uniform() - 1.0) * extent;

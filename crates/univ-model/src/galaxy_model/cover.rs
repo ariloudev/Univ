@@ -55,17 +55,17 @@ impl Counts {
 /// code), `counterpart` each population's, `counts` the real objects.
 #[must_use]
 pub fn covered(
-    points: &[(Vec3, u8)],
+    points: impl IntoIterator<Item = (Vec3, u8)>,
     counterpart: impl Fn(u8) -> Counterpart,
     counts: &Counts,
 ) -> Vec<bool> {
     let mut taken: HashMap<([i64; 3], u8), u32> = HashMap::new();
     points
-        .iter()
+        .into_iter()
         .map(|(p, population)| {
-            let cube = cube_of(*p);
-            let n = counts.get(cube, counterpart(*population));
-            let so_far = taken.entry((cube, *population)).or_default();
+            let cube = cube_of(p);
+            let n = counts.get(cube, counterpart(population));
+            let so_far = taken.entry((cube, population)).or_default();
             let covered = *so_far < n;
             if covered {
                 *so_far += 1;

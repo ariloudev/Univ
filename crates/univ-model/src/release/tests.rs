@@ -390,3 +390,11 @@ fn every_table_of_an_objects_rows_is_in_its_shard_but_its_names_and_its_shards_i
         }
     }
 }
+
+#[test]
+fn each_table_a_later_schema_added_is_a_table_of_the_schema() {
+    for (name, version) in super::TABLES_ADDED {
+        assert!(TABLES.iter().any(|t| t.name == name), "{name}");
+        assert!(version > 8 && version <= SCHEMA_VERSION, "{name}");
+    }
+}

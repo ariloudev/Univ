@@ -116,6 +116,10 @@ pub use uncertainty::UncertaintyColumns;
 /// The version of the D1 schema in [`SCHEMA`].
 pub const SCHEMA_VERSION: u32 = 9;
 
+/// The tables a schema version after 8 added, each with the version: a release of an earlier
+/// schema holds none of them, nor its manifest a fingerprint of them.
+pub const TABLES_ADDED: [(&str, u32); 1] = [("galaxy_models", 9)];
+
 /// The first schema version whose tables share rows between releases. Version 7 only added
 /// tables, which a publish creates; version 8 moved [`SCHEMA_7_JSON`] into rows, so a database
 /// still holding one of those columns is migrated first, whatever its version.

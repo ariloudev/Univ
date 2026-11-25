@@ -75,6 +75,15 @@ async function steady(drawn: string[]): Promise<void> {
   }
 }
 
+describe("the scale domains", () => {
+  it("leave out the Galaxy model, whose tiles hold model points, and read no manifest of it", async () => {
+    const http = server(undefined, undefined, [...DOMAINS, "galaxy_model"]);
+    const domains = await domainsOf(2, { http });
+    expect(domains.map((d) => d.name)).toEqual(DOMAINS);
+    expect(http.urls.some((u) => u.includes("galaxy_model"))).toBe(false);
+  });
+});
+
 async function loaded(http: Http, drawn: string[], budget?: number) {
   const domains = await domainsOf(2, { http });
   const events = {

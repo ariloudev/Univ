@@ -71,7 +71,8 @@ fn per_knot(knots: &Knots) -> u64 {
     knots.per_knot.value.round().max(1.0) as u64
 }
 
-/// The model points of `model`, the arms' populations following the stretches of `fits`:
+/// The model points of `model`, the arms' populations following `stretches`, those of
+/// [`stretches`] of the model's arm rules:
 /// each population's share of the points, in the model's order, each drawn from its density
 /// on its own stream of the model's seed.
 ///
@@ -79,21 +80,20 @@ fn per_knot(knots: &Knots) -> u64 {
 ///
 /// Fails on a model whose light cannot be shared, or one with a population of the arms when no
 /// arm has a stretch.
-pub fn sample(model: &Model, fits: &[Fit]) -> Result<Vec<Sampled>, ModelError> {
+pub fn sample(model: &Model, stretches: &[Stretch]) -> Result<Vec<Sampled>, ModelError> {
     let counts = shares(model.points, &lights(model)?);
     let placement = Placement::new(model.r0.value, model.sun_height.value);
-    let stretches = stretches(&model.arms, fits);
-    let nearness = Nearness::new(&stretches, model.arms.old_arm_spread.value);
+    let nearness = Nearness::new(stretches, model.arms.old_arm_spread.value);
     let mut out = Vec::with_capacity(usize::try_from(model.points).unwrap_or_default());
     for (population, n) in model.populations.iter().zip(counts) {
-        let radial = match &population.density {
+        // Only the arms' populations draw along the stretches.
+        let arm_sampler = match &population.density {
             Density::Arms {
                 radial_scale_length,
                 ..
-            } => radial_scale_length.value,
-            _ => 1.0,
+            } => ArmSampler::new(stretches, radial_scale_length.value),
+            _ => ArmSampler::new(&[], 1.0),
         };
-        let arm_sampler = ArmSampler::new(&stretches, radial);
         let context = density::Context {
             arms: &arm_sampler,
             nearness: &nearness,

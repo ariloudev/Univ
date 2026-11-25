@@ -4,10 +4,9 @@
 //! version 5.
 
 use univ_model::galaxy_model::{
-    Counterpart, Counts, Fit, Model, Placement, counterpart, covered, sample, stretches,
+    Counterpart, Counts, Fit, Model, Placement, Stretch, counterpart, covered, sample, stretches,
 };
 use univ_model::object::ObjectKind;
-use univ_model::position::Vec3;
 use univ_model::tile::{MODEL_POINT_BYTES, ModelPoint, encode_model};
 use univ_model::units::Unit;
 
@@ -89,18 +88,17 @@ pub fn counts(stars: Option<&DomainPoints>, tracers: Option<&DomainPoints>) -> C
     counts
 }
 
-/// The model's points sampled along `fits`, each covered as `counts` give, in the order sampled.
+/// The model's points sampled along `stretches`, each covered as `counts` give, in the order sampled.
 ///
 /// # Errors
 ///
 /// Fails when the model cannot be sampled.
 fn model_points(
     model: &Model,
-    fits: &[Fit],
+    stretches: &[Stretch],
     counts: &Counts,
 ) -> Result<Vec<ModelPoint>, TilesError> {
-    let sampled = sample(model, fits).map_err(|e| TilesError::Model(e.to_string()))?;
-    let codes: Vec<(Vec3, u8)> = sampled.iter().map(|s| (s.position, s.population)).collect();
+    let sampled = sample(model, stretches).map_err(|e| TilesError::Model(e.to_string()))?;
     let counterpart = |code: u8| {
         model
             .populations
@@ -110,7 +108,11 @@ fn model_points(
     };
     Ok(sampled
         .iter()
-        .zip(covered(&codes, counterpart, counts))
+        .zip(covered(
+            sampled.iter().map(|s| (s.position, s.population)),
+            counterpart,
+            counts,
+        ))
         .map(|(s, covered)| ModelPoint {
             position: s.position,
             population: s.population,
@@ -120,7 +122,8 @@ fn model_points(
 }
 
 /// The Galaxy model's domain: `galaxy`'s model sampled along its arms, each point covered as
-/// `counts` give, tiled under `context`'s rules; none where the release holds no arm to follow.
+/// `counts` give, tiled under `context`'s rules; none where no arm of its rules has a stretch
+/// among the release's structures.
 ///
 /// # Errors
 ///
@@ -133,17 +136,17 @@ pub fn build_model_domain(
 ) -> Result<Option<ModelDomain>, TilesError> {
     let model = galaxy.model;
     let placement = Placement::new(model.r0.value, model.sun_height.value);
-    let fits = fits(galaxy.structures, &placement);
-    if fits.is_empty() {
+    let stretches = stretches(&model.arms, &fits(galaxy.structures, &placement));
+    if stretches.is_empty() {
         return Ok(None);
     }
     let mut followed: Vec<String> = Vec::new();
-    for s in stretches(&model.arms, &fits) {
+    for s in &stretches {
         if !followed.contains(&s.structure) {
-            followed.push(s.structure);
+            followed.push(s.structure.clone());
         }
     }
-    let points = model_points(model, &fits, counts)?;
+    let points = model_points(model, &stretches, counts)?;
     let populations = model
         .populations
         .iter()
