@@ -677,12 +677,19 @@
               "null"
             ]
           },
+          "flags": {
+            "description": "What a version 5 point's flags hold.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "header_bytes": {
             "minimum": 0,
             "type": "integer"
           },
           "kinds": {
-            "description": "The kind-of-value codes, in order from 0.",
+            "description": "The kind-of-value codes, in order from 0, which a version 5 point does not carry.",
             "items": {
               "$ref": "#/components/schemas/KindOfValue"
             },
@@ -720,8 +727,18 @@
             "type": "integer"
           },
           "point_source": {
-            "description": "What a point's source index names.",
+            "description": "What a point's source index names; in version 5, that its model points have none.",
             "type": "string"
+          },
+          "populations": {
+            "description": "The Galaxy model's populations, each with the code its points carry; version 5 only.",
+            "items": {
+              "$ref": "#/components/schemas/PopulationCode"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "steps_per_edge": {
             "description": "The quantization steps along a node's edge: a step is the edge over this.",
@@ -775,7 +792,7 @@
             "type": "integer"
           },
           "kinds": {
-            "description": "The kinds of value, coded by their index.",
+            "description": "The kinds of value, coded by their index, which a version 5 point does not carry.",
             "items": {
               "$ref": "#/components/schemas/KindOfValue"
             },
@@ -3473,6 +3490,31 @@
         ],
         "type": "object"
       },
+      "PopulationCode": {
+        "description": "A population of the Galaxy model as its tiles code it.",
+        "properties": {
+          "code": {
+            "description": "The code its points carry, from 1.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "id": {
+            "description": "Its id in the Galaxy model's definition, such as `thin_disc`.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Its name, such as `Thin disc`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
       "PositionClass": {
         "description": "The classes of sky position, best first, where the published uncertainties cannot decide.",
         "enum": [
@@ -4423,6 +4465,15 @@
             "format": "int32",
             "minimum": 0,
             "type": "integer"
+          },
+          "model_seed": {
+            "description": "The seed the Galaxy model's points were sampled with, apart from the octree's subsample\nseed; the Galaxy model's manifest alone gives it.",
+            "format": "int64",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "seed": {
             "format": "int64",

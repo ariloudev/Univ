@@ -5,10 +5,11 @@ use serde::{Deserialize, Serialize};
 
 use super::TileError;
 
-/// Whether tiles of `version` carry each point's colour index: from version 2 on.
+/// Whether tiles of `version` carry each point's colour index: versions 2 to 4, the object
+/// tiles after the first.
 #[must_use]
 pub const fn has_colour(version: u16) -> bool {
-    version >= 2
+    version >= 2 && version <= 4
 }
 
 /// The value a version 2 or 3 point holds when it has none.
@@ -112,7 +113,7 @@ pub(super) fn hundredths(index: f64) -> Option<i16> {
 /// Whether tiles of `version` may carry an age in place of a colour index: from version 3 on.
 #[must_use]
 pub const fn has_age(version: u16) -> bool {
-    version >= 3
+    version >= 3 && version <= 4
 }
 
 /// The code of a point whose value is the base-10 logarithm of its age in years, from version 3.

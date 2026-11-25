@@ -4,8 +4,9 @@
 use std::borrow::Cow;
 
 pub use univ_model::tile::manifest::{
-    Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, Level, MANIFEST_VERSION, NodeEntry,
-    Rotations, Sampling, SourceEntry, SourceRole, TRACERS_ENCODING, TileManifest,
+    Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, Level, MANIFEST_VERSION, MODEL_ENCODING,
+    NodeEntry, PopulationCode, Rotations, Sampling, SourceEntry, SourceRole, TRACERS_ENCODING,
+    TileManifest,
 };
 
 use super::TilesError;
@@ -25,6 +26,7 @@ pub const GENERATOR: &str = "ChaCha20, key the seed's 8 little-endian bytes then
 pub fn sampling(rules: &TileRules, stream: u64) -> Sampling {
     Sampling {
         seed: rules.seed,
+        model_seed: None,
         generator: Cow::Borrowed(GENERATOR),
         stream,
         split_threshold: rules.split_threshold,
