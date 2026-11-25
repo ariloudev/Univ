@@ -10,6 +10,15 @@ versions:
     title: "Publish straight into local D1"
     goal: "A publish writes each SQL file of a release into the local D1 database's own file in one transaction and leaves its write-ahead log empty, specified, approved, built and tested"
     status: active
+  - key: 01a21373-c248-7020-b969-570e361de87b
+    at: 2026-11-25T16:04:43Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Publish straight into local D1"
+    goal: "A publish writes each SQL file of a release into the local D1 database's own file in one transaction and leaves its write-ahead log empty, specified, approved, built and tested"
+    status: done
 blocks:
   - key: 01a2134c-9eba-758e-aceb-11d00084b44d
     id: pub-why
@@ -221,3 +230,16 @@ blocks:
               "schema": "loft-status/3"
             }
           }
+  - key: 01a21373-c248-7020-b969-570c3b9541dc
+    id: pub-result
+    kind: note
+    versions:
+      - key: 01a21373-c248-7020-b969-570db40afdb3
+        at: 2026-11-25T16:04:43Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Direct writes, measured"
+        markdown: "Release 1's publish resumed on the direct writer: the remaining 1,208 items in 30 minutes, 2–3 s for a file of new rows against 6–11 s through Wrangler. Every log is emptied after its file; the whole local store is 21 GB, where shard 0's log alone had reached 28 GB. The journal resumes a table from its first file, so shard 0's measurements ran again from file 1, harmlessly, as `INSERT OR IGNORE`."
+        tone: success
