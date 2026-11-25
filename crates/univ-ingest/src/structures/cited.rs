@@ -45,12 +45,18 @@ pub struct Assumes {
     pub cite: Option<Citation>,
 }
 
-/// The cosmology as written: words, or words with a citation.
+/// What a value assumes as written: words, or words with a citation.
 #[derive(Deserialize)]
 #[serde(untagged)]
 enum RawAssumes {
     Stated(String),
-    Cited { cosmology: String, cite: Citation },
+    /// Words with their citation: `cosmology` for a cosmology, `stated` for anything else a
+    /// value assumes, such as a rotation curve.
+    Cited {
+        #[serde(alias = "stated")]
+        cosmology: String,
+        cite: Citation,
+    },
 }
 
 impl TryFrom<RawAssumes> for Assumes {
@@ -237,6 +243,33 @@ impl<'de> Deserialize<'de> for Cited {
     }
 }
 
+/// The figures of `text` in order, each run of digits and points with the minus before it,
+/// whatever letters or marks part them: `18h12m02.6822s` and `18 12 02.6822` give 18, 12 and
+/// 02.6822, `−18°40′25.002″` gives −18, 40 and 25.002.
+fn figures(text: &str) -> Vec<String> {
+    let text = text.replace('\u{2212}', "-");
+    let mut out: Vec<String> = Vec::new();
+    let mut current = String::new();
+    let mut minus = false;
+    for c in text.chars() {
+        if c.is_ascii_digit() || (c == '.' && !current.is_empty()) {
+            if current.is_empty() && minus {
+                current.push('-');
+            }
+            current.push(c);
+        } else {
+            if !current.is_empty() {
+                out.push(std::mem::take(&mut current));
+            }
+            minus = c == '-';
+        }
+    }
+    if !current.is_empty() {
+        out.push(current);
+    }
+    out
+}
+
 impl Cited {
     #[must_use]
     pub fn value(&self) -> f64 {
@@ -248,12 +281,19 @@ impl Cited {
         self.quantity.unit
     }
 
-    /// Whether a quoted sentence holds the number as published: `as_published` when given, else
-    /// the value as a whole number token, such as `16,000` for 16000 but not `1650` for 165.
+    /// Whether a quoted sentence or cell holds the number as published: `as_published` when
+    /// given, whole or as the same numbers in the same order, as a table prints `18h12m02.6822s`
+    /// as `18 12 02.6822`; else the value as a whole number token, such as `16,000` for 16000 but
+    /// not `1650` for 165.
     #[must_use]
     pub fn appears_in(&self, quote: &str) -> bool {
         match &self.as_published {
-            Some(published) => contains_whole(quote, published),
+            Some(published) => {
+                contains_whole(quote, published) || {
+                    let wanted = figures(published);
+                    wanted.len() > 1 && figures(quote) == wanted
+                }
+            }
             None => has_number(quote, self.value()),
         }
     }

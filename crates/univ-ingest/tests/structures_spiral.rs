@@ -100,7 +100,7 @@ fn each_arm_of_table_2_is_a_model_spiral_arm_and_an_extrapolation_among_the_gala
         // The arm's own parameters are its row of Table 2.
         let table: Vec<&Cited> = [&l.beta_kink, &l.r_kink, &l.pitch_inside, &l.pitch_outside]
             .into_iter()
-            .chain([&l.width])
+            .chain(l.width.as_ref())
             .chain(&l.fitted)
             .collect();
         for c in table {

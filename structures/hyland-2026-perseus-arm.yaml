@@ -1,0 +1,77 @@
+# Hyland et al. 2026's two-segment log-spiral fit to the Perseus arm, over the azimuths of its masers.
+name: Perseus arm (Hyland 2026 model)
+kind: spiral_arm
+status: model
+scale_domain: galaxy_tracers
+papers:
+  - id: hyland-2026
+    reference: "Hyland, Reid, Ellingsen et al. 2026, ApJ 1004, 209"
+    title: "An Updated Model for the Perseus Spiral Arm from Trigonometric Parallax and 3D Kinematic Distances of Distant Massive Stars"
+    doi: 10.3847/1538-4357/ae64f5
+    arxiv: "2603.05896"
+    read: "arXiv source (LaTeX) of 2603.05896v2, the accepted version: Section 4.4 (Spiral arm fitting), Section 5, the Summary, Appendix A, Table 3 (Perseus arm fitting results) and Table B1 (candidate Perseus arm masers); Table 3, the section on location and pitch angle and the reference checked against the journal's HTML; v1's text compared"
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357, Section 5 (the Sun's height)"
+geometry:
+  kind: log_spiral
+  log_spiral:
+    extent: fitted
+    arm: perseus
+    convention: >-
+      Reid et al. 2019's own, without conversion. Hyland et al. 2026 use "a polar Galactic
+      coordinate system (R, β), where R is the Galactic radius and β is the Galactic azimuth
+      increasing clockwise from the Sun" (section Spiral arm fitting), clockwise as seen from the
+      north Galactic pole being the sense of Galactic rotation, and compute it as
+      β = arctan2(d cos b sin l / R, (R0 − d cos b cos l) / R) (Appendix A), which is Reid's β.
+      Their model is ln R = ln R_k − (β − β_k) tan ψ, with ψ = ψ_< if β < β_k and ψ = ψ_> if
+      β > β_k; the path is continuous at the kink, so the side the kink itself falls on does not
+      matter.
+    beta_kink:
+      value: 40
+      unit: degree
+      kind: estimated
+      uncertainty: { form: none_reported }
+      cite: { paper: hyland-2026, table: "3", row: "Two segment (this work)", column: "β_k (deg)", cell: "40" }
+      note: "Given without an uncertainty. The preprint's first version said the kink was fixed at this azimuth, in the gap in the arm's tracers known as the Perseus Gap, and so not fitted; the accepted version keeps the value without saying so."
+    r_kink:
+      { value: 9.29, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.10 },
+        cite: { paper: hyland-2026, table: "3", row: "Two segment (this work)", column: "R_k (kpc)", cell: "9.29 ± 0.10" } }
+    pitch_inside:
+      { value: 5.9, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 1.2 },
+        cite: { paper: hyland-2026, table: "3", row: "Two segment (this work)", column: "ψ_< (deg)", cell: "5.9 ± 1.2" },
+        note: "The text of the preprint's first version quoted a smaller and more precise ψ_< than this table, which was the same in that version; the accepted version drops that sentence. The table is followed here." }
+    pitch_outside:
+      { value: 10.6, unit: degree, kind: estimated, uncertainty: { form: symmetric, sigma: 1.0 },
+        cite: { paper: hyland-2026, table: "3", row: "Two segment (this work)", column: "ψ_> (deg)", cell: "10.6 ± 1.0" },
+        note: "The accepted version's section on location and pitch angle quotes the same value as the table. The text of the preprint's first version quoted a smaller and more precise ψ_>, against the same table; the table is followed here." }
+    width:
+      { value: 0.32, unit: kiloparsec, kind: estimated, uncertainty: { form: symmetric, sigma: 0.04 },
+        cite: { paper: hyland-2026, table: "3", row: "Two segment (this work)", column: "width (kpc)", cell: "0.32 ± 0.04" } }
+    fitted:
+      - { value: -17.5, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: hyland-2026, table: "B1", row: "G229.57+00.15(H)", column: "d_ML (kpc)" },
+          note: "The paper prints no lower end of the range its fit covers; this is the azimuth of the maser of Table B1 with the lowest azimuth, computed from its longitude, latitude and maximum-likelihood distance with R0 as given here, by the paper's own formula for β (Appendix A). All the masers of Table B1 were fitted, this one included." }
+      - { value: 180, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: hyland-2026, sentence: "The updated spatial distribution of masers traces a more coherent spiral pattern, and extends the range that the Perseus arm is constrained to β≈180°." },
+          note: "An approximate end, as the paper gives it; the maser of Table B1 at the largest azimuth, toward the Galactic Centre, lies just short of it." }
+    r0:
+      { value: 8.15, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: hyland-2026, sentence: "This requires a distance to the Galactic center R0, which we adopt to be R0 = 8.15 kpc (Do et al. 2019; GRAVITY Collaboration et al. 2019)." },
+        note: "Adopted, not fitted. The rotation curve and solar motion of the distances are those of Reid et al. 2019's fit A5 (Appendix A)." }
+    sun_height:
+      { value: 5.5, unit: parsec, kind: estimated, uncertainty: { form: symmetric, sigma: 5.8 },
+        cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." },
+        note: "Hyland et al. 2026 give no height of the Sun; Reid et al. 2019's, as their other spiral-arm files use." }
+notes: >-
+  The Perseus arm of Hyland et al. 2026: the log spiral with a kink fitted to the positions of the
+  candidate Perseus-arm masers of Table B1, placed at maximum-likelihood distances that combine
+  each parallax with a 3D kinematic distance, over the range of Galactocentric azimuth those
+  masers cover, which reaches the far side of the Galactic Centre. This is Table 3's two-segment
+  fit; the same table gives a one-segment fit, which the paper favours as relying on fewer
+  assumptions and parameters while being consistent with both two-segment models. A model, not
+  an observed outline.

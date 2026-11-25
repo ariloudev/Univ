@@ -85,7 +85,11 @@ pub fn geometry(g: &StructureGeometry) -> Vec<Pointed<'_>> {
         StructureGeometry::LogSpiral(l) => {
             let at = "/geometry/LogSpiral";
             let mut out = indexed(at, l.pairs());
-            out.extend(l.scalars().map(|(name, c)| (format!("{at}/{name}"), c)));
+            out.extend(
+                l.scalars()
+                    .into_iter()
+                    .map(|(name, c)| (format!("{at}/{name}"), c)),
+            );
             out
         }
         StructureGeometry::Members(_) => vec![],

@@ -1,0 +1,77 @@
+# Sun et al. 2024's log-spiral fit to the outer Scutum-Centaurus arm in CO, over the azimuths of its molecular clouds.
+name: Outer Scutum-Centaurus arm (Sun 2024 model)
+alternative_names: [OSC arm (Sun 2024 model)]
+kind: spiral_arm
+status: model
+scale_domain: galaxy_tracers
+papers:
+  - id: sun-2024
+    reference: "Sun, Yang, Zhang et al. 2024, ApJL 977, L35"
+    title: "A New View of the Spiral Structure of the Northern Outer Milky Way in Carbon Monoxide"
+    doi: 10.3847/2041-8213/ad9605
+    arxiv: "2411.11220"
+    read: "arXiv source (LaTeX) of 2411.11220v1: Table 1 (Parameters of each CO spiral arm segment derived from the MWISP data) and its notes, the sections on the face-on view and the CO spiral arm model, and the captions of Figures 3 and 4; Table 1's azimuth ranges, the model sentence and the reference checked against the journal's HTML"
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357, Table 3 (Bayesian Fitting Results) and Section 5 (the Sun's height)"
+geometry:
+  kind: log_spiral
+  log_spiral:
+    extent: fitted
+    arm: scutum-centaurus
+    convention: >-
+      Sun et al. 2024 fit ln(R/R_kink) = −(φ − φ_kink) tan ψ "Following Reid et al. (2019)",
+      where "R is the Galactocentric radius, φ is the Galactocentric azimuth, and ψ is the pitch
+      angle" (section CO Spiral Arm Model), and state no zero point or sense of φ of their own.
+      Their φ is taken here as Reid et al. 2019's β, without conversion: they compute each
+      cloud's (R, φ, z) from the rotation curve and Galactic parameters of Reid et al. 2019's fit
+      A5 (section Face-on view), and Table 1's φ ranges put the clouds of the third quadrant at
+      negative φ and those of the first quadrant's far outer disc near φ = 155.8, as β does.
+      Their ψ_< holds at azimuths below φ_kink and ψ_> at and above it (Table 1's notes), where
+      Reid's ψ_< holds at and below; for this arm the two pitches are equal, so the path is the
+      same either way.
+    beta_kink:
+      value: 47.0
+      unit: degree
+      kind: estimated
+      uncertainty: { form: none_reported }
+      cite: { paper: sun-2024, table: "1", row: "OSC b", column: "Model 2 φ_kink (14)", cell: "47.0" }
+      note: "Table 1 gives no uncertainties. With one pitch on both sides of it, the kink is only the azimuth at which R_kink is given."
+    r_kink:
+      { value: 16.4, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: sun-2024, table: "1", row: "OSC b", column: "Model 2 R_kink (15)", cell: "16.4" } }
+    pitch_inside:
+      { value: 12.3, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: sun-2024, table: "1", row: "OSC b", column: "Model 2 ψ_< (16)", cell: "12.3" } }
+    pitch_outside:
+      { value: 12.3, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: sun-2024, table: "1", row: "OSC b", column: "Model 2 ψ_> (17)", cell: "12.3" },
+        note: "Table 1's notes: equal pitches mean that a constant pitch angle was obtained." }
+    # width: Sun et al. 2024 give no width of the arm; left out, never guessed.
+    fitted:
+      - { value: -27.3, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: sun-2024, table: "1", row: "OSC a", column: "φ range (2)", cell: "−27.3 → −8.3, 9.6 → 155.8" },
+          note: "The φ range of the arm segment traced by its clouds, printed once for the arm, in row a; the journal prints an ellipsis in row b. The clouds leave a gap from −8.3 to 9.6, toward the Galactic anticentre, which this range spans." }
+      - { value: 155.8, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: sun-2024, table: "1", row: "OSC a", column: "φ range (2)", cell: "−27.3 → −8.3, 9.6 → 155.8" } }
+    r0:
+      { value: 8.15, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: reid-2019, table: "3", row: "R0 (kpc)", column: "A5", cell: "8.15 ± 0.15" },
+        note: "Sun et al. 2024 state no R0 of their own: \"By assuming the new rotation curve and Galactic parameters from fit A5 of Reid et al. (2019), we calculated the distance for each MC and converted the heliocentric coordinates (l, b, v_lsr) to the Galactocentric cylindrical coordinates (R, φ, z).\" Fit A5's R0 is given here; its uncertainty belongs to that fit, not to the arm's." }
+    sun_height:
+      { value: 5.5, unit: parsec, kind: estimated, uncertainty: { form: symmetric, sigma: 5.8 },
+        cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." },
+        note: "Sun et al. 2024 give no height of the Sun; Reid et al. 2019's, as their other spiral-arm files use." }
+notes: >-
+  The outer Scutum-Centaurus (OSC) arm of Sun et al. 2024: the log spiral fitted, weighted by
+  cloud mass, to the molecular clouds of the MWISP CO survey assigned to the arm beyond the Outer
+  arm, over the range of Galactocentric azimuth those clouds cover. The row is Table 1's case b
+  (clouds below the Perseus arm's mean cloud mass excluded), Model 2 (cloud masses corrected for
+  variations in X_CO and sensitivity clipping): the case the paper expects to fit best, and the
+  one drawn as the solid spiral in its Figure 3 and Figure 4. A single pitch of 12.3 fits the clouds
+  from the third quadrant to the first; the paper reads the clouds of the third quadrant as a new
+  extension of the arm. The fit rests on kinematic distances. A model, not an observed outline.
