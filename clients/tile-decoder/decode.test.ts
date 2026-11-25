@@ -272,7 +272,7 @@ test('each decoded point of a version 4 tile gives its kind of object, or that i
       else seen.add(p.objectKind);
     });
   }
-  assert.equal(seen.size, 7, 'every kind of object');
+  assert.equal(seen.size, 8, 'every kind of object');
   assert.ok(none > 0, 'a point with none');
   // Only the tracers take version 4; the other domains keep version 3.
   for (const f of fixtures) {
@@ -283,6 +283,7 @@ test('each decoded point of a version 4 tile gives its kind of object, or that i
 test('a version 4 kind of object code beyond the manifest is refused', () => {
   const { manifest, node, tile } = everyTile.find((t) => t.manifest.encoding.version === 4)!;
   const bytes = bytesOf(tile.hex);
-  bytes[bytes.length - 1] = 8;
-  assert.throws(() => decodeTile(bytes, node, manifest), /kind of object code 8/);
+  const beyond = manifest.encoding.object_kinds!.length + 1;
+  bytes[bytes.length - 1] = beyond;
+  assert.throws(() => decodeTile(bytes, node, manifest), new RegExp(`kind of object code ${beyond}`));
 });

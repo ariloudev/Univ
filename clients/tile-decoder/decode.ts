@@ -107,7 +107,8 @@ export type ObjectKind =
   | 'classical_cepheid'
   | 'rr_lyrae_star'
   | 'star_forming_region'
-  | 'luminous_hot_star';
+  | 'luminous_hot_star'
+  | 'molecular_cloud';
 
 /** The two bands a colour index lies between. */
 export type ColourBands = 'BP-RP' | 'B-V';

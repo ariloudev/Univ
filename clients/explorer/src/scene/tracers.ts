@@ -19,7 +19,7 @@ export const POINT_SIZE = 2;
 
 /** The tracers by object index, in the order of the key and of their switches: first those of no
  * kind, or of a kind this table does not hold (green), then each kind of object (teal, magenta,
- * lime, violet, forest green and crimson), with what the key and the switches call them. The
+ * lime, violet, forest green, crimson and umber), with what the key and the switches call them. The
  * index is one more than the kind's place among the kinds, as a version 4 tile codes it, and 0,
  * which no switch turns off, is a tracer of no kind. */
 export const TRACER_OBJECTS = [
@@ -30,6 +30,7 @@ export const TRACER_OBJECTS = [
   { id: "classical_cepheid", title: "Classical Cepheids", colour: [0.65, 0.4, 1, POINT_OPACITY] },
   { id: "rr_lyrae_star", title: "RR Lyrae stars", colour: [0.1, 0.6, 0.15, POINT_OPACITY] },
   { id: "globular_cluster", title: "Globular clusters", colour: [0.9, 0.1, 0.35, POINT_OPACITY] },
+  { id: "molecular_cloud", title: "Molecular clouds", colour: [0.55, 0.35, 0, POINT_OPACITY] },
 ] as const satisfies readonly { id: ObjectKind | "unknown"; title: string; colour: Rgba }[];
 
 /** The kinds of object a Galaxy tracer is, in the order of `TRACER_OBJECTS`. */

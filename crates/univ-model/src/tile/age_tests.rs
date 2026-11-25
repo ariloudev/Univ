@@ -156,9 +156,13 @@ fn every_kind_of_object_round_trips_and_a_code_beyond_them_is_refused() {
     assert_eq!(object_kind_of_code(0), Ok(None));
     let mut bytes = encode_as(VERSION, &node(), &points()).unwrap();
     let last = bytes.len() - 1;
-    bytes[last] = 8;
+    let beyond = u8::try_from(OBJECT_KINDS.len() + 1).unwrap();
+    bytes[last] = beyond;
     assert_eq!(
         decode(&bytes),
-        Err(TileError::ObjectKind { point: 3, code: 8 })
+        Err(TileError::ObjectKind {
+            point: 3,
+            code: beyond
+        })
     );
 }
