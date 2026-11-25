@@ -10,6 +10,15 @@ versions:
     title: "Specify the galaxy model"
     goal: "spec/ describes the model Galaxy's points, its arms over the whole disc with the published far-side fits, the far-side tracers, and how Univ Server and Univ Explorer serve and draw them; approved and committed"
     status: active
+  - key: 01a213cf-3c35-7160-8edf-b0c204603a5e
+    at: 2026-11-25T17:44:38Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Specify the galaxy model"
+    goal: "spec/ describes the model Galaxy's points, its arms over the whole disc with the published far-side fits, the far-side tracers, and how Univ Server and Univ Explorer serve and draw them; approved and committed"
+    status: done
 blocks:
   - key: 01a213bc-6148-7228-b0fc-442be3a5ceb6
     id: choices-so-far
@@ -2794,3 +2803,27 @@ blocks:
           email: "2330548+ariloudev@users.noreply.github.com"
         channel: terminal
         verdict: approved
+  - key: 01a213cf-3c35-7160-8edf-b0c1254e234b
+    id: spec-result
+    kind: note
+    versions:
+      - key: 01a213cf-3c35-7160-8edf-b0c3779323f3
+        at: 2026-11-25T17:44:38Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "What the specification stage produced"
+        markdown: |-
+          Approved and committed as `1b03135` (`spec: the galaxy model, the arms' far side and the far-side tracers`).
+
+          | Product | New | Changed |
+          |---|---|---|
+          | Univ Ingest | Build the Galaxy model; Record a researched arm tracer | Record a researched structure; Build octree tiles |
+          | Univ Server | Read the Galaxy model | Fetch a tile manifest; Decode the tile format |
+          | Univ Explorer | See the Galaxy model | See the Galaxy's arms face-on |
+
+          Three decisions: the model as a scale domain of model points; the best published fit of each stretch of an arm; covered model points kept and marked.
+
+          Still open: before the far-side numbers go into structure and tracer files, read Hyland 2026 (its pitch angles differ between Table 3 and the text) and confirm Sun et al. 2024's journal volume and azimuth convention.
+        tone: success

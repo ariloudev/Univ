@@ -1,0 +1,12 @@
+key: 01a213d9-ef16-725b-8970-d745a8531f14
+id: wave-4
+versions:
+  - key: 01a213d9-ef16-725b-8970-d74abf3dc0ed
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 4: Univ Explorer"
+    goal: "Univ Explorer draws the Galaxy model as light, hides covered points while their counterparts are drawn, marks it as a model, and the arms view shows it; merged from stage/galaxy-model-4"
+    status: planned

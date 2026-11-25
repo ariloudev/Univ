@@ -10,3 +10,12 @@ versions:
     title: "Wave 3: explorer"
     goal: "Univ Explorer draws the model Galaxy, marked as a model, and the arms view shows it"
     status: planned
+  - key: 01a213d9-ef16-725b-8970-d749a291b09c
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 3: Univ Server"
+    goal: "Univ Server serves GET /v1/galaxy-model and lists and describes the galaxy_model domain; merged from stage/galaxy-model-3"
+    status: planned

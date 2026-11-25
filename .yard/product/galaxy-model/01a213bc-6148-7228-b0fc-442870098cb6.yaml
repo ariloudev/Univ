@@ -10,3 +10,12 @@ versions:
     title: "Wave 1: model and ingest"
     goal: "Univ Ingest builds the far-side arms and tracers and the galaxy_model scale domain's tiles (encoding 5) from cited parameters, deterministically"
     status: planned
+  - key: 01a213d9-ef16-725b-8970-d747183721c2
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 1: the arms' far side and the tracers"
+    goal: "Univ Ingest records the far-side arm fits as structures with an arm name, the researched arm tracers as objects (molecular clouds among them), and a science check measures each tracer's distance from its arm; merged from stage/galaxy-model-1"
+    status: active
