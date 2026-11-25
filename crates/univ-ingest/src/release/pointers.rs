@@ -97,8 +97,7 @@ pub fn geometry(g: &StructureGeometry) -> Vec<Pointed<'_>> {
 pub fn position(s: &Structure) -> Vec<Pointed<'_>> {
     s.position
         .as_ref()
-        .map(|p| coordinates("/position", p))
-        .unwrap_or_default()
+        .map_or_default(|p| coordinates("/position", p))
 }
 
 /// The pointer to the structure value `name`.

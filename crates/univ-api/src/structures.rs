@@ -168,16 +168,13 @@ fn centre(row: &Row) -> Result<Option<Centre>, Problem> {
 /// (no filter) when the parameter is absent or names no value, as a form sends `kind=` when
 /// nothing is chosen.
 fn list_param(request: &Request, name: &str) -> Value {
-    let values: Vec<String> = request
-        .param(name)
-        .map(|text| {
-            text.split(',')
-                .map(str::trim)
-                .filter(|v| !v.is_empty())
-                .map(str::to_owned)
-                .collect()
-        })
-        .unwrap_or_default();
+    let values: Vec<String> = request.param(name).map_or_default(|text| {
+        text.split(',')
+            .map(str::trim)
+            .filter(|v| !v.is_empty())
+            .map(str::to_owned)
+            .collect()
+    });
     if values.is_empty() {
         Value::Null
     } else {

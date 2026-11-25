@@ -445,8 +445,7 @@ pub fn normalize_until(
         for file in files {
             let name = file
                 .file_name()
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default();
+                .map_or_default(|n| n.to_string_lossy().into_owned());
             let table = crate::fits::unpack(&name, read(file)?)
                 .and_then(|fits| bintable::first_table(&fits))
                 .map_err(|e| NormalizeError::table(&definition.id, file, e.to_string()))?;
