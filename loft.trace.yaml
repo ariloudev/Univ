@@ -2307,6 +2307,24 @@ links:
       - file: "crates/univ-ingest/tests/publish.rs"
         name: "every_uploaded_file_is_checked_against_its_sha256_and_latest_moves_last"
         body: 59b3a550a01bf84aa759e8a4b13a327866cc82a6a550a482828e7473b89b958e
+  - node: 01a2134c-be65-729f-bbd9-07e9b56218ef
+    reviewed: 52861e0cce03b5f70073124e7adc84a1edceefde65fcd7f3eef29d1b2b65e9cc
+    tests:
+      - file: "crates/univ-ingest/tests/publish_d1_files.rs"
+        name: "the_database_file_written_is_the_one_wrangler_dev_opens_for_the_database_id"
+        body: d53e0a67e41e87674d881958108ed56c59d1491a734acf49be08f8700314949d
+  - node: 01a2134c-be65-729f-bbd9-07ea7b73c17c
+    reviewed: 4521791abccc83237a0062d7d72c884d2fa5eb087716271360965a2cfa2d96b5
+    tests:
+      - file: "crates/univ-ingest/tests/publish_d1_files.rs"
+        name: "once_a_file_is_written_its_rows_are_in_the_database_and_its_log_is_empty"
+        body: 2928d419bcff81cd2b4bcb3166a5366d0d96cbd0a27b18d970ac07f245fa2f9e
+  - node: 01a2134c-be65-729f-bbd9-07eb5ad552c9
+    reviewed: 53f87a5c8e0089c2063af37a8e36d9196db4e27f84925ce8b615b77d35778a39
+    tests:
+      - file: "crates/univ-ingest/tests/publish_d1_files.rs"
+        name: "a_file_that_fails_part_way_leaves_none_of_its_rows"
+        body: bf96e6e784d96d2d6be19bd183da92a42276c882e6c27b378e920ef9d3160b31
   - node: 01a19f23-636f-72bd-b194-154384255e3e
     reviewed: b1716cd28b23d0bf2290e955aa9104a7aa0f13b90ebcf29af60067c06b444d42
     tests:
