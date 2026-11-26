@@ -10,3 +10,12 @@ versions:
     title: "Wave 4: Univ Explorer"
     goal: "Univ Explorer draws the Galaxy model as light, hides covered points while their counterparts are drawn, marks it as a model, and the arms view shows it; merged from stage/galaxy-model-4"
     status: planned
+  - key: 01a2153b-6b98-733d-8618-fa3d98421804
+    at: 2026-11-26T00:22:25Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 4: Univ Server and Univ Explorer"
+    goal: "Univ Server serves GET /v1/galaxy-model and lists the galaxy_model domain; Univ Explorer draws the Galaxy model as light, hides covered points while their counterparts are drawn, marks it as a model, and the arms view shows it; merged from stage/galaxy-model-4"
+    status: active

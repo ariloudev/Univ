@@ -28,3 +28,12 @@ versions:
     title: "Wave 2: the Galaxy model"
     goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition (schema 9); merged from stage/galaxy-model-2"
     status: active
+  - key: 01a2153b-6b98-733d-8618-fa3bbfb9033c
+    at: 2026-11-26T00:22:25Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 2: the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition (schema 9); merged from stage/galaxy-model-2"
+    status: done

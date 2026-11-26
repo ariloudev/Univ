@@ -19,3 +19,12 @@ versions:
     title: "Wave 3: Univ Server"
     goal: "Univ Server serves GET /v1/galaxy-model and lists and describes the galaxy_model domain; merged from stage/galaxy-model-3"
     status: planned
+  - key: 01a2153b-6b98-733d-8618-fa3ced8f87fc
+    at: 2026-11-26T00:22:25Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 3: Univ Server, inside wave 4"
+    goal: "Folded into wave 4 at the owner's choice (2026-11-26): its endpoint and listing are built in stage/galaxy-model-4"
+    status: done
