@@ -18,7 +18,7 @@ import { domainOpacity } from "./starsFade.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
-import { pointSizeOf } from "./tracers.ts";
+import { NATURAL_COLOURS, TRACERS_DOMAIN, pointSizeOf } from "./tracers.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
 /** The browser cannot draw with WebGL2. */
@@ -143,6 +143,9 @@ export class Renderer implements Drawer {
   private readonly hiddenObjects: WebGLUniformLocation | null;
   private readonly light: WebGLUniformLocation | null;
   private readonly coveredHidden: WebGLUniformLocation | null;
+  /** Whether the Galaxy tracers are drawn in their kinds' natural colours. */
+  private natural = true;
+  private readonly naturalOn: WebGLUniformLocation | null;
   /** The point program's `a_inside`. */
   private readonly insideAt: number;
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
@@ -180,6 +183,8 @@ export class Renderer implements Drawer {
     this.light = gl.getUniformLocation(this.points.program, "u_light");
     this.coveredHidden = gl.getUniformLocation(this.points.program, "u_coveredHidden");
     const at = (name: string) => gl.getUniformLocation(this.points.program, name);
+    this.naturalOn = at("u_natural");
+    gl.uniform3fv(at("u_naturalColours"), new Float32Array(NATURAL_COLOURS.flatMap(([r, g, b]) => [r, g, b])));
     this.detailAt = { onsets: at("u_onsets"), cumulative: at("u_cumulative"), slice: at("u_slice"), count: at("u_count") };
     // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
     // its points take their kind's (WebGL's default would be opaque black).
@@ -328,6 +333,11 @@ export class Renderer implements Drawer {
     this.masks = masks;
   }
 
+  /** Draws the Galaxy tracers in their kinds' natural colours, or in their kinds' own. */
+  setNaturalColours(on: boolean): void {
+    this.natural = on;
+  }
+
   /** Draws none of the outlines and markers named in `names`. */
   hideNames(names: ReadonlySet<string>): void {
     this.hiddenNames = names;
@@ -460,13 +470,7 @@ export class Renderer implements Drawer {
    * rank lies below the share its domain needs at its distance. */
   private drawBatch(frame: Frame, { batch, count, fade }: ToDraw<Batch>, distance: number, detail: DrawnDetail): void {
     const gl = this.gl;
-    if (batch.domain !== this.detailOf) {
-      this.detailOf = batch.domain;
-      const domainDetail = detail.detail(batch.domain);
-      this.useDetail(domainDetail);
-      this.domainOpacity = domainOpacity(batch.domain, domainDetail, distance);
-      gl.uniform1f(this.pointSize, pointSizeOf(batch.domain));
-    }
+    if (batch.domain !== this.detailOf) this.useDomain(batch.domain, detail, distance);
     const inside = detail.inside(batch.id);
     this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
@@ -479,11 +483,24 @@ export class Renderer implements Drawer {
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
   }
 
+  /** Sets the point program for the points of `domain`, the eye `distance` from the focus: its
+   * detail, opacity, point size and colours. */
+  private useDomain(domain: string, detail: DrawnDetail, distance: number): void {
+    const gl = this.gl;
+    this.detailOf = domain;
+    const domainDetail = detail.detail(domain);
+    this.useDetail(domainDetail);
+    this.domainOpacity = domainOpacity(domain, domainDetail, distance);
+    gl.uniform1f(this.pointSize, pointSizeOf(domain));
+    gl.uniform1i(this.naturalOn, Number(this.natural && domain === TRACERS_DOMAIN));
+  }
+
   /** The structures' markers, of the kind no mask holds and of no source. */
   private drawMarkers(frame: Frame): void {
     const gl = this.gl;
     gl.uniform1f(this.opacity, 1);
     gl.uniform1i(this.light, 0);
+    gl.uniform1i(this.naturalOn, 0);
     // Every marker drawn: one level holding all, and a slice that ranks every point first.
     this.useDetail(EVERYTHING);
     gl.uniform2f(this.detailAt.slice, 0, 0);

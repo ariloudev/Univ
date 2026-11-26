@@ -6,7 +6,7 @@ import { DOMAINS, bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts
 import { Catalogue, KEEP_ALLOWANCE } from "./catalogue.ts";
 import { EVERYTHING } from "./lod.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
-import { TRACER_KINDS } from "../scene/tracers.ts";
+import { TRACER_KINDS, objectIndex, shownColour, tracerColour } from "../scene/tracers.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import type { Sight } from "../scene/frustum.ts";
 import type { Vec3 } from "../scene/vec.ts";
@@ -164,7 +164,7 @@ describe("the catalogue", () => {
     }
   });
 
-  it("counts the Galaxy's tracers by kind of object, each in its kind's colour, and their kinds of value apart from the other points", async () => {
+  it("counts the Galaxy's tracers by kind of object, each in the colour it is drawn in, and their kinds of value apart from the other points", async () => {
     // The SIMULATED tracers' version 4 fixture, served as the tracers' domain: every ninth point
     // of no kind.
     const web = server(undefined, undefined, ["galaxy_tracers"]);
@@ -178,7 +178,13 @@ describe("the catalogue", () => {
     expect(lines.map((line) => line.id)).toEqual([...TRACER_KINDS, "unknown"]);
     for (const line of lines) expect(line.points).toBe(of(line.id === "unknown" ? undefined : line.id));
     expect(lines.reduce((sum, line) => sum + line.points, 0)).toBe(points.length);
-    expect(new Set(lines.map((line) => line.colour)).size).toBe(lines.length);
+    // In their kinds' natural colours unless natural colours are off, then each in its own.
+    expect(lines.map((line) => line.colour)).toEqual(lines.map((line) => shownColour(objectIndex(line.id), true)));
+    catalogue.setNaturalColours(false);
+    const own = catalogue.tracers();
+    expect(own.map((line) => line.colour)).toEqual(own.map((line) => tracerColour(objectIndex(line.id))));
+    expect(new Set(own.map((line) => line.colour)).size).toBe(own.length);
+    catalogue.setNaturalColours(true);
     expect(catalogue.kinds.reduce((a, b) => a + b, 0)).toBe(0);
     // Their kinds of value counted apart, so that the key still says how many are inferred.
     expect(catalogue.tracerKinds.reduce((a, b) => a + b, 0)).toBe(points.length);

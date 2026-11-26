@@ -28,7 +28,7 @@ import type { Rgba } from "../scene/drawing.ts";
 import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { MODEL_DOMAIN, coversOf, modelPointsShown } from "../scene/model.ts";
-import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds, shownColour } from "../scene/tracers.ts";
 import { type Box, type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, type ModelLook, TileFailed, fetchBatch } from "./tiles.ts";
 
@@ -173,6 +173,8 @@ export class Catalogue implements DrawnDetail {
   private sight: Sight | undefined;
   /** Whether the tiles held follow the view within the budget; off, every tile is fetched. */
   private levelOfDetail = true;
+  /** Whether the Galaxy tracers are drawn in their kinds' natural colours. */
+  private natural = true;
   /** Each domain's detail as the view needs it at `viewedFocal`, by domain. */
   private readonly viewedDomains = new Map<string, Detail>();
   private viewedFocal = 0;
@@ -498,11 +500,17 @@ export class Catalogue implements DrawnDetail {
     this.tracerKinds[kind] = (this.tracerKinds[kind] ?? 0) + n;
   }
 
-  /** Each kind of object of the Galaxy's tracers, its colour and its points drawn, and the
-   * tracers of unknown kind where any are drawn; none where the release holds no tracers. */
+  /** Shows the Galaxy tracers' kinds in their natural colours, or in their own. */
+  setNaturalColours(on: boolean): void {
+    this.natural = on;
+  }
+
+  /** Each kind of object of the Galaxy's tracers, the colour its points are drawn in and its
+   * points drawn, and the tracers of unknown kind where any are drawn; none where the release
+   * holds no tracers. */
   tracers(): TracerLine[] {
     if (!this.domains.has(TRACERS_DOMAIN)) return [];
-    const lines = TRACER_OBJECTS.map(({ id, title, colour }, object) => ({ id, title, colour, points: this.tracerPoints[object] ?? 0 }));
+    const lines = TRACER_OBJECTS.map(({ id, title }, object) => ({ id, title, colour: shownColour(object, this.natural), points: this.tracerPoints[object] ?? 0 }));
     // Those of unknown kind last, and only where any are drawn.
     const [unknown, ...kinds] = lines;
     // A release whose tiles give no kind of object holds tracers of unknown kind alone.

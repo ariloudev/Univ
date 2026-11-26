@@ -171,7 +171,7 @@ describe("the Show drawer's dust map", () => {
       [],
     );
     const lines = TRACER_OBJECTS.slice(1).map(({ id, title }, i) => ({ id, title, colour: tracerColour(i + 1), points: (i + 1) * 1000 }));
-    const tracers = { frame: createStore(0), lines: () => lines };
+    const tracers = { frame: createStore(0), lines: () => lines, natural: [false, vi.fn()] as const };
     const onApply = vi.fn();
     render(<ShowPanel choices={withTracers} hidden={hiddenInAddress("?hide=object:open_cluster")} onApply={onApply} tracers={tracers} />);
     const chips = within(screen.getByTestId("show-objects")).getAllByRole("button");
@@ -184,6 +184,20 @@ describe("the Show drawer's dust map", () => {
     expect(screen.getByTestId("show-summary").textContent).toContain(`${lines.length - 1} of ${lines.length} kinds of object`);
     await userEvent.click(screen.getByRole("button", { name: "Luminous hot stars 1,000 drawn" }));
     expect(onApply).toHaveBeenCalledWith([{ group: "object", name: "luminous_hot_star", shown: false }]);
+  });
+
+  it("offers the switch of the tracers' natural colours as the view holds it, and turns it off", async () => {
+    const withTracers = choicesOf(
+      [...DOMAINS, "galaxy_tracers"].map((name) => ({ name, manifest: manifestOf(name) })),
+      [],
+    );
+    const set = vi.fn();
+    const tracers = { frame: createStore(0), lines: () => [], natural: [true, set] as const };
+    render(<ShowPanel choices={withTracers} hidden={hiddenInAddress("")} onApply={vi.fn()} tracers={tracers} />);
+    const natural = screen.getByRole("switch", { name: "Natural colours" });
+    expect((natural as HTMLInputElement).checked).toBe(true);
+    await userEvent.click(natural);
+    expect(set).toHaveBeenCalledWith(false);
   });
 
   it("offers no kinds of object where the release holds no tracers, nor counts them in the summary", () => {

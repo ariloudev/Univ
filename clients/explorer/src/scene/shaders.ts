@@ -5,6 +5,7 @@ import { LEVELS } from "../catalogue/lod.ts";
 import { DIMMING, STAR_STEPS } from "./dustGrid.ts";
 import { DUST_COLUMN } from "./dustShaders.ts";
 import { KINDS, MARKER_INDEX } from "./kinds.ts";
+import { NATURAL_COLOURS } from "./tracers.ts";
 
 /** The colours of the kinds of value and, after them, of structures' markers. */
 const COLOURS = KINDS.length + 1;
@@ -26,6 +27,10 @@ in float a_covered;
 // and objects say; a covered point hidden where bit a_covered of u_coveredHidden is set.
 uniform bool u_light;
 uniform uint u_coveredHidden;
+// Whether the batch, the Galaxy tracers', is drawn in its kinds' natural colours by object index
+// (draw-the-catalogues), each point at its own colour's opacity.
+uniform bool u_natural;
+uniform vec3 u_naturalColours[${NATURAL_COLOURS.length}];
 // The kinds of value, the kinds of object, and the batch's sources by index, turned off
 // (choose-what-is-drawn).
 uniform uint u_hiddenKinds;
@@ -78,6 +83,7 @@ void main() {
   gl_PointSize = u_size;
   // A point with its own colour, a star, is drawn in it; any other in its kind's.
   vec4 base = a_colour.a > 0.0 ? a_colour : u_colours[int(a_kind)];
+  if (u_natural) base.rgb = u_naturalColours[int(a_object)];
   // Dimmed by the dust between the eye and the point, none where the point is before it; a
   // structure's marker shown whatever lies before it.
   // The Galaxy model is the Galaxy's intrinsic light: no dust dims it.

@@ -9,7 +9,7 @@ import type { ObjectKind } from "univ-tile-decoder";
 
 import type { Rgba } from "./drawing.ts";
 import { POINT_OPACITY } from "./kinds.ts";
-import { toBytes } from "./starColour.ts";
+import { NO_COLOUR_GREY, starColour, toBytes } from "./starColour.ts";
 
 /** The scale domain of the Galaxy's tracers. */
 export const TRACERS_DOMAIN = "galaxy_tracers";
@@ -53,6 +53,46 @@ export const TRACER_COLOURS: readonly Rgba[] = TRACER_OBJECTS.map((o) => o.colou
 
 /** The colour of a tracer of object index `object`: that of unknown kind for an index of none. */
 export const tracerColour = (object: number): Rgba => (TRACER_OBJECTS[object] ?? TRACER_OBJECTS[0]).colour;
+
+/** The colour a star of colour index B−V `index` is drawn in. */
+const ofIndex = (index: number): Rgba => starColour({ index, bands: "B-V" });
+
+/** Each kind of object's natural colour, by object index as `TRACER_OBJECTS` (draw-the-catalogues):
+ * the colour a star of the kind's typical colour index B−V is drawn in, a choice for each, being
+ * the middle of what such stars show: −0.30 for a luminous hot star, an O9 to B0 dwarf along
+ * Pecaut & Mamajek 2013's sequence; −0.10 for an open cluster, whose light its brightest B stars
+ * give; 0.35 for an RR Lyrae star, between the type c's 0.2 and the type ab's 0.45 (Catelan &
+ * Smith 2015); 0.70 for a classical Cepheid, between 0.4 and 1.0 over its cycle and its period,
+ * and for a globular cluster, the middle of Harris 1996's integrated colours. A star-forming
+ * region is the pink of hydrogen's Balmer emission, as the Galaxy model's knots; a molecular
+ * cloud, which shines in no visible light, a dark dust brown; a tracer of unknown kind the grey
+ * of a star without a colour index. */
+const NATURAL_HUES: readonly Rgba[] = [
+  NO_COLOUR_GREY,
+  ofIndex(-0.3),
+  ofIndex(-0.1),
+  [1, 120 / 255, 170 / 255, POINT_OPACITY],
+  ofIndex(0.7),
+  ofIndex(0.35),
+  ofIndex(0.7),
+  [0.35, 0.25, 0.18, POINT_OPACITY],
+];
+
+/** The brightest channel of `colour`. */
+const brightest = ([r, g, b]: Rgba): number => Math.max(r, g, b);
+
+/** Each natural hue as bright as its kind's own colour, its brightest channel the same, so that
+ * natural colours change a point's hue and neither its brightness nor its opacity. */
+export const NATURAL_COLOURS: readonly Rgba[] = NATURAL_HUES.map((hue, object) => {
+  const own = tracerColour(object);
+  const scale = brightest(own) / brightest(hue);
+  return [hue[0] * scale, hue[1] * scale, hue[2] * scale, own[3]];
+});
+
+/** The colour of a tracer of object index `object` in the key and the Show drawer: its natural
+ * colour while `natural`, else its kind's. */
+export const shownColour = (object: number, natural: boolean): Rgba =>
+  natural ? (NATURAL_COLOURS[object] ?? NO_COLOUR_GREY) : tracerColour(object);
 
 const BYTES = TRACER_COLOURS.map(toBytes);
 

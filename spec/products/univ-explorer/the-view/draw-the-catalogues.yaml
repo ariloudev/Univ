@@ -174,7 +174,8 @@ requirements:
         name: "The view names the frame whose axes it shows, the origin, the unit of its distances and the release cosmology."
   - key: 01a1c319-7860-76e8-92ac-c5e5caae2dff
     statement:
-      form: ubiquitous
+      form: state_driven
+      while: "the person has turned natural colours off"
       system: "Univ Explorer"
       shall: "draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point."
     criteria:
@@ -192,6 +193,23 @@ requirements:
         name: "A luminous hot star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd about the Sun they do not add up to white."
       - key: 01a217b5-074b-72cd-a2ce-7d9d389f58c2
         name: "An RR Lyrae star of the Galaxy tracers domain where more than 4 RR Lyrae stars of its tile share its cell, a 64th of the tile's edge, is drawn at 4 over their number of its opacity, never below a tenth, so that the bulge does not add up to white while the halo and the Sagittarius stream keep the other kinds' opacity."
+  - key: 01a217ba-46fa-73d1-8584-7bab30f4ae16
+    statement:
+      form: state_driven
+      while: "natural colours are on"
+      system: "Univ Explorer"
+      shall: "draw each point of the Galaxy tracers domain in the colour a star of its kind of object shows, larger than a star's point."
+    criteria:
+      - key: 01a217ba-46fa-73d1-8584-7bac65881b4d
+        name: "Natural colours are on unless the person turns them off, and the page's address keeps them off while they are off."
+      - key: 01a217ba-46fa-73d1-8584-7bad00feeb7a
+        name: "With natural colours on, a point of the Galaxy tracers domain is drawn in the hue a star of its kind's typical colour index B−V is drawn in, as bright as its kind's own colour: −0.30 for a luminous hot star, −0.10 for an open cluster, 0.35 for an RR Lyrae star, and 0.70 for a classical Cepheid or a globular cluster."
+      - key: 01a217ba-46fa-73d1-8584-7baefb1762b1
+        name: "With natural colours on, a star-forming region is drawn in the pink of hydrogen's Balmer emission, a molecular cloud in a dark dust brown, and a tracer of unknown kind in the grey of a star without a colour index."
+      - key: 01a217ba-46fa-73d1-8584-7baf496214a1
+        name: "Turning natural colours on or off changes neither a point's opacity nor the brightest channel of its colour."
+      - key: 01a217ba-46fa-73d1-8584-7bb0fbe1a489
+        name: "The key and the Show drawer show each kind of object of the Galaxy tracers domain in the colour its points are drawn in."
   - key: 01a1c319-7860-76e8-92ac-c5e9e544de53
     statement:
       form: ubiquitous
