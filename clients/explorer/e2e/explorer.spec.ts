@@ -594,9 +594,8 @@ test("opens the arms view beside Return to Earth: the young tracers and the arms
   await expect(page).toHaveURL(/structure%3Avoid/);
   await page.getByRole("button", { name: "Show", exact: true }).click();
   const drawer = page.getByRole("complementary", { name: "Show" });
-  await expect(drawer.getByLabel("Galaxy tracers", { exact: true })).toBeChecked();
   await expect(drawer.getByLabel("Galaxy model", { exact: true })).toBeChecked();
-  for (const domain of ["Stars", "Nearby galaxies", "Cosmic web"]) await expect(drawer.getByLabel(domain, { exact: true })).not.toBeChecked();
+  for (const domain of ["Galaxy tracers", "Stars", "Nearby galaxies", "Cosmic web"]) await expect(drawer.getByLabel(domain, { exact: true })).not.toBeChecked();
   for (const kind of ["Luminous hot stars", "Open clusters", "Star-forming regions"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "true");
   for (const kind of ["Classical Cepheids", "RR Lyrae stars", "Globular clusters"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "false");
   await expect(drawer.getByRole("button", { name: "Tracers younger than 30 million years" })).toHaveAttribute("aria-pressed", "true");

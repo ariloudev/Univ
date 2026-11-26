@@ -25,9 +25,16 @@ function showOf(parts: Partial<Pick<ShowPanelProps, "onApply" | "age">>, domains
 const ageOf = (choose: (cut: AgeCut) => void): AgeState => ({ cut: undefined, choose, held: () => ({ tracers: 0, aged: 0 }), frame: createStore(0) });
 
 describe("what the arms view draws (see-the-galaxys-arms-face-on)", () => {
-  it("turns the Galaxy tracers and Galaxy model domains on and every other off", () => {
-    const start = hiddenInAddress("?hide=domain:galaxy_tracers,domain:galaxy_model");
+  it("turns the Galaxy model domain on and every other off", () => {
+    const start = hiddenInAddress("?hide=domain:galaxy_model");
     const hidden = applied(start, armsChanges(start, DOMAINS, []));
+    expect([...hidden.domain].sort()).toEqual(["cosmic_web", "galaxy_tracers", "nearby_galaxies", "stars"]);
+  });
+
+  it("turns the Galaxy tracers domain on in the model's place where the release holds no model", () => {
+    const start = hiddenInAddress("?hide=domain:galaxy_tracers");
+    const held = DOMAINS.filter((d) => d !== "galaxy_model");
+    const hidden = applied(start, armsChanges(start, held, []));
     expect([...hidden.domain].sort()).toEqual(["cosmic_web", "nearby_galaxies", "stars"]);
   });
 

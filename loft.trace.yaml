@@ -5957,7 +5957,7 @@ links:
         body: 31d9ee634d7d3d536e60d3156ca2df9c45036f14c3ae552dd26e30d460165027
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c9001874842a
     reviewed: ba9c48477acfc37d69d1a19a18780e0a67b8e37318428be24242e7794d7f339e
     tests:
@@ -6007,14 +6007,20 @@ links:
         name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
         body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90774284032
-    reviewed: 1033915a9673b60c988eb75e711c941c56d066bebd8220c878ecc13b10034a11
+    reviewed: 22f340fea34369ffff6e047fe84cc7c71012da7364317d08d8ba0ec0f4c72126
     tests:
       - file: "clients/explorer/src/ui/arms.test.ts"
-        name: "turns the Galaxy tracers and Galaxy model domains on and every other off"
-        body: e117aede4cd71f5cafb5e6ba86d2239093a8bd9135411ea1f38f4f4aca7da6cb
+        name: "turns the Galaxy model domain on and every other off"
+        body: f9701051558d935db0daa7a981738ec97ddc200d2b666e87a7d53e42b67a6980
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
+  - node: 01a215ab-d2c4-71d9-95bb-eb7467a67e6d
+    reviewed: e635a3406827097937d1d1e825deabe56bf9fb21b7a6ee3818230f18844f775e
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the Galaxy tracers domain on in the model's place where the release holds no model"
+        body: bca0a069f65b6b5a5bf62b157a8979c46b53da8ad053a982a465d2df03edd860
   - node: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
     reviewed: 0fe5ee917bce0ddc5b7d651d6aa8aaf66f4a6a1e69928cdc6d36e966107e48cd
     tests:
@@ -6023,7 +6029,7 @@ links:
         body: 73ae81b6e970c80d5663fef5bd5522298ef4b53f96f5773afc2460ed66c0875f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664
     reviewed: 0c8a3730b93494da479eeab20e52b7fc4c73c8619903536b8cc5e58e2a0b7365
     tests:
@@ -6032,7 +6038,7 @@ links:
         body: 73ae81b6e970c80d5663fef5bd5522298ef4b53f96f5773afc2460ed66c0875f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1
     reviewed: 921840aa20a9509b1ed8ae9dc4b355ff2419d5cfa412eb8e028aedd481756c89
     tests:
@@ -6041,7 +6047,7 @@ links:
         body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90a7548931b
     reviewed: ba0bd538fbd04380fa6d9fc2dd2ec03a0984f3c9b65992853a190d121fda367a
     tests:
@@ -6062,7 +6068,7 @@ links:
         body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2
     reviewed: 7444c82685e2d7179a096e0d043ee95b492563b6ec0e5631ee8a948339526ccc
     tests:
@@ -6086,7 +6092,7 @@ links:
         body: f2effe8ec4c89d4ceba39443e0aa3afe3a266d323aab3fb02d87955d270d4851
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: 945f52e2e44851e7491ee6d81103d16ab13b2a12659121bd6dde546ce2399b04
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8
     reviewed: ad3e5881d1a178741689df2eb2d24fbb591bf62e9e85d546f8a4d978ce25dc41
     tests:
