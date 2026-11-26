@@ -7,6 +7,7 @@ import type { KindOfValue } from "univ-tile-decoder";
 
 import type { Hidden } from "../ui/hidden.ts";
 import { KIND_INDEX } from "./kinds.ts";
+import { coveredHiddenOf } from "./model.ts";
 import { isTracerKind, objectIndex } from "./tracers.ts";
 
 /** The bits a source mask holds: a source of a higher index in its manifest cannot be turned
@@ -23,10 +24,13 @@ export interface Masks {
   objects: number;
   /** For each domain, bit `index` set for each of its sources turned off. */
   sources: ReadonlyMap<string, number>;
+  /** Bit `c` set for each cover `c` (model.ts) whose Galaxy model points are hidden, their
+   * counterparts' domain being drawn. */
+  covered: number;
 }
 
 /** Nothing turned off. */
-export const NO_MASKS: Masks = { domains: new Set(), kinds: 0, objects: 0, sources: new Map() };
+export const NO_MASKS: Masks = { domains: new Set(), kinds: 0, objects: 0, sources: new Map(), covered: 0 };
 
 /** A domain and the sources of its manifest, by index and id. */
 export interface MaskedDomain {
@@ -46,7 +50,8 @@ export function masksOf(hidden: Pick<Hidden, "domain" | "source" | "kind" | "obj
     for (const { index, id } of manifest.sources) if (index < MASK_BITS && hidden.source.has(id)) bits |= 1 << index;
     sources.set(name, bits >>> 0);
   }
-  return { domains: hidden.domain, kinds, objects, sources };
+  const covered = coveredHiddenOf(hidden.domain, domains.map((d) => d.name));
+  return { domains: hidden.domain, kinds, objects, sources, covered };
 }
 
 /** Whether a point of `domain`, of the source, kind of value and object index given, is drawn. */

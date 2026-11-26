@@ -23,6 +23,7 @@ fn a_tracer_source_names_the_galaxy_tracers_domain_and_its_kind_of_object() {
         ("rr_lyrae_star", ObjectKind::RrLyraeStar),
         ("star_forming_region", ObjectKind::StarFormingRegion),
         ("luminous_hot_star", ObjectKind::LuminousHotStar),
+        ("molecular_cloud", ObjectKind::MolecularCloud),
     ] {
         let definition = read(&tracers(Some(name))).unwrap();
         assert_eq!(definition.scale_domain, ScaleDomain::GalaxyTracers);

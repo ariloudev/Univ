@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { STRUCTURE_FAMILIES } from "../scene/kinds.ts";
+import { MODEL_DOMAIN } from "../scene/model.ts";
 import { TRACERS_DOMAIN, TRACER_KINDS, type TracerKind } from "../scene/tracers.ts";
 import { setInAddress } from "./address.ts";
 import type { AgeCut } from "./age.ts";
@@ -16,9 +17,10 @@ import type { World } from "./useWorld.ts";
 /** The age below which the arms view draws the Galaxy's tracers, millions of years. */
 export const ARMS_AGE: AgeCut = 30;
 
-/** The kinds of object the arms view draws: the young tracers of the arms. Cepheids, RR Lyrae
- * stars and globular clusters, older, it turns off. */
-export const ARM_TRACERS: readonly TracerKind[] = ["luminous_hot_star", "open_cluster", "star_forming_region"];
+/** The kinds of object the arms view draws: the young tracers of the arms and the molecular
+ * clouds the arms' stars form in. Cepheids, RR Lyrae stars and globular clusters, older, it turns
+ * off. */
+export const ARM_TRACERS: readonly TracerKind[] = ["luminous_hot_star", "open_cluster", "star_forming_region", "molecular_cloud"];
 
 /** The kinds of structure the arms view draws: the family of the Galaxy's arms. */
 export const ARM_STRUCTURES: readonly string[] = STRUCTURE_FAMILIES.find((f) => f.family === "the Galaxy's arms")?.kinds ?? [];
@@ -29,15 +31,18 @@ const ARMS = "arms";
 /** Whether the page's address asks for the arms view: `view=arms`. */
 export const armsInAddress = (search: string): boolean => new URLSearchParams(search).get("view") === ARMS;
 
-/** The changes that make what is drawn the arms view's, from `hidden`: the Galaxy tracers domain
- * on and every other of `domains` off; the arms' tracers on and the other kinds of object off;
+/** The changes that make what is drawn the arms view's, from `hidden`: the Galaxy model domain on
+ * and every other of `domains` off, or the Galaxy tracers domain where `domains` hold no model; the arms' tracers on and the other kinds of object off;
  * the arms on and every other kind of structure, of `structureKinds` or any the explorer knows
  * (the address may open the view before the release's structures are read), off; and every
  * source and kind of value on. */
 export function armsChanges(hidden: Hidden, domains: readonly string[], structureKinds: readonly string[]): Change[] {
   const structures = [...new Set([...STRUCTURE_FAMILIES.flatMap((f) => f.kinds), ...structureKinds])];
   const only = (names: readonly string[], on: readonly string[]) => [names.filter((n) => on.includes(n)), names.filter((n) => !on.includes(n))] as const;
-  const [tracers, others] = only(domains, [TRACERS_DOMAIN]);
+  // The Galaxy model alone, the observed stars and tracers crowding the near arms; its young
+  // tracers in its place where the release holds no model.
+  const shown = domains.includes(MODEL_DOMAIN) ? MODEL_DOMAIN : TRACERS_DOMAIN;
+  const [tracers, others] = only(domains, [shown]);
   const [young, old] = only(TRACER_KINDS, ARM_TRACERS);
   const [arms, rest] = only(structures, ARM_STRUCTURES);
   return [

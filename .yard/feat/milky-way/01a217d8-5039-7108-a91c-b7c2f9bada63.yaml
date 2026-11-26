@@ -1,0 +1,34 @@
+key: 01a217d8-5039-7108-a91c-b7c2f9bada63
+id: galaxy-model
+versions:
+  - key: 01a217d8-5039-7108-a91c-b7c4be211fa8
+    at: 2026-11-26T12:33:02Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "The Galaxy model"
+    goal: "product/galaxy-model, cut from this branch, is merged back: the Galaxy model built on the Milky Way build, served and drawn"
+    status: done
+blocks:
+  - key: 01a217d8-5039-7108-a91c-b7c31d7ecd43
+    id: galaxy-model-result
+    kind: note
+    versions:
+      - key: 01a217d8-5039-7108-a91c-b7c5a2b53bf2
+        at: 2026-11-26T12:33:02Z
+        revision: 9
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "What the merge brought in"
+        markdown: |-
+          product/galaxy-model merged here, its waves 1, 2 and 4 (with 3 inside 4) each closed in its own Yard Log:
+
+          - the Galaxy's far-side arm fits and tracers;
+          - the cited Galaxy model definition, sampled into 10 million seeded model points with the covered ones marked, in tile encoding 5, and schema 9's `galaxy_models`;
+          - `GET /v1/galaxy-model`;
+          - Univ Explorer drawing the model as light, the arms view of the model alone, natural colours for the tracers, the crowded tracers and stars tamed, and pinch and two-finger move.
+
+          The owner asked to merge it all into develop and main, publish the spec and push; this branch goes into develop next.
+        tone: success

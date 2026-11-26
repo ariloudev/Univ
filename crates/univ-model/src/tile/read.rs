@@ -2,9 +2,9 @@
 
 use super::value::point_value;
 use super::{
-    DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, NodeBox, POINT_BYTES, Tile, TileError,
-    V1_POINT_BYTES, has_colour, has_object_kind, kind_of_code, max_points, object_kind_of_code,
-    point_bytes, tile_bytes,
+    DecodedPoint, HEADER_BYTES, MAGIC, MAX_TILE_BYTES, MODEL_VERSION, NodeBox, POINT_BYTES, Tile,
+    TileError, V1_POINT_BYTES, has_colour, has_object_kind, kind_of_code, max_points,
+    object_kind_of_code, point_bytes, tile_bytes,
 };
 use crate::ids::ObjectId;
 
@@ -23,16 +23,18 @@ fn f64_at(bytes: &[u8], at: usize) -> Result<f64, TileError> {
     array(bytes, at).map(f64::from_le_bytes)
 }
 
-/// Decodes a tile of a version this decoder knows (1 to 4) into its node and points.
-///
-/// # Errors
-///
-/// Fails, never panicking, on another magic or an unknown version (named), both read before the
-/// size, a reserved field that is not zero, a length other than its count gives or beyond [`MAX_TILE_BYTES`], a node that
-/// cannot stand, an object id outside 1 to 2^53 − 1, an unknown kind of value, or, from version
-/// 2, a value code the version does not define or one its value contradicts, or, from version
-/// 4, a kind of object code beyond the encoding's kinds of object.
-pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
+/// A tile's header once checked: its version, its count of points and its node, the bytes
+/// being of the length the count gives.
+pub(super) struct Header {
+    pub version: u16,
+    pub points: usize,
+    pub node: NodeBox,
+}
+
+/// Reads and checks the header of `bytes`: the magic, a version this decoder knows (named
+/// otherwise), both read before the size, the reserved fields, the length its count gives
+/// within [`MAX_TILE_BYTES`], and a node that can stand.
+pub(super) fn header(bytes: &[u8]) -> Result<Header, TileError> {
     let magic: [u8; 4] = array(bytes, 0)?;
     if magic != MAGIC {
         return Err(TileError::Magic(magic));
@@ -78,7 +80,52 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
     }
     let min = [f64_at(bytes, 16)?, f64_at(bytes, 24)?, f64_at(bytes, 32)?];
     let node = NodeBox::new(min, f64_at(bytes, 40)?)?;
-    let step = node.step();
+    Ok(Header {
+        version,
+        points: n,
+        node,
+    })
+}
+
+/// The quantized position of point `k` and its position at the centre of its step in `node`.
+pub(super) fn position_at(
+    bytes: &[u8],
+    node: &NodeBox,
+    k: usize,
+) -> Result<([u16; 3], crate::position::Vec3), TileError> {
+    let mut quantized = [0u16; 3];
+    for (i, q) in quantized.iter_mut().enumerate() {
+        *q = u16::from_le_bytes(array(bytes, HEADER_BYTES + 6 * k + 2 * i)?);
+    }
+    let (min, step) = (node.min(), node.step());
+    let position = [0, 1, 2].map(|i| min[i] + (f64::from(quantized[i]) + 0.5) * step);
+    Ok((quantized, position))
+}
+
+/// The byte of `bytes` at `at`.
+pub(super) fn byte_at(bytes: &[u8], at: usize) -> Result<u8, TileError> {
+    array::<1>(bytes, at).map(|[b]| b)
+}
+
+/// Decodes an object tile of a version this decoder knows (1 to 4) into its node and points.
+///
+/// # Errors
+///
+/// Fails, never panicking, on another magic or an unknown version (named), both read before the
+/// size, a reserved field that is not zero, a length other than its count gives or beyond [`MAX_TILE_BYTES`], a node that
+/// cannot stand, an object id outside 1 to 2^53 − 1, an unknown kind of value, or, from version
+/// 2, a value code the version does not define or one its value contradicts, or, from version
+/// 4, a kind of object code beyond the encoding's kinds of object; and on a version 5 tile,
+/// which holds the Galaxy model's points and [`super::decode_model`] reads.
+pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
+    let Header {
+        version,
+        points: n,
+        node,
+    } = header(bytes)?;
+    if version == MODEL_VERSION {
+        return Err(TileError::ModelVersion(version));
+    }
     let (ids, sources, kinds) = (
         HEADER_BYTES + 6 * n,
         HEADER_BYTES + 14 * n,
@@ -91,16 +138,12 @@ pub fn decode(bytes: &[u8]) -> Result<Tile, TileError> {
     let objects = HEADER_BYTES + POINT_BYTES * n;
     let mut points = Vec::with_capacity(n);
     for k in 0..n {
-        let mut quantized = [0u16; 3];
-        for (i, q) in quantized.iter_mut().enumerate() {
-            *q = u16::from_le_bytes(array(bytes, HEADER_BYTES + 6 * k + 2 * i)?);
-        }
+        let (quantized, position) = position_at(bytes, &node, k)?;
         let raw = u64::from_le_bytes(array(bytes, ids + 8 * k)?);
         let id = ObjectId::new(raw).map_err(|_| TileError::ObjectId { point: k, id: raw })?;
         let source = u16::from_le_bytes(array(bytes, sources + 2 * k)?);
         let [code] = array(bytes, kinds + k)?;
         let kind = kind_of_code(code).ok_or(TileError::Kind { point: k, code })?;
-        let position = [0, 1, 2].map(|i| min[i] + (f64::from(quantized[i]) + 0.5) * step);
         let value = if has_colour(version) {
             let held = i16::from_le_bytes(array(bytes, colours + 2 * k)?);
             let [code] = array(bytes, bands + k)?;

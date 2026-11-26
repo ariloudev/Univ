@@ -1,0 +1,48 @@
+key: 01a213c1-93e0-7343-9f8d-9b9e2c34b07c
+slug: record-a-researched-arm-tracer
+name: "Record a researched arm tracer"
+body: |
+  Turning what papers say about the few tracers of the spiral arms beyond the reach of Reid et al.
+  2019, such as the maser whose parallax Sanna et al. 2017 measured on the far side of the
+  Galactic Centre, or the molecular clouds of the outer Scutum-Centaurus arm, into objects of the
+  release, without a single uncited number. These tracers test the arms that the Galaxy model
+  follows where no star or maser of a survey reaches.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cee44add674
+  - 01a213c1-93e0-7343-9f8d-9b739c9f85f2
+requirements:
+  - key: 01a213c1-93e0-7343-9f8d-9b9fe243e919
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "read each researched arm tracer from a tracer file in which every number cites where it comes from."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9ba0270490c4
+        name: "A tracer file gives the tracer's sky position, its parallax or distance with the kind of value and uncertainty its paper gives, and the arm its paper assigns it to."
+      - key: 01a213c1-93e0-7343-9f8d-9ba1c490b7d9
+        name: "Each number cites its paper and the sentence or table cell it was taken from."
+      - key: 01a213c1-93e0-7343-9f8d-9ba2ca5e7413
+        name: "A distance from a trigonometric parallax is measured."
+      - key: 01a213c1-93e0-7343-9f8d-9ba3871875ea
+        name: "A kinematic distance is inferred, and names the rotation curve and the Galactic Centre's distance it assumes."
+      - key: 01a213c1-93e0-7343-9f8d-9ba49435103a
+        name: "Each researched arm tracer is an object of the Galaxy tracers domain, a star-forming region for a maser and a molecular cloud for a cloud traced by its CO emission."
+  - key: 01a213c1-93e0-7343-9f8d-9ba59d19c7e5
+    statement:
+      form: unwanted
+      if: "a number in a tracer file cites nothing"
+      system: "Univ Ingest"
+      shall: "refuse the tracer and name the number."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9ba6054a10b8
+        name: "The message names the tracer file, the field and the number."
+  - key: 01a213c1-93e0-7343-9f8d-9ba77bd99190
+    statement:
+      form: ubiquitous
+      system: "The science checks"
+      shall: "report each researched arm tracer's distance from the nearest path of the arm its paper assigns it to."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9ba8fc3cbde2
+        name: "The check gives each tracer's distance from the nearest point of each spiral arm and extrapolation of its arm, in kiloparsecs."
+      - key: 01a213c1-93e0-7343-9f8d-9ba9b9cd8c87
+        name: "The check fails where a tracer lies more than 5 kpc from every path of its arm, which shows a wrong conversion of its position rather than a disagreement between papers."

@@ -15,6 +15,7 @@ geometry:
   kind: log_spiral
   log_spiral:
     extent: extrapolated
+    arm: perseus
     beta_kink:
       value: 40
       unit: degree

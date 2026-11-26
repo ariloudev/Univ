@@ -1,0 +1,107 @@
+key: 01a21466-c82a-7676-a10d-d66252e59419
+id: review
+versions:
+  - key: 01a21466-c82a-7676-a10d-d6653952bcc2
+    at: 2026-11-25T20:30:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Review and gate"
+    goal: "/simplify and /code-review findings fixed, cargo xtask check green, the trace linked"
+    status: planned
+  - key: 01a2153b-41c9-72c2-bf5c-f3b59477f10a
+    at: 2026-11-26T00:22:14Z
+    revision: 17
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Review and gate"
+    goal: "/simplify and /code-review findings fixed, cargo xtask check green, the trace linked"
+    status: done
+blocks:
+  - key: 01a21499-e418-7114-ab74-6f8790fca876
+    id: t-review
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f9184a44d37
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run /simplify and /code-review and fix their findings"
+        state: open
+      - key: 01a21507-fdd6-72f7-95c4-449e2b3a5609
+        at: 2026-11-25T23:26:14Z
+        revision: 13
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run /simplify and /code-review and fix their findings"
+        state: done
+  - key: 01a21499-e418-7114-ab74-6f887599d61e
+    id: t-gate
+    kind: task
+    versions:
+      - key: 01a21499-e418-7114-ab74-6f92f0423170
+        at: 2026-11-25T21:25:59Z
+        revision: 4
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run cargo xtask check and link the trace"
+        state: open
+      - key: 01a21507-fe24-7291-a4ac-a74a77df9cb7
+        at: 2026-11-25T23:26:15Z
+        revision: 14
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Run cargo xtask check and link the trace"
+        state: done
+  - key: 01a21528-4eb0-76c4-84d8-f90db2fc15d4
+    id: wave-2-approval
+    kind: approval
+    versions:
+      - key: 01a21528-4eb0-76c4-84d8-f9107ad094a0
+        at: 2026-11-26T00:01:32Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Wave 2 done: approve the spec reword and the merge"
+        markdown: |-
+          ## Wave 2 is built and green
+
+          - `cargo xtask check`: 14 gates passed (`loft verify` runs on `develop` only).
+          - `loft reconcile --fail-on warning`: clean; every criterion of *Build the Galaxy model*, AC-91, AC-345 and the v5 decoder criterion linked.
+          - Milky Way release 5 published with the 10M-point model; science checks pass.
+
+          ## Approve
+
+          1. **Spec reword (uncommitted)** in *Build the Galaxy model*, two criteria:
+             - *Along each arm, the model follows the fitted ranges of its fits in the order the definition names them for that arm, Reid et al. 2019's first, leaving out each stretch of a later fit that runs alongside an earlier fit within the distance the definition gives for one stretch.*
+             - *Where no fitted range of an arm reaches, the model follows the extrapolations of its fits, in the same order and leaving out the same stretches, with the weight the definition gives an extrapolation.*
+
+             Why: choosing a fit by azimuth fails across papers, whose windings share azimuths.
+          2. **Merge** `stage/galaxy-model-2` into `product/galaxy-model`.
+
+          ## Decided during the wave (for the record)
+
+          - CLI tests run on a symlinked mirror of the repository whose model asks for 20,000 points; 10M take minutes in a debug build.
+          - Univ Explorer's object catalogue leaves out `galaxy_model` until wave 4 draws it.
+          - The definition refuses numbers the model cannot be drawn with, and a seed beyond 2^53 - 1.
+
+          ## Open, for a later wave
+
+          - An arm still ends abruptly where its last fit ends; a taper would need a spec change.
+    responses:
+      - key: 01a2153b-2712-7584-96d4-540c768dee4b
+        at: 2026-11-26T00:22:07Z
+        revision: 16
+        by:
+          name: "Sergey Lobko-Lobanovsky"
+          email: "2330548+ariloudev@users.noreply.github.com"
+        channel: terminal
+        verdict: approved

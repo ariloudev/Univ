@@ -258,6 +258,7 @@ fn a_release_is_built_under_the_rules_and_structures_its_cross_match_read() {
     let read = Basis::read(rules.path(), &[workspace().join("structures")]).unwrap();
     let mut crossed = cross(&f);
     crossed.basis = read.clone();
+    crossed.basis.galaxy_model.points = common::repository::MODEL_POINTS;
     let laid = tiles(&f, &crossed);
     // The files change after the cross-match read them.
     let ranking = std::fs::read_to_string(rules.path().join("ranking.yaml")).unwrap();

@@ -9,6 +9,9 @@ components:
   - key: 01a19f1e-d177-716d-b124-3cf4d7ad065c
     name: "Tile codec"
     body: "The encoder and decoder of the tile format, with a reference TypeScript decoder for clients."
+  - key: 01a213c1-93e0-7343-9f8d-9b74cebead06
+    name: "Galaxy model sampler"
+    body: "The Galaxy model's populations, their densities and the arms they follow, read from a definition, with the seeded sampler that draws model points from them, so that any client built on univ-model can sample the same model."
 constraints:
   - key: 01a19f1e-d177-716d-b124-3cf53dbc7964
     name: "univ-model shall compile both for native targets and for wasm32-unknown-unknown."

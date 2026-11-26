@@ -8,7 +8,7 @@
 
 use std::fs;
 
-use univ_ingest::source::{DefinitionError, SourceDefinition, check_structures};
+use univ_ingest::source::{DefinitionError, SourceDefinition, check_structures, takes_structures};
 
 /// A complete definition with a flag column and neither a form nor meanings; each test adds
 /// one.
@@ -134,10 +134,26 @@ fn a_definition_may_assign_its_rows_to_structures_by_a_cited_flag_column() {
         (m.column.as_str(), m.cite.as_str()),
         ("Sn", "ReadMe of I/311, Note 1")
     );
-    assert_eq!(m.structure("5"), Some("test-structure"));
+    assert_eq!(m.structures("5"), ["test-structure"]);
     // A value the map does not list names no structure.
-    assert_eq!(m.structure("7"), None);
+    assert_eq!(m.structures("7"), [] as [String; 0]);
     assert_eq!(read(PLAIN).unwrap().memberships, []);
+}
+
+#[test]
+fn a_value_may_name_several_structures() {
+    let several = MEMBERSHIPS.replace(
+        "{ \"5\": test-structure }",
+        "{ \"5\": [test-structure, test-structure-extrapolated] }",
+    );
+    let d = read(&format!("{PLAIN}{FLAGS}{several}")).unwrap();
+    assert_eq!(
+        d.memberships[0].structures("5"),
+        ["test-structure", "test-structure-extrapolated"]
+    );
+    let none = MEMBERSHIPS.replace("{ \"5\": test-structure }", "{ \"5\": [] }");
+    let refused = refused(&format!("{PLAIN}{FLAGS}{none}")).to_string();
+    assert!(refused.contains("is empty"), "{refused}");
 }
 
 #[test]
@@ -168,9 +184,27 @@ fn a_membership_of_a_column_not_a_cited_flag_or_of_a_value_it_does_not_give_is_r
 #[test]
 fn a_membership_naming_a_structure_the_release_does_not_hold_is_refused() {
     let d = read(&format!("{PLAIN}{FLAGS}{MEMBERSHIPS}")).unwrap();
-    let definitions = [d];
+    // The refusal holds for a build that takes the researched structures.
+    let definitions = [d, structures_source()];
     assert!(check_structures(&definitions, ["test-structure"]).is_ok());
     let e = check_structures(&definitions, ["another-structure"]).unwrap_err();
     assert!(e.contains("test-stars"), "{e}");
     assert!(e.contains("\"test-structure\""), "{e}");
+}
+
+#[test]
+fn a_build_that_takes_no_researched_structures_refuses_no_membership() {
+    let d = read(&format!("{PLAIN}{FLAGS}{MEMBERSHIPS}")).unwrap();
+    let definitions = [d];
+    assert!(!takes_structures(&definitions));
+    assert!(check_structures(&definitions, ["another-structure"]).is_ok());
+}
+
+/// The definition of the researched structures, a source kept in the repository.
+fn structures_source() -> SourceDefinition {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../sources/researched-structures.yaml");
+    let d = SourceDefinition::read(&path).unwrap();
+    assert!(takes_structures(std::slice::from_ref(&d)));
+    d
 }

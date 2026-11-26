@@ -95,6 +95,17 @@ export function emptyWorld(controller: Controller, renderer: Renderer): World {
 /** Which of `batch`'s points `masks` leave drawn. */
 const shownOf = (masks: Masks, batch: Batch) => shownIn(masks, batch.tile.domain, batch.sources, batch.kinds, batch.objects);
 
+/** `batch` as the pick reads it, its points drawn as `masks` leave them; none for a tile of the
+ * Galaxy model, whose points are no object for the pointer to name or a click to choose. */
+export function pickableOf(batch: Batch, masks: Masks): (Pickable & { batch: Batch }) | undefined {
+  if (batch.covered !== undefined) return undefined;
+  const { centre } = batch.tile;
+  const { extent, offsets } = batch;
+  // Picking tests a sphere about the tile's centre: the one holding the points' own.
+  const radius = norm(sub(extent.centre, centre)) + extent.radius;
+  return { centre, radius, offsets, batch, shown: shownOf(masks, batch) };
+}
+
 /** Turns off the points of the groups `hidden` names in `world`, of `domains`: drawn, picked
  * and counted alike. */
 export function hide(world: World, hidden: Pick<Hidden, "domain" | "source" | "kind" | "object">, domains: readonly Domain[]): void {
@@ -132,11 +143,10 @@ async function startCatalogue(release: number, world: World, signal: AbortSignal
       const { id, centre } = batch.tile;
       const { extent } = batch;
       const { offsets, kinds, sources } = batch;
-      const { colours, objects } = batch;
-      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours, objects, slice: batch.tile.slice });
-      // Picking tests a sphere about the tile's centre: the one holding the points' own.
-      const radius = norm(sub(extent.centre, centre)) + extent.radius;
-      world.pickable.push({ centre, radius, offsets, batch, shown: shownOf(world.masks, batch) });
+      const { colours, objects, covered } = batch;
+      renderer.addPoints({ id, domain: batch.tile.domain, centre, extent, offsets, kinds, sources, colours, objects, covered, slice: batch.tile.slice });
+      const pickable = pickableOf(batch, world.masks);
+      if (pickable !== undefined) world.pickable.push(pickable);
       controller.invalidate();
     },
     onDrop: (batch: Batch) => {

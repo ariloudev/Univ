@@ -31,6 +31,9 @@ pub enum ObjectKind {
     /// A luminous hot star: an OB or late-B to A star brighter than `M_K` = 0, as Zari et al.
     /// 2021 select them, young and massive enough to trace the spiral arms.
     LuminousHotStar,
+    /// A molecular cloud, traced by its CO emission, such as the clouds of the outer
+    /// Scutum-Centaurus arm that Dame & Thaddeus 2011 found.
+    MolecularCloud,
 }
 
 impl ObjectKind {
@@ -45,6 +48,7 @@ impl ObjectKind {
                 | Self::RrLyraeStar
                 | Self::StarFormingRegion
                 | Self::LuminousHotStar
+                | Self::MolecularCloud
         )
     }
 }

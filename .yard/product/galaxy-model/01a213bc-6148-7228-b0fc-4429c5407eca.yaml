@@ -1,0 +1,39 @@
+key: 01a213bc-6148-7228-b0fc-4429c5407eca
+id: wave-2
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442f174bd6ac
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 2: server"
+    goal: "Univ Server lists and serves the galaxy_model domain and the model's parameters"
+    status: planned
+  - key: 01a213d9-ef16-725b-8970-d748eefd031d
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 2: the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition (schema 9); merged from stage/galaxy-model-2"
+    status: planned
+  - key: 01a21466-a2ed-774a-82a1-ebd8237140ed
+    at: 2026-11-25T20:30:00Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 2: the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition (schema 9); merged from stage/galaxy-model-2"
+    status: active
+  - key: 01a2153b-6b98-733d-8618-fa3bbfb9033c
+    at: 2026-11-26T00:22:25Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 2: the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition (schema 9); merged from stage/galaxy-model-2"
+    status: done

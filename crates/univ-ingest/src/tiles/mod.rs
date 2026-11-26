@@ -31,12 +31,10 @@
 
 mod domain;
 mod manifest;
+mod model;
 mod octree;
 mod rules;
 mod write;
-
-use std::borrow::Cow;
-use std::collections::BTreeMap;
 
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -51,10 +49,14 @@ pub use domain::{
 };
 pub use manifest::{
     Bounds, ENCODING, Encoding, FORMAT, FRAME, FrameInfo, GENERATOR, Level, MANIFEST_VERSION,
-    NodeEntry, Rotations, Sampling, SourceEntry, SourceRole, TRACERS_ENCODING, TileManifest,
-    rotations, sampling,
+    MODEL_ENCODING, NodeEntry, PopulationCode, Rotations, Sampling, SourceEntry, SourceRole,
+    TRACERS_ENCODING, TileManifest, rotations, sampling,
 };
-pub use octree::{Node, Octree, generator, root_box};
+use manifest::{Laid, manifest_of};
+pub use model::{
+    Galaxy, ModelDomain, SampledModel, build_model_domain, counts, fits, followed_of, tile_model,
+};
+pub use octree::{Node, Octree, Positioned, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
 pub use write::{MANIFEST_FILE, tile_file, write_all};
 
@@ -99,6 +101,8 @@ pub enum TilesError {
     NoRotation(Frame),
     #[error("the manifest cannot be written: {0}")]
     Manifest(String),
+    #[error("the Galaxy model cannot be sampled: {0}")]
+    Model(String),
     #[error("{0}")]
     Stopped(String),
 }
@@ -113,6 +117,8 @@ pub struct Context<'a> {
     pub rules: &'a TileRules,
     /// The source definitions, which name each source's domain and credit.
     pub definitions: &'a [SourceDefinition],
+    /// The Galaxy model and the structures whose arms it follows; none builds no model.
+    pub galaxy: Option<Galaxy<'a>>,
 }
 
 /// One node's tile.
@@ -171,6 +177,8 @@ pub struct Built {
     pub domains: Vec<BuiltDomain>,
     /// Objects without a derived position, in no tile.
     pub unplaced: usize,
+    /// The Galaxy model the build sampled, if any.
+    pub galaxy_model: Option<SampledModel>,
 }
 
 /// Builds every scale domain's tiles from the release's `objects`, in memory.
@@ -198,14 +206,37 @@ pub fn build_watched(
     let mut domains = Vec::with_capacity(DOMAINS.len());
     for d in &DOMAINS {
         watch.check().map_err(TilesError::Stopped)?;
+        if *d == ScaleDomain::GalaxyModel {
+            continue;
+        }
         let points = assigned.domains.get(d).unwrap_or(&none);
         let built = build_domain(*d, &points.points, &points.sources, context)?;
         watch.step(built.line());
         domains.push(built);
     }
+    watch.check().map_err(TilesError::Stopped)?;
+    let counts = counts(
+        assigned.domains.get(&ScaleDomain::Stars),
+        assigned.domains.get(&ScaleDomain::GalaxyTracers),
+    );
+    let galaxy_model =
+        if let Some(ModelDomain { built, sampled }) = build_model_domain(&counts, context)? {
+            watch.step(built.line());
+            domains.push(built);
+            Some(sampled)
+        } else {
+            let why = if context.galaxy.is_some() {
+                "the release holds no spiral arm for it to follow"
+            } else {
+                "the build was given no model"
+            };
+            watch.step(format!("galaxy model: not built, as {why}"));
+            None
+        };
     Ok(Built {
         domains,
         unplaced: assigned.unplaced,
+        galaxy_model,
     })
 }
 
@@ -290,34 +321,11 @@ pub fn build_domain(
     sources: &[SourceId],
     context: &Context<'_>,
 ) -> Result<BuiltDomain, TilesError> {
-    let name = name_of(domain);
-    let stream = DOMAINS
-        .iter()
-        .position(|d| *d == domain)
-        .and_then(|n| u64::try_from(n).ok())
-        .unwrap_or_default();
-    let encode_error = |address: &str, error| TilesError::Encode {
-        domain: name.to_owned(),
-        address: address.to_owned(),
-        error,
-    };
-    let sources = source_table(name, points, sources, context.definitions)?;
+    let sources = source_table(name_of(domain), points, sources, context.definitions)?;
     let encoding = encoding_of(domain);
-    let root = root_box(points).map_err(|e| encode_error("r", e))?;
-    let mut rng = generator(context.rules.seed, stream);
-    let tree = octree::build(
-        name,
-        encoding.point_bytes,
-        points,
-        root,
-        context.rules,
-        &mut rng,
-    )?;
-
-    let mut built = Vec::with_capacity(tree.nodes.len());
-    for node in tree.nodes {
-        let tile_points: Vec<TilePoint> = node
-            .points
+    let version = encoding.version;
+    let encode = |bounds: &NodeBox, kept: &[usize]| {
+        let tile_points: Vec<TilePoint> = kept
             .iter()
             .map(|&i| {
                 let p = &points[i];
@@ -331,11 +339,58 @@ pub fn build_domain(
                 }
             })
             .collect();
-        let tile = encode_as(encoding.version, &node.bounds, &tile_points)
-            .map_err(|e| encode_error(&node.address, e))?;
+        encode_as(version, bounds, &tile_points)
+    };
+    let laid = Laid {
+        sources,
+        encoding,
+        model_seed: None,
+    };
+    tile_domain(domain, points, laid, encode, context)
+}
+
+/// The octree of `domain`'s `points`, each node's tile written by `encode` from the points it
+/// keeps, as indices into `points`, and the domain's manifest, under `context`'s rules.
+///
+/// # Errors
+///
+/// Fails when a leaf at the maximum depth would hold a tile beyond 1 MiB, naming it, or a tile
+/// cannot be encoded.
+fn tile_domain<P: Positioned>(
+    domain: ScaleDomain,
+    points: &[P],
+    laid: Laid,
+    encode: impl Fn(&NodeBox, &[usize]) -> Result<Vec<u8>, TileError>,
+    context: &Context<'_>,
+) -> Result<BuiltDomain, TilesError> {
+    let name = name_of(domain);
+    let stream = DOMAINS
+        .iter()
+        .position(|d| *d == domain)
+        .and_then(|n| u64::try_from(n).ok())
+        .unwrap_or_default();
+    let encode_error = |address: &str, error| TilesError::Encode {
+        domain: name.to_owned(),
+        address: address.to_owned(),
+        error,
+    };
+    let root = root_box(points).map_err(|e| encode_error("r", e))?;
+    let mut rng = generator(context.rules.seed, stream);
+    let tree = octree::build(
+        name,
+        laid.encoding.point_bytes,
+        points,
+        root,
+        context.rules,
+        &mut rng,
+    )?;
+    let mut built = Vec::with_capacity(tree.nodes.len());
+    for node in tree.nodes {
+        let tile =
+            encode(&node.bounds, &node.points).map_err(|e| encode_error(&node.address, e))?;
         built.push(BuiltNode {
             sha256: sha256(&tile),
-            points: tile_points.len(),
+            points: node.points.len(),
             address: node.address,
             level: node.level,
             bounds: node.bounds,
@@ -346,8 +401,8 @@ pub fn build_domain(
     let manifest = manifest_of(
         domain,
         stream,
-        points,
-        sources,
+        (points.len(), radius(points)),
+        laid,
         &tree.fractions,
         &built,
         context,
@@ -362,74 +417,22 @@ pub fn build_domain(
 }
 
 /// The encoding of `domain`'s tiles: version 4, with each point's kind of object, for the
-/// Galaxy tracers; version 3 for every other domain, so that their files stay as they were
+/// Galaxy tracers; version 5, of model points, for the Galaxy model, its populations given by
+/// the model; version 3 for every other domain, so that their files stay as they were
 /// (build-octree-tiles).
 #[must_use]
 pub fn encoding_of(domain: ScaleDomain) -> Encoding {
-    if domain == ScaleDomain::GalaxyTracers {
-        TRACERS_ENCODING
-    } else {
-        ENCODING
+    match domain {
+        ScaleDomain::GalaxyTracers => TRACERS_ENCODING,
+        ScaleDomain::GalaxyModel => MODEL_ENCODING,
+        _ => ENCODING,
     }
 }
 
-/// The manifest of a domain's built nodes.
-fn manifest_of(
-    domain: ScaleDomain,
-    stream: u64,
-    points: &[DomainPoint],
-    sources: Vec<SourceEntry>,
-    fractions: &[f64],
-    nodes: &[BuiltNode],
-    context: &Context<'_>,
-) -> Result<TileManifest, TilesError> {
-    // The first node of each level, whose cube gives the level's edge and step.
-    let mut first: BTreeMap<u8, &NodeBox> = BTreeMap::new();
-    for n in nodes {
-        first.entry(n.level).or_insert(&n.bounds);
-    }
-    let levels = first
-        .into_iter()
-        .map(|(level, bounds)| Level {
-            level,
-            edge: bounds.edge(),
-            step: bounds.step(),
-            fraction: fractions.get(usize::from(level)).copied().unwrap_or(1.0),
-        })
-        .collect();
-    let radius = points
+/// How far the farthest of `points` lies from the barycentre; 0 for none.
+fn radius<P: Positioned>(points: &[P]) -> f64 {
+    points
         .iter()
-        .map(|p| p.position.iter().map(|c| c * c).sum::<f64>().sqrt())
-        .fold(0.0_f64, f64::max);
-    Ok(TileManifest {
-        format: Cow::Borrowed(FORMAT),
-        manifest_version: MANIFEST_VERSION,
-        release: context.release.to_owned(),
-        scale_domain: Cow::Borrowed(name_of(domain)),
-        frame: FRAME,
-        unit: Cow::Borrowed(unit_symbol(domain)),
-        cosmology: context.cosmology.clone(),
-        rotations: rotations()?,
-        encoding: encoding_of(domain),
-        levels,
-        sampling: sampling(context.rules, stream),
-        points: points.len(),
-        radius,
-        sources,
-        nodes: nodes
-            .iter()
-            .map(|n| NodeEntry {
-                address: n.address.clone(),
-                level: n.level,
-                bounds: Bounds {
-                    min: n.bounds.min(),
-                    max: n.bounds.max(),
-                },
-                points: n.points,
-                sampled_from: n.sampled_from,
-                bytes: n.tile.len(),
-                sha256: n.sha256.clone(),
-            })
-            .collect(),
-    })
+        .map(|p| p.position().iter().map(|c| c * c).sum::<f64>().sqrt())
+        .fold(0.0_f64, f64::max)
 }

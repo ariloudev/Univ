@@ -22,6 +22,7 @@ featureGroups:
       - 01a19f1e-d177-716d-b124-3d0d39dc9a3f
       - 01a19f1e-d177-716d-b124-3d23daf70123
       - 01a19f1e-d177-716d-b124-3d3019ad55e7
+      - 01a213c1-93e0-7343-9f8d-9bcecdd53029
   - key: 01a19f1a-685d-7357-b67e-d660e2178068
     slug: bulk-data
     name: "Bulk data"

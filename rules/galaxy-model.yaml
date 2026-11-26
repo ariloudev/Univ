@@ -1,0 +1,501 @@
+# The Galaxy model (build-the-galaxy-model): a model of the whole Milky Way's light, sampled into
+# model points, each standing for an equal share of the Galaxy's light in the V band. Every
+# number cites the paper it comes from, quoted from the paper's arXiv LaTeX source, or is marked
+# as this project's choice with its reason. Read by univ-ingest `galaxy_model::ModelFile`, and
+# recorded by every release that builds the model.
+
+points: 10000000
+points_basis: >-
+  The number of model points this repository's specification fixes, in build-the-galaxy-model:
+  enough for the arms and their knots to read close up, and small enough to tile and serve.
+seed: 16
+
+papers:
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357: Table 2's comments and section 5"
+  - id: bhg-2016
+    reference: "Bland-Hawthorn & Gerhard 2016, ARA&A 54, 529"
+    title: "The Galaxy in Context: Structural, Kinematic and Integrated Properties"
+    doi: 10.1146/annurev-astro-081915-023441
+    arxiv: "1602.07702"
+    read: "arXiv source (LaTeX) of 1602.07702v2: the margin entries of sections 4.2, 5.1, 5.2 and 6.1, and the text of section 6.1"
+  - id: wgp-2015
+    reference: "Wegg, Gerhard & Portail 2015, MNRAS 450, 4050"
+    title: "The structure of the Milky Way's bar outside the bulge"
+    doi: 10.1093/mnras/stv745
+    arxiv: "1504.01401"
+    read: "arXiv source (LaTeX) of 1504.01401: Table 1 (t1.tex), the thin bar's row of the two-component model, and Table 2 (t2.tex)"
+  - id: flynn-2006
+    reference: "Flynn, Holmberg, Portinari, Fuchs & Jahreiß 2006, MNRAS 372, 1149"
+    title: "On the mass-to-light ratio of the local Galactic disc and the optical luminosity of the Galaxy"
+    doi: 10.1111/j.1365-2966.2006.10911.x
+    arxiv: "astro-ph/0608193"
+    read: "arXiv source (LaTeX) of astro-ph/0608193: the abstract and Table 3 (Tuorla study)"
+  - id: bb-2016
+    reference: "Bobylev & Bajkova 2016, Baltic Astronomy 25, 261"
+    title: "Estimation of the vertical disk scale height using young Galactic objects"
+    doi: 10.1515/astro-2017-0128
+    arxiv: "1609.01129"
+    read: "arXiv source (LaTeX) of 1609.01129v2: Table 1"
+  # Papers this model's choices draw on, named in their reasons.
+  - id: wg-2013
+    reference: "Wegg & Gerhard 2013, MNRAS 435, 1874"
+    title: "Mapping the three-dimensional density of the Galactic bulge with VVV red clump stars"
+    doi: 10.1093/mnras/stt1376
+    arxiv: "1308.0593"
+    read: "arXiv source (LaTeX) of 1308.0593: the abstract and discussion (the bulge's exponential scale lengths)"
+  - id: ln-2015
+    reference: "Licquia & Newman 2015, ApJ 806, 96"
+    title: "Improved Estimates of the Milky Way's Stellar Mass and Star Formation Rate from Hierarchical Bayesian Meta-Analysis"
+    doi: 10.1088/0004-637X/806/1/96
+    arxiv: "1407.1078"
+    read: "arXiv source (LaTeX) of 1407.1078v3: the abstract (the star formation rate)"
+  - id: bc-2003
+    reference: "Bruzual & Charlot 2003, MNRAS 344, 1000"
+    title: "Stellar population synthesis at the resolution of 2003"
+    doi: 10.1046/j.1365-8711.2003.06897.x
+    arxiv: "astro-ph/0309134"
+    read: "The authors' model tables (Padova 1994 tracks, Chabrier initial mass function) at bruzual.org: mass-to-light ratios and colours of simple and constant star formation populations"
+  - id: lada-2003
+    reference: "Lada & Lada 2003, ARA&A 41, 57"
+    title: "Embedded Clusters in Molecular Clouds"
+    doi: 10.1146/annurev.astro.41.011802.094844
+    arxiv: "astro-ph/0301540"
+    read: "arXiv source (LaTeX) of astro-ph/0301540: the abstract and section 4 (cluster survival)"
+  - id: ds-2001
+    reference: "Drimmel & Spergel 2001, ApJ 556, 181"
+    title: "Three Dimensional Structure of the Milky Way Disk"
+    doi: 10.1086/321556
+    arxiv: "astro-ph/0101259"
+    read: "arXiv source (LaTeX) of astro-ph/0101259v3: section 5 (the arm-interarm ratio in the near infrared)"
+
+r0:
+  value: 8.15
+  unit: kiloparsec
+  kind: estimated
+  uncertainty: { form: none_reported }
+  cite: { paper: reid-2019, sentence: "The models assume R0 = 8.15 kpc." }
+  note: "The Galactic Centre's distance Reid et al. 2019 fit their arms with, so that the model and its arms share one centre."
+sun_height:
+  value: 5.5
+  unit: parsec
+  kind: estimated
+  uncertainty: { form: symmetric, sigma: 5.8 }
+  cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." }
+
+populations:
+  - code: 1
+    id: thin_disc
+    name: Thin disc
+    density:
+      exponential_disc:
+        scale_length:
+          value: 2.6
+          unit: kiloparsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 0.5 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$\\Rthin$}{$2.6{\\small \\pm}0.5$ kpc, thin disk radial scalelength}" }
+        scale_height:
+          value: 300
+          unit: parsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 50 }
+          cite: { paper: bhg-2016, sentence: "\\entry{\\Zthin}{$300{\\small \\pm}50$ pc, thin disk vertical scalelength at \\Rzero}" }
+        max_radius:
+          value: 25
+          unit: kiloparsec
+          choice: >-
+            Where the disc's light has fallen to nothing that a model point would show, beyond the
+            farthest of the arms' fits; no paper gives the stellar disc an edge this model needs.
+        follows_arms: true
+    light:
+      by_mass:
+        mass:
+          value: 31000000000
+          unit: solar_mass
+          choice: >-
+            Bland-Hawthorn & Gerhard 2016's thin disc mass less the thin long bar's of Wegg, Gerhard
+            & Portail 2015's Table 2, which the review counts in the disc and this model draws with
+            the bar.
+        mass_to_light:
+          value: 1.5
+          unit: solar_mass_per_solar_luminosity
+          kind: measured
+          uncertainty: { form: symmetric, sigma: 0.2 }
+          cite: { paper: flynn-2006, sentence: "We obtain mass-to-light ratios for the local column of stellar matter of $(M/L)_B = 1.4 \\pm 0.2$, $(M/L)_V = 1.5 \\pm 0.2$ and $(M/L)_I = 1.2 \\pm 0.2$." }
+          note: "The local column of the Solar cylinder, taken for the whole disc: only the local disc's ratio is measured."
+    colour:
+      b_minus_v:
+        value: 0.62
+        unit: magnitude
+        choice: >-
+          Flynn et al. 2006's colour of the thin disc's local column, made redder by taking out the
+          light of the young stars, which the arms' populations hold apart; no paper gives the old
+          thin disc's colour alone.
+      srgb: [255, 242, 237]
+      derived: >-
+        The colour a black body shows at the temperature its colour index gives along Pecaut &
+        Mamajek's dwarf sequence, as Univ Explorer draws a star (draw-the-catalogues).
+  - code: 2
+    id: thick_disc
+    name: Thick disc
+    density:
+      exponential_disc:
+        scale_length:
+          value: 2.0
+          unit: kiloparsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 0.2 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$\\Rthick$}{$2.0\\pm0.2$ kpc, thick disk radial scalelength}" }
+        scale_height:
+          value: 900
+          unit: parsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 180 }
+          cite: { paper: bhg-2016, sentence: "\\entry{\\Zthick}{$900{\\small \\pm}180$ pc, thick disk vertical scalelength at \\Rzero}" }
+        max_radius:
+          value: 25
+          unit: kiloparsec
+          choice: "As the thin disc's: beyond the farthest of the arms' fits."
+        follows_arms: false
+    light:
+      by_mass:
+        mass:
+          value: 6000000000
+          unit: solar_mass
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 3000000000 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$\\Mthick$}{$6{\\small\\pm}3\\times 10^{9}\\Msun$, thick disk stellar mass}" }
+        mass_to_light:
+          value: 1.5
+          unit: solar_mass_per_solar_luminosity
+          kind: measured
+          uncertainty: { form: symmetric, sigma: 0.2 }
+          cite: { paper: flynn-2006, sentence: "We obtain mass-to-light ratios for the local column of stellar matter of $(M/L)_B = 1.4 \\pm 0.2$, $(M/L)_V = 1.5 \\pm 0.2$ and $(M/L)_I = 1.2 \\pm 0.2$." }
+          note: "The local column's ratio, thin and thick disc together, as for the thin disc."
+    colour:
+      b_minus_v:
+        value: 0.89
+        unit: magnitude
+        kind: measured
+        uncertainty: { form: none_reported }
+        cite: { paper: flynn-2006, table: "3", row: "$(B-V)_\\Sigma$", column: "thick disc", cell: "0.89" }
+      srgb: [255, 232, 211]
+      derived: >-
+        The colour a black body shows at the temperature its colour index gives along Pecaut &
+        Mamajek's dwarf sequence, as Univ Explorer draws a star (draw-the-catalogues).
+  - code: 3
+    id: bar_and_bulge
+    name: Bar and bulge
+    density:
+      bar:
+        angle:
+          value: 27
+          unit: degree
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 2 }
+          cite: { paper: bhg-2016, sentence: "\\entry{\\BPBphi}{$27\\pm2\\dg$, b/p bulge bar angle}" }
+        bulge_scales:
+          - value: 0.70
+            unit: kiloparsec
+            choice: >-
+              Wegg & Gerhard 2013's exponential scale length along the bar's major axis, which
+              Bland-Hawthorn & Gerhard 2016 quote; their bulge map has no closed form, and this
+              model takes it as a triaxial exponential.
+          - value: 0.44
+            unit: kiloparsec
+            choice: "Wegg & Gerhard 2013's scale length along the intermediate axis, as the major axis's."
+          - value: 0.18
+            unit: kiloparsec
+            choice: "Wegg & Gerhard 2013's scale length along the minor axis, as the major axis's."
+        long_bar:
+          angle:
+            value: 29.1
+            unit: degree
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$\\alpha\\,(\\deg)$", cell: "29.1" }
+          x0:
+            value: 0.82
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$x_0\\,(\\kpc)$", cell: "0.82" }
+          y0:
+            value: 0.23
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$y_0\\,(\\kpc)$", cell: "0.23" }
+          z0:
+            value: 0.20
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$z_0\\,(\\kpc)$", cell: "0.20" }
+          c_perp:
+            value: 3.98
+            unit: dimensionless
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$c_\\perp$", cell: "3.98" }
+          r_out:
+            value: 4.37
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$R_{\\rm out}\\,(\\kpc)$", cell: "4.37" }
+          sigma_out:
+            value: 0.11
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$\\sigma_{\\rm out}\\,(\\kpc)$", cell: "0.11" }
+          r_in:
+            value: 3.26
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$R_{\\rm in}\\,(\\kpc)$", cell: "3.26" }
+          sigma_in:
+            value: 0.56
+            unit: kiloparsec
+            kind: measured
+            uncertainty: { form: none_reported }
+            cite: { paper: wgp-2015, table: "1", row: "N-body model + 2 components, thin bar", column: "$\\sigma_{\\rm in}\\,(\\kpc)$", cell: "0.56" }
+        long_bar_share:
+          value: 0.205
+          unit: dimensionless
+          choice: >-
+            The thin long bar's mass of Wegg, Gerhard & Portail 2015's Table 2 over the bar and
+            bulge's mass here: the share of the population's points the long bar takes.
+    light:
+      by_mass:
+        mass:
+          value: 19500000000
+          unit: solar_mass
+          choice: >-
+            The middle of Bland-Hawthorn & Gerhard 2016's range of the stellar mass in the bulge
+            region, with the thin long bar's mass of Wegg, Gerhard & Portail 2015's Table 2.
+        mass_to_light:
+          value: 3.15
+          unit: solar_mass_per_solar_luminosity
+          choice: >-
+            The V-band ratio of a ten-billion-year stellar population of solar metallicity in the
+            models of Bruzual & Charlot 2003, with Chabrier's initial mass function; no paper read
+            measures the bulge's V-band ratio.
+    colour:
+      b_minus_v:
+        value: 0.96
+        unit: magnitude
+        choice: "The colour of the same model population of Bruzual & Charlot 2003, without dust."
+      srgb: [255, 229, 204]
+      derived: >-
+        The colour a black body shows at the temperature its colour index gives along Pecaut &
+        Mamajek's dwarf sequence, as Univ Explorer draws a star (draw-the-catalogues).
+  - code: 4
+    id: stellar_halo
+    name: Stellar halo
+    density:
+      halo:
+        inner_slope:
+          value: -2.5
+          unit: dimensionless
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 0.3 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$\\alpha_{\\rm in}$}{ $-2.5\\pm0.3$ Inner density slope}" }
+        outer_slope:
+          value: -4.5
+          unit: dimensionless
+          choice: >-
+            A slope within Bland-Hawthorn & Gerhard 2016's range of the outer halo's, steeper than
+            the giants' and as the RR Lyrae stars and blue horizontal branch stars give it.
+        break_radius:
+          value: 25
+          unit: kiloparsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 10 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$r_s$}{$25\\pm10\\kpc$ Break radius}" }
+        flattening:
+          value: 0.65
+          unit: dimensionless
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 0.05 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$q_{\\rm in}$}{$0.65\\pm0.05$ Inner halo flattening}" }
+          note: "The inner halo's flattening, taken for the whole halo, whose light lies mostly within the break."
+        min_radius:
+          value: 1
+          unit: kiloparsec
+          choice: "Where the bar and bulge's light outshines the halo's, which the power law would make infinite at the centre."
+        max_radius:
+          value: 100
+          unit: kiloparsec
+          choice: "Where the halo's light has fallen to nothing a model point would show."
+    light:
+      by_mass:
+        mass:
+          value: 550000000
+          unit: solar_mass
+          choice: "The middle of Bland-Hawthorn & Gerhard 2016's range of the stellar halo's total mass."
+        mass_to_light:
+          value: 1.4
+          unit: solar_mass_per_solar_luminosity
+          kind: measured
+          uncertainty: { form: symmetric, sigma: 0.5 }
+          cite: { paper: bhg-2016, sentence: "ratio $M/L_V\\narreq1.4\\pm0.5$ for metal-poor Galactic globular clusters \\citep{Kimmig2015}, the estimated stellar halo" }
+    colour:
+      b_minus_v:
+        value: 0.64
+        unit: magnitude
+        choice: "The colour of a ten-billion-year metal-poor population in the models of Bruzual & Charlot 2003, without dust."
+      srgb: [255, 242, 235]
+      derived: >-
+        The colour a black body shows at the temperature its colour index gives along Pecaut &
+        Mamajek's dwarf sequence, as Univ Explorer draws a star (draw-the-catalogues).
+  - code: 5
+    id: young_stars
+    name: Young stars of the arms
+    density:
+      arms:
+        scale_height:
+          value: 46
+          unit: parsec
+          kind: measured
+          uncertainty: { form: symmetric, sigma: 3 }
+          cite: { paper: bb-2016, table: "1", row: "59 OB associations", column: "$h_1,$~pc", cell: "$46\\pm3$" }
+          note: "The exponential scale height of the OB associations, whose stars give most of the young stars' light."
+        width_factor:
+          value: 1
+          unit: dimensionless
+          choice: "The young stars lie across their arm as the arm's fitted width, the spread of the masers it was fitted to."
+        radial_scale_length:
+          value: 2.6
+          unit: kiloparsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 0.5 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$\\Rthin$}{$2.6{\\small \\pm}0.5$ kpc, thin disk radial scalelength}" }
+          note: "The thin disc's scale length, taken for the young stars along the arms: no paper read gives the young population's radial law."
+    light:
+      share:
+        value: 0.056
+        unit: dimensionless
+        choice: >-
+          The V-band light of stars younger than a hundred million years that the Galaxy's star
+          formation rate of Licquia & Newman 2015 keeps alive, in the models of Bruzual & Charlot
+          2003, over the Galaxy's light, less the share the knots take.
+    colour:
+      b_minus_v:
+        value: -0.01
+        unit: magnitude
+        choice: "The colour of constant star formation over a hundred million years in the models of Bruzual & Charlot 2003, without dust."
+      srgb: [206, 218, 255]
+      derived: >-
+        The colour a black body shows at the temperature its colour index gives along Pecaut &
+        Mamajek's dwarf sequence, as Univ Explorer draws a star (draw-the-catalogues).
+  - code: 6
+    id: star_forming_knots
+    name: Star-forming knots of the arms
+    density:
+      arms:
+        scale_height:
+          value: 46.6
+          unit: parsec
+          kind: measured
+          uncertainty: { form: symmetric, sigma: 2.8 }
+          cite: { paper: bb-2016, table: "1", row: "147 HII regions", column: "$h_1,$~pc", cell: "$46.6\\pm2.8$" }
+        width_factor:
+          value: 1
+          unit: dimensionless
+          choice: "As the young stars': across the arm by its fitted width."
+        radial_scale_length:
+          value: 2.6
+          unit: kiloparsec
+          kind: estimated
+          uncertainty: { form: symmetric, sigma: 0.5 }
+          cite: { paper: bhg-2016, sentence: "\\entry{$\\Rthin$}{$2.6{\\small \\pm}0.5$ kpc, thin disk radial scalelength}" }
+        knots:
+          per_knot:
+            value: 20
+            unit: dimensionless
+            choice: "Enough model points for a knot to show as a clump against the arm, few enough for there to be many knots."
+          knot_radius:
+            value: 0.03
+            unit: kiloparsec
+            choice: "The size of a large HII region and its young cluster, as a Gaussian's spread."
+    light:
+      share:
+        value: 0.026
+        unit: dimensionless
+        choice: >-
+          Most of the light of stars younger than ten million years, which Lada & Lada 2003 find
+          form and stay in embedded clusters, in the models of Bruzual & Charlot 2003, over the
+          Galaxy's light.
+    colour:
+      srgb: [255, 120, 170]
+      choice: "The pink of hydrogen's Balmer emission, which an HII region shows and a star's colour index does not give."
+
+arms:
+  order:
+    - arm: 3-kpc-near
+      structures: [reid-2019-3-kpc-near-arm, reid-2019-3-kpc-near-arm-extrapolated]
+    - arm: norma
+      structures: [reid-2019-norma-arm, reid-2019-norma-arm-extrapolated]
+    - arm: scutum-centaurus
+      structures:
+        - reid-2019-scutum-centaurus-arm
+        - sun-2024-scutum-centaurus-arm
+        - reid-2019-scutum-centaurus-arm-extrapolated
+        - sun-2024-scutum-centaurus-arm-extrapolated
+    - arm: sagittarius-carina
+      structures: [reid-2019-sagittarius-carina-arm, reid-2019-sagittarius-carina-arm-extrapolated]
+    - arm: local
+      structures: [reid-2019-local-arm, reid-2019-local-arm-extrapolated]
+    - arm: perseus
+      structures:
+        - reid-2019-perseus-arm
+        - hyland-2026-perseus-arm
+        - reid-2019-perseus-arm-extrapolated
+        - hyland-2026-perseus-arm-extrapolated
+    - arm: outer
+      structures:
+        - reid-2019-outer-arm
+        - sun-2024-outer-arm
+        - mcclure-griffiths-2004-outer-arm
+        - reid-2019-outer-arm-extrapolated
+        - sun-2024-outer-arm-extrapolated
+        - mcclure-griffiths-2004-outer-arm-extrapolated
+  extrapolation_weight:
+    value: 0.45
+    unit: dimensionless
+    choice: "An extrapolation carries the fitted formula beyond its data: drawn fainter than a fitted range, as Univ Explorer draws it fainter."
+  same_stretch:
+    value: 2
+    unit: kiloparsec
+    choice: >-
+      Two fits of one arm nearer than this are taken as fits of the same stretch, the later one
+      left out there: papers that fit one stretch disagree by about this much, and different
+      windings of an arm lie several kiloparsecs apart.
+  old_arm_contrast:
+    value: 1.3
+    unit: dimensionless
+    choice: >-
+      How much brighter the old disc is on an arm than between the arms, as Drimmel & Spergel
+      2001 measure it in the near infrared; no paper read measures it in the V band.
+  old_arm_spread:
+    value: 2.5
+    unit: dimensionless
+    choice: "The old stars spread across an arm wider than its young stars, which have had little time to drift from it."
+
+notes: >-
+  The model is of the Galaxy's intrinsic light, without dust. Its populations' masses and
+  ratios are Bland-Hawthorn & Gerhard 2016's and Flynn et al. 2006's where they give them, and
+  this project's choices, each with its reason, where they do not: the bar's closed form, the
+  bulge's and halo's single values within the review's ranges, the young stars' and knots'
+  shares of the light, and how the populations follow the arms. Every population's colour is
+  derived from its colour index as Univ Explorer draws a star's, but the knots', which an HII
+  region's emission gives.

@@ -47,8 +47,8 @@ fn declared_all(table: &str) -> (Vec<String>, Vec<String>) {
 }
 
 #[test]
-fn version_8_keeps_json_out_of_every_table_per_object_or_per_entry() {
-    assert_eq!(SCHEMA_VERSION, 8);
+fn the_schema_keeps_json_out_of_every_table_per_object_or_per_entry() {
+    assert_eq!(SCHEMA_VERSION, 9);
     for table in &TABLES {
         let json: Vec<&str> = table.json_columns().collect();
         assert!(
@@ -388,5 +388,13 @@ fn every_table_of_an_objects_rows_is_in_its_shard_but_its_names_and_its_shards_i
                 table.name
             );
         }
+    }
+}
+
+#[test]
+fn each_table_a_later_schema_added_is_a_table_of_the_schema() {
+    for (name, version) in super::TABLES_ADDED {
+        assert!(TABLES.iter().any(|t| t.name == name), "{name}");
+        assert!(version > 8 && version <= SCHEMA_VERSION, "{name}");
     }
 }

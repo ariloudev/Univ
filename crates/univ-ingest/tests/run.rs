@@ -54,6 +54,7 @@ async fn an_interrupted_fetch_names_the_sources_it_ended_and_leaves_the_rest_not
         repository: repository.path().to_owned(),
         cache: cache.path().to_owned(),
         sources: Vec::new(),
+        structures_of: vec![],
     };
     let report = Mutex::new(RunReport::new(&definitions));
     let rig = rig(false);

@@ -1,0 +1,30 @@
+key: 01a213bc-6148-7228-b0fc-442a59adc77d
+id: wave-3
+versions:
+  - key: 01a213bc-6148-7228-b0fc-4430c065c14a
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 3: explorer"
+    goal: "Univ Explorer draws the model Galaxy, marked as a model, and the arms view shows it"
+    status: planned
+  - key: 01a213d9-ef16-725b-8970-d749a291b09c
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 3: Univ Server"
+    goal: "Univ Server serves GET /v1/galaxy-model and lists and describes the galaxy_model domain; merged from stage/galaxy-model-3"
+    status: planned
+  - key: 01a2153b-6b98-733d-8618-fa3ced8f87fc
+    at: 2026-11-26T00:22:25Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 3: Univ Server, inside wave 4"
+    goal: "Folded into wave 4 at the owner's choice (2026-11-26): its endpoint and listing are built in stage/galaxy-model-4"
+    status: done

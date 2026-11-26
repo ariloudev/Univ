@@ -24,14 +24,16 @@ requirements:
       - key: 01a19f20-8e6c-7039-b16f-ac0273b5ac3b
         name: "Each decoded position lies within the quantization step the tile manifest states of the position the tile was built from."
       - key: 01a19f20-8e6c-7039-b16f-ac037abf14fd
-        name: "Each decoded point gives its object id, its source and its kind of value."
+        name: "Each decoded point of a version 1 to 4 tile gives its object id, its source and its kind of value."
       - key: 01a19f20-8e6c-7039-b16f-ac04fdc1fabe
         name: "A tile with an encoding version the decoder does not know fails with an error that names the version."
       - key: 01a1a6e4-22e1-765d-b404-01feaa3330ef
-        name: "The decoder decodes tiles of encoding versions 1, 2, 3 and 4."
+        name: "The decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5."
       - key: 01a1a6e4-22e1-765d-b404-01ff442efb73
         name: "Each decoded point of a version 2 tile gives its colour index and the bands it is between, or that it has none."
       - key: 01a1c7c5-a164-7706-ad2c-c83691223195
         name: "Each decoded point of a version 3 tile gives its colour index and the bands it is between, or the base-10 logarithm of its age in years, or that it has neither."
       - key: 01a1cbb8-4b9e-71c0-8bbe-c92530ad0b85
         name: "Each decoded point of a version 4 tile gives what a version 3 point gives and its kind of object, or that it has none."
+      - key: 01a213c1-93e0-7343-9f8d-9bcd54b44ccc
+        name: "Each decoded point of a version 5 tile gives its population and whether real objects cover it."

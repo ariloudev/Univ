@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     BASE_VERSION, COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAX_TILE_BYTES,
-    OBJECT_KINDS, POINT_BYTES, STEPS, V4_POINT_BYTES, VERSION,
+    MODEL_POINT_BYTES, MODEL_VERSION, OBJECT_KINDS, POINT_BYTES, STEPS, V4_POINT_BYTES, VERSION,
 };
 use crate::cosmology::Cosmology;
 use crate::object::ObjectKind;
@@ -143,10 +143,10 @@ pub struct Encoding {
     /// The quantization steps along a node's edge: a step is the edge over this.
     pub steps_per_edge: u32,
     pub max_tile_bytes: usize,
-    /// What a point's source index names.
+    /// What a point's source index names; in version 5, that its model points have none.
     #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub point_source: Cow<'static, str>,
-    /// The kind-of-value codes, in order from 0.
+    /// The kind-of-value codes, in order from 0, which a version 5 point does not carry.
     #[cfg_attr(
         feature = "openapi",
         schema(value_type = Vec<KindOfValue>, min_items = 4, max_items = 4)
@@ -167,6 +167,45 @@ pub struct Encoding {
         schema(value_type = Option<Vec<ObjectKind>>, min_items = 7, max_items = 7)
     )]
     pub object_kinds: Option<[ObjectKind; OBJECT_KINDS.len()]>,
+    /// The Galaxy model's populations, each with the code its points carry; version 5 only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub populations: Option<Vec<PopulationCode>>,
+    /// What a version 5 point's flags hold.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "openapi", schema(value_type = Option<String>))]
+    pub flags: Option<Cow<'static, str>>,
+}
+
+/// A population of the Galaxy model as its tiles code it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct PopulationCode {
+    /// The code its points carry, from 1.
+    pub code: u8,
+    /// Its id in the Galaxy model's definition, such as `thin_disc`.
+    pub id: String,
+    /// Its name, such as `Thin disc`.
+    pub name: String,
+    /// The scale domain whose objects cover its covered points, its counterparts' (`stars` or
+    /// `galaxy_tracers`): a client drawing that domain hides them. A manifest written before
+    /// manifests named it gives none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub covered_by: Option<String>,
+}
+
+impl From<&crate::galaxy_model::Population> for PopulationCode {
+    fn from(p: &crate::galaxy_model::Population) -> Self {
+        Self {
+            code: p.code,
+            id: p.id.clone(),
+            name: p.name.clone(),
+            covered_by: Some(
+                crate::galaxy_model::counterpart(&p.density)
+                    .domain()
+                    .to_owned(),
+            ),
+        }
+    }
 }
 
 /// The encoding of [`BASE_VERSION`], which every scale domain's tiles take but the Galaxy
@@ -185,6 +224,8 @@ pub const ENCODING: Encoding = Encoding {
     colour_bands: Some(COLOUR_BANDS),
     log_age_code: Some(LOG_AGE_CODE),
     object_kinds: None,
+    populations: None,
+    flags: None,
 };
 
 /// The encoding of [`VERSION`], which the Galaxy tracers' tiles take: [`ENCODING`] with each
@@ -195,6 +236,40 @@ pub const TRACERS_ENCODING: Encoding = Encoding {
     object_kinds: Some(OBJECT_KINDS),
     ..ENCODING
 };
+
+/// The encoding of [`MODEL_VERSION`], which the Galaxy model's tiles take: a position, a
+/// population and flags, and no source, kind of value or object. Its populations are the
+/// model's, which [`Encoding::with_populations`] gives it.
+pub const MODEL_ENCODING: Encoding = Encoding {
+    version: MODEL_VERSION,
+    header_bytes: HEADER_BYTES,
+    point_bytes: MODEL_POINT_BYTES,
+    steps_per_edge: STEPS,
+    max_tile_bytes: MAX_TILE_BYTES,
+    point_source: Cow::Borrowed(
+        "none: a model point stands for a share of the Galaxy's light and has no source, kind of \
+         value or object",
+    ),
+    kinds: KINDS,
+    colour_bands: None,
+    log_age_code: None,
+    object_kinds: None,
+    populations: None,
+    flags: Some(Cow::Borrowed(
+        "bit 0 (1) set where real objects cover the point, which a client drawing them hides",
+    )),
+};
+
+impl Encoding {
+    /// This encoding with the Galaxy model's `populations`.
+    #[must_use]
+    pub fn with_populations(self, populations: Vec<PopulationCode>) -> Self {
+        Self {
+            populations: Some(populations),
+            ..self
+        }
+    }
+}
 
 /// A level of the octree: its nodes' edge and its quantization step, in the unit, and the
 /// fraction of the points reaching it that each of its inner nodes keeps.
@@ -215,6 +290,10 @@ pub struct Level {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Sampling {
     pub seed: u64,
+    /// The seed the Galaxy model's points were sampled with, apart from the octree's subsample
+    /// seed; the Galaxy model's manifest alone gives it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model_seed: Option<u64>,
     #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub generator: Cow<'static, str>,
     /// The `ChaCha20` stream of this domain.

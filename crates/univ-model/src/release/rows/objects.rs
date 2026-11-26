@@ -286,3 +286,12 @@ row! {
         name: String,
     }
 }
+
+/// The key a common name is looked up by: lower case, without white space.
+#[must_use]
+pub fn name_key(name: &str) -> String {
+    name.chars()
+        .filter(|c| !c.is_whitespace())
+        .flat_map(char::to_lowercase)
+        .collect()
+}

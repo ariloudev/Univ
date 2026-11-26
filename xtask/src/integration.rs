@@ -410,18 +410,14 @@ pub(crate) fn send(
         .map_err(|e| e.to_string())?;
     let authorization = exchange
         .bearer
-        .map(|token| format!("Authorization: Bearer {token}\r\n"))
-        .unwrap_or_default();
+        .map_or_default(|token| format!("Authorization: Bearer {token}\r\n"));
     let body = exchange.json.unwrap_or_default();
-    let content = exchange
-        .json
-        .map(|json| {
-            format!(
-                "Content-Type: application/json\r\nContent-Length: {}\r\n",
-                json.len()
-            )
-        })
-        .unwrap_or_default();
+    let content = exchange.json.map_or_default(|json| {
+        format!(
+            "Content-Type: application/json\r\nContent-Length: {}\r\n",
+            json.len()
+        )
+    });
     let request = format!(
         "{} {} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\
          {authorization}{content}\r\n{body}",

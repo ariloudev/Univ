@@ -91,6 +91,9 @@ pub mod format;
 #[cfg(test)]
 mod format_tests;
 pub mod manifest;
+mod model;
+#[cfg(test)]
+mod model_tests;
 mod object;
 mod read;
 #[cfg(test)]
@@ -100,6 +103,10 @@ mod value;
 use serde::Serialize;
 use thiserror::Error;
 
+pub use model::{
+    COVERED, DecodedModelPoint, MODEL_POINT_BYTES, MODEL_VERSION, ModelPoint, ModelTile,
+    decode_model, encode_model,
+};
 pub use object::{OBJECT_KINDS, has_object_kind, object_kind_code, object_kind_of_code};
 pub use read::decode;
 pub use value::{
@@ -136,9 +143,9 @@ pub const MAX_TILE_BYTES: usize = 1_048_576;
 /// [`MAX_TILE_BYTES`]: 49,929, a version 4 tile's, the widest points.
 pub const MAX_POINTS: usize = max_points(V4_POINT_BYTES);
 
-/// The encoding versions this module reads, oldest first; it writes the last two,
-/// [`BASE_VERSION`] and [`VERSION`].
-pub const VERSIONS: [u16; 4] = [1, 2, BASE_VERSION, VERSION];
+/// The encoding versions this module reads, oldest first: the object tiles' four, of which it
+/// writes [`BASE_VERSION`] and [`VERSION`], and the Galaxy model's [`MODEL_VERSION`].
+pub const VERSIONS: [u16; 5] = [1, 2, BASE_VERSION, VERSION, MODEL_VERSION];
 
 /// The bytes each point takes in tiles of `version`, if one of [`VERSIONS`].
 #[must_use]
@@ -147,6 +154,7 @@ pub const fn point_bytes(version: u16) -> Option<usize> {
         1 => Some(V1_POINT_BYTES),
         2 | BASE_VERSION => Some(POINT_BYTES),
         VERSION => Some(V4_POINT_BYTES),
+        MODEL_VERSION => Some(MODEL_POINT_BYTES),
         _ => None,
     }
 }
@@ -325,6 +333,17 @@ pub enum TileError {
     #[error("tiles are written in encoding versions {BASE_VERSION} and {VERSION}, not {0}")]
     UnwrittenVersion(u16),
     #[error(
+        "the tile is of encoding version {0}: a version 5 tile holds the Galaxy model's points, \
+         which decode_model reads, and decode_model reads no other"
+    )]
+    ModelVersion(u16),
+    #[error("model point {point}'s position {position:?} lies outside its node")]
+    ModelOutsideNode { point: usize, position: Vec3 },
+    #[error("model point {point} has the population code 0, which names no population")]
+    Population { point: usize },
+    #[error("model point {point} has the flags {flags:#04x}; only bit 0, covered, is defined")]
+    Flags { point: usize, flags: u8 },
+    #[error(
         "point {point} has the value code {code}, which the tile's version does not define or \
          its value contradicts"
     )]
@@ -373,6 +392,32 @@ fn quantize(p: f64, min: f64, step: f64) -> u16 {
     ((p - min) / step).floor().clamp(0.0, f64::from(u16::MAX)) as u16
 }
 
+/// The 48 bytes of a tile's header, of `version` and `count` points of `node`, at the start of
+/// a buffer with room for `capacity` bytes.
+fn header(version: u16, count: u32, node: &NodeBox, capacity: usize) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(capacity);
+    bytes.extend_from_slice(&MAGIC);
+    bytes.extend_from_slice(&version.to_le_bytes());
+    bytes.extend_from_slice(&0u16.to_le_bytes());
+    bytes.extend_from_slice(&count.to_le_bytes());
+    bytes.extend_from_slice(&0u32.to_le_bytes());
+    for c in node.min.iter().chain([&node.edge]) {
+        bytes.extend_from_slice(&c.to_le_bytes());
+    }
+    bytes
+}
+
+/// Appends each of `positions`' quantized x, y and z within `node`.
+fn quantized_positions(bytes: &mut Vec<u8>, node: &NodeBox, positions: impl Iterator<Item = Vec3>) {
+    let step = node.step();
+    for p in positions {
+        for i in 0..3 {
+            let q = quantize(p[i], node.min[i], step);
+            bytes.extend_from_slice(&q.to_le_bytes());
+        }
+    }
+}
+
 /// Encodes `points` as a version 3 tile of `node`, in the order given: [`encode_as`] with
 /// [`BASE_VERSION`].
 ///
@@ -412,22 +457,8 @@ pub fn encode_as(version: u16, node: &NodeBox, points: &[TilePoint]) -> Result<V
             position: p.position,
         });
     }
-    let mut bytes = Vec::with_capacity(tile_bytes(point_bytes, n));
-    bytes.extend_from_slice(&MAGIC);
-    bytes.extend_from_slice(&version.to_le_bytes());
-    bytes.extend_from_slice(&0u16.to_le_bytes());
-    bytes.extend_from_slice(&count.to_le_bytes());
-    bytes.extend_from_slice(&0u32.to_le_bytes());
-    for c in node.min.iter().chain([&node.edge]) {
-        bytes.extend_from_slice(&c.to_le_bytes());
-    }
-    let step = node.step();
-    for p in points {
-        for i in 0..3 {
-            let q = quantize(p.position[i], node.min[i], step);
-            bytes.extend_from_slice(&q.to_le_bytes());
-        }
-    }
+    let mut bytes = header(version, count, &node, tile_bytes(point_bytes, n));
+    quantized_positions(&mut bytes, &node, points.iter().map(|p| p.position));
     for p in points {
         bytes.extend_from_slice(&p.id.get().to_le_bytes());
     }

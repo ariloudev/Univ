@@ -75,6 +75,7 @@ fn options(state: &Path) -> (FetchOptions, MatchOptions) {
         repository: workspace(),
         cache: state.join("cache"),
         sources: vec![],
+        structures_of: vec![],
     };
     let state = MatchOptions {
         state: state.to_path_buf(),

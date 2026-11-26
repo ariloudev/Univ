@@ -58,6 +58,7 @@ async fn the_provenance_gives_entries_left_out_by_reason_and_each_fix_with_its_c
         repository: defs.path().to_path_buf(),
         cache: cache.path().to_path_buf(),
         sources: vec![],
+        structures_of: vec![],
     };
     let rig = rig(false);
     let report = Mutex::new(RunReport::new(&definitions));
@@ -181,6 +182,7 @@ async fn a_failed_normalization_leaves_no_earlier_report_in_the_provenance() {
         repository: defs.path().to_path_buf(),
         cache: cache.path().to_path_buf(),
         sources: vec![],
+        structures_of: vec![],
     };
     let rig = rig(false);
     let report = Mutex::new(RunReport::new(&definitions));

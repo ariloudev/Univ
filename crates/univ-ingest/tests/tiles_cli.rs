@@ -11,7 +11,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use univ_ingest::acquire::acquire;
-use univ_ingest::source::Access;
+use univ_ingest::source::{Access, ScaleDomain};
 use univ_ingest::tiles::{DOMAINS, MANIFEST_FILE, name_of, sha256, tile_file};
 use univ_model::tile::{MAX_TILE_BYTES, decode};
 use wiremock::matchers::query_param;
@@ -39,9 +39,14 @@ fn tiling(definitions: &Path, cache: &Path, state: &Path, out: &Path) -> std::pr
     )
 }
 
-/// The directory name of each scale domain, in the order of their manifests.
-fn domains() -> [&'static str; 4] {
-    DOMAINS.map(name_of)
+/// The directory name of each scale domain the run writes, in the order of their manifests: no
+/// Galaxy model, as no researched structure gives it an arm to follow.
+fn domains() -> Vec<&'static str> {
+    DOMAINS
+        .into_iter()
+        .filter(|d| *d != ScaleDomain::GalaxyModel)
+        .map(name_of)
+        .collect()
 }
 
 /// Every file each domain's directory under `out` holds, by path, with its bytes.
@@ -120,12 +125,14 @@ async fn an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its
     for line in [
         // M81's 2MRS redshift alone is about 600% uncertain: it is not placed, and in no tile.
         "Z Step cross-match: positions: 16 placed of 25\n",
-        "Z Stage tiles: 4 items\n",
+        "Z Stage tiles: 5 items\n",
         "Z Step tiles: stars: 1 nodes, 1 points, largest tile 68 bytes\n",
         "Z Step tiles: nearby galaxies: 1 nodes, 9 points, largest tile 228 bytes\n",
         "Z Step tiles: cosmic web: 1 nodes, 6 points, largest tile 168 bytes\n",
         // No fixture source names Galaxy tracers yet: its domain is listed, empty.
         "Z Step tiles: galaxy tracers: 0 nodes, 0 points, largest tile 0 bytes\n",
+        "Z Step tiles: galaxy model: not built, as the release holds no spiral arm for it to \
+         follow\n",
         "Z tiles: 1 stars nodes, 1 stars points, 68 stars largest tile bytes, 1 nearby galaxies \
          nodes, 9 nearby galaxies points, 228 nearby galaxies largest tile bytes, 1 cosmic web \
          nodes, 6 cosmic web points, 168 cosmic web largest tile bytes, 0 galaxy tracers nodes, 0 \

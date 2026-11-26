@@ -1,0 +1,276 @@
+key: 01a21314-dbf1-73fc-98fc-aec254a403b6
+id: spec
+versions:
+  - key: 01a21314-dbf1-73fc-98fc-aec6f3510020
+    at: 2026-11-25T14:21:03Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Specify a build without structures"
+    goal: "spec/ states that a build taking none of the researched structures leaves out the memberships its sources assign to them, and that a build taking them still refuses a membership naming a structure none of them is, approved and committed"
+    status: active
+  - key: 01a21316-df56-7132-9c64-b7ec044e574d
+    at: 2026-11-25T14:23:15Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Specify a build without structures"
+    goal: "spec/ states that a build taking none of the researched structures leaves out the memberships its sources assign to them, and that a build taking them still refuses a membership naming a structure none of them is, approved and committed"
+    status: done
+blocks:
+  - key: 01a21314-dbf1-73fc-98fc-aec5f62933c1
+    id: asked
+    kind: note
+    versions:
+      - key: 01a21314-dbf1-73fc-98fc-aec92d829698
+        at: 2026-11-25T14:21:03Z
+        revision: 1
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "What the person asked"
+        markdown: |-
+          1. A `mw-build.sh` script that builds with Milky Way sources only.
+          2. The code changed so a build can leave out `researched-structures`.
+          3. The 15 Milky Way sources (scale domains `stars` and `galaxy_tracers`), without `researched-structures`.
+          4. No satellite galaxies (`mcconnachie-2012` left out).
+          5. Downloads approved.
+  - key: 01a21315-2510-7118-a49e-eb68f83eb126
+    id: spec-change-1
+    kind: loft
+    versions:
+      - key: 01a21315-2510-7118-a49e-eb6994119206
+        at: 2026-11-25T14:21:22Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        view: spec-change
+        note: "Two Requirements beside RQ-198 under Cross-match catalogues: an optional one for a build without the researched structures, and the refusal the code already makes, now scoped to a build that takes them."
+        recorded:
+          commit: "4bffc4d24b65a2f6de3e01a1d424a79cbc7871a0"
+          branch: "feat/milky-way"
+          dirty: true
+          loft: 2.4.1
+          at: 2026-11-25T14:21:22Z
+        report: |
+          {
+            "counts": {
+              "graph.decisions": 0,
+              "graph.diff": 5,
+              "graph.edges": 0,
+              "graph.nodes": 8,
+              "status.base.added": 5,
+              "status.base.changed": 0,
+              "status.base.removed": 0
+            },
+            "graph": {
+              "decisions": [],
+              "diff": [
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639beba146fe",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Where a build takes none of the researched structures, Univ Ingest shall build the release without the memberships that its sources assign to researched structures.",
+                  "words": {
+                    "after": "Where a build takes none of the researched structures, Univ Ingest shall build the release without the memberships that its sources assign to researched structures."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639c6f768cc8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A build of Reid et al. 2019's masers that takes none of the researched structures completes.",
+                  "words": {
+                    "after": "A build of Reid et al. 2019's masers that takes none of the researched structures completes."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639de2377029",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In such a build each maser is an object of the release and a member of no structure.",
+                  "words": {
+                    "after": "In such a build each maser is an object of the release and a member of no structure."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639e5dcf3c8b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a build that takes the researched structures meets a membership naming a structure that none of them is, then Univ Ingest shall refuse the build before writing its release, and name the source, its column, the value and the structure.",
+                  "words": {
+                    "after": "If a build that takes the researched structures meets a membership naming a structure that none of them is, then Univ Ingest shall refuse the build before writing its release, and name the source, its column, the value and the structure."
+                  }
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639fd715a93e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The refusal names the source, the column, the value and the structure that the membership names.",
+                  "words": {
+                    "after": "The refusal names the source, the column, the value and the structure that the membership names."
+                  }
+                }
+              ],
+              "edges": [],
+              "nodes": [
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d658085bf5c8",
+                  "kind": "product",
+                  "label": "P-1",
+                  "name": "Univ Ingest",
+                  "parent": null
+                },
+                {
+                  "change": null,
+                  "key": "01a19f1a-685d-7357-b67e-d65bef1ca65c",
+                  "kind": "feature_group",
+                  "label": "FG-3",
+                  "name": "Identity",
+                  "parent": "01a19f1a-685d-7357-b67e-d658085bf5c8"
+                },
+                {
+                  "change": null,
+                  "key": "01a19f23-636e-7035-8185-aba1fc8f7bbd",
+                  "kind": "feature",
+                  "label": "F-7",
+                  "name": "Cross-match catalogues",
+                  "parent": "01a19f1a-685d-7357-b67e-d65bef1ca65c"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639beba146fe",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "Where a build takes none of the researched structures, Univ Ingest shall build the release without the memberships that its sources assign to researched structures.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639c6f768cc8",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "A build of Reid et al. 2019's masers that takes none of the researched structures completes.",
+                  "parent": "01a21314-fe0f-732a-a1ca-639beba146fe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639de2377029",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "In such a build each maser is an object of the release and a member of no structure.",
+                  "parent": "01a21314-fe0f-732a-a1ca-639beba146fe"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639e5dcf3c8b",
+                  "kind": "requirement",
+                  "label": null,
+                  "name": "If a build that takes the researched structures meets a membership naming a structure that none of them is, then Univ Ingest shall refuse the build before writing its release, and name the source, its column, the value and the structure.",
+                  "parent": "01a19f23-636e-7035-8185-aba1fc8f7bbd"
+                },
+                {
+                  "change": "added",
+                  "key": "01a21314-fe0f-732a-a1ca-639fd715a93e",
+                  "kind": "criterion",
+                  "label": null,
+                  "name": "The refusal names the source, the column, the value and the structure that the membership names.",
+                  "parent": "01a21314-fe0f-732a-a1ca-639e5dcf3c8b"
+                }
+              ]
+            },
+            "status": {
+              "base": {
+                "added": [
+                  {
+                    "column": 10,
+                    "key": "01a21314-fe0f-732a-a1ca-639beba146fe",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 102,
+                    "name": "Where a build takes none of the researched structures, Univ Ingest shall build the release without the memberships that its sources assign to researched structures.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a21314-fe0f-732a-a1ca-639c6f768cc8",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 110,
+                    "name": "A build of Reid et al. 2019's masers that takes none of the researched structures completes.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a21314-fe0f-732a-a1ca-639de2377029",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 112,
+                    "name": "In such a build each maser is an object of the release and a member of no structure.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 10,
+                    "key": "01a21314-fe0f-732a-a1ca-639e5dcf3c8b",
+                    "kind": "requirement",
+                    "label": null,
+                    "line": 114,
+                    "name": "If a build that takes the researched structures meets a membership naming a structure that none of them is, then Univ Ingest shall refuse the build before writing its release, and name the source, its column, the value and the structure.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  },
+                  {
+                    "column": 14,
+                    "key": "01a21314-fe0f-732a-a1ca-639fd715a93e",
+                    "kind": "criterion",
+                    "label": null,
+                    "line": 121,
+                    "name": "The refusal names the source, the column, the value and the structure that the membership names.",
+                    "path": "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                  }
+                ],
+                "changed": [],
+                "commit": "4bffc4d24b65a2f6de3e01a1d424a79cbc7871a0",
+                "removed": [],
+                "revision": "main"
+              },
+              "errors": [],
+              "lock": {
+                "differs": "contentRoot",
+                "matches": false,
+                "publishSequence": 10,
+                "publishedAt": "2026-11-12T13:42:41Z",
+                "stateRoot": "5a668e1e3034801ee335f4b77ee5895ce0360a71e831d7c9c44e6b4de328cd83"
+              },
+              "outcome": "reported",
+              "repository": {
+                "branch": "feat/milky-way",
+                "modified": [
+                  "spec/products/univ-ingest/identity/cross-match-catalogues.yaml"
+                ],
+                "stopped": null
+              },
+              "schema": "loft-status/3"
+            }
+          }
+  - key: 01a21316-df56-7132-9c64-b7eabf9e9a82
+    id: spec-approved
+    kind: note
+    versions:
+      - key: 01a21316-df56-7132-9c64-b7ebcec4d187
+        at: 2026-11-25T14:23:15Z
+        revision: 3
+        by:
+          host: claude-code
+          session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+        title: "Spec change approved"
+        markdown: "The person approved the two new Requirements of `spec-change-1` in the session's own dialog (the Yard page was not running). `spec/` is committed alone as `spec: build a release without the researched structures`."
+        tone: success

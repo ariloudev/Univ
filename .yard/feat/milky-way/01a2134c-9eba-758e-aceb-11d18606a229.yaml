@@ -1,0 +1,21 @@
+key: 01a2134c-9eba-758e-aceb-11d18606a229
+id: serve
+versions:
+  - key: 01a2134c-9eba-758e-aceb-11d4818b08cf
+    at: 2026-11-25T15:21:58Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Explorer on the tailnet"
+    goal: "Milky Way release 1 is published to its own store and Univ Explorer serves it at https://bee.tail148d22.ts.net/ through tailscale serve"
+    status: planned
+  - key: 01a21373-c248-7020-b969-570f45281562
+    at: 2026-11-25T16:04:43Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+    title: "Explorer on the tailnet"
+    goal: "Milky Way release 1 is published to its own store and Univ Explorer serves it at https://bee.tail148d22.ts.net/ through tailscale serve"
+    status: done

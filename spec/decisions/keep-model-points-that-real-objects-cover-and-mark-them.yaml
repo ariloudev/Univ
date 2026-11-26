@@ -1,0 +1,80 @@
+key: 01a213c1-93e0-7343-9f8d-9b7f788de5b5
+slug: keep-model-points-that-real-objects-cover-and-mark-them
+title: "Keep the model points that real objects cover, and mark them"
+context: "Near the Sun, the release holds real stars and tracers where the Galaxy model also has model points. Drawn together, the two double up; with the model's points left out there, a client that hides the real stars, as the arms view does, shows a hole around the Sun."
+state:
+  kind: accepted
+  selectedOption: 01a213c1-93e0-7343-9f8d-9b8327ffacfd
+  outcome: "In each cube of 250 pc, as many of a population's model points as the cube holds real objects of that population's counterpart are marked covered, and a client draws a covered point only while the counterparts' scale domain is off."
+drivers:
+  - key: 01a213c1-93e0-7343-9f8d-9b801b4133ee
+    kind: local
+    label: "No doubling"
+    statement: "Where real objects are drawn, the model does not add to them."
+  - key: 01a213c1-93e0-7343-9f8d-9b8152a77b9b
+    kind: local
+    label: "No hole"
+    statement: "Where real objects are not drawn, the model is whole."
+  - key: 01a213c1-93e0-7343-9f8d-9b82918e9328
+    kind: local
+    label: "Simple tiles"
+    statement: "The Galaxy model's tiles stay one set for every client."
+options:
+  - key: 01a213c1-93e0-7343-9f8d-9b8327ffacfd
+    title: "Mark them covered"
+    description: "Each covered model point stays in its tile with a mark; a client hides it while it draws the real objects that cover it."
+  - key: 01a213c1-93e0-7343-9f8d-9b84d8303520
+    title: "Leave them out"
+    description: "The model holds only the points that real objects do not cover."
+  - key: 01a213c1-93e0-7343-9f8d-9b850509c984
+    title: "Independent layers"
+    description: "The model covers the whole Galaxy on its own, and a client draws it and the real objects one over the other."
+assessments:
+  - option: 01a213c1-93e0-7343-9f8d-9b8327ffacfd
+    driver: 01a213c1-93e0-7343-9f8d-9b801b4133ee
+    rating: supports
+    rationale: "a client hides the covered points while it draws the real objects"
+  - option: 01a213c1-93e0-7343-9f8d-9b8327ffacfd
+    driver: 01a213c1-93e0-7343-9f8d-9b8152a77b9b
+    rating: supports
+    rationale: "a client draws the covered points while the real objects are hidden"
+  - option: 01a213c1-93e0-7343-9f8d-9b8327ffacfd
+    driver: 01a213c1-93e0-7343-9f8d-9b82918e9328
+    rating: supports
+    rationale: "one set of tiles, with one byte more of each point"
+  - option: 01a213c1-93e0-7343-9f8d-9b84d8303520
+    driver: 01a213c1-93e0-7343-9f8d-9b801b4133ee
+    rating: supports
+    rationale: "nothing of the model lies where real objects are"
+  - option: 01a213c1-93e0-7343-9f8d-9b84d8303520
+    driver: 01a213c1-93e0-7343-9f8d-9b8152a77b9b
+    rating: conflicts
+    rationale: "hiding the real stars leaves the Sun's surroundings empty"
+  - option: 01a213c1-93e0-7343-9f8d-9b84d8303520
+    driver: 01a213c1-93e0-7343-9f8d-9b82918e9328
+    rating: supports
+    rationale: "one set of tiles"
+  - option: 01a213c1-93e0-7343-9f8d-9b850509c984
+    driver: 01a213c1-93e0-7343-9f8d-9b801b4133ee
+    rating: conflicts
+    rationale: "the Sun's surroundings are drawn twice"
+  - option: 01a213c1-93e0-7343-9f8d-9b850509c984
+    driver: 01a213c1-93e0-7343-9f8d-9b8152a77b9b
+    rating: supports
+    rationale: "the model is always whole"
+  - option: 01a213c1-93e0-7343-9f8d-9b850509c984
+    driver: 01a213c1-93e0-7343-9f8d-9b82918e9328
+    rating: supports
+    rationale: "one set of tiles"
+consequences:
+  - key: 01a213c1-93e0-7343-9f8d-9b86019481a1
+    kind: cost
+    statement: "Building the model counts the real objects of each population's counterpart in each cube of 250 pc."
+  - key: 01a213c1-93e0-7343-9f8d-9b87110a40bb
+    kind: obligation
+    statement: "A client that draws real objects and the Galaxy model together hides the covered model points."
+subjects:
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9b977e9963be
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9bc13ee5d632

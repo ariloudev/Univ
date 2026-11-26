@@ -1,6 +1,8 @@
 //! The [`Store`] of local D1 and R2 against a `--persist-to` state directory: what
-//! `wrangler dev` reads when given the same directory. D1 goes through Wrangler's `--local`
-//! commands; every R2 operation of a run goes through one [`R2Batch`], started at the first.
+//! `wrangler dev` reads when given the same directory. Files of rows are written straight into
+//! the local D1's own files ([`d1_files`]); every other D1 operation goes through Wrangler's
+//! `--local` commands, and every R2 operation of a run through one [`R2Batch`], started at the
+//! first.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -9,6 +11,7 @@ use serde_json::Value;
 
 use univ_model::release::shards::Database;
 
+use super::d1_files;
 use super::r2batch::R2Batch;
 use super::{QueryRow, ReadBack, Store};
 
@@ -220,12 +223,26 @@ fn content_type(key: &str) -> &'static str {
 }
 
 impl Store for Wrangler {
+    /// Writes `file` straight into the database's local file ([`d1_files`]), which Wrangler
+    /// is asked to make first where it has not yet.
     fn execute_file(&mut self, database: Database, file: &Path) -> Result<(), String> {
         let file = absolute(file)?;
-        let file = file.to_string_lossy();
+        let toml = std::fs::read_to_string(&self.config)
+            .map_err(|e| format!("{}: {e}", self.config.display()))?;
         let name = database.name();
-        self.run_ok(&["d1", "execute", &name, "--file", &file])
-            .map(drop)
+        let id = d1_files::database_id(&toml, database)
+            .ok_or_else(|| format!("{} names no D1 database {name}", self.config.display()))?;
+        let db = d1_files::database_file(&self.persist_to, &id);
+        if !db.is_file() {
+            self.run_ok(&["d1", "execute", &name, "--command", "SELECT 1"])?;
+        }
+        if !db.is_file() {
+            return Err(format!(
+                "Wrangler made no local file {} for {name}",
+                db.display()
+            ));
+        }
+        d1_files::write(&db, &file)
     }
 
     fn query(&mut self, database: Database, sql: &str) -> Result<Vec<QueryRow>, String> {
