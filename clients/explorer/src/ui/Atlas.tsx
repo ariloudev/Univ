@@ -114,7 +114,8 @@ export function AtlasPage({ start, end, slot, children }: { start: ReactNode; en
     <div className="grid h-full grid-cols-[minmax(0,1fr)] grid-rows-[40px_minmax(0,1fr)_30px] overflow-hidden">
       <header className="flex min-w-0 items-center gap-4 border-b border-line bg-panel px-3 text-sm whitespace-nowrap">
         {start}
-        <div ref={slot} className="flex min-w-0 flex-1 items-center gap-4" />
+        {/* On a phone the view's parts scroll across the bar rather than run under its end. */}
+        <div ref={slot} className="flex min-w-0 flex-1 items-center gap-4 max-sm:overflow-x-auto max-sm:[scrollbar-width:none]" />
         {end}
       </header>
       {children}

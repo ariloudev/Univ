@@ -6079,11 +6079,20 @@ links:
         name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
         body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
   - node: 01a213c1-93e0-7343-9f8d-9b94c1b7d454
-    reviewed: b7789de6b4075ab8d0d028ebd4b085805e782730084572e21a21b80440c54a94
+    reviewed: efabf60610997fa433a7b07652251af435f69f7428afa036557eef772ff57e45
     tests:
       - file: "clients/explorer/src/catalogue/model.test.ts"
         name: "are each as bright as the next, a share of their domain's opacity"
         body: 3d53fbd24b9556da0cec016fcf80f0efd434c762cf50f95f1eeee481551030bb
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are drawn at their population's brightness, the arms' young stars and knots 6 times the rest"
+        body: 78c8d09eb67c6ead310b6560037be202af25ad826ada0753c5c242003ce7a036
+  - node: 01a21597-d81c-71be-95d7-ab2f180b7371
+    reviewed: a9fe94d7174036aa7cba6ccac54cc28821cfb4786a0e1072d20a7bf12d5fe493
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are drawn at their population's brightness, the arms' young stars and knots 6 times the rest"
+        body: 78c8d09eb67c6ead310b6560037be202af25ad826ada0753c5c242003ce7a036
   - node: 01a213c1-93e0-7343-9f8d-9b95b48b1af3
     reviewed: 3e9ff63fd2e80f11a02f614147e2bcec7963c67b68542d16dba2b115b465146d
     tests:

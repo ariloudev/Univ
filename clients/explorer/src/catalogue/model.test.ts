@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import type { Http } from "../api/client.ts";
 import { type GalaxyModel, galaxyModel } from "../api/galaxyModel.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
-import { COVERED_BY_STARS, COVERED_BY_TRACERS, MODEL_OPACITY, NOT_COVERED, batchOpacity, coverOf } from "../scene/model.ts";
+import { ARM_BRIGHTNESS, COVERED_BY_STARS, COVERED_BY_TRACERS, MODEL_OPACITY, NOT_COVERED, batchOpacity, coverOf } from "../scene/model.ts";
 import { starBytes } from "../scene/starColour.ts";
 import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
@@ -146,6 +146,16 @@ describe("the Galaxy model's points", () => {
   it("are each as bright as the next, a share of their domain's opacity", () => {
     expect(batchOpacity(0.8, true)).toBeCloseTo(0.8 * MODEL_OPACITY);
     expect(batchOpacity(0.8, false)).toBe(0.8);
+  });
+
+  it("are drawn at their population's brightness, the arms' young stars and knots 6 times the rest", () => {
+    const look = lookOf(DEFINITION);
+    const alpha = (code: number) => look.colours[code * 4 + 3] ?? 0;
+    const arms = DEFINITION.definition.populations.filter((p) => p.density.form === "arms");
+    const rest = DEFINITION.definition.populations.filter((p) => p.density.form !== "arms");
+    expect(arms.map((p) => p.id)).toEqual(["young_stars", "star_forming_knots"]);
+    for (const p of arms) expect(alpha(p.code), p.id).toBe(255);
+    for (const p of rest) expect(alpha(p.code) * ARM_BRIGHTNESS, p.id).toBeCloseTo(255, -1);
   });
 
   it("are no object the pointer names or a click chooses", async () => {

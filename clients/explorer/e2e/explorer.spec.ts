@@ -441,6 +441,25 @@ test("lays the view out as an atlas: bars, rail, drawer and record beside it at 
   expect(widened.width).toBeGreaterThan(view.width + 300);
 });
 
+test("keeps the top bar to one line on a phone, every control in it reached and none under another", async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 660 });
+  await firstPoints(page);
+  const bar = page.getByRole("banner");
+  expect((await boxOf(bar)).height).toBeLessThanOrEqual(40);
+  // What a tap at a control's centre reaches is the control itself: scrolled into view where the
+  // bar's parts scroll, and covered by nothing.
+  const reached = (locator: Locator) =>
+    locator.evaluate((element) => {
+      element.scrollIntoView({ inline: "nearest" });
+      const box = element.getBoundingClientRect();
+      const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return top === element || element.contains(top) || top?.contains(element) === true;
+    });
+  for (const name of ["Grid", "Rings", "Outlines", "Level of detail"]) expect(await reached(bar.getByRole("switch", { name })), name).toBe(true);
+  expect(await reached(bar.getByRole("combobox").last())).toBe(true);
+  expect(await reached(bar.getByRole("button", { name: "Find" }))).toBe(true);
+});
+
 test("draws the grid across the view from its switch beside the axes, and keeps it across a reload", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await firstPoints(page);

@@ -5,8 +5,11 @@ body: |
   Seeing the whole Milky Way as a spiral galaxy: its disc, bar, bulge and halo, and the young
   stars and star-forming knots of its arms, drawn from the model points of the Galaxy model
   beyond the few kiloparsecs that its observed stars and tracers reach. The model's points stand
-  for light, not for stars, so they are drawn as light: each as bright as the next, adding up
-  where they crowd. Near the Sun, the real objects stand in for the model points they cover,
+  for light, not for stars, so they are drawn as light, adding up where they crowd. Drawn by
+  their cited share of the light alone, the young stars and knots of the arms are too few to
+  stand out against the old disc, as a spiral galaxy's arms do in a photograph, where their hot
+  young stars outshine the old disc; so each population is drawn at a display brightness of its
+  own, the arms' brighter than the rest. Near the Sun, the real objects stand in for the model points they cover,
   while their scale domain is drawn.
 realizes:
   - 01a1a497-e843-728a-bce8-3fcf940bdac0
@@ -20,7 +23,9 @@ requirements:
       shall: "draw the model points of the Galaxy model domain as light, in the display colour of each one's population."
     criteria:
       - key: 01a213c1-93e0-7343-9f8d-9b94c1b7d454
-        name: "Every model point is drawn with the same brightness, and the light of model points that overlap on screen adds up."
+        name: "Every model point of a population is drawn with the same brightness, its population's display brightness, and the light of model points that overlap on screen adds up."
+      - key: 01a21597-d81c-71be-95d7-ab2f180b7371
+        name: "The young stars and the star-forming knots of the arms are drawn 6 times as bright as the points of the discs, the bar and bulge and the halo."
       - key: 01a213c1-93e0-7343-9f8d-9b95b48b1af3
         name: "Each model point is drawn in the display colour the Galaxy model's definition gives its population."
       - key: 01a213c1-93e0-7343-9f8d-9b96e3363efe

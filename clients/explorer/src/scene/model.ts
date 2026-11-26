@@ -24,9 +24,19 @@ const COVERS: Readonly<Record<string, number>> = { [STARS_DOMAIN]: COVERED_BY_ST
 /** What covers a model point of a population whose manifest entry names `coveredBy`. */
 export const coverOf = (coveredBy: string | undefined): number => COVERS[coveredBy ?? ""] ?? NOT_COVERED;
 
-/** The opacity of a model point: one for every point, so that their light adds up where they
- * crowd, low enough that ten million of them do not wash the view out. */
-export const MODEL_OPACITY = 0.08;
+/** The opacity of the brightest model points, the arms' young stars and knots: the light of
+ * every point adds up where they crowd, the old disc's low enough that ten million of them do
+ * not wash the view out. */
+export const MODEL_OPACITY = 0.48;
+
+/** How many times as bright as a point of the discs, the bar and bulge and the halo the arms'
+ * young stars and star-forming knots are drawn (see-the-galaxy-model), so that the arms stand
+ * out as a spiral galaxy's do. */
+export const ARM_BRIGHTNESS = 6;
+
+/** The opacity byte of a population of density `form`: full for the arms' populations, a
+ * sixth of it for any other. */
+export const brightnessOf = (form: string): number => (form === "arms" ? 255 : Math.round(255 / ARM_BRIGHTNESS));
 
 /** Bit `c` set for each cover `c` whose model points are hidden: those covered by the objects of
  * a scale domain the release holds, `held`, and that is drawn, not in `hidden`. */

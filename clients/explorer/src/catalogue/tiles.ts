@@ -7,7 +7,7 @@ import { type ReadOptions, read, readJson } from "../api/client.ts";
 import { type GalaxyModel, type ModelPaper, galaxyModel } from "../api/galaxyModel.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
-import { MODEL_DOMAIN, NOT_COVERED, STARS_DOMAIN, coverOf } from "../scene/model.ts";
+import { MODEL_DOMAIN, NOT_COVERED, STARS_DOMAIN, brightnessOf, coverOf } from "../scene/model.ts";
 import { starBytes } from "../scene/starColour.ts";
 import { TRACERS_DOMAIN, objectIndex, tracerBytes } from "../scene/tracers.ts";
 import { add, scale } from "../scene/vec.ts";
@@ -38,11 +38,11 @@ export interface ModelLook {
   papers: readonly ModelPaper[];
 }
 
-/** How `model`'s points look: each population in its display colour, opaque, its light given by
- * the drawing. */
+/** How `model`'s points look: each population in its display colour, at its display brightness
+ * as the colour's opacity. */
 export function lookOf(model: GalaxyModel): ModelLook {
   const colours = new Uint8Array(256 * 4);
-  for (const p of model.definition.populations) colours.set([...p.colour.srgb, 255], p.code * 4);
+  for (const p of model.definition.populations) colours.set([...p.colour.srgb, brightnessOf(p.density.form)], p.code * 4);
   return { colours, populations: model.definition.populations, papers: model.definition.papers };
 }
 

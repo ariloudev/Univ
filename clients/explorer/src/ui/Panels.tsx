@@ -44,7 +44,7 @@ export function Whereabouts({ controller, frame, grid, rings, outlines }: ViewPr
         {formatDistance(controller.view.distance)}
       </p>
       <label className="flex items-center gap-1.5">
-        <span className="text-dim">Axes</span>
+        <span className="text-dim max-sm:sr-only">Axes</span>
         <select
           value={controller.axes}
           onChange={(event) => {
@@ -59,9 +59,10 @@ export function Whereabouts({ controller, frame, grid, rings, outlines }: ViewPr
           ))}
         </select>
       </label>
-      <SwitchBox label="Grid" state={grid} textClass="text-dim" />
-      <SwitchBox label="Rings" state={rings} textClass="text-dim" />
-      <SwitchBox label="Outlines" state={outlines} textClass="text-dim" />
+      {/* On a phone, the boxes alone: their names stay for a screen reader and in their titles. */}
+      <SwitchBox label="Grid" state={grid} textClass="text-dim max-sm:sr-only" />
+      <SwitchBox label="Rings" state={rings} textClass="text-dim max-sm:sr-only" />
+      <SwitchBox label="Outlines" state={outlines} textClass="text-dim max-sm:sr-only" />
     </div>
   );
 }
