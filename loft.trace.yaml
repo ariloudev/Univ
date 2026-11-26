@@ -4630,7 +4630,7 @@ links:
         name: "holds a level-of-detail switch in its top bar, on by default, that turns it off and on"
         body: 46e498f3b666c3712acbc973b616ba8eaf98d0b9a226bc6bcbe436b06a68cea8
   - node: 01a1b07b-8157-7546-927e-272335750e5f
-    reviewed: 5a51da406e444405ddac395036b21c4c46ad6e2fbf010814eedda68bdfbc0f5d
+    reviewed: 3605421faef104304919d49a90ab5148f4a1389fa9ff5bb05f062d5df1875314
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "fetches every tile, the coarser levels first, whatever the view and the budget, and drops none"
@@ -4638,6 +4638,15 @@ links:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on"
         body: 2e8b428ae89f3499c1e18522379d939bd65a2287f25569d9d1421c7e1d8e6b35
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "is still held and drawn by level of detail, within the budget, while every tile of objects is fetched"
+        body: c33b91f9afb9cc7c919189d6b1df099882fea2660b79a2b95388d1b266677383
+  - node: 01a215a8-77d8-7398-8386-2ffb310268da
+    reviewed: 8291caec3ce0304879094a188d17ca88c19bbfd5d12ddcf059253ae44afdc89a
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "is still held and drawn by level of detail, within the budget, while every tile of objects is fetched"
+        body: c33b91f9afb9cc7c919189d6b1df099882fea2660b79a2b95388d1b266677383
   - node: 01a1b07b-8157-7546-927e-2724ac33dc33
     reviewed: 4ef267326d10412e4ad89616756fd1b15d6f5bcabc69491a2f723a1cb9bfb287
     tests:
@@ -4729,7 +4738,7 @@ links:
         name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
         body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
   - node: 01a1b093-647d-7308-9b46-bdcd4901ec3c
-    reviewed: a1ecdc079dd0c923cfb0910a83b2400459b93f055f797b7d929261e708a0813a
+    reviewed: d24f336eac4804a2487f0c00ffcae1727c3c2a7fbc1204d3b8603de438c4b41e
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
@@ -4979,13 +4988,19 @@ links:
     tests:
       - file: "clients/explorer/src/scene/input.test.ts"
         name: "zoom in as they spread and out as they close, by the ratio of their spread"
-        body: 65d3b6054545dacda1dee55b8d67ef19c691da367ac4bee9513d2129bc50528a
+        body: e42bd9bfc39618b988afe641603db39f2a36d68df6aac4389da9d7f49b244d52
   - node: 01a2158a-c920-75b6-a018-a17bb25dfa8d
     reviewed: 37d905e7a7bac43c55c4199895a952bdb25a4e2d3e8ec9a7a7dd5ee5ad80879a
     tests:
       - file: "clients/explorer/src/scene/input.test.ts"
         name: "neither turn the view nor click, also as they lift"
         body: 34bb65c8bdb7b79d1890a8c20158b76801c3993fdd1435e6f4296b027c66b2db
+  - node: 01a215a8-77d8-7398-8386-2ffcadbda0ec
+    reviewed: 87bd3465bf0d1f8df1ae17419108b60574ff317c8780b7bcf476e977e8611648
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "move the focus as they move together, by the distance their midpoint moved"
+        body: 4b01544a25a34b0b8bcd72c85c088f729190fecb04eadbdb300edb4649e95b10
   - node: 01a1a497-e843-728a-bce8-401d23c750eb
     reviewed: c8ec4d70631fc753e86ec1a5edec63856a08fdce1788d89bf3b0e6507ff19623
     tests:

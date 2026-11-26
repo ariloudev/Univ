@@ -36,12 +36,14 @@ requirements:
       form: event_driven
       when: "the person pinches the view with two fingers on a touch screen"
       system: "Univ Explorer"
-      shall: "move the eye toward the focus as the fingers spread and away from it as they close."
+      shall: "move the eye toward the focus as the fingers spread and away from it as they close, and move the focus across the view as they move together."
     criteria:
       - key: 01a2158a-c920-75b6-a018-a17acf8bbb86
         name: "The distance from the eye to the focus changes in inverse proportion to the distance between the two fingers."
       - key: 01a2158a-c920-75b6-a018-a17bb25dfa8d
         name: "While two fingers touch the view, it does not turn, and lifting them is not a click."
+      - key: 01a215a8-77d8-7398-8386-2ffcadbda0ec
+        name: "Two fingers moving together move the focus across the view as a drag with the secondary button does, by the distance their midpoint moved."
   - key: 01a1a497-e843-728a-bce8-401c96d859c6
     statement:
       form: event_driven

@@ -84,6 +84,8 @@ describe("two fingers on the view", () => {
     fire("pointermove", finger(2, 200));
     const steps = seen.filter((s) => s.startsWith("zoom")).map((s) => Number(s.split(" ")[1]));
     expect(steps).toHaveLength(2);
+    // One finger moving pulls their midpoint by half its move: the pinch moves the focus too.
+    expect(seen.filter((s) => s.startsWith("pan"))).toEqual(["pan 7.5 0", "pan -7.5 0"]);
     expect(steps[0]).toBeCloseTo(1);
     expect(steps[1]).toBeCloseTo(-1);
   });
@@ -97,6 +99,18 @@ describe("two fingers on the view", () => {
     fire("pointermove", finger(1, 60));
     fire("pointerup", finger(1, 60));
     expect(seen.some((s) => s.startsWith("turn") || s.startsWith("click"))).toBe(false);
+  });
+
+  it("move the focus as they move together, by the distance their midpoint moved", () => {
+    const { seen, fire } = bound();
+    fire("pointerdown", finger(1, 100, 100));
+    fire("pointerdown", finger(2, 200, 100));
+    fire("pointermove", finger(1, 130, 120));
+    fire("pointermove", finger(2, 230, 120));
+    expect(seen.filter((s) => s.startsWith("pan"))).toEqual(["pan 15 10", "pan 15 10"]);
+    // Their spread back where it was: the zooms of the two moves undo each other.
+    const zoomed = seen.filter((s) => s.startsWith("zoom")).reduce((sum, s) => sum + Number(s.split(" ")[1]), 0);
+    expect(zoomed).toBeCloseTo(0);
   });
 
   it("leave one finger to turn the view as a drag does", () => {

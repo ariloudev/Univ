@@ -15,6 +15,7 @@ import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures
 import { hiddenInAddress } from "../ui/hidden.ts";
 import { pickableOf } from "../ui/useWorld.ts";
 import { Catalogue } from "./catalogue.ts";
+import { EVERYTHING } from "./lod.ts";
 import { type Batch, batchOf, domainsOf, lookOf } from "./tiles.ts";
 
 /** The repository's definition as Univ Server answers for it. */
@@ -205,5 +206,31 @@ describe("the catalogue with the Galaxy model", () => {
     catalogue.setMasks(masksOf(hiddenInAddress("?hide=domain:galaxy_model"), domains));
     expect(catalogue.model()).toBeUndefined();
     expect(catalogue.modelPoints).toBe(0);
+  });
+});
+
+describe("the Galaxy model with level of detail off", () => {
+  it("is still held and drawn by level of detail, within the budget, while every tile of objects is fetched", async () => {
+    const http = server();
+    const domains = await domainsOf(2, { http });
+    const tilesOf = (name: string) => domains.find((d) => d.name === name)?.tiles ?? [];
+    const drawn: string[] = [];
+    const events = { onBatch: (b: Batch) => drawn.push(b.tile.id), onDrop: (b: Batch) => drawn.splice(drawn.indexOf(b.tile.id), 1), onChange: () => undefined };
+    // A budget of the model's root alone: level of detail on would hold no more of anything.
+    const root = tilesOf("galaxy_model").find((t) => t.parent === undefined);
+    const catalogue = new Catalogue(2, domains, events, { http, budget: root?.points ?? 0 });
+    catalogue.setLevelOfDetail(false);
+    catalogue.update({ eye: [0, 0, 0], axes: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], focal: 1e3, inView: () => true });
+    const stars = tilesOf("stars").length;
+    for (let i = 0; drawn.filter((id) => id.startsWith("stars/")).length < stars; i += 1) {
+      if (i === 2000) throw new Error("the stars' tiles did not all arrive");
+      await new Promise((r) => setTimeout(r, 1));
+    }
+    await new Promise((r) => setTimeout(r, 50));
+    const models = drawn.filter((id) => id.startsWith("galaxy_model/"));
+    expect(models.length).toBeGreaterThan(0);
+    expect(models.length).toBeLessThan(tilesOf("galaxy_model").length);
+    expect(catalogue.detail("galaxy_model")).not.toBe(EVERYTHING);
+    expect(catalogue.detail("stars")).toBe(EVERYTHING);
   });
 });

@@ -1,7 +1,8 @@
 // Binds the mouse on the view's canvas to the view (navigate-with-the-mouse): a drag with the
 // primary button turns, a drag with the secondary button or with Shift moves the focus, the
 // wheel zooms, a press that hardly moves is a click, and a double click flies. On a touch
-// screen, a pinch with two fingers zooms; while two touch, the view neither turns nor clicks.
+// screen, two fingers zoom as they spread and close and move the focus as they move together;
+// while two touch, the view neither turns nor clicks.
 
 import { isClick, pinchSteps, wheelSteps } from "./controls.ts";
 
@@ -24,39 +25,56 @@ interface Press {
   panning: boolean;
 }
 
-/** The fingers on the view, by pointer id, and how far apart two of them were last. */
+/** What a move of a pinch's finger does: the zoom steps of the fingers' spread, and how far
+ * their midpoint moved, pixels. */
+interface PinchMove {
+  steps: number;
+  dx: number;
+  dy: number;
+}
+
+/** Two fingers as they last were: how far apart, and their midpoint. */
+interface Span {
+  spread: number;
+  x: number;
+  y: number;
+}
+
+/** The fingers on the view, by pointer id, and how the first two of them last lay. */
 class Pinch {
   private readonly fingers = new Map<number, { x: number; y: number }>();
-  private spread: number | undefined;
+  private span: Span | undefined;
 
   /** A finger, or the mouse, pressed at `x`, `y`: whether two now touch, a pinch. */
   down(id: number, x: number, y: number): boolean {
     this.fingers.set(id, { x, y });
-    this.spread = this.measure();
-    return this.spread !== undefined;
+    this.span = this.measure();
+    return this.span !== undefined;
   }
 
-  /** The zoom steps of finger `id` moving to `x`, `y`; none where it is no finger of a pinch. */
-  move(id: number, x: number, y: number): number | undefined {
+  /** What finger `id` moving to `x`, `y` does; none where it is no finger of a pinch. */
+  move(id: number, x: number, y: number): PinchMove | undefined {
     if (!this.fingers.has(id)) return undefined;
     this.fingers.set(id, { x, y });
-    const before = this.spread;
-    this.spread = this.measure();
-    return before === undefined || this.spread === undefined ? undefined : pinchSteps(before, this.spread);
+    const before = this.span;
+    this.span = this.measure();
+    if (before === undefined || this.span === undefined) return undefined;
+    return { steps: pinchSteps(before.spread, this.span.spread), dx: this.span.x - before.x, dy: this.span.y - before.y };
   }
 
   /** Finger `id` lifted: whether a pinch was under way. */
   up(id: number): boolean {
-    const pinching = this.spread !== undefined;
+    const pinching = this.span !== undefined;
     this.fingers.delete(id);
-    this.spread = this.measure();
+    this.span = this.measure();
     return pinching;
   }
 
-  /** How far apart the first two fingers are; none unless two touch. */
-  private measure(): number | undefined {
+  /** How the first two fingers lie; none unless two touch. */
+  private measure(): Span | undefined {
     const [a, b] = [...this.fingers.values()];
-    return a === undefined || b === undefined ? undefined : Math.hypot(a.x - b.x, a.y - b.y);
+    if (a === undefined || b === undefined) return undefined;
+    return { spread: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   }
 }
 
@@ -101,9 +119,12 @@ export function bindMouse(canvas: HTMLElement, gestures: Gestures): () => void {
   canvas.addEventListener(
     "pointermove",
     (event) => {
-      const steps = pinch.move(event.pointerId, event.clientX, event.clientY);
-      if (steps !== undefined) gestures.zoom(steps);
-      else if (press !== undefined) drag(event, press);
+      const pinched = pinch.move(event.pointerId, event.clientX, event.clientY);
+      if (pinched !== undefined) {
+        // Spreading zooms; moving together moves the focus, as a secondary drag does.
+        if (pinched.steps !== 0) gestures.zoom(pinched.steps);
+        if (pinched.dx !== 0 || pinched.dy !== 0) gestures.pan(pinched.dx, pinched.dy);
+      } else if (press !== undefined) drag(event, press);
       else gestures.hover(local(event).x, local(event).y);
     },
     options,

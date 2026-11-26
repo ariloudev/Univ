@@ -10,7 +10,9 @@ import {
   type Detail,
   type DrawnDetail,
   EVERYTHING,
+  type Holding,
   POINT_BUDGET,
+  type Plan,
   type Tree,
   detailOf,
   drawnShare,
@@ -27,7 +29,7 @@ import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
 import { MODEL_DOMAIN, coversOf, modelPointsShown } from "../scene/model.ts";
 import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds } from "../scene/tracers.ts";
-import { type Volume, insideOf } from "../scene/volume.ts";
+import { type Box, type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, type ModelLook, TileFailed, fetchBatch } from "./tiles.ts";
 
 /** Tiles fetched at once. */
@@ -147,6 +149,10 @@ export class Catalogue implements DrawnDetail {
   readonly release: number;
   private readonly domains: ReadonlyMap<string, Domain>;
   private readonly tree: Tree<DomainTile>;
+  /** The tiles of the scale domains of objects, and of the Galaxy model, apart: with level of
+   * detail off, every tile of objects is fetched, the model's still by level of detail. */
+  private readonly objectTree: Tree<DomainTile>;
+  private readonly modelTree: Tree<DomainTile>;
   private readonly events: CatalogueEvents;
   private readonly options: CatalogueOptions;
   /** Tiles drawn, failed or given up; only a drawn tile is dropped and asked for again. */
@@ -204,6 +210,8 @@ export class Catalogue implements DrawnDetail {
     this.release = release;
     this.domains = new Map(domains.map((d) => [d.name, d]));
     this.tree = treeOf(domains.flatMap((d) => d.tiles));
+    this.objectTree = treeOf(domains.filter((d) => d.name !== MODEL_DOMAIN).flatMap((d) => d.tiles));
+    this.modelTree = treeOf(domains.filter((d) => d.name === MODEL_DOMAIN).flatMap((d) => d.tiles));
     this.events = events;
     this.options = options;
   }
@@ -227,9 +235,7 @@ export class Catalogue implements DrawnDetail {
     const pending = this.resting.size === 0 ? this.pending : new Set([...this.pending, ...this.resting]);
     const holding = { settled: this.settled, drawn: this.drawn, pending, points: this.points };
     const within = this.cull?.bounds;
-    const next = this.levelOfDetail
-      ? plan(this.tree, holding, sight, room, this.options.budget, within)
-      : planEvery(this.tree, holding, room, within);
+    const next = this.planned(holding, sight, room, within);
     for (const tile of next.drop) this.drop(tile);
     let revived = false;
     for (const tile of next.fetch) {
@@ -247,11 +253,32 @@ export class Catalogue implements DrawnDetail {
     if (revived) queueMicrotask(() => this.update(sight));
   }
 
+  /** What to fetch and drop: by level of detail while it is on; while it is off, every tile of
+   * objects, and the Galaxy model's still by level of detail within the budget, as its points
+   * alone outnumber it (draw-the-catalogues). */
+  private planned(holding: Holding, sight: Sight, room: number, within: Box | undefined): Plan<DomainTile> {
+    const budget = this.options.budget;
+    if (this.levelOfDetail) return plan(this.tree, holding, sight, room, budget, within);
+    const every = planEvery(this.objectTree, holding, room, within);
+    const model = { ...holding, points: this.heldOf(this.modelTree) };
+    const light = plan(this.modelTree, model, sight, room - every.fetch.length, budget, within);
+    return { fetch: [...every.fetch, ...light.fetch], drop: light.drop };
+  }
+
+  /** The points of the tiles of `tree` drawn and on their way. */
+  private heldOf(tree: Tree<DomainTile>): number {
+    let points = 0;
+    for (const id of [...this.drawn.keys(), ...this.pending]) points += tree.byId.get(id)?.points ?? 0;
+    return points;
+  }
+
   /** `domain`'s detail as the view last seen needs it, worked out once for each focal length:
    * none with level of detail off or before the view is known. */
   private viewed(domain: string): Detail | undefined {
     const levels = this.tree.levels.get(domain);
-    if (!this.levelOfDetail || this.sight === undefined || levels === undefined) return undefined;
+    // The Galaxy model is drawn by level of detail whether it is on or off.
+    const detailed = this.levelOfDetail || domain === MODEL_DOMAIN;
+    if (!detailed || this.sight === undefined || levels === undefined) return undefined;
     if (this.sight.focal !== this.viewedFocal) {
       this.viewedDomains.clear();
       this.viewedFocal = this.sight.focal;
