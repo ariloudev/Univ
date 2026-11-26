@@ -21,6 +21,17 @@ pub enum Counterpart {
     YoungTracers,
 }
 
+impl Counterpart {
+    /// The scale domain of these counterparts.
+    #[must_use]
+    pub fn domain(self) -> &'static str {
+        match self {
+            Self::Stars => crate::units::STARS_DOMAIN,
+            Self::YoungTracers => crate::units::GALAXY_TRACERS_DOMAIN,
+        }
+    }
+}
+
 /// The cube of `p`, ICRS parsecs.
 #[must_use]
 #[expect(

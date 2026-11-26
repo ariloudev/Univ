@@ -8,6 +8,8 @@ import { HoverLabel, Marks, StructureNames } from "./SceneOverlay.tsx";
 import { choicesOf } from "./show/choices.ts";
 import { Atlas, type AtlasPlace, type Selection } from "./Atlas.tsx";
 import { type Hidden, useHidden } from "./hidden.ts";
+import type { Switch } from "./addressSwitch.ts";
+import { useNaturalColours } from "./naturalSwitch.ts";
 import { useOutlines } from "./outlinesSwitch.ts";
 import { useDustMap } from "./useDustMap.ts";
 import { useChosen } from "./useChosen.ts";
@@ -62,15 +64,31 @@ function ageState(world: World | undefined, cut: AgeCut, choose: (cut: AgeCut) =
   return { cut, choose, frame: world.frame, held: () => world.catalogue?.agesHeld() ?? NO_AGES };
 }
 
-/** The Galaxy's tracers drawn by kind of object, once there is a view. */
-function tracerKinds(world: World | undefined): TracerKinds | undefined {
+/** The Galaxy's tracers drawn by kind of object, and the switch of their natural colours, once
+ * there is a view. */
+function tracerKinds(world: World | undefined, natural: Switch): TracerKinds | undefined {
   if (world === undefined) return undefined;
-  return { frame: world.frame, lines: () => world.catalogue?.tracers() ?? [] };
+  return { frame: world.frame, lines: () => world.catalogue?.tracers() ?? [], natural };
+}
+
+/** The switch of the Galaxy tracers' natural colours, applied to `world`: its tracers drawn, and
+ * shown in the key, in their kinds' natural colours while it is on. `domains` is read once the
+ * catalogue is made, so that it starts as the switch stands. */
+function useNaturalColoursOf(world: World | undefined, domains: readonly Domain[]): Switch {
+  const state = useNaturalColours();
+  const natural = state[0];
+  useEffect(() => {
+    if (world === undefined) return;
+    world.renderer.setNaturalColours(natural);
+    world.catalogue?.setNaturalColours(natural);
+    world.controller.invalidate();
+  }, [world, domains, natural]);
+  return state;
 }
 
 /** Applies what is hidden of the points, the age of the tracers drawn and the level of detail to
- * `world`'s catalogue. */
-function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, age: AgeCut, levelOfDetail: boolean): void {
+ * `world`'s catalogue; the switch of the tracers' natural colours, applied to it too. */
+function usePointSettings(world: World | undefined, domains: readonly Domain[], hidden: Hidden, age: AgeCut, levelOfDetail: boolean): Switch {
   // Only on a change of what points belong to: a kind of structure turned off counts no point.
   const { domain, source, kind, object } = hidden;
   useEffect(() => {
@@ -86,6 +104,7 @@ function usePointSettings(world: World | undefined, domains: readonly Domain[], 
   useEffect(() => {
     world?.catalogue?.setLevelOfDetail(levelOfDetail);
   }, [world, domains, levelOfDetail]);
+  return useNaturalColoursOf(world, domains);
 }
 
 /** What is chosen in the view of `world`, and the ways to choose and let go of an object or a
@@ -170,7 +189,7 @@ export function Scene({
   const chosenAlready = (target: Target) => isChosen(target, { object: chosenId, structure: structureId });
   const [hidden, apply] = useHidden();
   const [age, chooseAge] = useAgeCut();
-  usePointSettings(world, domains, hidden, age, levelOfDetail);
+  const natural = usePointSettings(world, domains, hidden, age, levelOfDetail);
   const outlines = useOutlines();
   const dust = useDustMap(release, world, rotations);
   const structures = useStructures(release, world, rotations, structureId, hidden.structure, outlines[0]);
@@ -189,7 +208,7 @@ export function Scene({
       place={place}
       structures={structures}
       selection={selection}
-      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge), tracers: tracerKinds(world) }}
+      show={{ choices, hidden, onApply: apply, dust, age: ageState(world, age, chooseAge), tracers: tracerKinds(world, natural) }}
       outlines={outlines}
     >
       <div className="absolute inset-0 overflow-hidden">

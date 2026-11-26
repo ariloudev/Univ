@@ -6,7 +6,9 @@ use crate::access::Caller;
 use crate::backend::Backend;
 use crate::http::{Method, Request, Response};
 use crate::problem::{Problem, ProblemType};
-use crate::{bulk, grids, keys, layers, objects, openapi, query, releases, sources, structures};
+use crate::{
+    bulk, galaxy_model, grids, keys, layers, objects, openapi, query, releases, sources, structures,
+};
 
 /// The values a route's `{name}` segments took in one request, in the template's order.
 pub type Params = Vec<(&'static str, String)>;
@@ -21,6 +23,7 @@ pub enum Endpoint {
     SourceProvenance,
     Structures,
     Structure,
+    GalaxyModel,
     Objects,
     Object,
     ScaleDomains,
@@ -58,7 +61,7 @@ pub struct Route {
 }
 
 /// Every route served, in the order they are matched.
-pub static ROUTES: [Route; 33] = [
+pub static ROUTES: [Route; 34] = [
     Route {
         method: Method::Get,
         path: "/v1/openapi.json",
@@ -93,6 +96,11 @@ pub static ROUTES: [Route; 33] = [
         method: Method::Get,
         path: "/v1/structures/{id}",
         endpoint: Endpoint::Structure,
+    },
+    Route {
+        method: Method::Get,
+        path: "/v1/galaxy-model",
+        endpoint: Endpoint::GalaxyModel,
     },
     Route {
         method: Method::Get,
@@ -244,6 +252,7 @@ async fn answer<B: Backend>(
         }
         Endpoint::Structures => structures::list(request, backend).await,
         Endpoint::Structure => structures::get(request, param(params, "id"), backend).await,
+        Endpoint::GalaxyModel => galaxy_model::get(request, backend).await,
         Endpoint::Objects => objects::find(request, backend).await,
         Endpoint::VolumeQuery => query::volume(request, caller, backend).await,
         Endpoint::Object => objects::get(request, param(params, "id"), backend).await,

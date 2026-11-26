@@ -94,6 +94,8 @@ problem_types! {
     ObjectNotFound = "urn:univ:problem:object-not-found", "No such object", 404;
     /// The release has no structure of that id.
     StructureNotFound = "urn:univ:problem:structure-not-found", "No such structure", 404;
+    /// The release holds no Galaxy model.
+    GalaxyModelNotFound = "urn:univ:problem:galaxy-model-not-found", "No Galaxy model", 404;
     /// The release has no scale domain of that name.
     ScaleDomainNotFound = "urn:univ:problem:scale-domain-not-found", "No such scale domain", 404;
     /// The scale domain's tile manifest holds no node of that address.

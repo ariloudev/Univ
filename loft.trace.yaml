@@ -2513,13 +2513,13 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
         name: "each_number_of_the_definition_cites_its_paper_or_is_a_choice_with_its_reason"
-        body: a58b8a3a3dfc0c3298cbafe7319b18a0e377b8a6fc210d5e5293b1b88a00dffa
+        body: f761b739f36d85446ed77ebff56dda0abdf3db89eea45e2dcbac3bfb99d6c5a7
   - node: 01a213c1-93e0-7343-9f8d-9bb0c0e51a9d
     reviewed: 47088c543935bae5ff829d8b56b86a68f08cde5af7ec527f2bb76cf04b611ec6
     tests:
       - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
         name: "each_number_of_the_definition_cites_its_paper_or_is_a_choice_with_its_reason"
-        body: a58b8a3a3dfc0c3298cbafe7319b18a0e377b8a6fc210d5e5293b1b88a00dffa
+        body: f761b739f36d85446ed77ebff56dda0abdf3db89eea45e2dcbac3bfb99d6c5a7
   - node: 01a213c1-93e0-7343-9f8d-9bb1aeebce25
     reviewed: 5a12bae734109c0ac9643bd6820a748cca8bdb602e6209bee7f03a7ac6e5c58e
     tests:
@@ -3351,21 +3351,60 @@ links:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "structures_are_listed_in_pages_and_read_with_their_citations"
         body: 4d76b7d6b2c99042f48abdb180f41d9084dbd0abcfaa6836ae2ca3f321c22bdb
+  - node: 01a213c1-93e0-7343-9f8d-9bd08943e485
+    reviewed: 9e2ea99b751eeebced2ac16494e107d5d510ec2f6d3adc5ef3a6e0339d28b51c
+    tests:
+      - file: "crates/univ-api/src/galaxy_model_tests.rs"
+        name: "each_population_gives_its_code_colour_and_parameters_each_cited_with_its_uncertainty"
+        body: bbbec1d0b96a5db12b1b52d035a1f6fa65371edcc4992134ae68927f4025df0b
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "the_galaxy_model_gives_its_definition_as_the_release_sampled_it"
+        body: da8ee42bb05f125a4d2d8a55dffe7038016919e451ffedb654d65a68358c3ba4
+  - node: 01a213c1-93e0-7343-9f8d-9bd16fd3923b
+    reviewed: 4b6af1b066f06c07cd1bf662dd22eda44f9a56a1b1bec0550acd4eecaf6a5529
+    tests:
+      - file: "crates/univ-api/src/galaxy_model_tests.rs"
+        name: "each_choice_gives_its_reason_and_reports_no_uncertainty"
+        body: b9e2dd980d66ff4f195c745ceec62fd681ce8a2031ed21d963bf247418aaab88
+  - node: 01a213c1-93e0-7343-9f8d-9bd2da4e6351
+    reviewed: c33db1ff1c3662c6d866daf866975c83dc14e2a155975420f773d530a6e19fe7
+    tests:
+      - file: "crates/univ-api/src/galaxy_model_tests.rs"
+        name: "the_model_gives_its_points_seed_domain_and_the_arms_it_followed"
+        body: d315fce51c0f5d864f2d7e41cc664fb1780287d09b5ea49dbe6dc48948a95585
+      - file: "crates/univ-server/tests/e2e.rs"
+        name: "the_galaxy_model_gives_its_definition_as_the_release_sampled_it"
+        body: da8ee42bb05f125a4d2d8a55dffe7038016919e451ffedb654d65a68358c3ba4
+  - node: 01a213c1-93e0-7343-9f8d-9bd345455523
+    reviewed: 0f088e7bf6158af2d6c5a2952d5be224f289811fe303e7ece1203c20d0f46e94
+    tests:
+      - file: "crates/univ-api/src/galaxy_model_tests.rs"
+        name: "the_model_gives_its_points_seed_domain_and_the_arms_it_followed"
+        body: d315fce51c0f5d864f2d7e41cc664fb1780287d09b5ea49dbe6dc48948a95585
+  - node: 01a213c1-93e0-7343-9f8d-9bd59822c913
+    reviewed: 307e4f9ff688646c2c8bcd5a522fd052d1ce1959a4a044b2ec460cbe42bd5ca3
+    tests:
+      - file: "crates/univ-api/src/galaxy_model_tests.rs"
+        name: "a_release_without_a_galaxy_model_answers_404_naming_the_release"
+        body: fd438f3859830a2857c9f76574cb5b47da1ce80d450127c2edb56a9047d18c57
   - node: 01a19f1f-9fd6-77e0-931c-f9865de3a042
     reviewed: f22cbc6dd1ea8bf0ad24c33e83149b41e50a1d851d19b91084e658f18176ff4f
-    unverified: "The specification of product/galaxy-model adds the Galaxy model in the listing of scale domains, which wave 3 (stage/galaxy-model-3) builds; it restores the tests \"the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit\" in crates/univ-api/src/bulk_tests.rs, which verify the rest."
+    tests:
+      - file: "crates/univ-api/src/bulk_tests.rs"
+        name: "the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit"
+        body: 5fe2a463bdea2befdc44f3c370c93e4e344a278cd632c65c277d1efb343aacca
   - node: 01a19f1f-9fd6-77e0-931c-f987e3fef734
     reviewed: 14263806128ee09399f4e94268928c014ba22ea2aa2e5ffc705f93c91fac6ca5
     tests:
       - file: "crates/univ-api/src/bulk_tests.rs"
         name: "the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit"
-        body: d20e8b3ce682f41c184ad9ee33f0a169814748b3bd5ae65569dca2ca91c9e5d8
+        body: 5fe2a463bdea2befdc44f3c370c93e4e344a278cd632c65c277d1efb343aacca
   - node: 01a19f1f-9fd6-77e0-931c-f9895068d4df
     reviewed: fbfd9ca612a0a73153cac153165de73644ab453bef630fc4e9654be5805a6dc1
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 5fb5e4bd2d19d8b3b6aea6650b5bd3fc67147df257e574b57a7bc3ddb238b160
+        body: 83f8910b9b17e67b067213c0a498c20883f21953090da8350f1896a4ebc42756
       - file: "crates/univ-api/src/bulk_tests.rs"
         name: "a_tile_manifest_is_served_from_the_bucket_as_published"
         body: 2b3e4d5572ef0c41f71fd18e8f6fb98df44624c593f596e458ee3dd10b340bd6
@@ -3374,7 +3413,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 5fb5e4bd2d19d8b3b6aea6650b5bd3fc67147df257e574b57a7bc3ddb238b160
+        body: 83f8910b9b17e67b067213c0a498c20883f21953090da8350f1896a4ebc42756
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -3383,7 +3422,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 5fb5e4bd2d19d8b3b6aea6650b5bd3fc67147df257e574b57a7bc3ddb238b160
+        body: 83f8910b9b17e67b067213c0a498c20883f21953090da8350f1896a4ebc42756
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -3392,7 +3431,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 5fb5e4bd2d19d8b3b6aea6650b5bd3fc67147df257e574b57a7bc3ddb238b160
+        body: 83f8910b9b17e67b067213c0a498c20883f21953090da8350f1896a4ebc42756
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -3401,7 +3440,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 5fb5e4bd2d19d8b3b6aea6650b5bd3fc67147df257e574b57a7bc3ddb238b160
+        body: 83f8910b9b17e67b067213c0a498c20883f21953090da8350f1896a4ebc42756
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -3410,7 +3449,7 @@ links:
     tests:
       - file: "crates/univ-server/tests/e2e.rs"
         name: "a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_encoding"
-        body: 5fb5e4bd2d19d8b3b6aea6650b5bd3fc67147df257e574b57a7bc3ddb238b160
+        body: 83f8910b9b17e67b067213c0a498c20883f21953090da8350f1896a4ebc42756
       - file: "crates/univ-ingest/tests/tile_decoder_fixtures.rs"
         name: "each_written_manifest_reads_back_through_univ_models_type_unchanged"
         body: 0538708a6b4f9e24a7d1275e8e3a21e25b85ddb4c0a41d2a09657b3ec6cef6c0
@@ -4385,7 +4424,7 @@ links:
     tests:
       - file: "crates/univ-api/src/openapi.rs"
         name: "the_documents_schemas_are_generated_from_univ_models_types"
-        body: 248de3740e263fb52f9812043e13f3473901c84467ac1d8a19a09aa1eae66fd9
+        body: fd2c753df0213115acc3d502db09bc8bb151f79ca2d56dbf277bf4590bad89ba
   - node: 01a19f20-8e6c-7039-b16f-ac09bec61527
     reviewed: 1101ee170b4cf1e3a80fdabcfddedd284252711243a4121141f6c4bed3dc94da
     tests:
@@ -4591,7 +4630,7 @@ links:
         name: "holds a level-of-detail switch in its top bar, on by default, that turns it off and on"
         body: 46e498f3b666c3712acbc973b616ba8eaf98d0b9a226bc6bcbe436b06a68cea8
   - node: 01a1b07b-8157-7546-927e-272335750e5f
-    reviewed: 5a51da406e444405ddac395036b21c4c46ad6e2fbf010814eedda68bdfbc0f5d
+    reviewed: 3605421faef104304919d49a90ab5148f4a1389fa9ff5bb05f062d5df1875314
     tests:
       - file: "clients/explorer/src/catalogue/lod.test.ts"
         name: "fetches every tile, the coarser levels first, whatever the view and the budget, and drops none"
@@ -4599,6 +4638,15 @@ links:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every tile with level of detail off, whatever the view and the budget, and comes back within the budget once it is on"
         body: 2e8b428ae89f3499c1e18522379d939bd65a2287f25569d9d1421c7e1d8e6b35
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "is still held and drawn by level of detail, within the budget, while every tile of objects is fetched"
+        body: c33b91f9afb9cc7c919189d6b1df099882fea2660b79a2b95388d1b266677383
+  - node: 01a215a8-77d8-7398-8386-2ffb310268da
+    reviewed: 8291caec3ce0304879094a188d17ca88c19bbfd5d12ddcf059253ae44afdc89a
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "is still held and drawn by level of detail, within the budget, while every tile of objects is fetched"
+        body: c33b91f9afb9cc7c919189d6b1df099882fea2660b79a2b95388d1b266677383
   - node: 01a1b07b-8157-7546-927e-2724ac33dc33
     reviewed: 4ef267326d10412e4ad89616756fd1b15d6f5bcabc69491a2f723a1cb9bfb287
     tests:
@@ -4690,7 +4738,7 @@ links:
         name: "is each tile in sight and not turned off, its share of its points and as opaque as its fade"
         body: ae19fa1f30f9bbe477a47ec9a5a37ef9577358f14e3c1f73364e445265c340c2
   - node: 01a1b093-647d-7308-9b46-bdcd4901ec3c
-    reviewed: a1ecdc079dd0c923cfb0910a83b2400459b93f055f797b7d929261e708a0813a
+    reviewed: d24f336eac4804a2487f0c00ffcae1727c3c2a7fbc1204d3b8603de438c4b41e
     tests:
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
         name: "draws every point of a root, of other tiles those whose rank lies below the share their distance needs, and every one with level of detail off"
@@ -4716,6 +4764,15 @@ links:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "are drawn fainter as the eye withdraws beyond a gigaparsec, never vanishing"
         body: 7aa258e01941e7c85869e224f7d16d1d4c9e8a0248b1c0f37a410358ee9b621d
+  - node: 01a217af-677d-710d-bc8a-43082f33c3d2
+    reviewed: 6ffa2dfd230ea1a9a6e4acf0451d28ca994d6a21ea7b9ba6e95913ac4e7c4e5b
+    tests:
+      - file: "clients/explorer/src/scene/starsFade.test.ts"
+        name: "grow fainter beyond 1 kiloparsec, in inverse proportion to the distance, down to a tenth"
+        body: 807a5c7486083609eaf41372d39701560c2bf25317c57b551ba6e05a5abce0d3
+      - file: "clients/explorer/src/scene/starsFade.test.ts"
+        name: "fade the stars domain alone"
+        body: a2aea368ebf288e4f65f668b550b40765426627abbee12bdec4230751bd729b0
   - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
     reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
     tests:
@@ -4840,8 +4897,8 @@ links:
         name: "name each kind of object of the Galaxy's tracers in its colour, with its points drawn, and those of unknown kind"
         body: ee8eec318d8d960b10f30d6699ac100b9da4023ae02cf591405964164b80d1f8
       - file: "clients/explorer/src/catalogue/catalogue.test.ts"
-        name: "counts the Galaxy's tracers by kind of object, each in its kind's colour, and their kinds of value apart from the other points"
-        body: 59f9fe79ea446aa557c4c47fccc25eedba9ed4f9fc94926df10e6a2d60c7c72e
+        name: "counts the Galaxy's tracers by kind of object, each in the colour it is drawn in, and their kinds of value apart from the other points"
+        body: 6ded6aa531a889f1ef031e95c1d8700de5f22b7f19c62fdf1993e1e0f6078a58
   - node: 01a1cbb8-4b9e-71c0-8bbe-c8fb25546047
     reviewed: c1f58618aeb2fa6c04d2063f04a5b582f3953bf7fc93898f2f75c4b239faa3d5
     tests:
@@ -4869,6 +4926,57 @@ links:
       - file: "clients/explorer/src/scene/tracers.test.ts"
         name: "draws a tracer twice the size of a star, and every other point a star's size"
         body: 8aee334875665f2c25af9cfd4b83351420ca394b3d4c88dad357a239964693d4
+  - node: 01a217aa-a805-760e-873f-455bb856f763
+    reviewed: 62e51180ac8358e930948b885a434fedd00c3f03927135c5c0cc1a3714ea3922
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "draws the luminous hot stars dark, at a tenth of the other kinds' opacity"
+        body: ad0d78c58fe2170106ba2bd14de9f26694e4bd95cfad23855f714f6d7288f560
+  - node: 01a217b5-074b-72cd-a2ce-7d9d389f58c2
+    reviewed: 6fbb01883c71fa7ad823074a64b71756a8a927b771b3dd1021d7c915f7c4676b
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "draws the RR Lyrae stars fainter where more than 4 of a tile share a 64th of its edge, never below a tenth"
+        body: aca2c7d44d007b7250d539aed82fe96487ba4039790e87d3ba3b0bd406d72022
+  - node: 01a217ba-46fa-73d1-8584-7bac65881b4d
+    reviewed: 573e9bebc207cad3d50f2075e997e6fc84b08647f532332a10608aeeb1b639c8
+    tests:
+      - file: "clients/explorer/src/ui/naturalSwitch.test.ts"
+        name: "is on unless the address turns it off, and the address keeps it off while it is off"
+        body: 98ee84f291d17ec26240292fc5653e1ecbf3146f2b900fa08192c074fd52777b
+      - file: "clients/explorer/src/ui/naturalSwitch.test.ts"
+        name: "starts off where the address turns it off, as after a reload"
+        body: 6508eb8f525b55950064825c751f4daacfc500bdc69277dc37eb7c0d18a2db1a
+      - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
+        name: "offers the switch of the tracers' natural colours as the view holds it, and turns it off"
+        body: b57ad9102420cac653a3eafa1aa6bfce0242e39a409f705a00bd6761771823a7
+  - node: 01a217ba-46fa-73d1-8584-7bad00feeb7a
+    reviewed: b3f4f2255d0c57cf78ec324ba6444b4bfeba3933b4a880d73eb31ffec1e5ffe5
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "gives each kind of object the hue of its typical colour index B−V at its own colour's brightness, and a tracer of unknown kind the stars' grey"
+        body: 15291dea5d524e15c6251fd65a81f9362d3842fc8cea7d6370a61688cba50be9
+  - node: 01a217ba-46fa-73d1-8584-7baefb1762b1
+    reviewed: 13d036e38f62ca3326d032ca2a38efcd21dee80ee77b7e2e360f0de378c40134
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "gives each kind of object the hue of its typical colour index B−V at its own colour's brightness, and a tracer of unknown kind the stars' grey"
+        body: 15291dea5d524e15c6251fd65a81f9362d3842fc8cea7d6370a61688cba50be9
+  - node: 01a217ba-46fa-73d1-8584-7baf496214a1
+    reviewed: e96dcc1c224d916145585863746a3b42a0799ff139e38c8b241b34831e18d14f
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "gives each kind of object the hue of its typical colour index B−V at its own colour's brightness, and a tracer of unknown kind the stars' grey"
+        body: 15291dea5d524e15c6251fd65a81f9362d3842fc8cea7d6370a61688cba50be9
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "swaps only the hue of a tracer's point for its natural colour, keeping its opacity"
+        body: a00353ec369dda695dd818e93be05b68559d565788ac0b4a8c58e3c60359c3ff
+  - node: 01a217ba-46fa-73d1-8584-7bb0fbe1a489
+    reviewed: a98502f9e19a1f025fb832b34777f6619fee90f953faaddabd44d096b99a8f84
+    tests:
+      - file: "clients/explorer/src/catalogue/catalogue.test.ts"
+        name: "counts the Galaxy's tracers by kind of object, each in the colour it is drawn in, and their kinds of value apart from the other points"
+        body: 6ded6aa531a889f1ef031e95c1d8700de5f22b7f19c62fdf1993e1e0f6078a58
   - node: 01a1c319-7860-76e8-92ac-c5ea87f31404
     reviewed: fa4f6dd35922db3353b711362c799c17215a793feeb2cca68ee49e98b11ac941
     tests:
@@ -4935,6 +5043,24 @@ links:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "show the distance from the eye to the focus"
         body: 6848373d960e9ef56130b044ab6ba2a2a3101c1a9223e2a992b39fec2cdf7e1a
+  - node: 01a2158a-c920-75b6-a018-a17acf8bbb86
+    reviewed: bbf0bfaf884bcc9af3371ea431cb4b1dd330c00521cddcfaba2450cd4e28edbb
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "zoom in as they spread and out as they close, by the ratio of their spread"
+        body: e42bd9bfc39618b988afe641603db39f2a36d68df6aac4389da9d7f49b244d52
+  - node: 01a2158a-c920-75b6-a018-a17bb25dfa8d
+    reviewed: 37d905e7a7bac43c55c4199895a952bdb25a4e2d3e8ec9a7a7dd5ee5ad80879a
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "neither turn the view nor click, also as they lift"
+        body: 34bb65c8bdb7b79d1890a8c20158b76801c3993fdd1435e6f4296b027c66b2db
+  - node: 01a215a8-77d8-7398-8386-2ffcadbda0ec
+    reviewed: 87bd3465bf0d1f8df1ae17419108b60574ff317c8780b7bcf476e977e8611648
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "move the focus as they move together, by the distance their midpoint moved"
+        body: 4b01544a25a34b0b8bcd72c85c088f729190fecb04eadbdb300edb4649e95b10
   - node: 01a1a497-e843-728a-bce8-401d23c750eb
     reviewed: c8ec4d70631fc753e86ec1a5edec63856a08fdce1788d89bf3b0e6507ff19623
     tests:
@@ -5078,7 +5204,7 @@ links:
         body: c172cb234d53bd79e52ac294d3939c03abed5c10d737f8ebbdd09a0f8937c890
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
-        body: cf3bc166cfae4bb9c91e92c0f7c372c75a8790693cca622b8569cf27a2c74682
+        body: a5a5945e7ddc5e2f4e9fb3038b540f44888bdcf220da412a8718e82d6e799692
       - file: "clients/explorer/src/ui/show/choices.test.ts"
         name: "offers the kinds of object of the Galaxy's tracers only where their tiles give each point's kind"
         body: cb5b74b357787f42227d57da9d6502c2a9d571aba8354cfa3b620a34c4463347
@@ -5087,7 +5213,7 @@ links:
     tests:
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
-        body: cf3bc166cfae4bb9c91e92c0f7c372c75a8790693cca622b8569cf27a2c74682
+        body: a5a5945e7ddc5e2f4e9fb3038b540f44888bdcf220da412a8718e82d6e799692
   - node: 01a1a8cc-3d02-7585-85fb-455bf6b1d224
     reviewed: a305dafb5da2bdd558a29351e46dc2a71f745cf604150f5baad2a228784b2c65
     tests:
@@ -5141,7 +5267,7 @@ links:
         body: 16f74791cef77f650b24db0a1ec29717276620a0d683369d39130de07c9545aa
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 4d32ebe858fde3dd2e13b84e530f7a5b1ed900a655684e7e470b84e411e707d6
+        body: 0f3c072b6ea67b8735f756d0a1326df4e095844013cac00801ec4db859676619
   - node: 01a1a8cc-3d02-7585-85fb-4561d1b0f1de
     reviewed: b9ee14b78d7cda09bc75088b59ba3b163850a2c383f8a1449f5089c72ea34bf5
     tests:
@@ -5153,7 +5279,7 @@ links:
         body: 611c7e569dd2070f841d5a2287d1e45a36ab4c56ef0f82f3bd962d84af0bca68
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 4d32ebe858fde3dd2e13b84e530f7a5b1ed900a655684e7e470b84e411e707d6
+        body: 0f3c072b6ea67b8735f756d0a1326df4e095844013cac00801ec4db859676619
   - node: 01a1bcf9-343a-712a-a28c-7503bb8fdbb5
     reviewed: 2b26ae09388c4ec29a37b04fbd8845ae728d55c8e6f4ac7b0bd5b3593defa5f1
     tests:
@@ -5165,7 +5291,7 @@ links:
         body: 29d0c1d6897963253f2352f38e364f7e2ceff303d1d602e901ae33a0917fcd35
       - file: "clients/explorer/src/ui/show/ShowPanel.test.tsx"
         name: "offers a switch for each kind of object of the Galaxy's tracers, in its colour with its points drawn, counted in the summary"
-        body: cf3bc166cfae4bb9c91e92c0f7c372c75a8790693cca622b8569cf27a2c74682
+        body: a5a5945e7ddc5e2f4e9fb3038b540f44888bdcf220da412a8718e82d6e799692
   - node: 01a1bcf9-343a-712a-a28c-75049b84e0eb
     reviewed: 105c1bca89abcde5f6d38331efba9fd8b8a1bfd9a2097fb52e747d66610ffca0
     tests:
@@ -5243,7 +5369,7 @@ links:
         body: 58d8b29d9611f125988b75f7af23978662647738766f3960aae1578adc66ebfb
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "turns a scale domain off, counts none of its points in the key, and keeps it off across a reload"
-        body: 4d32ebe858fde3dd2e13b84e530f7a5b1ed900a655684e7e470b84e411e707d6
+        body: 0f3c072b6ea67b8735f756d0a1326df4e095844013cac00801ec4db859676619
   - node: 01a1bd07-e8b7-762f-97dc-651bd7d745b2
     reviewed: d6ffc4f2f2983da968fc0cb4243701e69e3980bea7a1a7aad80ea0391a4110c5
     tests:
@@ -5741,7 +5867,7 @@ links:
         body: de6d5943d12c28517b35f2e813b9cecba013105585e76097b3977e16e708b296
       - file: "clients/explorer/src/ui/Atlas.test.tsx"
         name: "holds the key and the credits in its bottom bar once the catalogue is read"
-        body: 152916563d1a2f6f64c90c2b46c841f859c5a216abf75b6b1c15a59db9976c46
+        body: cc1675345644aa4a94be85d4ccaf1f5bbbe7243898df47a79cc51a1ea54ca2dc
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "lays the view out as an atlas: bars, rail, drawer and record beside it at 1,280 pixels, never over it"
         body: c69831006dfc0b7fda8e9e14ef7f342bc0803b444b3a613b2bf517f1d5ccf137
@@ -5891,7 +6017,7 @@ links:
         body: 31d9ee634d7d3d536e60d3156ca2df9c45036f14c3ae552dd26e30d460165027
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c9001874842a
     reviewed: ba9c48477acfc37d69d1a19a18780e0a67b8e37318428be24242e7794d7f339e
     tests:
@@ -5941,8 +6067,20 @@ links:
         name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
         body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90774284032
-    reviewed: 1033915a9673b60c988eb75e711c941c56d066bebd8220c878ecc13b10034a11
-    unverified: "The specification of product/galaxy-model adds the arms view turning the Galaxy model domain on, which wave 4 (stage/galaxy-model-4) builds; it restores the tests \"turns the Galaxy tracers domain on and every other off\" in clients/explorer/src/ui/arms.test.ts; \"opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation\" in clients/explorer/e2e/explorer.spec.ts, which verify the rest."
+    reviewed: 22f340fea34369ffff6e047fe84cc7c71012da7364317d08d8ba0ec0f4c72126
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the Galaxy model domain on and every other off"
+        body: f9701051558d935db0daa7a981738ec97ddc200d2b666e87a7d53e42b67a6980
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
+  - node: 01a215ab-d2c4-71d9-95bb-eb7467a67e6d
+    reviewed: e635a3406827097937d1d1e825deabe56bf9fb21b7a6ee3818230f18844f775e
+    tests:
+      - file: "clients/explorer/src/ui/arms.test.ts"
+        name: "turns the Galaxy tracers domain on in the model's place where the release holds no model"
+        body: bca0a069f65b6b5a5bf62b157a8979c46b53da8ad053a982a465d2df03edd860
   - node: 01a1cbb8-4b9e-71c0-8bbe-c908a3754994
     reviewed: 0fe5ee917bce0ddc5b7d651d6aa8aaf66f4a6a1e69928cdc6d36e966107e48cd
     tests:
@@ -5951,7 +6089,7 @@ links:
         body: 73ae81b6e970c80d5663fef5bd5522298ef4b53f96f5773afc2460ed66c0875f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-8e6a-70ed-b03e-1a6201d77664
     reviewed: 0c8a3730b93494da479eeab20e52b7fc4c73c8619903536b8cc5e58e2a0b7365
     tests:
@@ -5960,7 +6098,7 @@ links:
         body: 73ae81b6e970c80d5663fef5bd5522298ef4b53f96f5773afc2460ed66c0875f
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c909b140b0a1
     reviewed: 921840aa20a9509b1ed8ae9dc4b355ff2419d5cfa412eb8e028aedd481756c89
     tests:
@@ -5969,7 +6107,7 @@ links:
         body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90a7548931b
     reviewed: ba0bd538fbd04380fa6d9fc2dd2ec03a0984f3c9b65992853a190d121fda367a
     tests:
@@ -5990,7 +6128,7 @@ links:
         body: c4c1a9163bbd1eae1c9be8c2632f611385d6d145c75c191c67ed1d4d272ce031
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c90eca4ceaa2
     reviewed: 7444c82685e2d7179a096e0d043ee95b492563b6ec0e5631ee8a948339526ccc
     tests:
@@ -6014,13 +6152,85 @@ links:
         body: f2effe8ec4c89d4ceba39443e0aa3afe3a266d323aab3fb02d87955d270d4851
       - file: "clients/explorer/e2e/explorer.spec.ts"
         name: "opens the arms view beside Return to Earth: the young tracers and the arms alone, kept in the address until a drag, with no serious accessibility violation"
-        body: e525480b679bbcd907f315ead88fa7eda873c37280bde8fc5f43acfab9f4b425
+        body: 04ed4877bd8900c9853599f5aad4973983776e7bbbf147637c50a96fe65fb8d6
   - node: 01a1cbb8-4b9e-71c0-8bbe-c91039a8e3c8
     reviewed: ad3e5881d1a178741689df2eb2d24fbb591bf62e9e85d546f8a4d978ce25dc41
     tests:
       - file: "clients/explorer/src/scene/controller.test.ts"
         name: "flies to the arms view in galactic axes, or moves there at once for reduced motion, and only once the rotations are known"
         body: 9e68a27dc719581e51802aa3af76e88cf4a4022451389ce92c95fcfca7ae0915
+  - node: 01a213c1-93e0-7343-9f8d-9b94c1b7d454
+    reviewed: efabf60610997fa433a7b07652251af435f69f7428afa036557eef772ff57e45
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are each as bright as the next, a share of their domain's opacity"
+        body: 3d53fbd24b9556da0cec016fcf80f0efd434c762cf50f95f1eeee481551030bb
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are drawn at their population's brightness, the arms' young stars and knots 6 times the rest"
+        body: 78c8d09eb67c6ead310b6560037be202af25ad826ada0753c5c242003ce7a036
+  - node: 01a21597-d81c-71be-95d7-ab2f180b7371
+    reviewed: a9fe94d7174036aa7cba6ccac54cc28821cfb4786a0e1072d20a7bf12d5fe493
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are drawn at their population's brightness, the arms' young stars and knots 6 times the rest"
+        body: 78c8d09eb67c6ead310b6560037be202af25ad826ada0753c5c242003ce7a036
+  - node: 01a213c1-93e0-7343-9f8d-9b95b48b1af3
+    reviewed: 3e9ff63fd2e80f11a02f614147e2bcec7963c67b68542d16dba2b115b465146d
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are each in its population's colour, with what covers it, and of no kind, source or id"
+        body: 8bc8082361a3e192de46de098aa2f74806259130bffa2adb7c7143209ecc10de
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "gives each derived display colour as the explorer colours a star of its B−V"
+        body: 1f54e3e7c30cbb1e6ce5570567eefe42a566e60b715eeb0ddf9a7b2c8dce3147
+  - node: 01a213c1-93e0-7343-9f8d-9b96e3363efe
+    reviewed: 8ab9334228aad371a73f6d113b4a6d2639fd7960ad6c80177420efddae4ec686
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "counts the model's points apart from the objects, whatever the switches of kinds and sources"
+        body: 95393f11ec5e4e4d6a8f3cffdf4cc71ae27d1a71ab0aff26baa43b23b86efea4
+  - node: 01a213c1-93e0-7343-9f8d-9b9882bfc8e0
+    reviewed: b4f95986d70b99eeb8a25b994c3a7cae029593c1f961210ab69b8e2530684335
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "hide the covered ones while the domain of their counterparts is drawn"
+        body: fc64ebc5ed09ab09f5395555c7a3d46993fed8f6ecbbade096b9769ad054b747
+  - node: 01a213c1-93e0-7343-9f8d-9b9985b0e904
+    reviewed: 7fe3c1378ae8f501c82ef066e064a8dc2e740632d1eee208aaf8452d415f976d
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "hide the covered ones while the domain of their counterparts is drawn"
+        body: fc64ebc5ed09ab09f5395555c7a3d46993fed8f6ecbbade096b9769ad054b747
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "counts the model's points apart from the objects, whatever the switches of kinds and sources"
+        body: 95393f11ec5e4e4d6a8f3cffdf4cc71ae27d1a71ab0aff26baa43b23b86efea4
+  - node: 01a213c1-93e0-7343-9f8d-9b9b9ac1d575
+    reviewed: 26759450ca1ab42d4d816b654fc5ef3e72f79ea2351a854f35262505d46aac14
+    tests:
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "name the Galaxy model's points as a model, counted apart, and credit its papers, while it is drawn"
+        body: 159b738c518bc5e423988a197b715849002530f7d6fbca3224fb77239b34a20a
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the Galaxy model as a model, counted apart in the key, and credits the papers its definition cites"
+        body: 8f0ae02d0e42d99d9083e531f9f9bd2383b5070b3357ad1a6b4c8da511011c42
+  - node: 01a213c1-93e0-7343-9f8d-9b9c98eef163
+    reviewed: 224aa3e766ebf20a86d7f3a45146ac2136215eb61ecea27dc560bd6f2b3b9119
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "are no object the pointer names or a click chooses"
+        body: 53ee7a675b0dd7fcf429dd77efeade0adbd324432fb3140040fde8dc95e65403
+  - node: 01a213c1-93e0-7343-9f8d-9b9dba1301d7
+    reviewed: ef8c6cde476eeeda82faea9081ed854ebfac6ce78ed6c4bc24832e02bd8965ce
+    tests:
+      - file: "clients/explorer/src/catalogue/model.test.ts"
+        name: "credits the papers of the model's definition while its domain is drawn"
+        body: 4ceee655a474618d4de4673b36fb70aa2ece1f29dcfe2cf442166edb8d46705a
+      - file: "clients/explorer/src/ui/Panels.test.tsx"
+        name: "leave the Galaxy model out of the key and the credits while it is not drawn"
+        body: 7c81cee149476d101ea48515f71a60a576c955e50adcbc7620efc18319e0fb28
+      - file: "clients/explorer/e2e/explorer.spec.ts"
+        name: "draws the Galaxy model as a model, counted apart in the key, and credits the papers its definition cites"
+        body: 8f0ae02d0e42d99d9083e531f9f9bd2383b5070b3357ad1a6b4c8da511011c42
   - node: 01a1a497-e843-728a-bce8-3fde6b42f63b
     reviewed: 4cbbd3fd831065846d24c5b2148409663688ff7e618e9d70fd32c188542de213
     tests:

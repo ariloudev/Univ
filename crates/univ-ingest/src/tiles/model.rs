@@ -120,6 +120,19 @@ fn model_points(
         .collect())
 }
 
+/// The ids of the structures `stretches` come from, each once, in their order: the arms the
+/// model follows.
+#[must_use]
+pub fn followed_of(stretches: &[Stretch]) -> Vec<String> {
+    let mut followed: Vec<String> = Vec::new();
+    for s in stretches {
+        if !followed.contains(&s.structure) {
+            followed.push(s.structure.clone());
+        }
+    }
+    followed
+}
+
 /// The Galaxy model's domain: the model of `context`'s Galaxy sampled along its arms, each point
 /// covered as `counts` give, tiled under `context`'s rules; none where the build was given no
 /// model, or no arm of its rules has a stretch among the release's structures.
@@ -141,12 +154,7 @@ pub fn build_model_domain(
     if stretches.is_empty() {
         return Ok(None);
     }
-    let mut followed: Vec<String> = Vec::new();
-    for s in &stretches {
-        if !followed.contains(&s.structure) {
-            followed.push(s.structure.clone());
-        }
-    }
+    let followed = followed_of(&stretches);
     let points = model_points(model, &stretches, counts)?;
     let populations = model.populations.iter().map(PopulationCode::from).collect();
     let built = tile_model(&points, populations, model.seed, context)?;

@@ -1,13 +1,15 @@
 // Fetching, checking and decoding one tile (draw-the-catalogues), and the scale domains and
 // manifests of a release.
 
-import { type DecodedPoint, type ManifestNode, decodeTile } from "univ-tile-decoder";
+import { type DecodedPoint, type ManifestNode, type TileManifest, decodeModelTile, decodeTile } from "univ-tile-decoder";
 
 import { type ReadOptions, read, readJson } from "../api/client.ts";
+import { type GalaxyModel, type ModelPaper, galaxyModel } from "../api/galaxyModel.ts";
 import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
+import { MODEL_DOMAIN, NOT_COVERED, STARS_DOMAIN, brightnessOf, coverOf } from "../scene/model.ts";
 import { starBytes } from "../scene/starColour.ts";
-import { TRACERS_DOMAIN, objectIndex, tracerBytes } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, objectIndex, tracerColoursOf } from "../scene/tracers.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf, levelOfAddress } from "./lod.ts";
 import { shuffled } from "./shuffle.ts";
@@ -17,19 +19,39 @@ export interface DomainTile extends Tile {
   node: ManifestNode;
 }
 
-/** A domain of the release, its manifest, its unit in megaparsecs and its tiles. */
+/** A domain of the release, its manifest, its unit in megaparsecs and its tiles; for the Galaxy
+ * model's, how its populations look. */
 export interface Domain {
   name: string;
   manifest: ExplorerManifest;
   toMpc: number;
   tiles: DomainTile[];
+  model?: ModelLook | undefined;
+}
+
+/** How the Galaxy model's points look: each population's display colour as RGBA bytes, by its
+ * code; its populations, for the key; and the papers its definition cites, which the credits
+ * list. */
+export interface ModelLook {
+  colours: Uint8Array;
+  populations: GalaxyModel["definition"]["populations"];
+  papers: readonly ModelPaper[];
+}
+
+/** How `model`'s points look: each population in its display colour, at its display brightness
+ * as the colour's opacity. */
+export function lookOf(model: GalaxyModel): ModelLook {
+  const colours = new Uint8Array(256 * 4);
+  for (const p of model.definition.populations) colours.set([...p.colour.srgb, brightnessOf(p.density.form)], p.code * 4);
+  return { colours, populations: model.definition.populations, papers: model.definition.papers };
 }
 
 /** The points of one tile, ready to draw: offsets from its centre in megaparsecs. */
 export interface Batch {
   tile: DomainTile;
   offsets: Float32Array;
-  /** Each point's kind of value, as its index in `KINDS`. */
+  /** Each point's kind of value, as its index in `KINDS`; empty for a tile of the Galaxy model,
+   * whose points have none, as for `sources` and `ids`. */
   kinds: Uint8Array;
   /** Each point's index in the manifest's sources. */
   sources: Uint16Array;
@@ -44,13 +66,14 @@ export interface Batch {
   /** Each point's base-10 logarithm of its age in years, NaN where it carries none, for a tile
    * of the Galaxy tracers domain with any age; none for any other tile. */
   ages?: Float32Array | undefined;
+  /** For a tile of the Galaxy model, what covers each model point (model.ts's `COVERED_BY_…`,
+   * or `NOT_COVERED`): its points are drawn as light, and are no object to name or choose. */
+  covered?: Uint8Array | undefined;
   ids: Float64Array;
   /** Where the points lie. */
   extent: Extent;
 }
 
-/** The scale domain whose points are drawn in their stars' colours. */
-const STARS_DOMAIN = "stars";
 
 /** The colours of a tile's stars. */
 export interface StarColours {
@@ -132,20 +155,27 @@ function cumulativeOf(manifest: ExplorerManifest): number[] {
   return held;
 }
 
-/** The scale domain of the Galaxy model, whose version 5 tiles hold model points, not objects. */
-const MODEL_DOMAIN = "galaxy_model";
-
-/** The scale domains of `release` with their manifests: those of objects, every one but the
- * Galaxy model's, which the catalogue of objects does not draw. */
+/** The scale domains of `release` with their manifests; the Galaxy model's with how its points
+ * look, and left out where the release holds no definition for it. */
 export async function domainsOf(release: number, options: ReadOptions = {}): Promise<Domain[]> {
   const list = await readJson("/v1/scale-domains", DomainList, { ...options, release });
-  return Promise.all(
-    list.domains.filter(({ name }) => name !== MODEL_DOMAIN).map(async ({ name }) => {
+  // Read beside the manifests, and kept for the release whichever view asked: so with no view's
+  // signal. A model that cannot be read leaves the model out, never the release's objects.
+  const reading = list.domains.some((d) => d.name === MODEL_DOMAIN)
+    ? galaxyModel(release, options.http === undefined ? {} : { http: options.http }).catch(() => undefined)
+    : Promise.resolve(undefined);
+  const [model, ...domains] = await Promise.all([
+    reading,
+    ...list.domains.map(async ({ name }) => {
       const path = `/v1/scale-domains/${encodeURIComponent(name)}/manifest`;
       const manifest = await readJson(path, ExplorerManifest, { ...options, release });
       return { name, manifest, toMpc: MPC_PER[manifest.unit], tiles: tilesOf(name, manifest) };
     }),
-  );
+  ]);
+  return domains.flatMap((d): Domain[] => {
+    if (d.name !== MODEL_DOMAIN) return [d];
+    return model === undefined ? [] : [{ ...d, model: lookOf(model) }];
+  });
 }
 
 async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
@@ -153,28 +183,62 @@ async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   return [...digest].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function decoded(domain: Domain, tile: DomainTile, bytes: Uint8Array) {
+/** The points of `bytes`, the tile of `tile` in `domain`, as `decode` reads them; a tile that
+ * does not decode fails naming it. */
+function decoded<P>(domain: Domain, tile: DomainTile, bytes: Uint8Array, decode: (b: Uint8Array, n: ManifestNode, m: TileManifest) => P[]): P[] {
   try {
-    return decodeTile(bytes, tile.node, domain.manifest);
+    return decode(bytes, tile.node, domain.manifest);
   } catch (error) {
     throw new TileFailed(`${tile.id}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
-/** The points of `bytes`, the tile of `tile` in `domain`, checked against the manifest. */
-export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Array<ArrayBuffer>): Promise<Batch> {
-  if ((await sha256(bytes)) !== tile.node.sha256) throw new TileFailed(`${tile.id} does not match its SHA-256`);
-  // Shuffled by the tile's id, so that its first points, however many, are an even sample.
-  const points = shuffled(decoded(domain, tile, bytes), tile.id);
+/** The offsets of `points`, in `domain`'s unit, from the centre of `tile`, in megaparsecs. */
+function offsetsOf(points: readonly { x: number; y: number; z: number }[], domain: Domain, tile: DomainTile): Float32Array {
   const offsets = new Float32Array(points.length * 3);
-  const kinds = new Uint8Array(points.length);
-  const sources = new Uint16Array(points.length);
-  const ids = new Float64Array(points.length);
   const [cx, cy, cz] = tile.centre;
   points.forEach((p, i) => {
     offsets[i * 3] = p.x * domain.toMpc - cx;
     offsets[i * 3 + 1] = p.y * domain.toMpc - cy;
     offsets[i * 3 + 2] = p.z * domain.toMpc - cz;
+  });
+  return offsets;
+}
+
+/** The edge of `tile` of `domain`, megaparsecs. */
+const edgeOf = (domain: Domain, tile: DomainTile): number => (tile.node.bounds.max[0] - tile.node.bounds.min[0]) * domain.toMpc;
+
+/** The model points of `bytes`, a version 5 tile of the Galaxy model, looking as `look` gives:
+ * shuffled as any tile's, each in its population's colour and with what covers it; of no kind,
+ * source or id. */
+function modelBatchOf(domain: Domain, tile: DomainTile, bytes: Uint8Array, look: ModelLook): Batch {
+  const points = shuffled(decoded(domain, tile, bytes, decodeModelTile), tile.id);
+  const offsets = offsetsOf(points, domain, tile);
+  const colours = new Uint8Array(points.length * 4);
+  const covered = new Uint8Array(points.length);
+  // Each point's four colour bytes copied as one word.
+  const words = new Uint32Array(colours.buffer);
+  const byCode = new Uint32Array(look.colours.buffer);
+  points.forEach((p, i) => {
+    words[i] = byCode[p.population.code] ?? 0;
+    covered[i] = p.covered ? coverOf(p.population.covered_by) : NOT_COVERED;
+  });
+  // No kind, source or id: nothing reads them of a model point, which is never picked.
+  const none = { kinds: new Uint8Array(0), sources: new Uint16Array(0), ids: new Float64Array(0) };
+  return { tile, offsets, ...none, colours, covered, extent: extentOf(offsets, tile.centre) };
+}
+
+/** The points of `bytes`, the tile of `tile` in `domain`, checked against the manifest. */
+export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Array<ArrayBuffer>): Promise<Batch> {
+  if ((await sha256(bytes)) !== tile.node.sha256) throw new TileFailed(`${tile.id} does not match its SHA-256`);
+  if (domain.model !== undefined) return modelBatchOf(domain, tile, bytes, domain.model);
+  // Shuffled by the tile's id, so that its first points, however many, are an even sample.
+  const points = shuffled(decoded(domain, tile, bytes, decodeTile), tile.id);
+  const offsets = offsetsOf(points, domain, tile);
+  const kinds = new Uint8Array(points.length);
+  const sources = new Uint16Array(points.length);
+  const ids = new Float64Array(points.length);
+  points.forEach((p, i) => {
     kinds[i] = KIND_INDEX[p.kind];
     sources[i] = p.source.index;
     ids[i] = p.id;
@@ -185,7 +249,7 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
   const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
   const tracers = domain.name === TRACERS_DOMAIN;
   const objects = tracers ? Uint8Array.from(points, (p) => objectIndex(p.objectKind)) : undefined;
-  const colours = objects === undefined ? stars?.bytes : tracerBytes(objects);
+  const colours = objects === undefined ? stars?.bytes : tracerColoursOf(objects, offsets, edgeOf(domain, tile));
   // A tracers tile with no age carries none, so that no age choice acts on it.
   const ages = tracers && points.some((p) => p.logAge !== undefined) ? Float32Array.from(points, (p) => p.logAge ?? Number.NaN) : undefined;
   return { tile, offsets, kinds, sources, ids, stars, colours, objects, ages, extent: extentOf(offsets, tile.centre) };

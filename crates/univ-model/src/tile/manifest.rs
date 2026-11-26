@@ -186,6 +186,11 @@ pub struct PopulationCode {
     pub id: String,
     /// Its name, such as `Thin disc`.
     pub name: String,
+    /// The scale domain whose objects cover its covered points, its counterparts' (`stars` or
+    /// `galaxy_tracers`): a client drawing that domain hides them. A manifest written before
+    /// manifests named it gives none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub covered_by: Option<String>,
 }
 
 impl From<&crate::galaxy_model::Population> for PopulationCode {
@@ -194,6 +199,11 @@ impl From<&crate::galaxy_model::Population> for PopulationCode {
             code: p.code,
             id: p.id.clone(),
             name: p.name.clone(),
+            covered_by: Some(
+                crate::galaxy_model::counterpart(&p.density)
+                    .domain()
+                    .to_owned(),
+            ),
         }
     }
 }

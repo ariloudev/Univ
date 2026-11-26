@@ -57,7 +57,13 @@ export function Points({ choices, hidden, onApply, age, tracers }: Props & { age
 export const pointsText = (n: number): string => (n < 1e3 ? String(n) : n < 999_500 ? `${figures(n / 1e3)}k` : `${figures(n / 1e6)}M`);
 
 /** A domain's name in its narrow column's head; its full name labels the column's switch. */
-const COLUMN_NAMES: Readonly<Record<string, string>> = { stars: "Stars", galaxy_tracers: "Tracers", nearby_galaxies: "Nearby", cosmic_web: "Web" };
+const COLUMN_NAMES: Readonly<Record<string, string>> = {
+  stars: "Stars",
+  galaxy_tracers: "Tracers",
+  galaxy_model: "Model",
+  nearby_galaxies: "Nearby",
+  cosmic_web: "Web",
+};
 const columnName = (name: string) => COLUMN_NAMES[name] ?? sentence(words(name));
 
 /** The sources in one table, a column for each domain headed by its switch and its points. */
