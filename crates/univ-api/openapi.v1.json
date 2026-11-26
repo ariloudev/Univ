@@ -38,6 +38,61 @@
         ],
         "type": "string"
       },
+      "ArmOrder": {
+        "description": "The fits of one arm, preferred first.",
+        "properties": {
+          "arm": {
+            "type": "string"
+          },
+          "structures": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "arm",
+          "structures"
+        ],
+        "type": "object"
+      },
+      "ArmRules": {
+        "description": "How the arms' populations follow the arms' fits.",
+        "properties": {
+          "extrapolation_weight": {
+            "$ref": "#/components/schemas/Parameter",
+            "description": "The weight of an extrapolation's points against a fitted range's."
+          },
+          "old_arm_contrast": {
+            "$ref": "#/components/schemas/Parameter",
+            "description": "How much denser the thin disc is on an arm's path than between the arms."
+          },
+          "old_arm_spread": {
+            "$ref": "#/components/schemas/Parameter",
+            "description": "The old disc's spread across an arm, as a multiple of the arm's width."
+          },
+          "order": {
+            "description": "The fits of each arm, by structure id, in the order the model prefers them.",
+            "items": {
+              "$ref": "#/components/schemas/ArmOrder"
+            },
+            "type": "array"
+          },
+          "same_stretch": {
+            "$ref": "#/components/schemas/Parameter",
+            "description": "How near, kpc, a later fit of an arm may come to an earlier one before it is taken as the\nsame stretch and left out there."
+          }
+        },
+        "required": [
+          "order",
+          "extrapolation_weight",
+          "same_stretch",
+          "old_arm_contrast",
+          "old_arm_spread"
+        ],
+        "type": "object"
+      },
       "AssumedCosmology": {
         "description": "The cosmology a published value assumed, as its source states it: the Hubble constant and,\nwhere stated, the densities of matter and of Λ today. A length in h⁻¹ Mpc assumes\nH0 = 100 km/s/Mpc. Checked when read; a value built in code is checked where it is used.",
         "properties": {
@@ -278,6 +333,40 @@
         ],
         "type": "object"
       },
+      "Colour": {
+        "description": "A population's display colour: sRGB, from its colour index or this project's choice.",
+        "properties": {
+          "b_minus_v": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Parameter",
+                "description": "Its B − V colour index, where a paper gives one."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "srgb": {
+            "description": "Its colour in sRGB, 0 to 255.",
+            "items": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "srgb_from": {
+            "$ref": "#/components/schemas/ParameterSource",
+            "description": "How the sRGB was had: derived from the colour index, or chosen and why."
+          }
+        },
+        "required": [
+          "srgb",
+          "srgb_from"
+        ],
+        "type": "object"
+      },
       "ColourBands": {
         "description": "The two bands a colour index lies between.",
         "enum": [
@@ -376,6 +465,152 @@
           "entry_order"
         ],
         "type": "string"
+      },
+      "Density": {
+        "description": "How a population's stars are laid out, in kpc and degrees.",
+        "oneOf": [
+          {
+            "description": "An exponential disc: exponential in Galactocentric radius and in height, out to\n`max_radius`; the thin disc's density rises along the arms by the arm rules' contrast.",
+            "properties": {
+              "follows_arms": {
+                "type": "boolean"
+              },
+              "form": {
+                "enum": [
+                  "exponential_disc"
+                ],
+                "type": "string"
+              },
+              "max_radius": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "scale_height": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "scale_length": {
+                "$ref": "#/components/schemas/Parameter"
+              }
+            },
+            "required": [
+              "scale_length",
+              "scale_height",
+              "max_radius",
+              "follows_arms",
+              "form"
+            ],
+            "type": "object"
+          },
+          {
+            "description": "The bar and bulge: a triaxial exponential bulge and a long bar, both along the bar's\nangle from the Sun–Galactic Centre line, the long bar taking `long_bar_share` of the\npopulation's points.",
+            "properties": {
+              "angle": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "bulge_scales": {
+                "items": {
+                  "$ref": "#/components/schemas/Parameter"
+                },
+                "type": "array"
+              },
+              "form": {
+                "enum": [
+                  "bar"
+                ],
+                "type": "string"
+              },
+              "long_bar": {
+                "$ref": "#/components/schemas/LongBar"
+              },
+              "long_bar_share": {
+                "$ref": "#/components/schemas/Parameter"
+              }
+            },
+            "required": [
+              "angle",
+              "bulge_scales",
+              "long_bar",
+              "long_bar_share",
+              "form"
+            ],
+            "type": "object"
+          },
+          {
+            "description": "A flattened double power law in the ellipsoidal radius, between two radii.",
+            "properties": {
+              "break_radius": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "flattening": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "form": {
+                "enum": [
+                  "halo"
+                ],
+                "type": "string"
+              },
+              "inner_slope": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "max_radius": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "min_radius": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "outer_slope": {
+                "$ref": "#/components/schemas/Parameter"
+              }
+            },
+            "required": [
+              "inner_slope",
+              "outer_slope",
+              "break_radius",
+              "flattening",
+              "min_radius",
+              "max_radius",
+              "form"
+            ],
+            "type": "object"
+          },
+          {
+            "description": "Along the spiral arms' stretches, spread across each by its width times `width_factor`,\nexponential in height; knots gather `per_knot` points within `knot_radius`.",
+            "properties": {
+              "form": {
+                "enum": [
+                  "arms"
+                ],
+                "type": "string"
+              },
+              "knots": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Knots"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "radial_scale_length": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "scale_height": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "width_factor": {
+                "$ref": "#/components/schemas/Parameter"
+              }
+            },
+            "required": [
+              "scale_height",
+              "width_factor",
+              "radial_scale_length",
+              "form"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "Derivation": {
         "description": "How a structure's placed shape was derived from its published numbers:\n`structure_details.derivation`.",
@@ -1291,6 +1526,52 @@
         ],
         "type": "object"
       },
+      "GalaxyModel": {
+        "description": "The Galaxy model a release holds.",
+        "properties": {
+          "definition": {
+            "$ref": "#/components/schemas/Model",
+            "description": "Its populations, each with the code its model points carry in the tiles, its density,\nlight and display colour; the spiral arms' rules; and the papers its numbers cite. Each\nnumber gives its value, unit, kind of value, uncertainty and its citation or the reason\nfor it."
+          },
+          "domain": {
+            "description": "The scale domain its model points are tiled in: `galaxy_model`.",
+            "type": "string"
+          },
+          "followed": {
+            "description": "The ids of the structures of the arms it followed, in the order of its arm rules.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "points": {
+            "description": "How many model points it was sampled into.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "release": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "seed": {
+            "description": "The seed its sampling was drawn with.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "release",
+          "domain",
+          "points",
+          "seed",
+          "definition",
+          "followed"
+        ],
+        "type": "object"
+      },
       "Geometry": {
         "description": "The shape that places an object, structure or layer item. Meshes are not among them.",
         "oneOf": [
@@ -2121,6 +2402,22 @@
         ],
         "type": "string"
       },
+      "Knots": {
+        "description": "How a population of the arms gathers into knots.",
+        "properties": {
+          "knot_radius": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "per_knot": {
+            "$ref": "#/components/schemas/Parameter"
+          }
+        },
+        "required": [
+          "per_knot",
+          "knot_radius"
+        ],
+        "type": "object"
+      },
       "LayerChange": {
         "additionalProperties": false,
         "description": "What the owning key asks to change of a layer, each part kept where absent.",
@@ -2321,6 +2618,51 @@
         ],
         "type": "object"
       },
+      "Light": {
+        "description": "A population's light in the V band: from its stellar mass and mass-to-light ratio, or as a\nshare of the Galaxy's light.",
+        "oneOf": [
+          {
+            "properties": {
+              "from": {
+                "enum": [
+                  "mass"
+                ],
+                "type": "string"
+              },
+              "mass": {
+                "$ref": "#/components/schemas/Parameter"
+              },
+              "mass_to_light": {
+                "$ref": "#/components/schemas/Parameter"
+              }
+            },
+            "required": [
+              "mass",
+              "mass_to_light",
+              "from"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "from": {
+                "enum": [
+                  "share"
+                ],
+                "type": "string"
+              },
+              "share": {
+                "$ref": "#/components/schemas/Parameter"
+              }
+            },
+            "required": [
+              "share",
+              "from"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "LineOfSight": {
         "description": "The difference along the line of sight between two matched entries.",
         "oneOf": [
@@ -2396,6 +2738,50 @@
         },
         "required": [
           "relation"
+        ],
+        "type": "object"
+      },
+      "LongBar": {
+        "description": "The long bar of Wegg, Gerhard & Portail 2015, their equation for the thin bar: a boxy\nexponential in the plane, exponential in height, cut off within and beyond its radii.",
+        "properties": {
+          "angle": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "c_perp": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "r_in": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "r_out": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "sigma_in": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "sigma_out": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "x0": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "y0": {
+            "$ref": "#/components/schemas/Parameter"
+          },
+          "z0": {
+            "$ref": "#/components/schemas/Parameter"
+          }
+        },
+        "required": [
+          "angle",
+          "x0",
+          "y0",
+          "z0",
+          "c_perp",
+          "r_out",
+          "sigma_out",
+          "r_in",
+          "sigma_in"
         ],
         "type": "object"
       },
@@ -2899,6 +3285,77 @@
         ],
         "type": "string"
       },
+      "Model": {
+        "description": "The Galaxy model.",
+        "properties": {
+          "arms": {
+            "$ref": "#/components/schemas/ArmRules"
+          },
+          "papers": {
+            "items": {
+              "$ref": "#/components/schemas/ModelPaper"
+            },
+            "type": "array"
+          },
+          "points": {
+            "description": "How many model points the model is sampled into.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "populations": {
+            "items": {
+              "$ref": "#/components/schemas/Population"
+            },
+            "type": "array"
+          },
+          "r0": {
+            "$ref": "#/components/schemas/Parameter",
+            "description": "Where the Sun stands: the Galactic Centre's distance, kpc, and the Sun's height above the\nGalactic plane, kpc."
+          },
+          "seed": {
+            "description": "The seed of the sampling.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sun_height": {
+            "$ref": "#/components/schemas/Parameter"
+          }
+        },
+        "required": [
+          "points",
+          "seed",
+          "r0",
+          "sun_height",
+          "populations",
+          "arms",
+          "papers"
+        ],
+        "type": "object"
+      },
+      "ModelPaper": {
+        "description": "A paper the model cites.",
+        "properties": {
+          "doi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference"
+        ],
+        "type": "object"
+      },
       "NameRecord": {
         "description": "A common or proper name of the object, with the source that gives it.",
         "properties": {
@@ -3379,6 +3836,109 @@
         ],
         "type": "object"
       },
+      "Parameter": {
+        "description": "A number of the model: its value in the unit the model reads it in, its uncertainty, and\neither the paper it comes from or the reason this project chose it.",
+        "properties": {
+          "kind": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/KindOfValue",
+                "description": "Its kind of value, where a paper gives it; none for this project's choice."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/ParameterSource"
+          },
+          "uncertainty": {
+            "$ref": "#/components/schemas/Uncertainty",
+            "description": "Its uncertainty in `unit`, as its paper gives it; none reported for a number given\nwithout one and for this project's choice, never zero. A definition written before the\nmodel kept uncertainties reads as none reported."
+          },
+          "unit": {
+            "description": "The unit `value` is in, such as `kiloparsec`, `degree`, `solar_mass` or `1` for a ratio.",
+            "type": "string"
+          },
+          "value": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "source"
+        ],
+        "type": "object"
+      },
+      "ParameterSource": {
+        "description": "Where a number of the model comes from.",
+        "oneOf": [
+          {
+            "description": "A paper of the model, by its id, and where in it the number was read.",
+            "properties": {
+              "from": {
+                "enum": [
+                  "cited"
+                ],
+                "type": "string"
+              },
+              "locator": {
+                "type": "string"
+              },
+              "paper": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "paper",
+              "locator",
+              "from"
+            ],
+            "type": "object"
+          },
+          {
+            "description": "This project's choice, which no paper makes, and why.",
+            "properties": {
+              "from": {
+                "enum": [
+                  "choice"
+                ],
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "reason",
+              "from"
+            ],
+            "type": "object"
+          },
+          {
+            "description": "Derived from other numbers of the model, and how.",
+            "properties": {
+              "from": {
+                "enum": [
+                  "derived"
+                ],
+                "type": "string"
+              },
+              "how": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "how",
+              "from"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "Payload": {
         "description": "One payload fetched.",
         "properties": {
@@ -3487,6 +4047,42 @@
           "column_offset",
           "bytes",
           "meaning"
+        ],
+        "type": "object"
+      },
+      "Population": {
+        "description": "A population of the model.",
+        "properties": {
+          "code": {
+            "description": "The code its model points carry, from 1.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "colour": {
+            "$ref": "#/components/schemas/Colour"
+          },
+          "density": {
+            "$ref": "#/components/schemas/Density"
+          },
+          "id": {
+            "description": "Its id, such as `thin_disc`.",
+            "type": "string"
+          },
+          "light": {
+            "$ref": "#/components/schemas/Light"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "id",
+          "name",
+          "density",
+          "light",
+          "colour"
         ],
         "type": "object"
       },
@@ -3794,6 +4390,7 @@
           "urn:univ:problem:source-not-found",
           "urn:univ:problem:object-not-found",
           "urn:univ:problem:structure-not-found",
+          "urn:univ:problem:galaxy-model-not-found",
           "urn:univ:problem:scale-domain-not-found",
           "urn:univ:problem:tile-not-found",
           "urn:univ:problem:grid-not-found",
@@ -4534,7 +5131,7 @@
             "type": "string"
           },
           "name": {
-            "description": "`stars`, `galaxy_tracers`, `nearby_galaxies` or `cosmic_web`.",
+            "description": "`stars`, `galaxy_tracers`, `galaxy_model`, `nearby_galaxies` or `cosmic_web`.",
             "type": "string"
           },
           "nodes": {
@@ -6503,6 +7100,192 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/v1/galaxy-model": {
+      "get": {
+        "description": "# Errors\n\nA problem answer: the release refused, a release that holds no Galaxy model (404, naming\nit), or the release database unreadable.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "description": "The release to read; latest when absent",
+            "in": "query",
+            "name": "release",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GalaxyModel"
+                }
+              }
+            },
+            "description": "The Galaxy model"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:invalid-parameter"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:unauthorized"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:release-not-found",
+                            "urn:univ:problem:galaxy-model-not-found"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "No such release; No Galaxy model"
+          },
+          "410": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:release-pruned"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Release pruned"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:rate-limited"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Too many requests"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "urn:univ:problem:internal-error"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "summary": "Reads the Galaxy model of the release the request reads.",
+        "tags": [
+          "crate::galaxy_model"
+        ]
+      }
+    },
     "/v1/grids": {
       "get": {
         "description": "# Errors\n\nA problem answer: the release refused, or the release database unreadable.",

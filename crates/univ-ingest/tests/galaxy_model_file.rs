@@ -9,6 +9,7 @@ mod common;
 use common::workspace;
 use univ_ingest::galaxy_model::{ModelFile, Number};
 use univ_model::galaxy_model::{Density, Light, ParameterSource};
+use univ_model::value::Uncertainty;
 
 fn file() -> std::path::PathBuf {
     workspace().join("rules/galaxy-model.yaml")
@@ -22,6 +23,11 @@ fn the_definition_reads_and_asks_for_10_million_points() {
     assert_eq!(model.points, 10_000_000);
     assert!((model.r0.value - 8.15).abs() < 1e-12);
     assert!((model.sun_height.value - 0.0055).abs() < 1e-12, "in kpc");
+    // Its uncertainty as Reid et al. 2019 give it, 5.8 pc, in the parameter's kpc.
+    match model.sun_height.uncertainty {
+        Uncertainty::Symmetric { sigma } => assert!((sigma - 0.0058).abs() < 1e-12, "{sigma}"),
+        other => panic!("{other:?}"),
+    }
 }
 
 #[test]
@@ -84,7 +90,11 @@ fn each_number_of_the_definition_cites_its_paper_or_is_a_choice_with_its_reason(
                     assert!(!source["paper"].as_str().unwrap().is_empty(), "{v}");
                     assert!(!source["locator"].as_str().unwrap().is_empty(), "{v}");
                 }
-                Some("choice") => assert!(!source["reason"].as_str().unwrap().is_empty(), "{v}"),
+                Some("choice") => {
+                    assert!(!source["reason"].as_str().unwrap().is_empty(), "{v}");
+                    // A choice has no uncertainty to report, and says so.
+                    assert_eq!(v["uncertainty"]["form"], "none_reported", "{v}");
+                }
                 other => panic!("{other:?}: {v}"),
             }
         }

@@ -3,10 +3,10 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::value::KindOfValue;
+use crate::value::{KindOfValue, Uncertainty};
 
-/// A number of the model: its value in the unit the model reads it in, and either the paper it
-/// comes from or the reason this project chose it.
+/// A number of the model: its value in the unit the model reads it in, its uncertainty, and
+/// either the paper it comes from or the reason this project chose it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Parameter {
@@ -16,7 +16,16 @@ pub struct Parameter {
     /// Its kind of value, where a paper gives it; none for this project's choice.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub kind: Option<KindOfValue>,
+    /// Its uncertainty in `unit`, as its paper gives it; none reported for a number given
+    /// without one and for this project's choice, never zero. A definition written before the
+    /// model kept uncertainties reads as none reported.
+    #[serde(default = "none_reported")]
+    pub uncertainty: Uncertainty,
     pub source: ParameterSource,
+}
+
+fn none_reported() -> Uncertainty {
+    Uncertainty::NoneReported
 }
 
 /// Where a number of the model comes from.
@@ -40,6 +49,7 @@ impl Parameter {
             value,
             unit: unit.to_owned(),
             kind: Some(KindOfValue::Estimated),
+            uncertainty: Uncertainty::NoneReported,
             source: ParameterSource::Cited {
                 paper: paper.to_owned(),
                 locator: locator.to_owned(),
@@ -54,6 +64,7 @@ impl Parameter {
             value,
             unit: unit.to_owned(),
             kind: None,
+            uncertainty: Uncertainty::NoneReported,
             source: ParameterSource::Choice {
                 reason: reason.to_owned(),
             },

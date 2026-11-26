@@ -27,17 +27,24 @@ fn db() -> Sqlite {
 
 #[test]
 fn the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit() {
-    let (response, listing) = db().get_json("/v1/scale-domains", "");
+    let db = db();
+    db.exec(
+        "INSERT INTO scale_domains VALUES (2, 'galaxy_model', 'pc', 98304.0, 20000, 1, \
+         'files/6a0d11', NULL);",
+    );
+    let (response, listing) = db.get_json("/v1/scale-domains", "");
     assert_eq!(response.status, 200);
     let domains = listing["domains"].as_array().unwrap();
     let names: Vec<&Value> = domains.iter().map(|d| &d["name"]).collect();
-    assert_eq!(names, ["cosmic_web", "galaxy_tracers", "stars"]);
+    assert_eq!(names, ["cosmic_web", "galaxy_model", "galaxy_tracers", "stars"]);
     assert_eq!(domains[0]["unit"], "megaparsec");
     assert_eq!(domains[0]["radius"], 168.0);
-    // The Galaxy tracers, like the stars, are in parsecs.
+    // The Galaxy model and the Galaxy tracers, like the stars, are in parsecs.
     assert_eq!(domains[1]["unit"], "parsec");
-    assert_eq!(domains[1]["radius"], 2048.0);
+    assert_eq!(domains[1]["radius"], 98304.0);
     assert_eq!(domains[2]["unit"], "parsec");
+    assert_eq!(domains[2]["radius"], 2048.0);
+    assert_eq!(domains[3]["unit"], "parsec");
     assert_eq!(
         domains[0]["manifest"],
         "/v1/scale-domains/cosmic_web/manifest?release=2"

@@ -5,6 +5,7 @@ use univ_model::galaxy_model::{
     Colour, Density, Knots, Light, LongBar, Parameter, ParameterSource,
 };
 use univ_model::units::{Dimension, Unit};
+use univ_model::value::Uncertainty;
 
 use super::{ColourFile, DEG, DensityFile, KPC, LightFile, Number, ONE};
 use crate::structures::Locator;
@@ -132,9 +133,10 @@ fn unit_name(unit: Unit) -> String {
 /// `number` as a model parameter in `unit`, with where it comes from.
 pub(super) fn parameter(number: &Number, unit: Unit) -> Result<Parameter, String> {
     let factor = number.unit().factor_to(unit).map_err(|e| e.to_string())?;
-    let (kind, source) = match number {
+    let (kind, uncertainty, source) = match number {
         Number::Cited(c) => (
             Some(c.kind),
+            c.quantity.uncertainty.scaled(factor),
             ParameterSource::Cited {
                 paper: c.cite.paper.clone(),
                 locator: locator_text(&c.cite.locator),
@@ -142,6 +144,7 @@ pub(super) fn parameter(number: &Number, unit: Unit) -> Result<Parameter, String
         ),
         Number::Choice(c) => (
             None,
+            Uncertainty::NoneReported,
             ParameterSource::Choice {
                 reason: c.choice.clone(),
             },
@@ -151,6 +154,7 @@ pub(super) fn parameter(number: &Number, unit: Unit) -> Result<Parameter, String
         value: number.value() * factor,
         unit: unit_name(unit),
         kind,
+        uncertainty,
         source,
     })
 }

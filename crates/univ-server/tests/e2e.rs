@@ -174,6 +174,44 @@ fn structures_are_listed_in_pages_and_read_with_their_citations() {
 
 #[test]
 #[ignore = "needs the Worker: run `cargo xtask integration`"]
+fn the_galaxy_model_gives_its_definition_as_the_release_sampled_it() {
+    let model = json(get("/v1/galaxy-model"));
+    assert_eq!(model["release"], 2);
+    assert_eq!(model["domain"], "galaxy_model");
+    // The fixture releases sample 20,000 model points; the production definition 10 million.
+    assert_eq!(model["points"], 20_000);
+    let populations = model["definition"]["populations"].as_array().unwrap();
+    assert_eq!(populations.len(), 6);
+    for p in populations {
+        assert_eq!(p["colour"]["srgb"].as_array().unwrap().len(), 3, "{p}");
+    }
+    // The Sun's height, as Reid et al. 2019 give it with its uncertainty; R0, which they assume,
+    // with none reported.
+    let height = &model["definition"]["sun_height"];
+    assert_eq!(height["source"]["paper"], "reid-2019");
+    assert_eq!(height["uncertainty"]["form"], "symmetric");
+    assert_eq!(
+        model["definition"]["r0"]["uncertainty"]["form"],
+        "none_reported"
+    );
+    let followed = model["followed"].as_array().unwrap();
+    assert!(
+        followed.iter().any(|s| s == "reid-2019-perseus-arm"),
+        "{followed:?}"
+    );
+    // The listing holds its domain beside the others.
+    let domains = json(get("/v1/scale-domains"));
+    let names: Vec<&str> = domains["domains"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d["name"].as_str().unwrap())
+        .collect();
+    assert!(names.contains(&"galaxy_model"), "{names:?}");
+}
+
+#[test]
+#[ignore = "needs the Worker: run `cargo xtask integration`"]
 fn a_source_gives_its_primary_reference_and_coverage_from_schema_v3() {
     let source = json(get("/v1/sources/hipparcos-2007"));
     assert_eq!(source["reference"]["bibcode"], "2007A&A...474..653V");
@@ -335,8 +373,22 @@ fn a_tile_manifest_names_its_frame_unit_cosmology_nodes_rotations_sources_and_en
         for source in m["sources"].as_array().unwrap() {
             assert!(source["credit"].is_string(), "{name}: {source}");
         }
-        // The Galaxy tracers' tiles take version 4, with each point's kind of object; every
-        // other domain keeps version 3 (build-octree-tiles).
+        // The Galaxy tracers' tiles take version 4, with each point's kind of object; the
+        // Galaxy model's version 5, of model points, each population named by its code; every
+        // other domain keeps version 3 (build-octree-tiles, build-the-galaxy-model).
+        if name == "galaxy_model" {
+            assert_eq!(m["encoding"]["version"], 5, "{name}");
+            assert_eq!(m["encoding"]["populations"][0]["code"], 1);
+            assert_eq!(m["encoding"]["populations"][0]["id"], "thin_disc");
+            assert_eq!(
+                m["sources"],
+                serde_json::json!([]),
+                "no model point is a source's"
+            );
+            assert!(m["sampling"]["model_seed"].is_u64(), "{name}");
+            assert!(m["levels"][0]["step"].as_f64().unwrap() > 0.0);
+            continue;
+        }
         if name == "galaxy_tracers" {
             assert_eq!(m["encoding"]["version"], 4, "{name}");
             assert_eq!(m["encoding"]["object_kinds"][6], "luminous_hot_star");

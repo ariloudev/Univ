@@ -8,6 +8,7 @@ mod access;
 mod backend;
 mod bulk;
 mod cors;
+mod galaxy_model;
 mod grids;
 mod http;
 #[cfg(test)]

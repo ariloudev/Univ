@@ -26,6 +26,7 @@ use crate::problem::{Problem, ProblemDocument, ProblemType};
         crate::sources::provenance::provenance,
         crate::structures::list,
         crate::structures::get,
+        crate::galaxy_model::get,
         crate::objects::find,
         crate::objects::get,
         crate::bulk::domains,
@@ -235,16 +236,17 @@ pub(crate) mod tests {
     #[test]
     fn the_documents_schemas_are_generated_from_univ_models_types() {
         use univ_model::api::{
-            bulk, keys, layers, lookup, objects, query, releases, sources, structures,
+            bulk, galaxy_model, keys, layers, lookup, objects, query, releases, sources, structures,
         };
         type Generate = fn(&mut BTreeMap<String, serde_json::Value>);
-        let roots: [Generate; 31] = [
+        let roots: [Generate; 32] = [
             generated::<releases::ReleaseList>,
             generated::<sources::SourceList>,
             generated::<sources::SourceDetail>,
             generated::<sources::SourceProvenance>,
             generated::<structures::StructurePage>,
             generated::<structures::StructureDetail>,
+            generated::<galaxy_model::GalaxyModel>,
             generated::<objects::ObjectRecord>,
             generated::<lookup::ObjectChoices>,
             generated::<lookup::ObjectMerged>,
