@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { KIND_COLOURS } from "./kinds.ts";
+import { KIND_COLOURS, POINT_OPACITY } from "./kinds.ts";
 import { NO_COLOUR_GREY, blackBodyColour } from "./starColour.ts";
 import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_OBJECTS, objectIndex, pointSizeOf, tracerBytes, tracerColour } from "./tracers.ts";
 
@@ -14,6 +14,14 @@ describe("the Galaxy's tracers", () => {
       for (const other of others) expect(distance(colour, other)).toBeGreaterThan(0.3);
       for (const next of TRACER_COLOURS.slice(i + 1)) expect(distance(colour, next)).toBeGreaterThan(0.3);
     }
+  });
+
+  it("draws the luminous hot stars dark, at a tenth of the other kinds' opacity", () => {
+    const hot = tracerColour(objectIndex("luminous_hot_star"));
+    expect(hot[3]).toBeCloseTo(0.1 * POINT_OPACITY);
+    for (const [i, other] of TRACER_COLOURS.entries()) if (i !== objectIndex("luminous_hot_star")) expect(other[3]).toBe(POINT_OPACITY);
+    // Dark: no channel above half, where a star's colour or a galaxy's blue reaches full.
+    expect(Math.max(hot[0], hot[1], hot[2])).toBeLessThanOrEqual(0.5);
   });
 
   it("has a colour for each kind of object of the tracers, and one for a tracer of unknown kind", () => {

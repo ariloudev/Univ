@@ -186,6 +186,8 @@ requirements:
         name: "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind."
       - key: 01a1c319-7860-76e8-92ac-c5e864b8c262
         name: "A point of the Galaxy tracers domain is drawn twice the size of a point of the stars domain at the same distance."
+      - key: 01a217aa-a805-760e-873f-455bb856f763
+        name: "A luminous hot star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd about the Sun they do not add up to white."
   - key: 01a1c319-7860-76e8-92ac-c5e9e544de53
     statement:
       form: ubiquitous
