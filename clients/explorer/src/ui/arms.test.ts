@@ -13,7 +13,7 @@ import { createStore } from "./store.ts";
 
 afterEach(() => history.replaceState(null, "", "/"));
 
-const DOMAINS = ["stars", "galaxy_tracers", "nearby_galaxies", "cosmic_web"];
+const DOMAINS = ["stars", "galaxy_tracers", "galaxy_model", "nearby_galaxies", "cosmic_web"];
 
 /** What the Show drawer offers and has off: `DOMAINS` (or `domains`) and nothing off, with `parts`. */
 function showOf(parts: Partial<Pick<ShowPanelProps, "onApply" | "age">>, domains: readonly string[] = DOMAINS) {
@@ -25,8 +25,9 @@ function showOf(parts: Partial<Pick<ShowPanelProps, "onApply" | "age">>, domains
 const ageOf = (choose: (cut: AgeCut) => void): AgeState => ({ cut: undefined, choose, held: () => ({ tracers: 0, aged: 0 }), frame: createStore(0) });
 
 describe("what the arms view draws (see-the-galaxys-arms-face-on)", () => {
-  it("turns the Galaxy tracers domain on and every other off", () => {
-    const hidden = applied(hiddenInAddress("?hide=domain:galaxy_tracers"), armsChanges(hiddenInAddress("?hide=domain:galaxy_tracers"), DOMAINS, []));
+  it("turns the Galaxy tracers and Galaxy model domains on and every other off", () => {
+    const start = hiddenInAddress("?hide=domain:galaxy_tracers,domain:galaxy_model");
+    const hidden = applied(start, armsChanges(start, DOMAINS, []));
     expect([...hidden.domain].sort()).toEqual(["cosmic_web", "nearby_galaxies", "stars"]);
   });
 

@@ -30,6 +30,8 @@ function tally(failed = 0, unread = 0): Tally {
     failed,
     unread,
     credits: () => (SOURCE === undefined ? [] : [{ ...SOURCE, domain: "stars" }]),
+    model: () => undefined,
+    modelPoints: 0,
   };
 }
 
@@ -117,6 +119,32 @@ describe("the bars and the view's drawer", () => {
     expect(key).toContain("A&A 685, A82");
     rerender(<KeyBar catalogue={() => tally()} frame={frame} release={13} />);
     expect(screen.queryByTestId("dust-key")).toBeNull();
+  });
+
+  it("name the Galaxy model's points as a model, counted apart, and credit its papers, while it is drawn", () => {
+    const model = {
+      colours: new Uint8Array(256 * 4),
+      cover: new Uint8Array(256),
+      populations: [{ code: 1, name: "Thin disc", srgb: [255, 242, 237] as const }],
+      papers: [{ id: "reid-2019", reference: "Reid et al. 2019, ApJ 885, 131", doi: "10.3847/1538-4357/ab4a11" }],
+    };
+    show({ ...tally(), model: () => model, modelPoints: 12_345 });
+    const key = screen.getByTestId("model-key").textContent ?? "";
+    expect(key).toContain("a model, not observed stars");
+    expect(key).toContain("12,345 model points");
+    expect(key).toContain("Thin disc");
+    expect(screen.getByTestId("model-count").textContent).toBe("model 12,345");
+    // Apart from the objects: the kinds of value count none of it.
+    expect(screen.getByTestId("key").textContent).toContain("measured: 1,200 points");
+    const papers = screen.getByTestId("model-credits").textContent ?? "";
+    expect(papers).toContain("Reid et al. 2019, ApJ 885, 131");
+    expect(papers).toContain("doi:10.3847/1538-4357/ab4a11");
+  });
+
+  it("leave the Galaxy model out of the key and the credits while it is not drawn", () => {
+    show(tally());
+    expect(screen.queryByTestId("model-key")).toBeNull();
+    expect(screen.queryByTestId("model-credits")).toBeNull();
   });
 
   it("leave the Galaxy's tracers out of the key where the release has none", () => {

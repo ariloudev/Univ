@@ -19,6 +19,13 @@ in vec4 a_colour;
 // Whether the point lies inside the volume the view is culled to (see-the-structures): 1 for
 // every point while it is not culled.
 in float a_inside;
+// What covers a model point of the Galaxy model (model.ts's COVERED_BY_…), 0 for any other point.
+in float a_covered;
+// Whether the batch is the Galaxy model's, drawn as light (see-the-galaxy-model): in its own
+// colour, at the batch's opacity, not dimmed by dust, whatever the switches of sources, kinds
+// and objects say; a covered point hidden where bit a_covered of u_coveredHidden is set.
+uniform bool u_light;
+uniform uint u_coveredHidden;
 // The kinds of value, the kinds of object, and the batch's sources by index, turned off
 // (choose-what-is-drawn).
 uniform uint u_hiddenKinds;
@@ -55,8 +62,11 @@ void main() {
   uint source = uint(a_source);
   vec3 place = u_axes * a_offset + u_centre;
   float rank = mix(u_slice.x, u_slice.y, (float(gl_VertexID) + 0.5) / max(u_count, 1.0));
-  bool hidden = ((u_hiddenKinds >> kind) & 1u) != 0u || ((u_hiddenObjects >> uint(a_object)) & 1u) != 0u
-    || (source < 32u && ((u_hiddenSources >> source) & 1u) != 0u) || a_inside < 0.5 || !needed(rank, length(place));
+  bool switched = u_light
+    ? ((u_coveredHidden >> uint(a_covered)) & 1u) != 0u
+    : ((u_hiddenKinds >> kind) & 1u) != 0u || ((u_hiddenObjects >> uint(a_object)) & 1u) != 0u
+      || (source < 32u && ((u_hiddenSources >> source) & 1u) != 0u);
+  bool hidden = switched || a_inside < 0.5 || !needed(rank, length(place));
   if (hidden) {
     // Outside the clip volume, and of no size: not drawn.
     gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -70,7 +80,8 @@ void main() {
   vec4 base = a_colour.a > 0.0 ? a_colour : u_colours[int(a_kind)];
   // Dimmed by the dust between the eye and the point, none where the point is before it; a
   // structure's marker shown whatever lies before it.
-  float seen = kind == ${MARKER_INDEX}u ? 1.0 : exp(-${DIMMING.toFixed(3)} * dustColumn(place, ${STAR_STEPS}));
+  // The Galaxy model is the Galaxy's intrinsic light: no dust dims it.
+  float seen = u_light || kind == ${MARKER_INDEX}u ? 1.0 : exp(-${DIMMING.toFixed(3)} * dustColumn(place, ${STAR_STEPS}));
   v_colour = base * vec4(1.0, 1.0, 1.0, u_opacity * seen);
 }`;
 

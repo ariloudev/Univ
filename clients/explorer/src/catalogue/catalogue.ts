@@ -25,9 +25,10 @@ import {
 import type { Rgba } from "../scene/drawing.ts";
 import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
+import { MODEL_DOMAIN, modelPointsShown } from "../scene/model.ts";
 import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds } from "../scene/tracers.ts";
 import { type Volume, insideOf } from "../scene/volume.ts";
-import { type Batch, type Domain, type DomainTile, TileFailed, fetchBatch } from "./tiles.ts";
+import { type Batch, type Domain, type DomainTile, type ModelLook, TileFailed, fetchBatch } from "./tiles.ts";
 
 /** Tiles fetched at once. */
 const PARALLEL = 6;
@@ -177,6 +178,8 @@ export class Catalogue implements DrawnDetail {
   readonly tracerKinds = [0, 0, 0, 0];
   /** The points counted of each domain. */
   private readonly domainPoints = new Map<string, number>();
+  /** The Galaxy model's points drawn: a model, counted apart from the objects drawn. */
+  modelPoints = 0;
   /** Each drawn tile's points by cell, and which lie inside the volume the view is culled to, by
    * tile id. */
   private readonly histograms = new Map<string, Histogram>();
@@ -419,6 +422,10 @@ export class Catalogue implements DrawnDetail {
     const histogram = this.histograms.get(batch.tile.id);
     if (histogram === undefined) return;
     const domain = batch.tile.domain;
+    if (batch.covered !== undefined) {
+      this.tallyModel(batch.covered, domain, histogram.inside, by);
+      return;
+    }
     const { sources, objects, cells } = histogram;
     cells.forEach((n, at) => {
       if (n === 0) return;
@@ -431,6 +438,17 @@ export class Catalogue implements DrawnDetail {
       else this.count(batch.stars !== undefined, kind, at % 2 === 1, by * n);
       this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + by * n);
     });
+  }
+
+  /** Counts the Galaxy model's points of a tile, `covered` by what, that are drawn (`inside`
+   * marks, where it marks any, and not hidden by the objects that cover them) into the model's
+   * count and its domain's, or out of them where `by` is −1: whatever the switches of sources,
+   * kinds of value and objects say. */
+  private tallyModel(covered: Uint8Array, domain: string, inside: Uint8Array | undefined, by: 1 | -1): void {
+    if (this.masks.domains.has(domain)) return;
+    const n = by * modelPointsShown(covered, this.masks.covered, inside);
+    this.modelPoints += n;
+    this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + n);
   }
 
   /** Counts `n` points into the stars' colours, or into their kind of value. */
@@ -477,6 +495,7 @@ export class Catalogue implements DrawnDetail {
     this.tracerPoints.length = 0;
     this.tracerKinds.fill(0);
     this.domainPoints.clear();
+    this.modelPoints = 0;
     for (const batch of [...this.drawn.values(), ...this.kept.values()]) this.tally(batch, 1);
     this.events.onChange();
   }
@@ -554,5 +573,12 @@ export class Catalogue implements DrawnDetail {
     return [...this.domains.values()]
       .filter((d) => (this.domainPoints.get(d.name) ?? 0) > 0)
       .flatMap((d) => d.manifest.sources.map((s) => ({ ...s, domain: d.name })));
+  }
+
+  /** The Galaxy model's populations and the papers its definition cites, while its domain is
+   * drawn: none where it is turned off or the release holds no model. */
+  model(): ModelLook | undefined {
+    const model = this.domains.get(MODEL_DOMAIN)?.model;
+    return model === undefined || this.masks.domains.has(MODEL_DOMAIN) ? undefined : model;
   }
 }

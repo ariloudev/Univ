@@ -9,6 +9,7 @@ import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
 import { KINDS, POINT_CSS, css } from "../scene/kinds.ts";
 import { Mark } from "./Mark.tsx";
+import { ModelCredits, ModelKey } from "./ModelKey.tsx";
 import { GREY_CSS, STAR_GRADIENT } from "../scene/starColour.ts";
 import { StarScale } from "./record/charts.tsx";
 import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
@@ -87,7 +88,7 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
 }
 
 /** What the key reads of the catalogue. */
-export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "tracerKinds" | "failed" | "unread" | "credits">;
+export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "tracerKinds" | "failed" | "unread" | "credits" | "model" | "modelPoints">;
 
 /** A part of the bottom bar that opens upward over the view. */
 function Popover({ label, children, width = "w-96", side = "left-0" }: { label: string; children: ReactNode; width?: string; side?: string }) {
@@ -136,6 +137,9 @@ export function KeyBar({
             {kind} {count.toLocaleString("en-GB")}
           </span>
         ))}
+        {catalogue.model() === undefined ? null : (
+          <span data-testid="model-count">model {catalogue.modelPoints.toLocaleString("en-GB")}</span>
+        )}
       </div>
       <Popover label="Key">
         <Key catalogue={catalogue} />
@@ -153,6 +157,7 @@ export function KeyBar({
             </li>
           ))}
         </ul>
+        <ModelCredits model={catalogue.model()} />
       </Popover>
     </div>
   );
@@ -180,6 +185,7 @@ function Key({ catalogue }: { catalogue: Tally }) {
         </p>
       </div>
       <TracerKey lines={catalogue.tracers()} kinds={catalogue.tracerKinds} />
+      <ModelKey model={catalogue.model()} points={catalogue.modelPoints} />
       <h2 className="flex items-center gap-2 font-semibold">
         <Swatch colour={POINT_CSS} />
         Other points, by the kind of value of each distance

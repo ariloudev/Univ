@@ -36,7 +36,10 @@ fn the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit() {
     assert_eq!(response.status, 200);
     let domains = listing["domains"].as_array().unwrap();
     let names: Vec<&Value> = domains.iter().map(|d| &d["name"]).collect();
-    assert_eq!(names, ["cosmic_web", "galaxy_model", "galaxy_tracers", "stars"]);
+    assert_eq!(
+        names,
+        ["cosmic_web", "galaxy_model", "galaxy_tracers", "stars"]
+    );
     assert_eq!(domains[0]["unit"], "megaparsec");
     assert_eq!(domains[0]["radius"], 168.0);
     // The Galaxy model and the Galaxy tracers, like the stars, are in parsecs.

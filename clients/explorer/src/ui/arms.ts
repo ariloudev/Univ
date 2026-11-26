@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { STRUCTURE_FAMILIES } from "../scene/kinds.ts";
+import { MODEL_DOMAIN } from "../scene/model.ts";
 import { TRACERS_DOMAIN, TRACER_KINDS, type TracerKind } from "../scene/tracers.ts";
 import { setInAddress } from "./address.ts";
 import type { AgeCut } from "./age.ts";
@@ -30,15 +31,15 @@ const ARMS = "arms";
 /** Whether the page's address asks for the arms view: `view=arms`. */
 export const armsInAddress = (search: string): boolean => new URLSearchParams(search).get("view") === ARMS;
 
-/** The changes that make what is drawn the arms view's, from `hidden`: the Galaxy tracers domain
- * on and every other of `domains` off; the arms' tracers on and the other kinds of object off;
+/** The changes that make what is drawn the arms view's, from `hidden`: the Galaxy tracers and
+ * Galaxy model domains on and every other of `domains` off; the arms' tracers on and the other kinds of object off;
  * the arms on and every other kind of structure, of `structureKinds` or any the explorer knows
  * (the address may open the view before the release's structures are read), off; and every
  * source and kind of value on. */
 export function armsChanges(hidden: Hidden, domains: readonly string[], structureKinds: readonly string[]): Change[] {
   const structures = [...new Set([...STRUCTURE_FAMILIES.flatMap((f) => f.kinds), ...structureKinds])];
   const only = (names: readonly string[], on: readonly string[]) => [names.filter((n) => on.includes(n)), names.filter((n) => !on.includes(n))] as const;
-  const [tracers, others] = only(domains, [TRACERS_DOMAIN]);
+  const [tracers, others] = only(domains, [TRACERS_DOMAIN, MODEL_DOMAIN]);
   const [young, old] = only(TRACER_KINDS, ARM_TRACERS);
   const [arms, rest] = only(structures, ARM_STRUCTURES);
   return [

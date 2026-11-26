@@ -13,6 +13,7 @@ import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
 import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
+import { batchOpacity } from "./model.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
@@ -38,6 +39,9 @@ export interface Points {
   colours?: Uint8Array | undefined;
   /** Each point's object index, for a Galaxy tracer; none for any other point. */
   objects?: Uint8Array | undefined;
+  /** What covers each model point, for a tile of the Galaxy model, whose points are drawn as
+   * light; none for a tile of objects. */
+  covered?: Uint8Array | undefined;
   extent: Sphere;
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
@@ -55,7 +59,7 @@ interface Drawn {
 }
 
 /** A tile's points as uploaded, with what drawing them reads. */
-type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; slice: Points["slice"] };
+type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; slice: Points["slice"]; light: boolean };
 
 interface Outline extends Drawn {
   colour: Rgba;
@@ -136,6 +140,8 @@ export class Renderer implements Drawer {
   private readonly hiddenKinds: WebGLUniformLocation | null;
   private readonly hiddenSources: WebGLUniformLocation | null;
   private readonly hiddenObjects: WebGLUniformLocation | null;
+  private readonly light: WebGLUniformLocation | null;
+  private readonly coveredHidden: WebGLUniformLocation | null;
   /** The point program's `a_inside`. */
   private readonly insideAt: number;
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
@@ -170,6 +176,8 @@ export class Renderer implements Drawer {
     this.hiddenKinds = gl.getUniformLocation(this.points.program, "u_hiddenKinds");
     this.hiddenSources = gl.getUniformLocation(this.points.program, "u_hiddenSources");
     this.hiddenObjects = gl.getUniformLocation(this.points.program, "u_hiddenObjects");
+    this.light = gl.getUniformLocation(this.points.program, "u_light");
+    this.coveredHidden = gl.getUniformLocation(this.points.program, "u_coveredHidden");
     const at = (name: string) => gl.getUniformLocation(this.points.program, name);
     this.detailAt = { onsets: at("u_onsets"), cumulative: at("u_cumulative"), slice: at("u_slice"), count: at("u_count") };
     // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
@@ -179,6 +187,8 @@ export class Renderer implements Drawer {
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
     // Nor kinds of object: `a_object` 0, a point of no kind, which no switch turns off.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_object"), 0);
+    // Nor a cover: `a_covered` 0, for every point but the Galaxy model's.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_covered"), 0);
     // And every point is drawn while the catalogue marks none, markers always.
     this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
     gl.vertexAttrib1f(this.insideAt, 1);
@@ -250,16 +260,23 @@ export class Renderer implements Drawer {
     return buffer;
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects"> & { sources?: Uint16Array }): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects" | "covered"> & { sources?: Uint16Array }): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
     const buffers = [
       this.buffer(this.points.program, "a_offset", points.offsets, 3),
       this.buffer(this.points.program, "a_kind", points.kinds, 1),
     ];
-    if (points.sources !== undefined) buffers.push(this.buffer(this.points.program, "a_source", points.sources, 1));
-    if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
-    if (points.objects !== undefined) buffers.push(this.buffer(this.points.program, "a_object", points.objects, 1));
+    // The attributes a batch may lack, each left at its constant where it does.
+    const optional = [
+      ["a_source", points.sources, 1],
+      ["a_colour", points.colours, 4],
+      ["a_object", points.objects, 1],
+      ["a_covered", points.covered, 1],
+    ] as const;
+    for (const [name, data, size] of optional) {
+      if (data !== undefined) buffers.push(this.buffer(this.points.program, name, data, size, name === "a_colour"));
+    }
     this.gl.bindVertexArray(null);
     return { vao, buffers, centre: points.centre, count: points.kinds.length };
   }
@@ -267,7 +284,8 @@ export class Renderer implements Drawer {
   /** Adds a tile's points to what is drawn, fading them in from `now`. */
   addPoints(points: Points, now = performance.now()): void {
     this.forget(points.id);
-    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice });
+    const light = points.covered !== undefined;
+    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice, light });
     this.fades.arrive(points.id, now);
   }
 
@@ -424,6 +442,7 @@ export class Renderer implements Drawer {
     this.dust.usePoints();
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     gl.uniform1ui(this.hiddenObjects, this.masks.objects);
+    gl.uniform1ui(this.coveredHidden, this.masks.covered);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
     const share = (id: string) => detail.share(id);
@@ -449,7 +468,10 @@ export class Renderer implements Drawer {
     this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
     gl.uniform1f(this.detailAt.count, batch.count);
-    gl.uniform1f(this.opacity, (detail.culled() ? CULLED_OPACITY : this.domainOpacity) * fade);
+    // The Galaxy model's points each as bright as the next, as light; any other at its domain's.
+    const opacity = batchOpacity(detail.culled() ? CULLED_OPACITY : this.domainOpacity, batch.light);
+    gl.uniform1f(this.opacity, opacity * fade);
+    gl.uniform1i(this.light, Number(batch.light));
     gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
   }
@@ -458,6 +480,7 @@ export class Renderer implements Drawer {
   private drawMarkers(frame: Frame): void {
     const gl = this.gl;
     gl.uniform1f(this.opacity, 1);
+    gl.uniform1i(this.light, 0);
     // Every marker drawn: one level holding all, and a slice that ranks every point first.
     this.useDetail(EVERYTHING);
     gl.uniform2f(this.detailAt.slice, 0, 0);

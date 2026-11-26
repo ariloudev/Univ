@@ -13,7 +13,7 @@
 
 import { createHash } from 'node:crypto';
 
-import { decodeTile, type TileManifest } from './decode.ts';
+import { decodeModelTile, decodeTile, type TileManifest } from './decode.ts';
 
 interface ScaleDomainList {
   release: number;
@@ -69,7 +69,9 @@ for (const domain of listing.domains) {
       continue;
     }
     try {
-      points += decodeTile(tile, node, manifest).length;
+      // A version 5 tile holds the Galaxy model's points, which decodeModelTile reads.
+      const decode = manifest.encoding.version === 5 ? decodeModelTile : decodeTile;
+      points += decode(tile, node, manifest).length;
     } catch (error) {
       problems.push(`${node.address}: ${(error as Error).message}`);
     }

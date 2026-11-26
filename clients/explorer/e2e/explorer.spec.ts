@@ -576,6 +576,7 @@ test("opens the arms view beside Return to Earth: the young tracers and the arms
   await page.getByRole("button", { name: "Show", exact: true }).click();
   const drawer = page.getByRole("complementary", { name: "Show" });
   await expect(drawer.getByLabel("Galaxy tracers", { exact: true })).toBeChecked();
+  await expect(drawer.getByLabel("Galaxy model", { exact: true })).toBeChecked();
   for (const domain of ["Stars", "Nearby galaxies", "Cosmic web"]) await expect(drawer.getByLabel(domain, { exact: true })).not.toBeChecked();
   for (const kind of ["Luminous hot stars", "Open clusters", "Star-forming regions"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "true");
   for (const kind of ["Classical Cepheids", "RR Lyrae stars", "Globular clusters"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "false");
@@ -593,6 +594,16 @@ test("opens the arms view beside Return to Earth: the young tracers and the arms
   await expect(page).not.toHaveURL(/view=arms/);
   await expect(page).toHaveURL(/age=30/);
   await expect(page).toHaveURL(/domain%3Astars/);
+});
+
+test("draws the Galaxy model as a model, counted apart in the key, and credits the papers its definition cites", async ({ page }) => {
+  await firstPoints(page);
+  await page.getByText("Key", { exact: true }).click();
+  const key = page.getByTestId("model-key");
+  await expect(key).toContainText("a model, not observed stars");
+  await expect(key).toContainText("Thin disc");
+  await page.getByText("Credits", { exact: true }).click();
+  await expect(page.getByTestId("model-credits")).toContainText("Reid");
 });
 
 test("opens on an address that asks for the arms view, in galactic axes, with what it draws", async ({ page }) => {
