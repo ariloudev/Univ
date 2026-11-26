@@ -121,10 +121,11 @@ test("AC-283: each decoded point gives its object id, its source and its kind of
   }
 });
 
-test('the decoder decodes tiles of encoding versions 1, 2, 3 and 4', () => {
-  assert.deepEqual(VERSIONS, [1, 2, 3, 4]);
-  // The current fixtures: the Galaxy tracers' tiles at version 4, every other domain's at 3.
-  assert.ok(fixtures.every((f) => [3, 4].includes(f.manifest.encoding.version)));
+test('the decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5', () => {
+  assert.deepEqual(VERSIONS, [1, 2, 3, 4, 5]);
+  // The current fixtures: the Galaxy tracers' tiles at version 4, the Galaxy model's at 5, every
+  // other domain's at 3.
+  assert.ok(fixtures.every((f) => [3, 4, 5].includes(f.manifest.encoding.version)));
   assert.deepEqual(version1.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 1]]);
   assert.deepEqual(version2.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 2]]);
   let checked = 0;
@@ -272,7 +273,7 @@ test('each decoded point of a version 4 tile gives its kind of object, or that i
       else seen.add(p.objectKind);
     });
   }
-  assert.equal(seen.size, 7, 'every kind of object');
+  assert.equal(seen.size, 8, 'every kind of object');
   assert.ok(none > 0, 'a point with none');
   // Only the tracers take version 4; the other domains keep version 3.
   for (const f of fixtures) {
@@ -283,6 +284,7 @@ test('each decoded point of a version 4 tile gives its kind of object, or that i
 test('a version 4 kind of object code beyond the manifest is refused', () => {
   const { manifest, node, tile } = everyTile.find((t) => t.manifest.encoding.version === 4)!;
   const bytes = bytesOf(tile.hex);
-  bytes[bytes.length - 1] = 8;
-  assert.throws(() => decodeTile(bytes, node, manifest), /kind of object code 8/);
+  const beyond = manifest.encoding.object_kinds!.length + 1;
+  bytes[bytes.length - 1] = beyond;
+  assert.throws(() => decodeTile(bytes, node, manifest), new RegExp(`kind of object code ${beyond}`));
 });

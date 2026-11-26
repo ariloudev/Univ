@@ -11,8 +11,9 @@ use std::mem::size_of;
 use serde::Serialize;
 
 use super::{
-    COLOUR_BANDS, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAGIC, MAX_TILE_BYTES,
-    OBJECT_KINDS, STEPS, has_age, has_colour, has_object_kind, max_points, point_bytes,
+    COLOUR_BANDS, COVERED, ColourBands, HEADER_BYTES, KINDS, LOG_AGE_CODE, MAGIC, MAX_TILE_BYTES,
+    MODEL_VERSION, OBJECT_KINDS, STEPS, has_age, has_colour, has_object_kind, max_points,
+    point_bytes,
 };
 use crate::object::ObjectKind;
 use crate::value::KindOfValue;
@@ -111,7 +112,7 @@ pub struct EncodingLayout {
     pub steps_per_edge: u32,
     pub header: Vec<HeaderField>,
     pub points: Vec<PointField>,
-    /// The kinds of value, coded by their index.
+    /// The kinds of value, coded by their index, which a version 5 point does not carry.
     pub kinds: Vec<KindOfValue>,
     /// The colour bands, coded by their index plus one, 0 coding none; none before version 2.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -243,9 +244,39 @@ fn points_v1() -> [Spec; 4] {
     ]
 }
 
+/// The point fields of version 5, the Galaxy model's: a position, its population and its flags.
+fn points_v5() -> Vec<Spec> {
+    let [position, ..] = points_v1();
+    vec![
+        position,
+        (
+            "population",
+            FieldType::U8,
+            1,
+            None,
+            "the code of the point's population in the Galaxy model's definition, from 1, which \
+             the manifest's encoding.populations repeats"
+                .to_owned(),
+        ),
+        (
+            "flags",
+            FieldType::U8,
+            1,
+            None,
+            format!(
+                "bit 0 ({COVERED}) set where real objects cover the point, which a client drawing \
+                 them hides; no other bit is set"
+            ),
+        ),
+    ]
+}
+
 /// The point fields of `version`, in order: version 1's, then version 2's colour, or version
-/// 3's value, after them, and version 4's kind of object last.
+/// 3's value, after them, and version 4's kind of object last; version 5's own.
 fn points_of(version: u16) -> Vec<Spec> {
+    if version == MODEL_VERSION {
+        return points_v5();
+    }
     let mut fields = points_v1().to_vec();
     if has_age(version) {
         fields.extend([
@@ -344,6 +375,7 @@ fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
         })
         .collect();
     let coloured = has_colour(version);
+    let model = version == MODEL_VERSION;
     let mut refusals = vec![
         "another magic",
         "an encoding version the decoder does not know, named",
@@ -351,9 +383,18 @@ fn layout_of(version: u16, point_bytes: usize) -> EncodingLayout {
         "fewer or more bytes than header_bytes + point_bytes n",
         "more than max_tile_bytes",
         "a node whose corners are not finite or whose step is not a positive normal number",
-        "an object id outside 1 to 2^53 - 1",
-        "a kind of value beyond kinds",
     ];
+    if model {
+        refusals.extend([
+            "a population code of 0, or one the manifest's encoding.populations does not give",
+            "a flag other than bit 0, covered",
+        ]);
+    } else {
+        refusals.extend([
+            "an object id outside 1 to 2^53 - 1",
+            "a kind of value beyond kinds",
+        ]);
+    }
     if has_age(version) {
         refusals.push(
             "a value code other than 0, 1 plus an index in colour_bands, or log_age_code, or a \

@@ -1,0 +1,82 @@
+format: yardlog/1
+key: 01a21314-dbf1-73fc-98fc-aec135a6e859
+branch: "feat/milky-way"
+base: "main"
+title: "feat/milky-way"
+revision: 10
+opened:
+  at: 2026-11-25T14:21:03Z
+  revision: 1
+  by:
+    host: claude-code
+    session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+stages:
+  - key: 01a21314-dbf1-73fc-98fc-aec254a403b6
+    id: spec
+  - key: 01a21314-dbf1-73fc-98fc-aec30a12dc78
+    id: build
+  - key: 01a21314-dbf1-73fc-98fc-aec409b398b6
+    id: mw
+  - key: 01a2134c-9eba-758e-aceb-11cfe568909b
+    id: pub
+  - key: 01a2134c-9eba-758e-aceb-11d18606a229
+    id: serve
+  - key: 01a217d8-5039-7108-a91c-b7c2f9bada63
+    id: galaxy-model
+closed:
+  at: 2026-11-26T12:33:02Z
+  revision: 10
+  by:
+    host: claude-code
+    session: "c9af65fa-1703-4232-b229-662e70de7bff"
+acts:
+  - at: 2026-11-25T14:21:03Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T14:21:22Z
+    revision: 2
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T14:23:15Z
+    revision: 3
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T14:28:38Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T14:53:24Z
+    revision: 5
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T15:21:58Z
+    revision: 6
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T15:22:12Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-25T16:04:43Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "6fd045ba-ba88-4b16-b646-cb12d6995a02"
+  - at: 2026-11-26T12:33:02Z
+    revision: 9
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+  - at: 2026-11-26T12:33:02Z
+    revision: 10
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"

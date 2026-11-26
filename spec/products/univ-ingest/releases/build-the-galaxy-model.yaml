@@ -1,0 +1,112 @@
+key: 01a213c1-93e0-7343-9f8d-9bad6b74f088
+slug: build-the-galaxy-model
+name: "Build the Galaxy model"
+body: |
+  Sampling a model of the whole Milky Way into points, so that the Galaxy can be seen and reused
+  as a spiral galaxy beyond the few kiloparsecs that its observed stars and tracers reach. The
+  model is cited, not observed: its populations, densities and arms come from papers, each number
+  of its definition cites one, and the few choices that no paper makes are marked as this
+  project's, each with its reason.
+
+  A model point stands for an equal share of the Galaxy's light in the V band, not for one star:
+  the populations take points in proportion to their light, so the young stars of the arms, few
+  by mass but bright, take far more points than their mass would give them.
+
+  Near the Sun, the release already holds real stars and tracers. A model point that real objects
+  cover is kept and marked, rather than left out, so that a client drawing the real objects hides
+  it and a client drawing the model alone still draws a whole Galaxy.
+realizes:
+  - 01a19f1e-d177-716d-b124-3cf0a98909c1
+  - 01a213c1-93e0-7343-9f8d-9b74cebead06
+requirements:
+  - key: 01a213c1-93e0-7343-9f8d-9baebd200763
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "read the Galaxy model from its definition file, in which every number cites the paper it comes from or is marked as this project's choice with its reason."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bafb71adc50
+        name: "Each cited number of the definition names its paper and the sentence, table or figure it was taken from."
+      - key: 01a213c1-93e0-7343-9f8d-9bb0c0e51a9d
+        name: "Each number that is this project's choice is marked as such and gives the reason for it."
+      - key: 01a213c1-93e0-7343-9f8d-9bb1aeebce25
+        name: "The definition gives six populations: the thin disc, the thick disc, the bar and bulge, the stellar halo, the young stars of the arms and the star-forming knots of the arms."
+      - key: 01a213c1-93e0-7343-9f8d-9bb2d2a3511b
+        name: "The definition gives each population its density in the Galaxy, its height above and below the Galactic plane, and either its stellar mass and mass-to-light ratio in the V band or its share of the Galaxy's light."
+      - key: 01a213c1-93e0-7343-9f8d-9bb39faba952
+        name: "The definition gives each population a display colour in sRGB, derived from a cited colour index or marked as this project's choice."
+  - key: 01a213c1-93e0-7343-9f8d-9bb4d6fea283
+    statement:
+      form: unwanted
+      if: "a number in the Galaxy model's definition neither cites a paper nor is marked as this project's choice"
+      system: "Univ Ingest"
+      shall: "refuse the Galaxy model and name the number."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bb542535a8b
+        name: "The message names the definition file, the field and the number."
+  - key: 01a213c1-93e0-7343-9f8d-9bb6e4e48489
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "sample 10,000,000 model points from the Galaxy model, each standing for an equal share of the Galaxy's light in the V band."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bb7a4016439
+        name: "The populations share the model points in proportion to their light in the V band, each population's light being its stellar mass divided by its mass-to-light ratio, or the share of the light its definition gives."
+      - key: 01a213c1-93e0-7343-9f8d-9bb84543dd7a
+        name: "The points of each population are drawn from its density, in Galactocentric coordinates."
+      - key: 01a213c1-93e0-7343-9f8d-9bb9af0bce6b
+        name: "Each model point's position is converted to ICRS Cartesian parsecs about the Solar System barycentre, with the Galactic Centre 8.15 kpc from the Sun toward l = 0°, b = 0° and the Sun above the Galactic plane by the height Reid et al. 2019 give."
+      - key: 01a213c1-93e0-7343-9f8d-9bba9db761af
+        name: "The sampling is seeded, with the seed recorded in the Galaxy model's tile manifest, so that building the release again gives the same model points."
+  - key: 01a213c1-93e0-7343-9f8d-9bbb91a65512
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bbc75cfbc04
+        name: "Along each arm, the model follows the fitted ranges of its fits in the order the definition names them for that arm, Reid et al. 2019's first, leaving out each stretch of a later fit that runs alongside an earlier fit within the distance the definition gives for one stretch."
+      - key: 01a213c1-93e0-7343-9f8d-9bbd9e6223e0
+        name: "Where no fitted range of an arm reaches, the model follows the extrapolations of its fits, in the same order and leaving out the same stretches, with the weight the definition gives an extrapolation."
+      - key: 01a213c1-93e0-7343-9f8d-9bbe211c23a8
+        name: "Beyond every fit and every extrapolation of an arm, the model places none of that arm's young stars or star-forming knots."
+      - key: 01a213c1-93e0-7343-9f8d-9bbfb0d5452a
+        name: "Each young star and star-forming knot is spread across its arm by a Gaussian whose width is the arm's cited width, scaled by the factor the definition gives its population."
+      - key: 01a213c1-93e0-7343-9f8d-9bc09db31c03
+        name: "The thin disc's density along each arm's path rises by the arm contrast the definition gives."
+  - key: 01a213c1-93e0-7343-9f8d-9bc13ee5d632
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "mark each model point that the real objects of the release cover."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bc2311c3ec6
+        name: "In each cube of 250 pc, the first n of a population's model points, in the order they were sampled, are marked covered, n being the number of real objects of that population's counterpart in the cube."
+      - key: 01a213c1-93e0-7343-9f8d-9bc342e650c3
+        name: "The counterparts of the young stars and the star-forming knots of the arms are the luminous hot stars, open clusters and star-forming regions of the Galaxy tracers domain."
+      - key: 01a213c1-93e0-7343-9f8d-9bc4c1df698a
+        name: "The counterparts of the thin disc, the thick disc, the bar and bulge and the stellar halo are the objects of the stars domain."
+      - key: 01a213c1-93e0-7343-9f8d-9bc5e95311fd
+        name: "A covered model point stays in its tile."
+  - key: 01a213c1-93e0-7343-9f8d-9bc69071f733
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "tile the model points as the Galaxy model scale domain, in encoding version 5."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bc7e4b77947
+        name: "The Galaxy model domain is in parsecs, with its own octree, built by the rule every scale domain's octree is built by."
+      - key: 01a213c1-93e0-7343-9f8d-9bc87f205531
+        name: "A point of a version 5 tile carries its quantized position, its population and whether real objects cover it, and no object id, source or kind of value."
+      - key: 01a213c1-93e0-7343-9f8d-9bc9e98850cd
+        name: "Only the tiles of the Galaxy model domain take version 5."
+  - key: 01a213c1-93e0-7343-9f8d-9bca88c3df17
+    statement:
+      form: ubiquitous
+      system: "Univ Ingest"
+      shall: "publish with each release the Galaxy model's definition as it was sampled."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bcb236f6459
+        name: "The release holds the Galaxy model's populations, each number with its citation or its reason as this project's choice, the structures of the arms it followed, its number of model points and its seed."
+      - key: 01a213c1-93e0-7343-9f8d-9bcc817decda
+        name: "Each population is named by the code its model points carry in the tiles."

@@ -149,8 +149,7 @@ impl R2Batch {
         let lines: Vec<String> = self
             .stderr
             .lock()
-            .map(|l| l.iter().filter(|l| !l.trim().is_empty()).cloned().collect())
-            .unwrap_or_default();
+            .map_or_default(|l| l.iter().filter(|l| !l.trim().is_empty()).cloned().collect());
         let said = if lines.is_empty() {
             "it wrote nothing to standard error".to_owned()
         } else {

@@ -46,11 +46,65 @@ pub enum Extent {
     Extrapolated,
 }
 
+/// The spiral arm a fit is a stretch of: one name for every paper's fit of one arm, so that
+/// fits of the same arm from several papers are known as one arm.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Arm {
+    /// The near 3-kpc arm.
+    #[serde(rename = "3-kpc-near")]
+    ThreeKpcNear,
+    /// The far 3-kpc arm, beyond the Galactic Centre.
+    #[serde(rename = "3-kpc-far")]
+    ThreeKpcFar,
+    Norma,
+    /// The Scutum-Centaurus arm, its outer part beyond the Outer arm included.
+    ScutumCentaurus,
+    SagittariusCarina,
+    Local,
+    Perseus,
+    Outer,
+}
+
+impl Arm {
+    /// Every arm, in order from the Galactic Centre outward at the Sun's azimuth.
+    pub const ALL: [Self; 8] = [
+        Self::ThreeKpcNear,
+        Self::ThreeKpcFar,
+        Self::Norma,
+        Self::ScutumCentaurus,
+        Self::SagittariusCarina,
+        Self::Local,
+        Self::Perseus,
+        Self::Outer,
+    ];
+
+    /// Its name as structure files write it, such as `scutum-centaurus`.
+    #[must_use]
+    pub fn slug(self) -> &'static str {
+        match self {
+            Self::ThreeKpcNear => "3-kpc-near",
+            Self::ThreeKpcFar => "3-kpc-far",
+            Self::Norma => "norma",
+            Self::ScutumCentaurus => "scutum-centaurus",
+            Self::SagittariusCarina => "sagittarius-carina",
+            Self::Local => "local",
+            Self::Perseus => "perseus",
+            Self::Outer => "outer",
+        }
+    }
+}
+
 /// A log-spiral arm as its paper's table gives it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawSpiral")]
 pub struct LogSpiral {
     pub extent: Extent,
+    /// The arm the fit is a stretch of.
+    pub arm: Arm,
+    /// How the paper defines its azimuth and pitch angles, where it differs from or leaves out
+    /// part of Reid et al. 2019's convention, and how its values are read in it.
+    pub convention: Option<String>,
     /// The azimuth of the kink, an angle.
     pub beta_kink: Cited,
     /// The Galactocentric radius at the kink, a length.
@@ -59,8 +113,9 @@ pub struct LogSpiral {
     pub pitch_inside: Cited,
     /// The pitch angle at azimuths above the kink, `ψ_>`.
     pub pitch_outside: Cited,
-    /// The intrinsic (Gaussian 1σ) width of the arm at the kink, a length; recorded, not drawn.
-    pub width: Cited,
+    /// The intrinsic (Gaussian 1σ) width of the arm at the kink, a length, where its paper gives
+    /// one; recorded, not drawn.
+    pub width: Option<Cited>,
     /// The range of azimuth the fit covers, from the lower end to the upper.
     pub fitted: [Cited; 2],
     /// The Galactic Centre's distance from the Sun that the fit assumes, a length.
@@ -89,11 +144,15 @@ struct Numbers {
 #[serde(deny_unknown_fields)]
 struct RawSpiral {
     extent: Extent,
+    arm: Arm,
+    #[serde(default)]
+    convention: Option<String>,
     beta_kink: Cited,
     r_kink: Cited,
     pitch_inside: Cited,
     pitch_outside: Cited,
-    width: Cited,
+    #[serde(default)]
+    width: Option<Cited>,
     fitted: [Cited; 2],
     r0: Cited,
     sun_height: Cited,
@@ -123,11 +182,14 @@ impl TryFrom<RawSpiral> for LogSpiral {
             }
         }
         for (name, c) in [
-            ("r_kink", &r.r_kink),
-            ("width", &r.width),
-            ("r0", &r.r0),
-            ("sun_height", &r.sun_height),
-        ] {
+            ("r_kink", Some(&r.r_kink)),
+            ("width", r.width.as_ref()),
+            ("r0", Some(&r.r0)),
+            ("sun_height", Some(&r.sun_height)),
+        ]
+        .into_iter()
+        .filter_map(|(name, c)| Some((name, c?)))
+        {
             if !is_length(c.unit()) || c.unit() == Unit::Megaparsec {
                 return Err(format!(
                     "a log spiral's {name} is a length within the Galaxy"
@@ -156,6 +218,8 @@ impl TryFrom<RawSpiral> for LogSpiral {
         }
         Ok(Self {
             extent: r.extent,
+            arm: r.arm,
+            convention: r.convention,
             beta_kink: r.beta_kink,
             r_kink: r.r_kink,
             pitch_inside: r.pitch_inside,
@@ -170,18 +234,20 @@ impl TryFrom<RawSpiral> for LogSpiral {
 }
 
 impl LogSpiral {
-    /// Each cited parameter but the fitted range, with its name.
-    #[must_use]
-    pub fn scalars(&self) -> [(&'static str, &Cited); 7] {
+    /// Each cited parameter but the fitted range, with its name: the width only where the
+    /// paper gives one.
+    pub fn scalars(&self) -> impl Iterator<Item = (&'static str, &Cited)> {
         [
-            ("beta_kink", &self.beta_kink),
-            ("r_kink", &self.r_kink),
-            ("pitch_inside", &self.pitch_inside),
-            ("pitch_outside", &self.pitch_outside),
-            ("width", &self.width),
-            ("r0", &self.r0),
-            ("sun_height", &self.sun_height),
+            ("beta_kink", Some(&self.beta_kink)),
+            ("r_kink", Some(&self.r_kink)),
+            ("pitch_inside", Some(&self.pitch_inside)),
+            ("pitch_outside", Some(&self.pitch_outside)),
+            ("width", self.width.as_ref()),
+            ("r0", Some(&self.r0)),
+            ("sun_height", Some(&self.sun_height)),
         ]
+        .into_iter()
+        .filter_map(|(name, c)| Some((name, c?)))
     }
 
     /// The fitted range, the one pair of bounds, with its name.

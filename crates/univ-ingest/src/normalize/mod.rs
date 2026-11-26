@@ -127,7 +127,8 @@ fn file_tables(files: &[RemoteFile]) -> Option<FileTables> {
 }
 
 /// Whether normalization gives `definition` entries: a provider's answers, files that are all
-/// FITS tables or all gzipped CSV tables, a prepared file, or the researched star distances, but
+/// FITS tables or all gzipped CSV tables, a prepared file, the researched star distances or arm
+/// tracers, but
 /// not grids, though their files be FITS, nor the researched structures.
 #[must_use]
 pub fn reads_rows(definition: &SourceDefinition) -> bool {
@@ -137,7 +138,10 @@ pub fn reads_rows(definition: &SourceDefinition) -> bool {
     match &definition.access {
         Access::Files { files } => file_tables(files).is_some(),
         Access::Repository { holds, .. } => {
-            matches!(holds, Holds::StarDistances | Holds::StarNames)
+            matches!(
+                holds,
+                Holds::StarDistances | Holds::StarNames | Holds::ArmTracers
+            )
         }
         _ => true,
     }
@@ -422,6 +426,9 @@ pub fn normalize_until(
         (Some((Holds::StarDistances, _)), [dir]) => {
             return crate::stars::normalize(definition, dir);
         }
+        (Some((Holds::ArmTracers, _)), [dir]) => {
+            return crate::tracers::normalize(definition, dir);
+        }
         (Some((Holds::StarNames, _)), [file]) => {
             return crate::star_names::normalize(definition, file);
         }
@@ -445,8 +452,7 @@ pub fn normalize_until(
         for file in files {
             let name = file
                 .file_name()
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default();
+                .map_or_default(|n| n.to_string_lossy().into_owned());
             let table = crate::fits::unpack(&name, read(file)?)
                 .and_then(|fits| bintable::first_table(&fits))
                 .map_err(|e| NormalizeError::table(&definition.id, file, e.to_string()))?;

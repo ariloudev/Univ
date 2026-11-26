@@ -65,6 +65,50 @@ pub struct Researched {
     pub method: String,
 }
 
+impl Researched {
+    /// The checks every researched distance or parallax of `file` takes, at `field`: a method
+    /// named, a positive value, and a citation that names one of the file's papers and holds
+    /// its number.
+    pub(crate) fn check(&self, file: &impl CitedFile, field: &str) -> Result<(), Problem> {
+        if self.method.trim().is_empty() {
+            return problem(&format!("{field}.method"), "is empty");
+        }
+        if self.value.value() <= 0.0 {
+            return problem(field, "is not positive");
+        }
+        file.check_citation(field, &self.value.cite, Some(&self.value))?;
+        file.check_value(field, &self.value)
+    }
+
+    /// The value as a univ-model distance, in parsecs, Euclidean, its method in its own words.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the value cannot stand as a distance, naming why.
+    pub fn distance(&self) -> Result<Distance, String> {
+        Distance::new(
+            self.value.quantity,
+            None,
+            Unit::Parsec,
+            self.value.kind,
+            (self.distance_kind, Method::Other(self.method.clone())),
+            Measure::Euclidean,
+            None,
+        )
+        .map_err(|e| e.to_string())
+    }
+
+    /// The value as a univ-model parallax, in degrees.
+    ///
+    /// # Errors
+    ///
+    /// Fails when the value cannot stand as an angle, naming why.
+    pub fn parallax(&self) -> Result<Value, String> {
+        Value::normalize(self.value.quantity, Unit::Degree, self.value.kind)
+            .map_err(|e| e.to_string())
+    }
+}
+
 /// A star file that cannot be used, naming the file, the field and what is wrong.
 pub type StarError = FileError;
 
@@ -117,14 +161,7 @@ impl StarFile {
             _ => {}
         }
         for (field, r) in self.researched() {
-            if r.method.trim().is_empty() {
-                return problem(&format!("{field}.method"), "is empty");
-            }
-            if r.value.value() <= 0.0 {
-                return problem(field, "is not positive");
-            }
-            self.check_citation(field, &r.value.cite, Some(&r.value))?;
-            self.check_value(field, &r.value)?;
+            r.check(self, field)?;
         }
         if let Some(p) = &self.parallax {
             if p.value.unit() != Unit::Milliarcsecond {
@@ -224,11 +261,7 @@ impl StarFile {
         }
         ids.into_iter()
             .filter_map(|id| self.papers.iter().find(|p| p.id == id))
-            .map(|p| PaperReference {
-                citation: p.reference.clone(),
-                doi: p.doi.clone(),
-                bibcode: p.bibcode.clone(),
-            })
+            .map(PaperReference::from)
             .collect()
     }
 
@@ -247,25 +280,13 @@ impl StarFile {
         let distances = self
             .distance
             .as_ref()
-            .map(|d| {
-                Distance::new(
-                    d.value.quantity,
-                    None,
-                    Unit::Parsec,
-                    d.value.kind,
-                    (d.distance_kind, Method::Other(d.method.clone())),
-                    Measure::Euclidean,
-                    None,
-                )
-            })
-            .transpose()
-            .map_err(|e| e.to_string())?;
+            .map(Researched::distance)
+            .transpose()?;
         let parallax = self
             .parallax
             .as_ref()
-            .map(|p| Value::normalize(p.value.quantity, Unit::Degree, p.value.kind))
-            .transpose()
-            .map_err(|e| e.to_string())?;
+            .map(Researched::parallax)
+            .transpose()?;
         // A parallax keeps its method, as a distance does in its own.
         let flags = self
             .parallax

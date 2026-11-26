@@ -48,6 +48,7 @@ pub fn context<'a>(
         cosmology,
         rules,
         definitions,
+        galaxy: None,
     }
 }
 

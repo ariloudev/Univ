@@ -1,0 +1,34 @@
+key: 01a213c1-93e0-7343-9f8d-9bcecdd53029
+slug: read-the-galaxy-model
+name: "Read the Galaxy model"
+body: "Reading the definition a release's Galaxy model was sampled from, so that a client can draw its model points by their populations, credit the papers the model rests on, and sample more of the same model with univ-model's sampler."
+tags:
+  - release-scoped
+realizes:
+  - 01a19f1e-d177-716d-b124-3cfb28b1ac2c
+  - 01a19f1e-d177-716d-b124-3cfcd0abb4c8
+requirements:
+  - key: 01a213c1-93e0-7343-9f8d-9bcfb256c935
+    statement:
+      form: event_driven
+      when: "a client requests the Galaxy model of a release"
+      system: "Univ Server"
+      shall: "return the Galaxy model's definition as the release holds it."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bd08943e485
+        name: "The response gives each population with its code, its display colour and its parameters, each with its value, unit, kind of value, uncertainty and citation."
+      - key: 01a213c1-93e0-7343-9f8d-9bd16fd3923b
+        name: "The response gives each number that is this project's choice with the reason for it."
+      - key: 01a213c1-93e0-7343-9f8d-9bd2da4e6351
+        name: "The response names the structures of the arms the model followed, by their ids."
+      - key: 01a213c1-93e0-7343-9f8d-9bd345455523
+        name: "The response gives the model's number of model points, its seed and the scale domain its points are tiled in."
+  - key: 01a213c1-93e0-7343-9f8d-9bd482300d10
+    statement:
+      form: unwanted
+      if: "the release holds no Galaxy model"
+      system: "Univ Server"
+      shall: "answer that the Galaxy model was not found."
+    criteria:
+      - key: 01a213c1-93e0-7343-9f8d-9bd59822c913
+        name: "The response status is 404 with problem details that name the release."

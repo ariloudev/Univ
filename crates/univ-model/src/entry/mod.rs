@@ -321,8 +321,8 @@ impl TryFrom<RawCatalogueEntry> for CatalogueEntry {
 pub enum EntryError {
     #[error("{0} is normalized to the wrong unit, {1:?}")]
     Unit(&'static str, Unit),
-    #[error("a position is published in an equatorial frame, not {0:?}")]
-    NotEquatorial(Frame),
+    #[error("a position is published in an equatorial or the galactic frame, not {0:?}")]
+    UnsupportedFrame(Frame),
     #[error("the ICRS position is not the one its native position gives")]
     InconsistentPosition,
     #[error("the heliocentric redshift is not the published velocity over c")]

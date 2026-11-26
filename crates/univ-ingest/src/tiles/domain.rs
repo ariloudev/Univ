@@ -23,11 +23,12 @@ use crate::source::{ScaleDomain, SourceDefinition};
 
 /// Every scale domain, in the order of their manifests and RNG streams: Galaxy tracers, added
 /// for release 13, last, so that every earlier domain keeps its stream and its tiles.
-pub const DOMAINS: [ScaleDomain; 4] = [
+pub const DOMAINS: [ScaleDomain; 5] = [
     ScaleDomain::Stars,
     ScaleDomain::NearbyGalaxies,
     ScaleDomain::CosmicWeb,
     ScaleDomain::GalaxyTracers,
+    ScaleDomain::GalaxyModel,
 ];
 
 /// The depth of the nearby galaxies domain, Mpc: that of the Updated Nearby Galaxy Catalog
@@ -76,6 +77,7 @@ pub fn name_of(domain: ScaleDomain) -> &'static str {
         ScaleDomain::NearbyGalaxies => "nearby_galaxies",
         ScaleDomain::CosmicWeb => "cosmic_web",
         ScaleDomain::GalaxyTracers => "galaxy_tracers",
+        ScaleDomain::GalaxyModel => "galaxy_model",
     }
 }
 

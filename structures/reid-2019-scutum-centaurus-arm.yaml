@@ -16,6 +16,7 @@ geometry:
   kind: log_spiral
   log_spiral:
     extent: fitted
+    arm: scutum-centaurus
     beta_kink:
       value: 23
       unit: degree

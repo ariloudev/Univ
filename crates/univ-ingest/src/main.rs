@@ -18,7 +18,7 @@ use univ_ingest::run::{
     StoreCommand, TileOptions, build_stage, display_for_stderr, drawing, fetch, interrupted,
     match_stage_until, normalize_stage_until, now, owner_interrupt, select, tiles_stage, until_set,
 };
-use univ_ingest::source::SourceDefinition;
+use univ_ingest::source::{ScaleDomain, SourceDefinition};
 use univ_ingest::state::DEFAULT_STATE;
 use univ_model::redshift::{CmbCorrection, DipoleModel};
 
@@ -145,11 +145,22 @@ impl Until {
     }
 }
 
+/// A scale domain as a build's options name it, such as `galaxy_tracers`.
+fn scale_domain(name: &str) -> Result<ScaleDomain, String> {
+    serde_json::from_value(serde_json::Value::String(name.to_owned())).map_err(|_| {
+        format!("{name:?} is no scale domain: stars, nearby_galaxies, cosmic_web or galaxy_tracers")
+    })
+}
+
 #[derive(Args)]
 struct FetchArgs {
     /// Take only this source; repeat for more. All sources when left out.
     #[arg(long = "source", value_name = "ID")]
     sources: Vec<String>,
+    /// Take only the researched structures of this scale domain, such as `galaxy_tracers`;
+    /// repeat for more. All of them when left out.
+    #[arg(long = "structures-of", value_name = "DOMAIN", value_parser = scale_domain)]
+    structures_of: Vec<ScaleDomain>,
     /// Make no request: use only what is on disk, and fail on the first item missing.
     #[arg(long)]
     offline: bool,
@@ -345,6 +356,7 @@ async fn main() -> ExitCode {
         repository: args.repository,
         cache: args.cache,
         sources: args.sources,
+        structures_of: args.structures_of,
     };
     let definitions = match select(&options) {
         Ok(definitions) => definitions,

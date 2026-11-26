@@ -324,6 +324,11 @@ impl Structure {
         if let Some(why) = &self.unplaced {
             evidence.free("unplaced", why);
         }
+        if let Some(StructureGeometry::LogSpiral(l)) = &self.geometry
+            && let Some(convention) = &l.convention
+        {
+            evidence.free("geometry.log_spiral.convention", convention);
+        }
         if let Some(StructureGeometry::Members(m)) = &self.geometry {
             match &m.source {
                 MemberSource::Table { number, .. } => {

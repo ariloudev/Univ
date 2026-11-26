@@ -39,7 +39,8 @@ pub struct PositionErrors {
     pub dec: Value,
 }
 
-/// A position as published and in ICRS at the epoch of its source.
+/// A position as published, in an equatorial frame or in galactic coordinates, and in ICRS at
+/// the epoch of its source.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "RawPosition")]
 pub struct Position {
@@ -73,18 +74,22 @@ impl TryFrom<RawPosition> for Position {
 
 impl Position {
     /// The position `native` in ICRS: an FK5 J2000 position rotated as Mignard & Froeschlé
-    /// 2000 found (see [`Frame::Fk5J2000`]), an ICRS one kept, both at the native epoch.
+    /// 2000 found (see [`Frame::Fk5J2000`]), a galactic one by the Hipparcos rotation, an ICRS
+    /// one kept, each at the native epoch.
     ///
     /// # Errors
     ///
-    /// Fails when the native frame is not equatorial, its unit is not an angle, the position
-    /// lies outside the sky, or an error is not an angle in degrees.
+    /// Fails when the native frame is neither equatorial nor galactic, its unit is not an
+    /// angle, the position lies outside the sky, or an error is not an angle in degrees.
     pub fn new(
         native: NativePosition,
         uncertainty: PositionUncertainty,
     ) -> Result<Self, EntryError> {
-        if !matches!(native.frame, Frame::Icrs | Frame::Fk5J2000) {
-            return Err(EntryError::NotEquatorial(native.frame));
+        if !matches!(
+            native.frame,
+            Frame::Icrs | Frame::Fk5J2000 | Frame::Galactic
+        ) {
+            return Err(EntryError::UnsupportedFrame(native.frame));
         }
         let factor = native
             .unit
@@ -98,6 +103,11 @@ impl Position {
         } else {
             lon_lat(between(native.frame, Frame::Icrs).apply(unit_vector(lon, lat)))
         };
+        // Published errors are in right ascension and declination: a galactic position takes
+        // none, rather than errors in l and b stored as if they were.
+        if native.frame == Frame::Galactic && uncertainty != PositionUncertainty::NoneReported {
+            return Err(EntryError::UnsupportedFrame(native.frame));
+        }
         if let PositionUncertainty::Published(errors) = &uncertainty {
             for error in [&errors.ra, &errors.dec] {
                 in_unit("position error", error, Unit::Degree)?;
@@ -149,12 +159,51 @@ mod tests {
     }
 
     #[test]
-    fn a_position_beyond_a_pole_or_in_a_non_equatorial_frame_is_refused() {
+    fn a_position_beyond_a_pole_or_in_a_supergalactic_frame_is_refused() {
         let none = PositionUncertainty::NoneReported;
         assert!(Position::new(native(Frame::Fk5J2000, 10.0, 90.5), none.clone()).is_err());
         assert_eq!(
-            Position::new(native(Frame::Galactic, 10.0, 10.0), none),
-            Err(EntryError::NotEquatorial(Frame::Galactic))
+            Position::new(native(Frame::Supergalactic, 10.0, 10.0), none),
+            Err(EntryError::UnsupportedFrame(Frame::Supergalactic))
         );
+    }
+
+    #[test]
+    fn a_galactic_position_with_published_errors_is_refused() {
+        // Errors are published in right ascension and declination; errors in l and b would be
+        // stored as if they were.
+        let error = Value::normalize(
+            crate::value::Quantity::new(
+                1.0,
+                Unit::Arcsecond,
+                crate::value::Uncertainty::NoneReported,
+            )
+            .unwrap(),
+            Unit::Degree,
+            crate::value::KindOfValue::Measured,
+        )
+        .unwrap();
+        let published = PositionUncertainty::Published(Box::new(PositionErrors {
+            ra: error,
+            dec: error,
+        }));
+        assert_eq!(
+            Position::new(native(Frame::Galactic, 10.0, 10.0), published),
+            Err(EntryError::UnsupportedFrame(Frame::Galactic))
+        );
+    }
+
+    #[test]
+    fn a_galactic_position_is_kept_as_published_and_rotated_to_icrs() {
+        // The Galactic Centre's direction, l = b = 0, lies at RA 266.405°, Dec −28.936° in the
+        // ICRS (ESA 1997, vol. 1, §1.5.3).
+        let p = Position::new(
+            native(Frame::Galactic, 0.0, 0.0),
+            PositionUncertainty::NoneReported,
+        )
+        .unwrap();
+        assert_eq!((p.native.frame, p.native.lon), (Frame::Galactic, 0.0));
+        assert!((p.icrs.ra - 266.404_988).abs() < 1e-5, "{}", p.icrs.ra);
+        assert!((p.icrs.dec + 28.936_175).abs() < 1e-5, "{}", p.icrs.dec);
     }
 }

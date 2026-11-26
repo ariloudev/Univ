@@ -9,6 +9,7 @@ import { AXES, type Axes } from "../scene/frames.ts";
 import { formatDistance, shortDistance } from "../scene/format.ts";
 import { KINDS, POINT_CSS, css } from "../scene/kinds.ts";
 import { Mark } from "./Mark.tsx";
+import { ModelCredits, ModelKey } from "./ModelKey.tsx";
 import { GREY_CSS, STAR_GRADIENT } from "../scene/starColour.ts";
 import { StarScale } from "./record/charts.tsx";
 import { DWARF_SEQUENCE_CITATION } from "../scene/dwarfSequence.ts";
@@ -43,7 +44,7 @@ export function Whereabouts({ controller, frame, grid, rings, outlines }: ViewPr
         {formatDistance(controller.view.distance)}
       </p>
       <label className="flex items-center gap-1.5">
-        <span className="text-dim">Axes</span>
+        <span className="text-dim max-sm:sr-only">Axes</span>
         <select
           value={controller.axes}
           onChange={(event) => {
@@ -58,9 +59,10 @@ export function Whereabouts({ controller, frame, grid, rings, outlines }: ViewPr
           ))}
         </select>
       </label>
-      <SwitchBox label="Grid" state={grid} textClass="text-dim" />
-      <SwitchBox label="Rings" state={rings} textClass="text-dim" />
-      <SwitchBox label="Outlines" state={outlines} textClass="text-dim" />
+      {/* On a phone, the boxes alone: their names stay for a screen reader and in their titles. */}
+      <SwitchBox label="Grid" state={grid} textClass="text-dim max-sm:sr-only" />
+      <SwitchBox label="Rings" state={rings} textClass="text-dim max-sm:sr-only" />
+      <SwitchBox label="Outlines" state={outlines} textClass="text-dim max-sm:sr-only" />
     </div>
   );
 }
@@ -87,14 +89,16 @@ export function ViewDrawer({ controller, frame, cosmology }: ViewProps & { cosmo
 }
 
 /** What the key reads of the catalogue. */
-export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "tracerKinds" | "failed" | "unread" | "credits">;
+export type Tally = Pick<Catalogue, "kinds" | "stars" | "tracers" | "tracerKinds" | "failed" | "unread" | "credits" | "model" | "modelPoints">;
 
 /** A part of the bottom bar that opens upward over the view. */
 function Popover({ label, children, width = "w-96", side = "left-0" }: { label: string; children: ReactNode; width?: string; side?: string }) {
   return (
     <details className="relative shrink-0">
       <summary className="cursor-pointer list-none rounded px-1.5 py-0.5 hover:text-accent [&::-webkit-details-marker]:hidden">{label}</summary>
+      {/* Focusable, so that a keyboard can scroll it once it holds more than it shows. */}
       <div
+        tabIndex={0}
         className={`${FLOATING} bottom-full mb-2 max-h-[60vh] max-w-[calc(100vw-1.5rem)] overflow-y-auto whitespace-normal ${side} ${width}`}
       >
         {children}
@@ -123,6 +127,7 @@ export function KeyBar({
   const kinds = KINDS.map((kind, i) => [kind, catalogue.kinds[i] ?? 0] as const);
   const stars = catalogue.stars.coloured + catalogue.stars.grey;
   const missing = catalogue.failed + catalogue.unread;
+  const model = catalogue.model();
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <div className="hidden min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap xl:flex">
@@ -136,6 +141,9 @@ export function KeyBar({
             {kind} {count.toLocaleString("en-GB")}
           </span>
         ))}
+        {model === undefined ? null : (
+          <span data-testid="model-count">model {catalogue.modelPoints.toLocaleString("en-GB")}</span>
+        )}
       </div>
       <Popover label="Key">
         <Key catalogue={catalogue} />
@@ -153,6 +161,7 @@ export function KeyBar({
             </li>
           ))}
         </ul>
+        <ModelCredits model={model} />
       </Popover>
     </div>
   );
@@ -180,6 +189,7 @@ function Key({ catalogue }: { catalogue: Tally }) {
         </p>
       </div>
       <TracerKey lines={catalogue.tracers()} kinds={catalogue.tracerKinds} />
+      <ModelKey model={catalogue.model()} points={catalogue.modelPoints} />
       <h2 className="flex items-center gap-2 font-semibold">
         <Swatch colour={POINT_CSS} />
         Other points, by the kind of value of each distance

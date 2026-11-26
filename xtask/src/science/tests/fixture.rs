@@ -47,7 +47,7 @@ fn table(name: &str) -> Table {
 
 /// The fixture's rows by table, each row from the columns given, every other column NULL.
 #[derive(Default)]
-struct Rows(BTreeMap<&'static str, Vec<Vec<SqlValue>>>);
+pub struct Rows(BTreeMap<&'static str, Vec<Vec<SqlValue>>>);
 
 impl Rows {
     fn add(&mut self, name: &'static str, values: &[(&str, SqlValue)]) {
@@ -148,6 +148,91 @@ fn galaxy(
     );
 }
 
+/// Source `id`, numbered `n`, of `domain`, its text columns `-`.
+fn source(rows: &mut Rows, n: i64, id: &str, domain: &str) {
+    let mut source = vec![
+        ("release", int(N)),
+        ("n", int(n)),
+        ("id", text(id)),
+        ("scale_domain", text(domain)),
+        ("entries", int(2)),
+    ];
+    let empty = [
+        "title",
+        "provider",
+        "citation",
+        "terms_url",
+        "terms_quote",
+        "credit",
+        "redistribution",
+        "review",
+        "access",
+        "cuts",
+        "fixes",
+    ];
+    source.extend(empty.iter().map(|c| (*c, text("-"))));
+    rows.add("sources", &source);
+}
+
+/// Researched arm tracers and the path of their arm: a straight path along x from the origin to
+/// 10 kpc, in pc as shapes are stored; tracer `near` 1 kpc from it and tracer `far` 6 kpc from
+/// it, both members of it through the masers' source; and tracer `lone`, placed but a member of
+/// no path.
+pub fn arm_tracers(rows: &mut Rows) {
+    source(rows, 2, "researched-arm-masers", "galaxy_tracers");
+    source(rows, 3, "researched-arm-clouds", "galaxy_tracers");
+    let points: Vec<[f64; 3]> = (0..=100)
+        .map(|i| [f64::from(i) * 100.0, 0.0, 0.0])
+        .collect();
+    let shape = serde_json::json!({ "geometry": { "points": points } });
+    rows.add(
+        "structure_details",
+        &[
+            ("release", int(N)),
+            ("id", text("test-arm")),
+            ("shape", text(&shape.to_string())),
+        ],
+    );
+    for (id, identifier, y_pc) in [(10, "near", 1000.0), (11, "far", 6000.0), (12, "lone", 0.0)] {
+        rows.add(
+            "objects",
+            &[
+                ("release", int(N)),
+                ("id", int(id)),
+                ("kind", term("body")),
+                ("placed", int(1)),
+                ("x", real(0.005)),
+                ("y", real(y_pc / 1e6)),
+                ("z", real(0.0)),
+            ],
+        );
+        rows.add(
+            "entries",
+            &[
+                ("release", int(N)),
+                ("object_id", int(id)),
+                ("entry", int(0)),
+                ("source", int(2)),
+                ("identifier", text(identifier)),
+                ("resolution", term("anchor")),
+            ],
+        );
+        if identifier == "lone" {
+            continue;
+        }
+        rows.add(
+            "memberships",
+            &[
+                ("release", int(N)),
+                ("object_id", int(id)),
+                ("structure", text("test-arm")),
+                ("source", int(2)),
+                ("value", text("scutum-centaurus")),
+            ],
+        );
+    }
+}
+
 fn fixture_rows() -> Rows {
     let mut rows = Rows::default();
     let empty = [
@@ -178,31 +263,8 @@ fn fixture_rows() -> Rows {
             &[("release", int(N)), ("id", int(i)), ("term", text(t))],
         );
     }
-    for (n, (id, domain)) in
-        (0i64..).zip([("gal-a", "nearby_galaxies"), ("gal-b", "nearby_galaxies")])
-    {
-        let mut source = vec![
-            ("release", int(N)),
-            ("n", int(n)),
-            ("id", text(id)),
-            ("scale_domain", text(domain)),
-            ("entries", int(2)),
-        ];
-        let empty = [
-            "title",
-            "provider",
-            "citation",
-            "terms_url",
-            "terms_quote",
-            "credit",
-            "redistribution",
-            "review",
-            "access",
-            "cuts",
-            "fixes",
-        ];
-        source.extend(empty.iter().map(|c| (*c, text("-"))));
-        rows.add("sources", &source);
+    for (n, id) in (0i64..).zip(["gal-a", "gal-b"]) {
+        source(&mut rows, n, id, "nearby_galaxies");
     }
     // A galaxy, the same galaxy again from another source 0.38′ away, a distant galaxy, and an
     // object with no distance.
@@ -249,7 +311,13 @@ fn file(dir: &Path, path: &str, bytes: &[u8], target: Target, files: &mut Vec<Ma
 /// Builds the fixture release in `dir`: its D1 files, a tile, a 2 × 2 × 2 label grid whose label
 /// is 1 at negative x and 2 at positive x, and its manifest.
 pub fn build(dir: &Path) {
+    build_with(dir, |_| {});
+}
+
+/// [`build`], with the rows `more` adds to the fixture's.
+pub fn build_with(dir: &Path, more: impl FnOnce(&mut Rows)) {
     let mut rows = fixture_rows();
+    more(&mut rows);
     let mut files = Vec::new();
     file(
         dir,

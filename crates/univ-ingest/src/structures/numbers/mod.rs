@@ -169,7 +169,108 @@ fn read_number(chars: &[char], i: usize) -> (usize, String) {
 /// Whether `text` holds `x` as a standalone number.
 #[must_use]
 pub fn has_number(text: &str, x: f64) -> bool {
-    numbers(text).contains(&x)
+    every_number(text).contains(&x)
+}
+
+/// The numbers `text` states as a citation shows them: [`numbers`], those LaTeX glues to a
+/// macro (`$2.0\pm0.2$`, `\narreq1.4`), and those written with a power of ten
+/// ([`scaled_numbers`]).
+fn every_number(text: &str) -> Vec<f64> {
+    let mut out = numbers(text);
+    if text.contains('\\') {
+        out.extend(numbers(&macros_apart(text)));
+    }
+    out.extend(scaled_numbers(text));
+    out
+}
+
+/// `text` with a space after each LaTeX macro's name, such as `\pm` or `\narreq`, so that a
+/// number the macro is glued to stands as a number.
+fn macros_apart(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 8);
+    let mut in_name = false;
+    for c in text.chars() {
+        if in_name && !c.is_ascii_alphabetic() {
+            out.push(' ');
+            in_name = false;
+        }
+        if c == '\\' {
+            in_name = true;
+        }
+        out.push(c);
+    }
+    out
+}
+
+/// The numbers `text` writes with a power of ten, as papers write masses: `A × 10^C`,
+/// `A\times 10^{C}`, and `A ± B × 10^C`, which states both `A·10^C` and `B·10^C`, `\pm` or
+/// `{\small\pm}` standing for the plus-minus sign as LaTeX writes it.
+#[must_use]
+pub fn scaled_numbers(text: &str) -> Vec<f64> {
+    let mut out = Vec::new();
+    for (at, _) in text.match_indices("10^") {
+        let rest = &text[at + 3..];
+        let exponent: String = match rest.strip_prefix('{') {
+            Some(inner) => inner
+                .split('}')
+                .next()
+                .unwrap_or_default()
+                .trim()
+                .to_owned(),
+            None => rest
+                .chars()
+                .take_while(|c| c.is_ascii_digit() || matches!(c, '-' | '+' | '\u{2212}'))
+                .collect(),
+        };
+        let exponent = exponent.replace('\u{2212}', "-").replace('+', "");
+        if exponent.parse::<i32>().is_err() {
+            continue;
+        }
+        let Some(before) = ["\\times", "×", "\\cdot", "·"]
+            .iter()
+            .find_map(|m| text[..at].trim_end().strip_suffix(m))
+        else {
+            continue;
+        };
+        let Some((b, rest)) = trailing_number(before.trim_end()) else {
+            continue;
+        };
+        let scaled = |mantissa: &str| format!("{mantissa}e{exponent}").parse::<f64>().ok();
+        // A value before a plus-minus sign shares the power of the error after it: the value
+        // first, as written.
+        let rest = rest.trim_end().trim_end_matches('}').trim_end();
+        let value = ["\\pm", "±"]
+            .iter()
+            .find_map(|m| rest.strip_suffix(m))
+            .map(|before| {
+                before
+                    .trim_end()
+                    .trim_end_matches("\\small")
+                    .trim_end()
+                    .trim_end_matches('{')
+                    .trim_end()
+            })
+            .and_then(trailing_number)
+            .and_then(|(a, _)| scaled(a));
+        out.extend(value);
+        out.extend(scaled(b));
+    }
+    out
+}
+
+/// The number that ends `text`, digits and a point, and what comes before it.
+fn trailing_number(text: &str) -> Option<(&str, &str)> {
+    let start = text
+        .char_indices()
+        .rev()
+        .take_while(|(_, c)| c.is_ascii_digit() || *c == '.')
+        .last()
+        .map(|(i, _)| i)?;
+    let number = &text[start..];
+    number
+        .chars()
+        .any(|c| c.is_ascii_digit())
+        .then_some((number, &text[..start]))
 }
 
 /// Whether `text` holds `x` as a standalone number of either sign, as an error is printed.
@@ -179,7 +280,7 @@ pub fn has_number(text: &str, x: f64) -> bool {
     reason = "the same number as written, not a near one"
 )]
 pub fn has_magnitude(text: &str, x: f64) -> bool {
-    numbers(text).iter().any(|n| n.abs() == x.abs())
+    every_number(text).into_iter().any(|n| n.abs() == x.abs())
 }
 
 /// Whether `text` holds `needle` as a whole: not inside a longer number or word.
@@ -327,6 +428,39 @@ fn sexagesimal(text: &str, units: &[char; 3], scale: f64) -> Option<Published> {
     })
 }
 
+/// The figures of `text` in order, as a value printed in several parts is compared with a cell
+/// that prints it otherwise: each run of digits and points with the minus before it,
+/// whatever letters or marks part them: `18h12m02.6822s` and `18 12 02.6822` give 18, 12 and
+/// 02.6822, `−18°40′25.002″` gives −18, 40 and 25.002.
+#[must_use]
+pub fn figures(text: &str) -> Vec<String> {
+    let text = text.replace('\u{2212}', "-");
+    let mut out: Vec<String> = Vec::new();
+    let mut current = String::new();
+    let mut minus = false;
+    // A point that ends a figure, such as a full stop after it, is not part of it.
+    let end = |current: &mut String, out: &mut Vec<String>| {
+        let figure = current.trim_end_matches('.');
+        if !figure.is_empty() && figure != "-" {
+            out.push(figure.to_owned());
+        }
+        current.clear();
+    };
+    for c in text.chars() {
+        if c.is_ascii_digit() || (c == '.' && !current.is_empty()) {
+            if current.is_empty() && minus {
+                current.push('-');
+            }
+            current.push(c);
+        } else {
+            end(&mut current, &mut out);
+            minus = c == '-';
+        }
+    }
+    end(&mut current, &mut out);
+    out
+}
+
 /// Whether a value in `unit` equals what `published` stands for, within the rounding of its
 /// last digit. A published number without a unit is in the value's unit.
 #[must_use]
@@ -341,94 +475,4 @@ pub fn consistent(value: f64, unit: Unit, published: &Published) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn numbers_are_whole_tokens_with_their_separators_and_signs() {
-        assert_eq!(numbers("about 1650 km/s"), [1650.0]);
-        assert!(!has_number("about 1650 km/s", 165.0));
-        assert_eq!(numbers("16,000±4,500 km s-1"), [16000.0, 4500.0]);
-        assert_eq!(
-            numbers("cz ~ 18 000 km s-1 in 22 2dF fields"),
-            [18000.0, 22.0]
-        );
-        assert_eq!(
-            numbers("[11,000, \u{2212}6,000, 10,000]"),
-            [11000.0, -6000.0, 10000.0]
-        );
-        assert_eq!(
-            numbers("z = 0.068 (+0.003, -0.007)"),
-            [0.068, 0.003, -0.007]
-        );
-        assert_eq!(
-            numbers("Lacerta-2.4, U1.11, DR17, 2dF, h^-1 Mpc, 10^5"),
-            [] as [f64; 0]
-        );
-        assert_eq!(numbers("G069.39+68.05 (z = 0.763)"), [0.763]);
-        assert_eq!(
-            numbers("a distance of $168^{+27}_{-15}$ pc"),
-            [168.0, 27.0, -15.0]
-        );
-        assert!(!numbers("a contrast of 10^{-3} or 10^{+5}").contains(&10.0));
-        assert_eq!(numbers("A2147/2152 cover 1/8 of it"), [1.0, 8.0]);
-        assert_eq!(
-            numbers("~300 - 400 Mpc, 12°, 5200,3000,4500"),
-            [300.0, 400.0, 12.0, 5200.0, 3000.0, 4500.0]
-        );
-        assert_eq!(numbers("z = 0.14, 0.26 and 0.30."), [0.14, 0.26, 0.3]);
-        assert_eq!(
-            stated_numbers("Table 1 of the paper lists 38 quasars (Fig. 2)."),
-            [38.0]
-        );
-        assert_eq!(
-            stated_numbers("HIP 9640 is HD 12533 and Gaia source 4933453324590295000: 8.30 mas"),
-            [8.3]
-        );
-    }
-
-    #[test]
-    fn a_published_form_is_read_with_the_rounding_of_its_last_digit() {
-        let p = published("16.7h").unwrap();
-        assert!((p.value - 250.5).abs() < 1e-12 && (p.half_step - 0.75).abs() < 1e-12);
-        let p = published("α = 03h19m").unwrap();
-        assert!((p.value - 49.75).abs() < 1e-12);
-        let p = published("δ = -50°02′").unwrap();
-        assert!((p.value + 50.0 + 2.0 / 60.0).abs() < 1e-12);
-        assert!((published("38◦45′").unwrap().value - 38.75).abs() < 1e-12);
-        let p = published("~1 Gpc").unwrap();
-        assert_eq!(
-            (p.value, p.half_step, p.unit),
-            (1000.0, 500.0, Some(Unit::Megaparsec))
-        );
-        assert_eq!(published("celestial South Pole").unwrap().value, -90.0);
-        assert!(consistent(
-            0.06,
-            Unit::Dimensionless,
-            &published("0.060").unwrap()
-        ));
-        assert!(!consistent(
-            9999.0,
-            Unit::Dimensionless,
-            &published("1650").unwrap()
-        ));
-        assert!(consistent(135.0, Unit::Degree, &published("9h").unwrap()));
-        assert!(contains_whole("R.A. = 13h25m.", "13h25m"));
-        assert!(!contains_whole("about 1650 km/s", "165"));
-        assert!(!contains_whole("about 2165 km/s", "165"));
-        assert_eq!(published("2 x 10^5"), None);
-    }
-
-    #[test]
-    fn a_bound_on_a_magnitude_stands_for_both_ends_of_its_range() {
-        for text in ["|b| < 10°", "|b| ≤ 10°"] {
-            let p = published(text).unwrap();
-            assert!(consistent(10.0, Unit::Degree, &p), "{text}");
-            assert!(consistent(-10.0, Unit::Degree, &p), "{text}");
-            assert!(!consistent(-9.0, Unit::Degree, &p), "{text}");
-        }
-        // A plain number keeps its sign.
-        let ten = published("10°").unwrap();
-        assert!(!consistent(-10.0, Unit::Degree, &ten));
-    }
-}
+mod tests;

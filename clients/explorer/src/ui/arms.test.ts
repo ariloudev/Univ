@@ -13,7 +13,7 @@ import { createStore } from "./store.ts";
 
 afterEach(() => history.replaceState(null, "", "/"));
 
-const DOMAINS = ["stars", "galaxy_tracers", "nearby_galaxies", "cosmic_web"];
+const DOMAINS = ["stars", "galaxy_tracers", "galaxy_model", "nearby_galaxies", "cosmic_web"];
 
 /** What the Show drawer offers and has off: `DOMAINS` (or `domains`) and nothing off, with `parts`. */
 function showOf(parts: Partial<Pick<ShowPanelProps, "onApply" | "age">>, domains: readonly string[] = DOMAINS) {
@@ -25,16 +25,25 @@ function showOf(parts: Partial<Pick<ShowPanelProps, "onApply" | "age">>, domains
 const ageOf = (choose: (cut: AgeCut) => void): AgeState => ({ cut: undefined, choose, held: () => ({ tracers: 0, aged: 0 }), frame: createStore(0) });
 
 describe("what the arms view draws (see-the-galaxys-arms-face-on)", () => {
-  it("turns the Galaxy tracers domain on and every other off", () => {
-    const hidden = applied(hiddenInAddress("?hide=domain:galaxy_tracers"), armsChanges(hiddenInAddress("?hide=domain:galaxy_tracers"), DOMAINS, []));
+  it("turns the Galaxy model domain on and every other off", () => {
+    const start = hiddenInAddress("?hide=domain:galaxy_model");
+    const hidden = applied(start, armsChanges(start, DOMAINS, []));
+    expect([...hidden.domain].sort()).toEqual(["cosmic_web", "galaxy_tracers", "nearby_galaxies", "stars"]);
+  });
+
+  it("turns the Galaxy tracers domain on in the model's place where the release holds no model", () => {
+    const start = hiddenInAddress("?hide=domain:galaxy_tracers");
+    const held = DOMAINS.filter((d) => d !== "galaxy_model");
+    const hidden = applied(start, armsChanges(start, held, []));
     expect([...hidden.domain].sort()).toEqual(["cosmic_web", "nearby_galaxies", "stars"]);
   });
 
-  it("turns the luminous hot stars, open clusters and star-forming regions on, and the Cepheids, RR Lyrae stars and globular clusters off", () => {
+  it("turns the luminous hot stars, open clusters, star-forming regions and molecular clouds on, and the Cepheids, RR Lyrae stars and globular clusters off", () => {
     const start = hiddenInAddress("?hide=object:open_cluster");
     const hidden = applied(start, armsChanges(start, DOMAINS, []));
     expect([...hidden.object].sort()).toEqual(["classical_cepheid", "globular_cluster", "rr_lyrae_star"]);
     for (const kind of ARM_TRACERS) expect(hidden.object.has(kind)).toBe(false);
+    expect(ARM_TRACERS).toContain("molecular_cloud");
   });
 
   it("turns the spiral arms and their extrapolations on and every other kind of structure off, the release's own kinds too", () => {

@@ -45,6 +45,7 @@
 mod cap;
 mod check;
 mod columns;
+pub mod d1_files;
 mod error;
 mod held;
 pub mod journal;

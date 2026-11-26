@@ -57,6 +57,7 @@ async fn the_fetch_ends_with_what_it_got_hit_failed_and_fetched() {
         repository: defs.path().to_owned(),
         cache: cache.path().to_owned(),
         sources: Vec::new(),
+        structures_of: vec![],
     };
     let first = rig(false);
     let report = Mutex::new(RunReport::new(&definitions));
@@ -97,6 +98,7 @@ async fn a_source_that_is_no_table_says_what_became_of_it_rather_than_not_normal
         repository: repository.path().to_owned(),
         cache: cache.path().to_owned(),
         sources: Vec::new(),
+        structures_of: vec![],
     };
     let rig = rig(true);
     let report = Mutex::new(RunReport::new(&definitions));

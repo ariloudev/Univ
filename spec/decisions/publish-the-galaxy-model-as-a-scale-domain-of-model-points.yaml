@@ -1,0 +1,87 @@
+key: 01a213c1-93e0-7343-9f8d-9b8834d491e0
+slug: publish-the-galaxy-model-as-a-scale-domain-of-model-points
+title: "Publish the Galaxy model as a scale domain of model points"
+context: "Observed stars and tracers show the Milky Way only within a few kiloparsecs of the Sun, so the Galaxy does not look like a spiral galaxy from outside. A model of its whole light, from cited parameters, fills it in; the model is to be reused by another client than Univ Explorer, a separate fiction project, which wants the Galaxy as visual points: a position, a colour and a brightness for each, about 10 million in all."
+state:
+  kind: accepted
+  selectedOption: 01a213c1-93e0-7343-9f8d-9b8ce502f902
+  outcome: "Univ Ingest samples 10,000,000 model points from a cited definition into a Galaxy model scale domain, tiled in encoding version 5, and publishes the definition with the release; univ-model holds the sampler."
+drivers:
+  - key: 01a213c1-93e0-7343-9f8d-9b89f443d391
+    kind: local
+    label: "Reuse"
+    statement: "Any client, not only Univ Explorer, gets the same model Galaxy from Univ Server."
+  - key: 01a213c1-93e0-7343-9f8d-9b8a4d9ea3bc
+    kind: local
+    label: "Apart from observation"
+    statement: "Model points are never taken for observed objects: they are not searched, looked up or counted as objects."
+  - key: 01a213c1-93e0-7343-9f8d-9b8b2e419b6a
+    kind: local
+    label: "Rows at scale"
+    statement: "Ten million points add no rows to the tables that grow with a release's objects."
+options:
+  - key: 01a213c1-93e0-7343-9f8d-9b8ce502f902
+    title: "Points in a scale domain"
+    description: "Univ Ingest samples the model points and tiles them as a scale domain of their own, with no object behind them, in an encoding without object ids; the definition is published beside them."
+  - key: 01a213c1-93e0-7343-9f8d-9b8dd78f2926
+    title: "Definition only"
+    description: "The release publishes only the definition, and each client samples its own points from it."
+  - key: 01a213c1-93e0-7343-9f8d-9b8eb4301a3e
+    title: "Model objects"
+    description: "Each model point is an object of the release, with rows in D1 like an observed star."
+assessments:
+  - option: 01a213c1-93e0-7343-9f8d-9b8ce502f902
+    driver: 01a213c1-93e0-7343-9f8d-9b89f443d391
+    rating: supports
+    rationale: "every client fetches the same tiles, and can still sample more of the same model with univ-model"
+  - option: 01a213c1-93e0-7343-9f8d-9b8ce502f902
+    driver: 01a213c1-93e0-7343-9f8d-9b8a4d9ea3bc
+    rating: supports
+    rationale: "a model point has no object id, source or kind of value, so no lookup, search or key reaches it"
+  - option: 01a213c1-93e0-7343-9f8d-9b8ce502f902
+    driver: 01a213c1-93e0-7343-9f8d-9b8b2e419b6a
+    rating: supports
+    rationale: "the points live in R2 tiles; the definition is one row per release"
+  - option: 01a213c1-93e0-7343-9f8d-9b8dd78f2926
+    driver: 01a213c1-93e0-7343-9f8d-9b89f443d391
+    rating: neutral
+    rationale: "each client must carry a sampler, and two samplers can drift apart"
+  - option: 01a213c1-93e0-7343-9f8d-9b8dd78f2926
+    driver: 01a213c1-93e0-7343-9f8d-9b8a4d9ea3bc
+    rating: supports
+    rationale: "nothing of the model enters the release's points"
+  - option: 01a213c1-93e0-7343-9f8d-9b8dd78f2926
+    driver: 01a213c1-93e0-7343-9f8d-9b8b2e419b6a
+    rating: supports
+    rationale: "one row per release"
+  - option: 01a213c1-93e0-7343-9f8d-9b8eb4301a3e
+    driver: 01a213c1-93e0-7343-9f8d-9b89f443d391
+    rating: supports
+    rationale: "every route of Univ Server serves them"
+  - option: 01a213c1-93e0-7343-9f8d-9b8eb4301a3e
+    driver: 01a213c1-93e0-7343-9f8d-9b8a4d9ea3bc
+    rating: conflicts
+    rationale: "model points would be found by name and volume queries beside observed stars"
+  - option: 01a213c1-93e0-7343-9f8d-9b8eb4301a3e
+    driver: 01a213c1-93e0-7343-9f8d-9b8b2e419b6a
+    rating: conflicts
+    rationale: "ten million objects add tens of millions of rows to D1"
+consequences:
+  - key: 01a213c1-93e0-7343-9f8d-9b8fe9e854fa
+    kind: cost
+    statement: "univ-model, the tile builder, the reference decoder, Univ Server's listing of scale domains and Univ Explorer each gain a fifth scale domain and encoding version 5."
+  - key: 01a213c1-93e0-7343-9f8d-9b906b2c3bb7
+    kind: benefit
+    statement: "A client draws the whole Galaxy from one manifest and its tiles, at the detail its view needs."
+  - key: 01a213c1-93e0-7343-9f8d-9b911da6f757
+    kind: obligation
+    statement: "Every number of the definition cites its paper or is marked as this project's choice, with its reason."
+subjects:
+  - role: affected
+    node: 01a213c1-93e0-7343-9f8d-9b74cebead06
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9bb6e4e48489
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9bc69071f733
+  - role: outcome
+    node: 01a213c1-93e0-7343-9f8d-9bcfb256c935

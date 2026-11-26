@@ -1,0 +1,273 @@
+key: 01a213bc-6148-7228-b0fc-442702c8012d
+id: plan
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442d7e566693
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the waves"
+    goal: "An approved build plan splits the work into waves with bounded tasks"
+    status: planned
+  - key: 01a213cf-3c35-7160-8edf-b0c4d5529881
+    at: 2026-11-25T17:44:38Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the waves"
+    goal: "An approved build plan splits the work into waves with bounded tasks"
+    status: active
+  - key: 01a213d9-ef16-725b-8970-d7461016befc
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the waves"
+    goal: "An approved build plan splits the work into waves with bounded tasks"
+    status: done
+blocks:
+  - key: 01a213d9-ee78-77a9-ba68-c425f41b89f8
+    id: build-plan
+    kind: plan
+    versions:
+      - key: 01a213d9-ee78-77a9-ba68-c426b08e2982
+        at: 2026-11-25T17:56:19Z
+        revision: 5
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Build plan: the Galaxy model in four waves"
+        markdown: |
+          # Build plan: the Galaxy model, the arms' far side and the far-side tracers
+
+          ## Context
+
+          The Milky Way in Univ is real data only, and real data reaches a few kpc from the Sun. In the arms
+          view it looks like a blob around the Sun with model lines, not a spiral galaxy. The aim is a
+          reusable dataset in Univ: a separate sci-fi project will read it from Univ Server.
+
+          The spec is approved and committed as `1b03135` on `product/galaxy-model`, cut from
+          `feat/milky-way`. It covers:
+          - a Galaxy model of 10,000,000 cited, seeded model points, tiled as a fifth scale domain in
+            encoding 5
+          - the arms' far side, taken from the best published fit of each stretch
+          - researched far-side tracers, with a science check
+          - covered points kept and marked
+          - a server route for the model's definition
+          - the explorer drawing the model as light
+
+          The work spans four subsystems and more than 8 tasks, so it goes in **four waves**. Each runs on
+          `stage/galaxy-model-<n>`, cut from `product/galaxy-model`, with its own Yard Log. Each ends with
+          `/simplify` and `/code-review` (their findings fixed), then `cargo xtask check`, plus
+          `cargo xtask integration` for waves 3 and 4, then a merge into `product/galaxy-model`.
+
+          ## Wave 1: the arms' far side and the tracers (Univ Ingest)
+
+          Criteria met: the changed criteria of *Record a researched structure*, and every criterion of
+          *Record a researched arm tracer*.
+
+          1. **Read the far-side papers and record their fits as structures.** Read from arXiv and the
+             journal pages, never from memory:
+             - Sun et al. 2024: outer Scutum–Centaurus, Table 1. Confirm the journal volume and the azimuth
+               convention.
+             - Hyland et al. 2026: Perseus, Table 3. Settle the disagreement between the table and §V.1 by
+               citing the table.
+             - Dame & Thaddeus 2008: the far 3-kpc arm. Its radius is assumed, so it is marked `inferred`.
+             - McClure-Griffiths et al. 2004: the distant fourth-quadrant arm, digitised from the text and
+               figure, `estimated`.
+
+             Each becomes a `structures/<paper>-<arm>-arm.yaml` file with its extrapolation, in the form of
+             `structures/reid-2019-perseus-arm.yaml`. The path code already supports a paper's own `r0`
+             (`crates/univ-ingest/src/structures/spiral.rs`).
+          2. **Give every spiral file an `arm` field.** Add it to `RawSpiral` and `LogSpiral`, and to
+             Reid's 14 files. Add a cited `convention` note for a fit given in another azimuth convention,
+             converted to Reid's. Extend `check_spiral` (`structures/check.rs:284`).
+
+             Tests in `crates/univ-ingest/tests/structures_spiral.rs`:
+             - one arm name per arm across papers
+             - the converted fits land on their papers' own l, v or l, d points
+             - an assumed radius is `inferred`
+          3. **Add a `researched-arm-tracers` source.** Create `sources/researched-arm-tracers.yaml`:
+             provider literature, `access: repository, path: tracers/, holds: arm_tracers`. Add `tracers/*.yaml`
+             for:
+             - the Sanna 2017 maser (parallax, measured)
+             - the Dame & Thaddeus 2011 Table 1 CO clouds (kinematic, `inferred`, naming the rotation curve
+               and R0)
+             - the Lin et al. 2026 masers, if their table is readable; otherwise this is reported and left
+               out
+
+             Reader: a new `Holds::ArmTracers`, modelled on `crates/univ-ingest/src/stars/mod.rs`, but each
+             tracer carries its own cited RA/Dec. An object kind for each entry: today it is per source
+             (`matching/rules.rs:44`, `assemble.rs:136`), so add a per-entry override.
+
+             The refusal of an uncited number reuses `cited.rs`.
+          4. **Add the object kind `MolecularCloud`.** Touches `ObjectKind`, `OBJECT_KINDS` (8 entries),
+             `object_kind_code`, the manifest's `object_kinds`, `format.rs`, the TypeScript decoder and its
+             fixtures, the API kind filter, `openapi.v1.json`, and the explorer's tracer colours, text and
+             arms choices.
+          5. **Add the science check: a tracer's distance from its arm.** A new Rust evaluator `Select`
+             variant in `xtask/src/science/` (precedent: `pairs.rs`). It gives each tracer's distance to
+             the nearest path point of each structure of its `arm`, and fails beyond 2 kpc. Add a rule in
+             `rules/science-checks.yaml`.
+          6. Add the new source to `scripts/mw-build.sh`, rebuild the Milky Way release, and run
+             `cargo xtask science`. Expected: Sanna about 0.25 kpc from Scutum–Centaurus.
+          7. Run the review and the gate, and link the trace (`loft reconcile --accept`).
+
+          ## Wave 2: the Galaxy model (univ-model and Univ Ingest)
+
+          Criteria met: *Build the Galaxy model* (all), the changed criteria of *Build octree tiles*, and
+          *Decode the tile format* v5.
+
+          1. **Tile encoding 5** in `crates/univ-model/src/tile/`. Each point is 8 bytes: position u16×3,
+             population u8, and flags u8 (bit 0 means covered; other bits are refused).
+             - Add `ModelPoint` and `DecodedModelPoint` types, because `DecodedPoint.id` cannot be optional.
+             - Add the `encode_model` and `decode` branches, `point_bytes`, `VERSIONS`, and the v5 layout in
+               `format.rs`.
+             - `has_object_kind` becomes `== 4`.
+             - Add `MODEL_ENCODING` to `manifest.rs`, with population codes and flag bits in place of
+               `kinds` and `point_source`, which become optional.
+             - Add the model's seed to the manifest, apart from the octree's subsample seed.
+             - Add v5 to the TypeScript decoder (`clients/tile-decoder/decode.ts`), with a
+               `simulated_model` fixture written by `tile_decoder_fixtures.rs`.
+          2. **`univ_model::galaxy_model`.** Pure code, building for wasm32. It holds:
+             - the definition types: populations, a `Cited` or `Choice { value, reason }` number,
+               densities, heights, mass and V-band M/L or light share, and sRGB colour
+             - validation that refuses an unmarked number, naming the field
+             - the arm stretches as Galactocentric polylines with width and weight
+             - the resolution of the best fit per azimuth, by the definition's order for each arm
+             - the seeded sampler, using `rand_chacha` with default features off (the dependency is
+               already in the workspace)
+             - the conversion from Galactocentric to ICRS pc, reusing the Hipparcos galactic rotation of
+               `univ-model`
+
+             Files are split by responsibility, at most 500 lines each. Unit tests cover:
+             - determinism for one seed
+             - the light shares
+             - the recovered disc scale length and scale height
+             - points lying within the arms' widths
+             - stretch priority, with no young points beyond the last stretch
+             - the refusal
+          3. **`rules/galaxy-model.yaml`, the definition.** Read the values from the papers:
+             - Bland-Hawthorn & Gerhard 2016: thin disc 2.6 kpc / 300 pc; thick disc 2.0 kpc / 900 pc; masses;
+               bar and bulge; halo slope and flattening
+             - Wegg et al. 2015: the bar
+             - Licquia & Newman 2015 or Bland-Hawthorn & Gerhard 2016: the star-formation rate, for the
+               young population's mass
+             - a cited stellar-population source: the V-band M/L and the colours
+             - cited young-star scale heights
+
+             Marked as the project's choices, each with a reason: the old disc's arm contrast, the young
+             stars' spread across an arm, the extrapolation weight, and the knots' light share and colour.
+             The definition is recorded as one of the release's rules (add to `RULES`,
+             `crossmatch/basis.rs:54`).
+          4. **The domain in Univ Ingest.**
+             - Add `ScaleDomain::GalaxyModel`, appended to `DOMAINS` (it gets stream 4), with
+               `scale_domain_unit` in pc.
+             - Make `octree::build` and `root_box` generic over positions (`tiles/octree.rs:41,128`).
+             - Add a `build_model_domain` beside `build_domain` (`tiles/mod.rs:287`), run in the tiles stage,
+               which has the crossed objects.
+             - Coverage: count the counterpart objects in 250 pc ICRS cubes anchored at the origin, and mark
+               the first n of each population in each cube, in sampling order.
+             - Skip v5 domains in the release check `TILE_OBJECTS` (`release/check.rs:107`).
+          5. **The definition in the release.** Add a per-release D1 table `galaxy_models` (release, domain,
+             points, seed, `definition` JSON), using `row!` in `univ-model/src/release/rows/mod.rs`. Update
+             `TABLES`, `schema.sql` with its scale comment, and bump `SCHEMA_VERSION` from 8 to 9 with a header
+             note. Then check that `publish`, `serve` and `migrate` accept a store of schema 8 that lacks
+             the table.
+          6. **Fixtures and the size of tests.** The release fixtures use a small definition (about 20,000
+             points). A test holds the production definition to 10,000,000 points.
+          7. **Build and look.** Build and publish the Milky Way release with `scripts/mw-build.sh`. Render
+             a face-on PNG from its tiles with a small test helper, so it can be compared with the
+             prototype. Check the build time and the R2 size: expect about 80 MB of tiles.
+          8. Run the review and the gate, and reconcile the trace.
+
+          ## Wave 3: Univ Server
+
+          Criteria met: *Read the Galaxy model* (all), and the changed criteria of *Fetch a tile manifest*
+          and *Decode the tile format*.
+
+          1. **Add `GET /v1/galaxy-model`** (release-scoped, `?release=`).
+             - `Endpoint::GalaxyModel` in `crates/univ-api/src/routes.rs`; `ROUTES` grows to 34.
+             - The handler goes in a new `galaxy_model.rs`. It reads the `galaxy_models` row via
+               `backend.releases` and `json_column`, and is kept per release in `kept.rs`.
+             - Response types go in `univ-model/src/api/galaxy_model.rs` with `utoipa::ToSchema`.
+             - Add the problem `GalaxyModelNotFound` (404) and its `refusals.rs` row.
+             - Register it in `openapi.rs` paths (`roots` becomes 32), and rewrite the snapshot.
+          2. **The listing and the tile format.** The domain listing needs no code change beyond the unit,
+             but its tests do: `bulk_tests.rs`, and the `testkit.rs` seed rows.
+             - `tile_format` serves v5's layout.
+             - e2e tests in `crates/univ-server/tests/e2e.rs`:
+               - the route returns the definition
+               - an unknown release gives 404 problem details
+               - `galaxy_model` is in the listing
+               - the manifest test branches on v5
+          3. Run the review, the gate, `cargo xtask integration`, and the trace.
+
+          ## Wave 4: Univ Explorer
+
+          Criteria met: *See the Galaxy model* (all), and the changed criterion of *See the Galaxy's arms
+          face-on*.
+
+          1. **Read the model and its tiles.**
+             - Add a zod `GalaxyModel` and `api/galaxyModel.ts`.
+             - `ManifestCheck` accepts v5.
+             - `catalogue/tiles.ts` `batchOf` gets a model branch: colours per population from the
+               definition, a covered array, a population array, and no ids.
+          2. **Draw the points.**
+             - Model batches draw with the existing additive points pass (`renderer.ts:377`).
+             - They have equal brightness: the point size and opacity of the domain.
+             - Add an `a_covered` attribute and `u_hideCovered` uniforms for each population group, set from
+               whether `galaxy_tracers` or `stars` is on. This goes through `scene/masks.ts`, so the counts
+               agree with what is drawn.
+             - Kind and source masks are zeroed for the model domain.
+          3. **Mark them as a model.**
+             - Model batches are never pushed to `world.pickable` (`ui/useWorld.ts:131`).
+             - Add a `ModelKey` in `ui/Panels.tsx` ("a model, not observed stars") with its own count.
+             - `credits()` adds the definition's papers while the domain is on.
+             - Add a `galaxy_model` column name in `ui/show/Points.tsx`.
+          4. **The arms view.** `ui/arms.ts` `only(domains, [TRACERS_DOMAIN, MODEL_DOMAIN])`, with
+             `arms.test.ts` updated.
+          5. **Tests.**
+             - Vitest for: batch decoding, covered masks, no picking, the key count, credits, and the arms
+               view.
+             - Playwright (`e2e/explorer.spec.ts`), against a fixture release that holds the model: the
+               arms view turns on "Galaxy model", and the key shows the model line.
+          6. **Tune the look against the prototype** with `cargo xtask explore` on the Milky Way state.
+             This covers glow, point size and exposure. Then add a README screenshot.
+          7. Run the review, the gate, `cargo xtask integration`, and the trace. Then close the Yard Log of
+             `product/galaxy-model`. The merge into `develop` waits for the owner to ask.
+
+          ## Verification (end to end)
+
+          - `cargo test -p univ-model galaxy_model`, `cargo test -p univ-ingest structures_spiral tiles`,
+            and `node --test` for the tile decoder.
+          - `scripts/mw-build.sh --publish`, then `cargo xtask science <release-dir>`. The tracer check
+            passes, with Sanna within about 0.3 kpc of Scutum–Centaurus.
+          - A face-on render of the built tiles, compared with the prototype
+            (`/private/tmp/claude-501/-Users-admin-Univ/c9af65fa-1703-4232-b229-662e70de7bff/scratchpad/mw_model.jpg`).
+          - `curl` through `cargo xtask serve`: check `/v1/galaxy-model` and `/v1/scale-domains`.
+          - `UNIV_LOCAL_STATE=.cache/univ-ingest/milky-way/wrangler cargo xtask explore`: the arms view shows
+            the spiral, real tracers replace the covered model points, and clicking a model point names
+            nothing.
+          - At the end of each wave: `cargo xtask check` and, for waves 3 and 4, `cargo xtask integration`.
+
+          ## Risks
+
+          - **Far-side papers may be unreadable or inconsistent.** That applies to Hyland 2026, Lin 2026 and
+            the azimuth convention of Sun 2024. Such a source is left out and reported, never guessed.
+          - **Schema 9.** Additive, but publish, `migrate` and `serve` must accept a store without the
+            table.
+          - **Look tuning is subjective.** The data rule (equal light per point) is fixed. Only the
+            explorer's drawing is tuned.
+    responses:
+      - key: 01a213d9-eedd-723b-8fdc-f4b7910ce3a2
+        at: 2026-11-25T17:56:19Z
+        revision: 6
+        by:
+          name: "Sergey Lobko-Lobanovsky"
+          email: "2330548+ariloudev@users.noreply.github.com"
+        channel: terminal
+        verdict: approved

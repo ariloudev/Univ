@@ -1,0 +1,213 @@
+key: 01a21466-c82a-7676-a10d-d660d8a80d72
+id: plan
+versions:
+  - key: 01a21466-c82a-7676-a10d-d6637cb4a8cf
+    at: 2026-11-25T20:30:09Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the Galaxy model"
+    goal: "An approved plan of wave 2's tasks: tile encoding 5, the univ-model sampler, the cited definition, the galaxy_model domain in Univ Ingest, the definition in the release (schema 9)"
+    status: active
+  - key: 01a21499-e418-7114-ab74-6f891e8c229d
+    at: 2026-11-25T21:25:59Z
+    revision: 4
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the Galaxy model"
+    goal: "An approved plan of wave 2's tasks"
+    status: done
+blocks:
+  - key: 01a21499-e38d-7644-afd2-fe35b6d0469b
+    id: wave-plan
+    kind: plan
+    versions:
+      - key: 01a21499-e38d-7644-afd2-fe36f9d7c644
+        at: 2026-11-25T21:25:59Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Wave 2 plan: the Galaxy model"
+        markdown: |
+          # Wave 2 plan: the Galaxy model (`stage/galaxy-model-2`)
+
+          ## Context
+
+          Wave 1 is merged into `product/galaxy-model`. Milky Way release 3 now holds the Galaxy's 22 arm
+          structures (Reid 2019 and the far-side fits) and 18 far-side tracers, and every arm check passes.
+
+          Wave 2 builds what the approved spec calls the **Galaxy model**: 10,000,000 seeded model points
+          sampled from a cited definition, published as a fifth scale domain, `galaxy_model`, in tile
+          encoding 5, with the definition stored in the release.
+
+          Criteria it meets:
+          - every criterion of *Build the Galaxy model*
+          - *Build octree tiles* AC-91 (the model's root in parsecs)
+          - *Decode the tile format*, version 5: AC-345, and the new criterion that a v5 point gives its
+            population and whether it is covered
+
+          The cited values are being read from the papers by a background agent. They cover:
+          - Bland-Hawthorn & Gerhard 2016
+          - Wegg, Gerhard & Portail 2015
+          - Licquia & Newman 2015
+          - Flynn et al. 2006
+          - a stellar-population source for the V-band M/L and the colours
+          - young-star scale heights
+
+          Its drafts land in the scratchpad's `model/` folder. Each value becomes a cited number in
+          `rules/galaxy-model.yaml`; a value no paper gives becomes a labelled choice with its reason.
+
+          ## Tasks
+
+          1. **Tile encoding 5** (`crates/univ-model/src/tile/`)
+             - Each point is 8 bytes: quantized position u16×3, population u8, and flags u8. Bit 0 is
+               *covered*; any other set bit is refused.
+             - New types `ModelPoint` and `DecodedModelPoint`, with `encode_model` and `decode_model`. The
+               object decoder refuses v5 and names the model decoder.
+             - `point_bytes` and `VERSIONS` gain v5. `format::layout(5)` describes it, so the server's
+               `/v1/tile-format` lists it.
+             - `object::has_object_kind` becomes `== 4`.
+             - Manifest: a `MODEL_ENCODING` with `populations` (code and name) and `flags`. The `kinds` and
+               `point_source` fields become optional and are skipped when absent, so existing manifests'
+               JSON does not change.
+             - `Sampling` gains `model_seed`, kept apart from the octree's subsample seed.
+             - TypeScript decoder (`clients/tile-decoder/decode.ts`): `decodeModelTile`, with v5 in its
+               layout comment and `VERSIONS`.
+             - `tile_decoder_fixtures.rs` writes a `simulated_model` fixture.
+             - Tests: a round trip; v5 is 8 bytes per point; an unknown flag and an unknown population are
+               refused; the object decoder refuses v5; `decode.test.ts` covers v5.
+
+          2. **`univ_model::galaxy_model`.** Pure code that builds for wasm32. Its RNG is `rand_chacha` with
+             default features off; it already sits in the lock file through univ-ingest. Each file stays under
+             500 lines.
+             - `model.rs`, the published definition (serde, `utoipa` behind `openapi`):
+               - `Model { points, seed, frame { r0, sun_height }, populations, arms, choices }`
+               - `Population { code, id, name, density, height, light, colour }`, where `light` is either
+                 mass with V-band M/L or a share
+               - every number is a `Parameter { value, unit, kind, uncertainty, citation | choice }`
+             - `density.rs`, a sampler for each population:
+               - **Discs:** exponential in R, sampled as Gamma(2, R_d) and truncated at the cited or chosen
+                 edge, with an exponential profile in z.
+               - **Bar and bulge:** the cited triaxial profile at the bar angle.
+               - **Halo:** a flattened power law between its radii.
+               - **Young stars:** along the arm stretches, spread across each arm by a Gaussian of the
+                 arm's width times the population's factor.
+               - **Knots:** clustered along the stretches.
+             - `arms.rs`, the best fit of each stretch. The input is each fit's path in Galactocentric kpc,
+               with its azimuth, extent, width and order in the definition. At each degree of azimuth of an
+               arm, the stretch takes:
+               - the first fitted range that covers it;
+               - failing that, the first extrapolation, at the definition's extrapolation weight;
+               - failing that, nothing.
+
+               A fit without a width takes the width of the arm's first fit that has one.
+             - `light.rs`: the point budget is split by V-band light, mass ÷ M/L or the given share.
+               Rounding goes to the largest remainders, so the total is exactly `points`.
+             - `frame.rs`: Galactocentric to ICRS parsecs about the barycentre. The Sun is at R0 = 8.15 kpc
+               toward l = 0°, b = 0°, and at Reid's height above the plane. The rotation is
+               `position::between(Galactic, Icrs)`.
+             - `cover.rs`: in each 250 pc ICRS cube anchored at the origin, mark the first n of each
+               population's points as covered, in sampling order. n is the number of counterpart objects
+               in that cube.
+             - Unit tests:
+               - determinism for one seed
+               - the light shares and the exact total
+               - the recovered disc scale length and height
+               - young points within their arm's widths
+               - stretch priority, with nothing beyond the last stretch
+               - the conversion places the Galactic Centre 8.15 kpc toward l = 0°
+               - coverage counts, and the order of the covered points
+
+          3. **The definition file and its reader**
+             - `rules/galaxy-model.yaml` is written from the agent's verified values.
+               - Each number is cited the way structure files cite (`Cited`, from `structures/cited.rs`),
+                 or is a `choice` with its `reason`.
+               - Each population's sRGB is recorded beside the cited B−V it comes from. A wave-4 explorer
+                 test recomputes it with `starColour.ts`.
+               - The knots' colour and light share are choices.
+             - The reader goes in `crates/univ-ingest/src/galaxy_model/`. It reuses `CitedFile`,
+               `Evidence` and the citation checks, refuses an unmarked number naming the file, field and
+               number, and converts the file to `univ_model::galaxy_model::Model`.
+             - `"galaxy-model"` joins `RULES` (`crossmatch/basis.rs`), so the release records the file.
+             - Tests:
+               - The repository's file reads and holds six populations, each with its density, height,
+                 light and colour.
+               - An unmarked number is refused with its field named.
+               - The production file asks for exactly 10,000,000 points.
+
+          4. **The `galaxy_model` domain in Univ Ingest**
+             - `ScaleDomain::GalaxyModel` joins `source/mod.rs`, appended to `tiles/domain.rs`'s `DOMAINS`
+               as stream 4, with `scale_domain_unit` in pc. A source definition naming it is refused.
+             - `octree::build` and `root_box` become generic over a `Positioned` trait. `DomainPoint` and
+               `ModelPoint` both implement it, so the same subsample rule builds both.
+             - `build_model_domain` goes beside `build_domain` (`tiles/mod.rs`). It runs in the tiles stage,
+               which holds the arm structures in `crossed.basis.structures` and the crossed objects for the
+               coverage counts.
+               - Counterparts of the young stars and knots: placed Galaxy tracers of kind luminous hot
+                 star, open cluster or star-forming region.
+               - Counterparts of the other populations: placed objects of the stars domain.
+             - A build whose structures include no spiral arm builds no Galaxy model, and says so in its
+               log. The model needs the arms.
+             - The release check `TILE_OBJECTS` (`release/check.rs:107`) skips v5 tiles.
+             - Release fixtures sample a 20,000-point model, set in `release_fixture`; only the production
+               file asks for 10M.
+             - Tests:
+               - The domain is in pc, with its own root.
+               - Its tiles are v5 and only its.
+               - The model seed is in the manifest.
+               - Covered points stay in their tiles.
+               - A build with no arms has no model.
+
+          5. **The definition in the release (schema 9)**
+             - New row `GalaxyModelRow` (`galaxy_models`, per release, key `(domain, release)`, with
+               `points`, `seed` and the `definition` JSON). It is appended to `TABLES` (34) and to
+               `schema.sql`, with its `-- Scale: per release.` comment and a version-9 note.
+             - `SCHEMA_VERSION` becomes 9; this is additive, as schema 7 was.
+             - The row is written in `d1_rows` beside `domain_rows`. Its content holds nothing
+               build-specific, so an unchanged model shares its row (`tests/reindex.rs`).
+             - Tests that hard-code the old schema or file counts are updated: `release/tests.rs` (`== 8`),
+               `tests/schema8.rs:208`, `tests/release_cli.rs` (39 files becomes 41).
+             - A test checks that the release holds the definition, with each population named by its code.
+             - `cargo xtask science` on a release built before schema 9 must still load. Its `DELETE` of
+               each table and its fingerprint comparison skip a table the release's schema lacks.
+
+          6. **Build and look**
+             - Rebuild and publish the Milky Way release with `scripts/mw-build.sh`. Record the build time
+               and the model's tile bytes (expected about 80 MB).
+             - Render a face-on PNG of the model's tiles with a scratchpad script that decodes v5 tiles, and
+               compare it with the prototype.
+             - Run `cargo xtask science`.
+
+          7. **Review and gate**: `/simplify` and `/code-review` on the wave's diff, then `cargo xtask check`
+             (with rustup first on the path), then link the trace and accept it. Close the Yard Log and merge
+             into `product/galaxy-model`.
+
+          ## Verification
+
+          - `cargo test -p univ-model tile galaxy_model`; `cargo test -p univ-ingest`; `node --test` in
+            `clients/tile-decoder`.
+          - `scripts/mw-build.sh --offline --publish`. The build log shows the `galaxy_model` domain with
+            10,000,000 points, and the release's `galaxy_models` row holds the definition.
+          - A face-on render of the model's tiles shows the bar, the arms over the whole disc and the
+            covered points near the Sun.
+          - `cargo xtask check` passes, and `loft reconcile --fail-on warning` is clean.
+
+          ## Open points to settle while building
+
+          - **Missing values.** Some values the papers may not give (the old disc's arm contrast, the
+            knots' share, the young population's mass) become labelled choices. They're listed in the Yard
+            Log as they are decided.
+          - **Far-side arm widths.** McClure-Griffiths 2004 and Sun 2024 give none. Their stretches take
+            the width of the arm's first fit that has one, which is a labelled choice.
+    responses:
+      - key: 01a21499-e3e2-71a2-8f7c-1fba7c4129e4
+        at: 2026-11-25T21:25:59Z
+        revision: 3
+        by:
+          name: "Sergey Lobko-Lobanovsky"
+          email: "2330548+ariloudev@users.noreply.github.com"
+        channel: terminal
+        verdict: approved

@@ -35,13 +35,16 @@ macro_rules! row {
     };
 }
 
+mod model;
 mod objects;
 mod shards;
 mod sources;
 
+pub use model::GalaxyModelRow;
 pub use objects::{
     ChainRow, DesignationRow, EntryFlagRow, EntryReferenceRow, EntryRow, MeasurementDetailRow,
     MeasurementRow, MembershipRow, NameRow, ObjectLinkRow, ObjectRelationRow, ObjectRow, PARAMS,
+    name_key,
 };
 pub use shards::{ObjectShardRow, ReleaseShardRow, ShardCellRow};
 pub use sources::{CatalogueError, CatalogueUncertainty, SourceReadingRow, SourceTermRow};
@@ -440,7 +443,7 @@ row! {
 }
 
 /// Every table a release writes rows to, in the order its D1 files load them.
-pub const TABLES: [Table; 33] = [
+pub const TABLES: [Table; 34] = [
     ReleaseRow::TABLE,
     TermRow::TABLE,
     SourceRow::TABLE,
@@ -474,6 +477,7 @@ pub const TABLES: [Table; 33] = [
     ReleaseShardRow::TABLE,
     ReleaseFileRow::TABLE,
     SourceReadingRow::TABLE,
+    GalaxyModelRow::TABLE,
 ];
 
 row! {
@@ -487,13 +491,4 @@ row! {
         path: String,
         sha256: String,
     }
-}
-
-/// The key a common name is looked up by: lower case, without white space.
-#[must_use]
-pub fn name_key(name: &str) -> String {
-    name.chars()
-        .filter(|c| !c.is_whitespace())
-        .flat_map(char::to_lowercase)
-        .collect()
 }

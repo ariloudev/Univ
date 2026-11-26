@@ -1,0 +1,319 @@
+{
+  "format": "univ-tile-manifest",
+  "manifest_version": 1,
+  "release": "1",
+  "scale_domain": "galaxy_model",
+  "frame": {
+    "name": "ICRS equatorial Cartesian",
+    "origin": "Solar System barycentre",
+    "axes": "x toward (RA, Dec) = (0 deg, 0 deg), y toward (90 deg, 0 deg), z toward Dec = +90 deg",
+    "epoch": "each object's position at the epoch of its preferred sky position, not propagated"
+  },
+  "unit": "pc",
+  "cosmology": {
+    "name": "Planck 2018 (A&A 641, A6, Table 2: TT,TE,EE+lowE+lensing+BAO)",
+    "hubble_constant": 67.66,
+    "omega_matter": 0.3111
+  },
+  "rotations": {
+    "applied_as": "row-major matrix times the ICRS column vector [x, y, z]",
+    "to_galactic": [
+      [
+        -0.05487556041621561,
+        -0.873437090234885,
+        -0.48383501554871317
+      ],
+      [
+        0.49410942787558354,
+        -0.44482962996001124,
+        0.7469822444972188
+      ],
+      [
+        -0.8676661490190047,
+        -0.1980763734312013,
+        0.45598377617506697
+      ]
+    ],
+    "galactic_basis": "Hipparcos catalogue (ESA 1997, vol. 1, sec. 1.5.3): the transpose of A_G",
+    "to_supergalactic": [
+      [
+        0.37501547780780486,
+        0.3413589618290254,
+        0.861880183426672
+      ],
+      [
+        -0.8983204556165199,
+        -0.09572714072498714,
+        0.4287851134887344
+      ],
+      [
+        0.22887496679521785,
+        -0.9350456532745492,
+        0.27075057870087615
+      ]
+    ],
+    "supergalactic_basis": "Lahav et al. 2000 (MNRAS 312, 166): pole at galactic (47.37, 6.32) deg, origin at (137.37, 0) deg"
+  },
+  "encoding": {
+    "version": 5,
+    "header_bytes": 48,
+    "point_bytes": 8,
+    "steps_per_edge": 65536,
+    "max_tile_bytes": 1048576,
+    "point_source": "none: a model point stands for a share of the Galaxy's light and has no source, kind of value or object",
+    "kinds": [
+      "measured",
+      "estimated",
+      "inferred",
+      "reconstructed"
+    ],
+    "populations": [
+      {
+        "code": 1,
+        "id": "thin_disc",
+        "name": "Thin disc",
+        "covered_by": "stars"
+      },
+      {
+        "code": 2,
+        "id": "thick_disc",
+        "name": "Thick disc",
+        "covered_by": "stars"
+      },
+      {
+        "code": 3,
+        "id": "bar_and_bulge",
+        "name": "Bar and bulge",
+        "covered_by": "stars"
+      },
+      {
+        "code": 4,
+        "id": "stellar_halo",
+        "name": "Stellar halo",
+        "covered_by": "stars"
+      },
+      {
+        "code": 5,
+        "id": "young_stars",
+        "name": "Young stars of the arms",
+        "covered_by": "galaxy_tracers"
+      },
+      {
+        "code": 6,
+        "id": "star_forming_knots",
+        "name": "Star-forming knots of the arms",
+        "covered_by": "galaxy_tracers"
+      }
+    ],
+    "flags": "bit 0 (1) set where real objects cover the point, which a client drawing them hides"
+  },
+  "levels": [
+    {
+      "level": 0,
+      "edge": 65536.0,
+      "step": 1.0,
+      "fraction": 0.13333333333333333
+    },
+    {
+      "level": 1,
+      "edge": 32768.0,
+      "step": 0.5,
+      "fraction": 1.0
+    }
+  ],
+  "sampling": {
+    "seed": 5,
+    "model_seed": 16,
+    "generator": "ChaCha20, key the seed's 8 little-endian bytes then 24 zero bytes, stream the domain's number; level by level from the root, the nodes of a level in order of address, an inner node of n points keeps floor(level_points * n / m) of them, m the most points reaching any inner node of its level, drawn by a partial Fisher-Yates shuffle over its points in increasing id; a leaf keeps every point reaching it, the finest level of its region",
+    "stream": 4,
+    "split_threshold": 12,
+    "level_points": 8,
+    "max_depth": 3,
+    "statement": "test rules"
+  },
+  "points": 60,
+  "radius": 26629.227215702096,
+  "sources": [],
+  "nodes": [
+    {
+      "address": "r",
+      "level": 0,
+      "bounds": {
+        "min": [
+          -32768.0,
+          -32768.0,
+          -32768.0
+        ],
+        "max": [
+          32768.0,
+          32768.0,
+          32768.0
+        ]
+      },
+      "points": 8,
+      "sampled_from": 60,
+      "bytes": 112,
+      "sha256": "e20b193147ef5d1461423c14d16f305e5fe0e999ae90d82a5166dfa07694999e"
+    },
+    {
+      "address": "r0",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -32768.0,
+          -32768.0,
+          -32768.0
+        ],
+        "max": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 96,
+      "sha256": "b390b08d653c2c31dd28c3a34e23238c0f7c4d92a2a76212fd210e4bc58d2b5b"
+    },
+    {
+      "address": "r1",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          -32768.0,
+          -32768.0
+        ],
+        "max": [
+          32768.0,
+          0.0,
+          0.0
+        ]
+      },
+      "points": 7,
+      "sampled_from": 7,
+      "bytes": 104,
+      "sha256": "19abf58f30825e6f6aae83c2d898c168bbb65544b4c7feb20cec2e1d125c4f35"
+    },
+    {
+      "address": "r2",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -32768.0,
+          0.0,
+          -32768.0
+        ],
+        "max": [
+          0.0,
+          32768.0,
+          0.0
+        ]
+      },
+      "points": 7,
+      "sampled_from": 7,
+      "bytes": 104,
+      "sha256": "0e06fd0edde34f93cff11618299ec4f371395be0951da5555afc5655ed0739d9"
+    },
+    {
+      "address": "r3",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          0.0,
+          -32768.0
+        ],
+        "max": [
+          32768.0,
+          32768.0,
+          0.0
+        ]
+      },
+      "points": 9,
+      "sampled_from": 9,
+      "bytes": 120,
+      "sha256": "9c4be65fef3f7f3ccd96bf38d9a512decc6248efce0c19f2999a329f7ba9c2dc"
+    },
+    {
+      "address": "r4",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -32768.0,
+          -32768.0,
+          0.0
+        ],
+        "max": [
+          0.0,
+          0.0,
+          32768.0
+        ]
+      },
+      "points": 5,
+      "sampled_from": 5,
+      "bytes": 88,
+      "sha256": "928113b206eb470761e7b84e2a7b56d286287b31da3fa657cb43da5d3bee53a5"
+    },
+    {
+      "address": "r5",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          -32768.0,
+          0.0
+        ],
+        "max": [
+          32768.0,
+          0.0,
+          32768.0
+        ]
+      },
+      "points": 6,
+      "sampled_from": 6,
+      "bytes": 96,
+      "sha256": "5d3fe2de45e4653a5036f57e624a3f31aef53c990e01ccaea49e816f980f79ba"
+    },
+    {
+      "address": "r6",
+      "level": 1,
+      "bounds": {
+        "min": [
+          -32768.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.0,
+          32768.0,
+          32768.0
+        ]
+      },
+      "points": 5,
+      "sampled_from": 5,
+      "bytes": 88,
+      "sha256": "1ad7adeae7ce899ebdd3bc76f22d1cb43fb282c17011ad291abcec718b032632"
+    },
+    {
+      "address": "r7",
+      "level": 1,
+      "bounds": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          32768.0,
+          32768.0,
+          32768.0
+        ]
+      },
+      "points": 7,
+      "sampled_from": 7,
+      "bytes": 104,
+      "sha256": "9562cdab5140bf2a9c8d3eb89a60fabd7e5adc73b8957c13f30109ee802e0ef1"
+    }
+  ]
+}

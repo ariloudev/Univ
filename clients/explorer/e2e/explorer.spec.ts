@@ -353,7 +353,7 @@ test("turns a scale domain off, counts none of its points in the key, and keeps 
   await page.getByRole("button", { name: "Show", exact: true }).click();
   await page.getByLabel("Stars", { exact: true }).uncheck();
   await expect(page).toHaveURL(/hide=domain%3Astars/);
-  await expect(page.getByTestId("show-summary")).toContainText("Points: 3 of 4 domains");
+  await expect(page.getByTestId("show-summary")).toContainText("Points: 4 of 5 domains");
   await expect(stars).toContainText(/(^|\D)0 stars in the colour/);
   await page.reload();
   // The Show drawer is kept open across the reload.
@@ -439,6 +439,25 @@ test("lays the view out as an atlas: bars, rail, drawer and record beside it at 
   await page.getByRole("button", { name: "Fold the record" }).click();
   const widened = await boxOf(page.getByRole("region", { name: "The view" }));
   expect(widened.width).toBeGreaterThan(view.width + 300);
+});
+
+test("keeps the top bar to one line on a phone, every control in it reached and none under another", async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 660 });
+  await firstPoints(page);
+  const bar = page.getByRole("banner");
+  expect((await boxOf(bar)).height).toBeLessThanOrEqual(40);
+  // What a tap at a control's centre reaches is the control itself: scrolled into view where the
+  // bar's parts scroll, and covered by nothing.
+  const reached = (locator: Locator) =>
+    locator.evaluate((element) => {
+      element.scrollIntoView({ inline: "nearest" });
+      const box = element.getBoundingClientRect();
+      const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return top === element || element.contains(top) || top?.contains(element) === true;
+    });
+  for (const name of ["Grid", "Rings", "Outlines", "Level of detail"]) expect(await reached(bar.getByRole("switch", { name })), name).toBe(true);
+  expect(await reached(bar.getByRole("combobox").last())).toBe(true);
+  expect(await reached(bar.getByRole("button", { name: "Find" }))).toBe(true);
 });
 
 test("draws the grid across the view from its switch beside the axes, and keeps it across a reload", async ({ page }) => {
@@ -575,8 +594,8 @@ test("opens the arms view beside Return to Earth: the young tracers and the arms
   await expect(page).toHaveURL(/structure%3Avoid/);
   await page.getByRole("button", { name: "Show", exact: true }).click();
   const drawer = page.getByRole("complementary", { name: "Show" });
-  await expect(drawer.getByLabel("Galaxy tracers", { exact: true })).toBeChecked();
-  for (const domain of ["Stars", "Nearby galaxies", "Cosmic web"]) await expect(drawer.getByLabel(domain, { exact: true })).not.toBeChecked();
+  await expect(drawer.getByLabel("Galaxy model", { exact: true })).toBeChecked();
+  for (const domain of ["Galaxy tracers", "Stars", "Nearby galaxies", "Cosmic web"]) await expect(drawer.getByLabel(domain, { exact: true })).not.toBeChecked();
   for (const kind of ["Luminous hot stars", "Open clusters", "Star-forming regions"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "true");
   for (const kind of ["Classical Cepheids", "RR Lyrae stars", "Globular clusters"]) await expect(drawer.getByRole("button", { name: kind })).toHaveAttribute("aria-pressed", "false");
   await expect(drawer.getByRole("button", { name: "Tracers younger than 30 million years" })).toHaveAttribute("aria-pressed", "true");
@@ -593,6 +612,16 @@ test("opens the arms view beside Return to Earth: the young tracers and the arms
   await expect(page).not.toHaveURL(/view=arms/);
   await expect(page).toHaveURL(/age=30/);
   await expect(page).toHaveURL(/domain%3Astars/);
+});
+
+test("draws the Galaxy model as a model, counted apart in the key, and credits the papers its definition cites", async ({ page }) => {
+  await firstPoints(page);
+  await page.getByText("Key", { exact: true }).click();
+  const key = page.getByTestId("model-key");
+  await expect(key).toContainText("a model, not observed stars");
+  await expect(key).toContainText("Thin disc");
+  await page.getByText("Credits", { exact: true }).click();
+  await expect(page.getByTestId("model-credits")).toContainText("Reid");
 });
 
 test("opens on an address that asks for the arms view, in galactic axes, with what it draws", async ({ page }) => {

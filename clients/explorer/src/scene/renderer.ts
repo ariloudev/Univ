@@ -11,12 +11,14 @@ import type { DustVolume } from "./dustGrid.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
-import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
+import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
+import { batchOpacity } from "./model.ts";
+import { domainOpacity } from "./starsFade.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
-import { pointSizeOf } from "./tracers.ts";
+import { NATURAL_COLOURS, TRACERS_DOMAIN, pointSizeOf } from "./tracers.ts";
 import type { Mat3, Vec3 } from "./vec.ts";
 
 /** The browser cannot draw with WebGL2. */
@@ -38,6 +40,9 @@ export interface Points {
   colours?: Uint8Array | undefined;
   /** Each point's object index, for a Galaxy tracer; none for any other point. */
   objects?: Uint8Array | undefined;
+  /** What covers each model point, for a tile of the Galaxy model, whose points are drawn as
+   * light; none for a tile of objects. */
+  covered?: Uint8Array | undefined;
   extent: Sphere;
   /** The tile's slice of its domain, its points dividing it evenly in their order. */
   slice: readonly [number, number];
@@ -55,7 +60,7 @@ interface Drawn {
 }
 
 /** A tile's points as uploaded, with what drawing them reads. */
-type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; slice: Points["slice"] };
+type Batch = Drawn & { id: string; extent: Points["extent"]; domain: string; slice: Points["slice"]; light: boolean };
 
 interface Outline extends Drawn {
   colour: Rgba;
@@ -136,6 +141,11 @@ export class Renderer implements Drawer {
   private readonly hiddenKinds: WebGLUniformLocation | null;
   private readonly hiddenSources: WebGLUniformLocation | null;
   private readonly hiddenObjects: WebGLUniformLocation | null;
+  private readonly light: WebGLUniformLocation | null;
+  private readonly coveredHidden: WebGLUniformLocation | null;
+  /** Whether the Galaxy tracers are drawn in their kinds' natural colours. */
+  private natural = true;
+  private readonly naturalOn: WebGLUniformLocation | null;
   /** The point program's `a_inside`. */
   private readonly insideAt: number;
   /** The outlines and markers not drawn, by name (choose-what-is-drawn). */
@@ -170,7 +180,11 @@ export class Renderer implements Drawer {
     this.hiddenKinds = gl.getUniformLocation(this.points.program, "u_hiddenKinds");
     this.hiddenSources = gl.getUniformLocation(this.points.program, "u_hiddenSources");
     this.hiddenObjects = gl.getUniformLocation(this.points.program, "u_hiddenObjects");
+    this.light = gl.getUniformLocation(this.points.program, "u_light");
+    this.coveredHidden = gl.getUniformLocation(this.points.program, "u_coveredHidden");
     const at = (name: string) => gl.getUniformLocation(this.points.program, name);
+    this.naturalOn = at("u_natural");
+    gl.uniform3fv(at("u_naturalColours"), new Float32Array(NATURAL_COLOURS.flatMap(([r, g, b]) => [r, g, b])));
     this.detailAt = { onsets: at("u_onsets"), cumulative: at("u_cumulative"), slice: at("u_slice"), count: at("u_count") };
     // A batch without colours of its own leaves `a_colour` at this constant: no colour, so that
     // its points take their kind's (WebGL's default would be opaque black).
@@ -179,6 +193,10 @@ export class Renderer implements Drawer {
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
     // Nor kinds of object: `a_object` 0, a point of no kind, which no switch turns off.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_object"), 0);
+    // Nor a kind of value, for a Galaxy model point: `a_kind` 0, which its light ignores.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_kind"), 0);
+    // Nor a cover: `a_covered` 0, for every point but the Galaxy model's.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_covered"), 0);
     // And every point is drawn while the catalogue marks none, markers always.
     this.insideAt = gl.getAttribLocation(this.points.program, "a_inside");
     gl.vertexAttrib1f(this.insideAt, 1);
@@ -250,24 +268,32 @@ export class Renderer implements Drawer {
     return buffer;
   }
 
-  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects"> & { sources?: Uint16Array }): Drawn {
+  private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects" | "covered"> & { sources?: Uint16Array }): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
-    const buffers = [
-      this.buffer(this.points.program, "a_offset", points.offsets, 3),
-      this.buffer(this.points.program, "a_kind", points.kinds, 1),
-    ];
-    if (points.sources !== undefined) buffers.push(this.buffer(this.points.program, "a_source", points.sources, 1));
-    if (points.colours !== undefined) buffers.push(this.buffer(this.points.program, "a_colour", points.colours, 4, true));
-    if (points.objects !== undefined) buffers.push(this.buffer(this.points.program, "a_object", points.objects, 1));
+    const buffers = [this.buffer(this.points.program, "a_offset", points.offsets, 3)];
+    // The attributes a batch may lack, each left at its constant where it does: a Galaxy model
+    // batch has no kinds, sources or objects.
+    const optional = [
+      ["a_kind", points.kinds, 1],
+      ["a_source", points.sources, 1],
+      ["a_colour", points.colours, 4],
+      ["a_object", points.objects, 1],
+      ["a_covered", points.covered, 1],
+    ] as const;
+    for (const [name, data, size] of optional) {
+      // An empty array is none: a buffer shorter than the points would be read past its end.
+      if (data !== undefined && data.length > 0) buffers.push(this.buffer(this.points.program, name, data, size, name === "a_colour"));
+    }
     this.gl.bindVertexArray(null);
-    return { vao, buffers, centre: points.centre, count: points.kinds.length };
+    return { vao, buffers, centre: points.centre, count: points.offsets.length / 3 };
   }
 
   /** Adds a tile's points to what is drawn, fading them in from `now`. */
   addPoints(points: Points, now = performance.now()): void {
     this.forget(points.id);
-    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice });
+    const light = points.covered !== undefined;
+    this.batches.set(points.id, { ...this.upload(points), id: points.id, extent: points.extent, domain: points.domain, slice: points.slice, light });
     this.fades.arrive(points.id, now);
   }
 
@@ -305,6 +331,11 @@ export class Renderer implements Drawer {
   /** Draws only the points `masks` leave on. */
   setHidden(masks: Masks): void {
     this.masks = masks;
+  }
+
+  /** Draws the Galaxy tracers in their kinds' natural colours, or in their kinds' own. */
+  setNaturalColours(on: boolean): void {
+    this.natural = on;
   }
 
   /** Draws none of the outlines and markers named in `names`. */
@@ -424,6 +455,7 @@ export class Renderer implements Drawer {
     this.dust.usePoints();
     gl.uniform1ui(this.hiddenKinds, this.masks.kinds);
     gl.uniform1ui(this.hiddenObjects, this.masks.objects);
+    gl.uniform1ui(this.coveredHidden, this.masks.covered);
     const detail = this.drawnDetail() ?? EVERY_POINT;
     const fade = (id: string) => this.fades.opacity(id, now);
     const share = (id: string) => detail.share(id);
@@ -438,26 +470,37 @@ export class Renderer implements Drawer {
    * rank lies below the share its domain needs at its distance. */
   private drawBatch(frame: Frame, { batch, count, fade }: ToDraw<Batch>, distance: number, detail: DrawnDetail): void {
     const gl = this.gl;
-    if (batch.domain !== this.detailOf) {
-      this.detailOf = batch.domain;
-      const domainDetail = detail.detail(batch.domain);
-      this.useDetail(domainDetail);
-      this.domainOpacity = detailOpacity(domainDetail, distance);
-      gl.uniform1f(this.pointSize, pointSizeOf(batch.domain));
-    }
+    if (batch.domain !== this.detailOf) this.useDomain(batch.domain, detail, distance);
     const inside = detail.inside(batch.id);
     this.useInside(batch, inside);
     gl.uniform2f(this.detailAt.slice, batch.slice[0], batch.slice[1]);
     gl.uniform1f(this.detailAt.count, batch.count);
-    gl.uniform1f(this.opacity, (detail.culled() ? CULLED_OPACITY : this.domainOpacity) * fade);
+    // The Galaxy model's points each as bright as the next, as light; any other at its domain's.
+    const opacity = batchOpacity(detail.culled() ? CULLED_OPACITY : this.domainOpacity, batch.light);
+    gl.uniform1f(this.opacity, opacity * fade);
+    gl.uniform1i(this.light, Number(batch.light));
     gl.uniform1ui(this.hiddenSources, this.masks.sources.get(batch.domain) ?? 0);
     this.drawOne(this.points, frame, batch, gl.POINTS, count);
+  }
+
+  /** Sets the point program for the points of `domain`, the eye `distance` from the focus: its
+   * detail, opacity, point size and colours. */
+  private useDomain(domain: string, detail: DrawnDetail, distance: number): void {
+    const gl = this.gl;
+    this.detailOf = domain;
+    const domainDetail = detail.detail(domain);
+    this.useDetail(domainDetail);
+    this.domainOpacity = domainOpacity(domain, domainDetail, distance);
+    gl.uniform1f(this.pointSize, pointSizeOf(domain));
+    gl.uniform1i(this.naturalOn, Number(this.natural && domain === TRACERS_DOMAIN));
   }
 
   /** The structures' markers, of the kind no mask holds and of no source. */
   private drawMarkers(frame: Frame): void {
     const gl = this.gl;
     gl.uniform1f(this.opacity, 1);
+    gl.uniform1i(this.light, 0);
+    gl.uniform1i(this.naturalOn, 0);
     // Every marker drawn: one level holding all, and a slice that ranks every point first.
     this.useDetail(EVERYTHING);
     gl.uniform2f(this.detailAt.slice, 0, 0);
