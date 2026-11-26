@@ -1,0 +1,37 @@
+key: 01a217d4-0f8b-740e-8821-24a6bf2f6e8d
+id: feedback
+versions:
+  - key: 01a217d4-0f8b-740e-8821-24a91b884436
+    at: 2026-11-26T12:28:23Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "The owner's feedback on the drawn model"
+    goal: "The explorer draws the Galaxy model and the catalogues as the owner asked after trying them: pinch and two-finger move on a phone, brighter arms, the model by level of detail always, the arms view showing the model alone, the crowded tracers and stars tamed, the halo and the Sagittarius stream kept, and the tracers in natural colours"
+    status: done
+blocks:
+  - key: 01a217d4-0f8b-740e-8821-24a7f197dbf6
+    id: feedback-produced
+    kind: note
+    versions:
+      - key: 01a217d4-0f8b-740e-8821-24aa95456fc7
+        at: 2026-11-26T12:28:23Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "What the feedback changed"
+        markdown: |-
+          | Asked | Done | Commit |
+          |---|---|---|
+          | Zoom on a phone | Pinch to zoom, and two fingers moving together move the focus | a15afaf, 03ab9c4 |
+          | "I was expecting a galaxy with arms" | The arms' populations drawn 6 times as bright as the others; the phone's top bar fits | 31b8b2f |
+          | Dark squares with level of detail off | The model is drawn by level of detail always | 03ab9c4 |
+          | The arms link showed the tracer blob | The arms view shows the Galaxy model alone | e0c8756 |
+          | The cyan about the Sun | Luminous hot stars in a dark slate teal at a tenth of the other kinds' opacity | a11e166 |
+          | The white core and the green bulge | The stars fade beyond 1 kpc down to a tenth; the RR Lyrae stars fade only where more than 4 share a 64th of a tile's edge, so the halo and the Sagittarius stream stay | b01e768, 3754959 |
+          | "Uniform colouring … more realistic" | A Natural colours switch, on by default: each tracer kind in the hue of its typical B−V at its own colour's brightness | 152b1a8 |
+
+          Each change went into `spec/` first, with its tests linked in `loft.trace.yaml`. The explorer's gate and `cargo xtask integration` (28 browser tests) passed on 152b1a8.
+        tone: success

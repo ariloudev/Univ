@@ -99,3 +99,16 @@ blocks:
 
           - At equal brightness the arms read faintly: their young stars and knots are 8% of the model's points, by their cited share of the light. Drawing the young populations brighter would need a spec change.
           - The reviews' larger suggestions: a Batch union of objects and model points, a one-byte population code with a colour table in the shader, a typed-array model decoder.
+  - key: 01a217d4-0f8b-740e-8821-24a8ed0302f0
+    id: merge-asked
+    kind: note
+    versions:
+      - key: 01a217d4-0f8b-740e-8821-24ab5f0d0b1f
+        at: 2026-11-26T12:28:23Z
+        revision: 7
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "The owner asked for the merge"
+        markdown: "The owner asked in the session: \"Let's merge what we did into develop and main and push\", and chose to publish the spec (sequence 11) on develop as part of it. The approval sent on this page is withdrawn as Yard Log closes; the merge follows the owner's word in the session."
+        tone: info
