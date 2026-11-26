@@ -26,7 +26,7 @@ export const coverOf = (coveredBy: string | undefined): number => COVERS[covered
 
 /** The opacity of a model point: one for every point, so that their light adds up where they
  * crowd, low enough that ten million of them do not wash the view out. */
-export const MODEL_OPACITY = 0.35;
+export const MODEL_OPACITY = 0.08;
 
 /** Bit `c` set for each cover `c` whose model points are hidden: those covered by the objects of
  * a scale domain the release holds, `held`, and that is drawn, not in `hidden`. */
