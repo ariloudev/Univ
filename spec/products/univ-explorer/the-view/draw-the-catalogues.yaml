@@ -107,6 +107,8 @@ requirements:
         name: "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off."
       - key: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
         name: "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white."
+      - key: 01a217af-677d-710d-bc8a-43082f33c3d2
+        name: "The stars domain's points grow fainter as the eye withdraws beyond 1 kiloparsec from the focus, in inverse proportion to its distance, down to a tenth of their opacity, so that the stars about the Sun seen from across the Galaxy do not add up to white."
       - key: 01a1b093-647d-7308-9b46-bdce5099b2f5
         name: "Only the points drawn can be pointed at or clicked."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
@@ -187,7 +189,7 @@ requirements:
       - key: 01a1c319-7860-76e8-92ac-c5e864b8c262
         name: "A point of the Galaxy tracers domain is drawn twice the size of a point of the stars domain at the same distance."
       - key: 01a217aa-a805-760e-873f-455bb856f763
-        name: "A luminous hot star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd about the Sun they do not add up to white."
+        name: "A luminous hot star or an RR Lyrae star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd, about the Sun and toward the bulge, they do not add up to white."
   - key: 01a1c319-7860-76e8-92ac-c5e9e544de53
     statement:
       form: ubiquitous

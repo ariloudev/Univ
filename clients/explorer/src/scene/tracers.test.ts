@@ -16,12 +16,17 @@ describe("the Galaxy's tracers", () => {
     }
   });
 
-  it("draws the luminous hot stars dark, at a tenth of the other kinds' opacity", () => {
-    const hot = tracerColour(objectIndex("luminous_hot_star"));
-    expect(hot[3]).toBeCloseTo(0.1 * POINT_OPACITY);
-    for (const [i, other] of TRACER_COLOURS.entries()) if (i !== objectIndex("luminous_hot_star")) expect(other[3]).toBe(POINT_OPACITY);
-    // Dark: no channel above half, where a star's colour or a galaxy's blue reaches full.
-    expect(Math.max(hot[0], hot[1], hot[2])).toBeLessThanOrEqual(0.5);
+  it("draws the luminous hot stars and the RR Lyrae stars dark, at a tenth of the other kinds' opacity", () => {
+    const crowded = [objectIndex("luminous_hot_star"), objectIndex("rr_lyrae_star")];
+    for (const [i, colour] of TRACER_COLOURS.entries()) {
+      if (!crowded.includes(i)) {
+        expect(colour[3]).toBe(POINT_OPACITY);
+        continue;
+      }
+      expect(colour[3]).toBeCloseTo(0.1 * POINT_OPACITY);
+      // Dark: no channel above half, where a star's colour or a galaxy's blue reaches full.
+      expect(Math.max(colour[0], colour[1], colour[2])).toBeLessThanOrEqual(0.5);
+    }
   });
 
   it("has a colour for each kind of object of the tracers, and one for a tracer of unknown kind", () => {

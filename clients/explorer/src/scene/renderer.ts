@@ -11,9 +11,10 @@ import type { DustVolume } from "./dustGrid.ts";
 import { Fades } from "./fades.ts";
 import { type Sight, type Sphere, sightOf } from "./frustum.ts";
 import { type Drawer, FADE, type FixedSymbol, type Lines, type Rgba } from "./drawing.ts";
-import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, detailOpacity, structureStyle } from "./kinds.ts";
+import { CULLED_OPACITY, KIND_COLOURS, MARKER_INDEX, STRUCTURE_COLOUR, structureStyle } from "./kinds.ts";
 import { type Masks, NO_MASKS } from "./masks.ts";
 import { batchOpacity } from "./model.ts";
+import { domainOpacity } from "./starsFade.ts";
 import { projection } from "./projection.ts";
 import { ribbonOf } from "./ribbon.ts";
 import { LINE_FRAGMENT, LINE_VERTEX, POINT_FRAGMENT, POINT_VERTEX } from "./shaders.ts";
@@ -463,7 +464,7 @@ export class Renderer implements Drawer {
       this.detailOf = batch.domain;
       const domainDetail = detail.detail(batch.domain);
       this.useDetail(domainDetail);
-      this.domainOpacity = detailOpacity(domainDetail, distance);
+      this.domainOpacity = domainOpacity(batch.domain, domainDetail, distance);
       gl.uniform1f(this.pointSize, pointSizeOf(batch.domain));
     }
     const inside = detail.inside(batch.id);

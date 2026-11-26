@@ -4764,6 +4764,15 @@ links:
       - file: "clients/explorer/src/scene/kinds.test.ts"
         name: "are drawn fainter as the eye withdraws beyond a gigaparsec, never vanishing"
         body: 7aa258e01941e7c85869e224f7d16d1d4c9e8a0248b1c0f37a410358ee9b621d
+  - node: 01a217af-677d-710d-bc8a-43082f33c3d2
+    reviewed: 6ffa2dfd230ea1a9a6e4acf0451d28ca994d6a21ea7b9ba6e95913ac4e7c4e5b
+    tests:
+      - file: "clients/explorer/src/scene/starsFade.test.ts"
+        name: "grow fainter beyond 1 kiloparsec, in inverse proportion to the distance, down to a tenth"
+        body: 807a5c7486083609eaf41372d39701560c2bf25317c57b551ba6e05a5abce0d3
+      - file: "clients/explorer/src/scene/starsFade.test.ts"
+        name: "fade the stars domain alone"
+        body: a2aea368ebf288e4f65f668b550b40765426627abbee12bdec4230751bd729b0
   - node: 01a1b093-647d-7308-9b46-bdce5099b2f5
     reviewed: 66009151f7032987facdb56d1a2e55dde96081f117f29c5c6e7798ce83c12778
     tests:
@@ -4918,11 +4927,11 @@ links:
         name: "draws a tracer twice the size of a star, and every other point a star's size"
         body: 8aee334875665f2c25af9cfd4b83351420ca394b3d4c88dad357a239964693d4
   - node: 01a217aa-a805-760e-873f-455bb856f763
-    reviewed: 62e51180ac8358e930948b885a434fedd00c3f03927135c5c0cc1a3714ea3922
+    reviewed: ed1a9e2ffcdb8fac7e368f2278ac563e9da9004fb6ca8e2fca9f4e9953da9480
     tests:
       - file: "clients/explorer/src/scene/tracers.test.ts"
-        name: "draws the luminous hot stars dark, at a tenth of the other kinds' opacity"
-        body: bb3a21f968fa29fe2e3d7a71cbc5fb766e90fc6f8a36baac75320fb982f61664
+        name: "draws the luminous hot stars and the RR Lyrae stars dark, at a tenth of the other kinds' opacity"
+        body: a468a782cffd2edf5496c109b4feca9a2633a042b583253c3417fa411de556dd
   - node: 01a1c319-7860-76e8-92ac-c5ea87f31404
     reviewed: fa4f6dd35922db3353b711362c799c17215a793feeb2cca68ee49e98b11ac941
     tests:
