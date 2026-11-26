@@ -122,10 +122,10 @@ describe("the bars and the view's drawer", () => {
   });
 
   it("name the Galaxy model's points as a model, counted apart, and credit its papers, while it is drawn", () => {
+    const thinDisc = { code: 1, id: "thin_disc", name: "Thin disc", density: { form: "exponential_disc" } };
     const model = {
       colours: new Uint8Array(256 * 4),
-      cover: new Uint8Array(256),
-      populations: [{ code: 1, name: "Thin disc", srgb: [255, 242, 237] as const }],
+      populations: [{ ...thinDisc, colour: { srgb: [255, 242, 237] as [number, number, number], srgb_from: { from: "derived" } } }],
       papers: [{ id: "reid-2019", reference: "Reid et al. 2019, ApJ 885, 131", doi: "10.3847/1538-4357/ab4a11" }],
     };
     show({ ...tally(), model: () => model, modelPoints: 12_345 });

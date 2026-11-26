@@ -126,6 +126,7 @@ export function KeyBar({
   const kinds = KINDS.map((kind, i) => [kind, catalogue.kinds[i] ?? 0] as const);
   const stars = catalogue.stars.coloured + catalogue.stars.grey;
   const missing = catalogue.failed + catalogue.unread;
+  const model = catalogue.model();
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <div className="hidden min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap xl:flex">
@@ -139,7 +140,7 @@ export function KeyBar({
             {kind} {count.toLocaleString("en-GB")}
           </span>
         ))}
-        {catalogue.model() === undefined ? null : (
+        {model === undefined ? null : (
           <span data-testid="model-count">model {catalogue.modelPoints.toLocaleString("en-GB")}</span>
         )}
       </div>
@@ -159,7 +160,7 @@ export function KeyBar({
             </li>
           ))}
         </ul>
-        <ModelCredits model={catalogue.model()} />
+        <ModelCredits model={model} />
       </Popover>
     </div>
   );

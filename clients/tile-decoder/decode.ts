@@ -191,7 +191,7 @@ const V1_POINT_BYTES = 17;
 /** The bytes of a version 2 or 3 point: version 1's, then a value and its code. */
 const V3_POINT_BYTES = 20;
 /** The encoding version of the Galaxy model's tiles. */
-const MODEL_VERSION = 5;
+export const MODEL_VERSION = 5;
 /** The bytes a point takes, by encoding version: the versions this decoder knows. */
 const POINT_BYTES: Readonly<Record<number, number>> = {
   1: V1_POINT_BYTES,

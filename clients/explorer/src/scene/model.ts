@@ -7,18 +7,22 @@ import { TRACERS_DOMAIN } from "./tracers.ts";
 /** The scale domain of the Galaxy model, whose version 5 tiles hold model points, not objects. */
 export const MODEL_DOMAIN = "galaxy_model";
 
-/** The encoding version of the Galaxy model's tiles. */
-export const MODEL_VERSION = 5;
-
 /** The scale domain whose objects are the counterparts of the discs, the bar and bulge and the
  * halo. */
-const STARS_DOMAIN = "stars";
+export const STARS_DOMAIN = "stars";
 
 /** What covers a model point: nothing, the stars domain's objects, or the young tracers of the
  * Galaxy tracers domain. */
 export const NOT_COVERED = 0;
 export const COVERED_BY_STARS = 1;
 export const COVERED_BY_TRACERS = 2;
+
+/** What covers a covered model point, by the scale domain its population's manifest entry names
+ * (`covered_by`): `NOT_COVERED` for a domain not listed, or none named. */
+const COVERS: Readonly<Record<string, number>> = { [STARS_DOMAIN]: COVERED_BY_STARS, [TRACERS_DOMAIN]: COVERED_BY_TRACERS };
+
+/** What covers a model point of a population whose manifest entry names `coveredBy`. */
+export const coverOf = (coveredBy: string | undefined): number => COVERS[coveredBy ?? ""] ?? NOT_COVERED;
 
 /** The opacity of a model point: one for every point, so that their light adds up where they
  * crowd, low enough that ten million of them do not wash the view out. */
@@ -28,9 +32,9 @@ export const MODEL_OPACITY = 0.35;
  * a scale domain the release holds, `held`, and that is drawn, not in `hidden`. */
 export function coveredHiddenOf(hidden: ReadonlySet<string>, held: readonly string[]): number {
   let bits = 0;
-  const drawn = (domain: string) => held.includes(domain) && !hidden.has(domain);
-  if (drawn(STARS_DOMAIN)) bits |= 1 << COVERED_BY_STARS;
-  if (drawn(TRACERS_DOMAIN)) bits |= 1 << COVERED_BY_TRACERS;
+  for (const [domain, cover] of Object.entries(COVERS)) {
+    if (held.includes(domain) && !hidden.has(domain)) bits |= 1 << cover;
+  }
   return bits;
 }
 

@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import type { Http } from "../api/client.ts";
 import { type GalaxyModel, galaxyModel } from "../api/galaxyModel.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
-import { COVERED_BY_STARS, COVERED_BY_TRACERS, MODEL_OPACITY, NOT_COVERED, batchOpacity } from "../scene/model.ts";
+import { COVERED_BY_STARS, COVERED_BY_TRACERS, MODEL_OPACITY, NOT_COVERED, batchOpacity, coverOf } from "../scene/model.ts";
 import { starBytes } from "../scene/starColour.ts";
 import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
@@ -51,6 +51,21 @@ function server(model = true): Http & { urls: string[] } {
   };
 }
 
+/** The population code and cover of each point `batch` draws, sorted: its code read back from
+ * its colour by `look`. */
+function drawnOf(batch: Batch, look: ReturnType<typeof lookOf>): string[] {
+  const words = new Uint32Array(batch.colours?.buffer ?? new ArrayBuffer(0));
+  const byCode = new Uint32Array(look.colours.buffer);
+  return [...(batch.covered ?? [])].map((cover, i) => `${byCode.indexOf(words[i] ?? 0, 1)}/${cover}`).sort();
+}
+
+/** The population code and cover of each of a fixture tile's `points`, sorted, as its manifest
+ * names what covers each population. */
+function wantedOf(points: readonly { population?: number; covered?: boolean }[]): string[] {
+  const coverBy = new Map((MANIFEST.encoding.populations ?? []).map((e) => [e.code, coverOf(e.covered_by)]));
+  return points.map((p) => `${p.population ?? 0}/${p.covered === true ? (coverBy.get(p.population ?? 0) ?? 0) : NOT_COVERED}`).sort();
+}
+
 /** Every model tile of the fixture as batches. */
 async function modelBatches(): Promise<Batch[]> {
   const domains = await domainsOf(2, { http: server() });
@@ -68,7 +83,10 @@ async function catalogueOf(): Promise<Catalogue> {
   const catalogue = new Catalogue(2, domains, events, { http });
   const tiles = domains.reduce((n, d) => n + d.tiles.length, 0);
   catalogue.update({ eye: [0, 0, 0], axes: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], focal: 1e9, inView: () => true });
-  for (let i = 0; i < 2000 && drawn.length < tiles; i += 1) await new Promise((r) => setTimeout(r, 1));
+  for (let i = 0; drawn.length < tiles; i += 1) {
+    if (i === 2000) throw new Error("the catalogue did not settle");
+    await new Promise((r) => setTimeout(r, 1));
+  }
   return catalogue;
 }
 
@@ -101,38 +119,28 @@ describe("the Galaxy model's definition", () => {
   });
 
   it("covers each population's points by the objects of the domain its manifest entry names", () => {
-    const look = lookOf(DEFINITION, MANIFEST);
+    const look = lookOf(DEFINITION);
     for (const p of DEFINITION.definition.populations) {
       // The young stars and knots of the arms by the Galaxy tracers, the others by the stars.
-      expect(look.cover[p.code], p.id).toBe(p.density.form === "arms" ? COVERED_BY_TRACERS : COVERED_BY_STARS);
+      const entry = MANIFEST.encoding.populations?.find((e) => e.code === p.code);
+      expect(coverOf(entry?.covered_by), p.id).toBe(p.density.form === "arms" ? COVERED_BY_TRACERS : COVERED_BY_STARS);
       expect([...look.colours.subarray(p.code * 4, p.code * 4 + 3)]).toEqual(p.colour.srgb);
     }
+    expect(coverOf(undefined)).toBe(NOT_COVERED);
   });
 });
 
 describe("the Galaxy model's points", () => {
   it("are each in its population's colour, with what covers it, and of no kind, source or id", async () => {
     const batches = await modelBatches();
-    const look = lookOf(DEFINITION, MANIFEST);
-    const expected = fixtureTiles("model/simulated_model").flatMap((t) => t.points as unknown as { population: number; covered: boolean }[]);
-    const points = batches.reduce((n, b) => n + b.covered!.length, 0);
-    expect(points).toBe(expected.length);
-    let covered = 0;
+    const look = lookOf(DEFINITION);
+    const fixture = new Map(fixtureTiles("model/simulated_model").map((t) => [t.address, t.points]));
     for (const batch of batches) {
-      const n = batch.covered!.length;
       expect([batch.kinds.length, batch.sources.length, batch.ids.length]).toEqual([0, 0, 0]);
-      expect(batch.offsets.length).toBe(n * 3);
-      for (let i = 0; i < n; i += 1) {
-        const colour = [...(batch.colours?.subarray(i * 4, i * 4 + 4) ?? [])];
-        const code = look.colours.findIndex((_, at) => at % 4 === 0 && at > 0 && colour.every((c, k) => look.colours[at + k] === c)) / 4;
-        expect(code).toBeGreaterThan(0);
-        if (batch.covered![i] !== NOT_COVERED) {
-          expect(batch.covered![i]).toBe(look.cover[code]);
-          covered += 1;
-        }
-      }
+      expect(batch.offsets.length).toBe((batch.covered?.length ?? 0) * 3);
+      // Shuffled: the tile's colours and covers, counted, are the fixture's.
+      expect(drawnOf(batch, look)).toEqual(wantedOf(fixture.get(batch.tile.address) ?? []));
     }
-    expect(covered).toBe(expected.filter((p) => p.covered).length);
   });
 
   it("are each as bright as the next, a share of their domain's opacity", () => {

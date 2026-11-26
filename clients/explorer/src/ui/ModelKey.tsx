@@ -19,7 +19,7 @@ export function ModelKey({ model, points }: { model: ModelLook | undefined; poin
       <ul className="space-y-1 text-xs">
         {model.populations.map((p) => (
           <li key={p.code} className="flex items-center gap-2">
-            <Swatch colour={`rgb(${p.srgb.join(" ")})`} />
+            <Swatch colour={`rgb(${p.colour.srgb.join(" ")})`} />
             {p.name}
           </li>
         ))}
