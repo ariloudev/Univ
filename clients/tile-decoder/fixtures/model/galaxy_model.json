@@ -1,8 +1,6 @@
 {
   "release": 2,
   "domain": "galaxy_model",
-  "points": 20000,
-  "seed": 16,
   "definition": {
     "points": 20000,
     "seed": 16,

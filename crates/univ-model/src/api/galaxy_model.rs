@@ -13,11 +13,8 @@ pub struct GalaxyModel {
     pub release: u32,
     /// The scale domain its model points are tiled in: `galaxy_model`.
     pub domain: String,
-    /// How many model points it was sampled into.
-    pub points: u64,
-    /// The seed its sampling was drawn with.
-    pub seed: u64,
-    /// Its populations, each with the code its model points carry in the tiles, its density,
+    /// How many model points it was sampled into and the seed its sampling was drawn with
+    /// (`points`, `seed`); its populations, each with the code its model points carry in the tiles, its density,
     /// light and display colour; the spiral arms' rules; and the papers its numbers cite. Each
     /// number gives its value, unit, kind of value, uncertainty and its citation or the reason
     /// for it.

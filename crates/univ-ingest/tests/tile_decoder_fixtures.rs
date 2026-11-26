@@ -26,7 +26,8 @@ use univ_ingest::fetch::hex;
 use univ_ingest::source::ScaleDomain;
 use univ_ingest::structures::read_all_named;
 use univ_ingest::tiles::{
-    BuiltDomain, DomainPoint, PopulationCode, assign, build_domain, fits, name_of, tile_model,
+    BuiltDomain, DomainPoint, PopulationCode, assign, build_domain, fits, followed_of, name_of,
+    tile_model,
 };
 use univ_model::api::galaxy_model::GalaxyModel;
 use univ_model::cosmology::Cosmology;
@@ -301,17 +302,10 @@ fn definition_file() -> String {
     let model = repository_model();
     let placement = Placement::new(model.r0.value, model.sun_height.value);
     let structures = read_all_named(&workspace().join("structures")).unwrap();
-    let mut followed: Vec<String> = Vec::new();
-    for s in stretches(&model.arms, &fits(&structures, &placement)) {
-        if !followed.contains(&s.structure) {
-            followed.push(s.structure);
-        }
-    }
+    let followed = followed_of(&stretches(&model.arms, &fits(&structures, &placement)));
     let answer = GalaxyModel {
         release: 2,
         domain: "galaxy_model".to_owned(),
-        points: model.points,
-        seed: model.seed,
         definition: model,
         followed,
     };

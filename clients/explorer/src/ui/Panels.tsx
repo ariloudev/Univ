@@ -95,7 +95,9 @@ function Popover({ label, children, width = "w-96", side = "left-0" }: { label: 
   return (
     <details className="relative shrink-0">
       <summary className="cursor-pointer list-none rounded px-1.5 py-0.5 hover:text-accent [&::-webkit-details-marker]:hidden">{label}</summary>
+      {/* Focusable, so that a keyboard can scroll it once it holds more than it shows. */}
       <div
+        tabIndex={0}
         className={`${FLOATING} bottom-full mb-2 max-h-[60vh] max-w-[calc(100vw-1.5rem)] overflow-y-auto whitespace-normal ${side} ${width}`}
       >
         {children}

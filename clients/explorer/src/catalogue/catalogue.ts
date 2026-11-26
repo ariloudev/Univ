@@ -25,7 +25,7 @@ import {
 import type { Rgba } from "../scene/drawing.ts";
 import { KINDS, KIND_INDEX } from "../scene/kinds.ts";
 import { type Masks, NO_MASKS, isPointShown } from "../scene/masks.ts";
-import { MODEL_DOMAIN, modelPointsShown } from "../scene/model.ts";
+import { MODEL_DOMAIN, coversOf, modelPointsShown } from "../scene/model.ts";
 import { TRACERS_DOMAIN, TRACER_OBJECTS, holdsTracerKinds } from "../scene/tracers.ts";
 import { type Volume, insideOf } from "../scene/volume.ts";
 import { type Batch, type Domain, type DomainTile, type ModelLook, TileFailed, fetchBatch } from "./tiles.ts";
@@ -101,6 +101,9 @@ interface Histogram {
   empty: boolean;
   /** The points that carry an age. */
   aged: number;
+  /** A Galaxy model batch's points counted, by what covers them (model.ts's `coversOf`); none
+   * for a batch of objects. */
+  covers: readonly number[] | undefined;
 }
 
 /** `mask`, or every point of `batch` where it is none, with each point whose log age is at or
@@ -422,8 +425,8 @@ export class Catalogue implements DrawnDetail {
     const histogram = this.histograms.get(batch.tile.id);
     if (histogram === undefined) return;
     const domain = batch.tile.domain;
-    if (batch.covered !== undefined) {
-      this.tallyModel(batch.covered, domain, histogram.inside, by);
+    if (histogram.covers !== undefined) {
+      this.tallyModel(histogram.covers, domain, by);
       return;
     }
     const { sources, objects, cells } = histogram;
@@ -440,13 +443,13 @@ export class Catalogue implements DrawnDetail {
     });
   }
 
-  /** Counts the Galaxy model's points of a tile, `covered` by what, that are drawn (`inside`
-   * marks, where it marks any, and not hidden by the objects that cover them) into the model's
-   * count and its domain's, or out of them where `by` is −1: whatever the switches of sources,
-   * kinds of value and objects say. */
-  private tallyModel(covered: Uint8Array, domain: string, inside: Uint8Array | undefined, by: 1 | -1): void {
+  /** Counts the Galaxy model's points of a tile, counted by what covers them in `covers`, that
+   * are drawn (not hidden by the objects that cover them) into the model's count and its
+   * domain's, or out of them where `by` is −1: whatever the switches of sources, kinds of value
+   * and objects say. */
+  private tallyModel(covers: readonly number[], domain: string, by: 1 | -1): void {
     if (this.masks.domains.has(domain)) return;
-    const n = by * modelPointsShown(covered, this.masks.covered, inside);
+    const n = by * modelPointsShown(covers, this.masks.covered);
     this.modelPoints += n;
     this.domainPoints.set(domain, (this.domainPoints.get(domain) ?? 0) + n);
   }
@@ -548,7 +551,8 @@ export class Catalogue implements DrawnDetail {
       this.ages.tracers += batch.ids.length;
       this.ages.aged += aged;
     }
-    this.histograms.set(id, { sources, objects: objectsOf(batch), all, culled, cells, inside, empty: inside !== undefined && !inside.includes(1), aged });
+    const covers = batch.covered === undefined ? undefined : coversOf(batch.covered, inside);
+    this.histograms.set(id, { sources, objects: objectsOf(batch), all, culled, cells, inside, empty: inside !== undefined && !inside.includes(1), aged, covers });
   }
 
   /** Culls the view to `volume`, or no longer where it is none (see-the-structures): the points

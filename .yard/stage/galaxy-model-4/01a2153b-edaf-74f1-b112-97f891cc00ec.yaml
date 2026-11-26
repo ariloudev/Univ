@@ -1,0 +1,12 @@
+key: 01a2153b-edaf-74f1-b112-97f891cc00ec
+id: review
+versions:
+  - key: 01a2153b-edaf-74f1-b112-97fb3a4968bb
+    at: 2026-11-26T00:22:58Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Review and gate"
+    goal: "/simplify and /code-review findings fixed, cargo xtask check and cargo xtask integration green, the trace linked"
+    status: planned

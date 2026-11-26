@@ -187,6 +187,8 @@ export class Renderer implements Drawer {
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_source"), 65535);
     // Nor kinds of object: `a_object` 0, a point of no kind, which no switch turns off.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_object"), 0);
+    // Nor a kind of value, for a Galaxy model point: `a_kind` 0, which its light ignores.
+    gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_kind"), 0);
     // Nor a cover: `a_covered` 0, for every point but the Galaxy model's.
     gl.vertexAttrib1f(gl.getAttribLocation(this.points.program, "a_covered"), 0);
     // And every point is drawn while the catalogue marks none, markers always.
@@ -263,22 +265,22 @@ export class Renderer implements Drawer {
   private upload(points: Pick<Points, "centre" | "offsets" | "kinds" | "colours" | "objects" | "covered"> & { sources?: Uint16Array }): Drawn {
     const vao = this.gl.createVertexArray();
     this.gl.bindVertexArray(vao);
-    const buffers = [
-      this.buffer(this.points.program, "a_offset", points.offsets, 3),
-      this.buffer(this.points.program, "a_kind", points.kinds, 1),
-    ];
-    // The attributes a batch may lack, each left at its constant where it does.
+    const buffers = [this.buffer(this.points.program, "a_offset", points.offsets, 3)];
+    // The attributes a batch may lack, each left at its constant where it does: a Galaxy model
+    // batch has no kinds, sources or objects.
     const optional = [
+      ["a_kind", points.kinds, 1],
       ["a_source", points.sources, 1],
       ["a_colour", points.colours, 4],
       ["a_object", points.objects, 1],
       ["a_covered", points.covered, 1],
     ] as const;
     for (const [name, data, size] of optional) {
-      if (data !== undefined) buffers.push(this.buffer(this.points.program, name, data, size, name === "a_colour"));
+      // An empty array is none: a buffer shorter than the points would be read past its end.
+      if (data !== undefined && data.length > 0) buffers.push(this.buffer(this.points.program, name, data, size, name === "a_colour"));
     }
     this.gl.bindVertexArray(null);
-    return { vao, buffers, centre: points.centre, count: points.kinds.length };
+    return { vao, buffers, centre: points.centre, count: points.offsets.length / 3 };
   }
 
   /** Adds a tile's points to what is drawn, fading them in from `now`. */

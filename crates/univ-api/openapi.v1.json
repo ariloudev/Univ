@@ -1531,7 +1531,7 @@
         "properties": {
           "definition": {
             "$ref": "#/components/schemas/Model",
-            "description": "Its populations, each with the code its model points carry in the tiles, its density,\nlight and display colour; the spiral arms' rules; and the papers its numbers cite. Each\nnumber gives its value, unit, kind of value, uncertainty and its citation or the reason\nfor it."
+            "description": "How many model points it was sampled into and the seed its sampling was drawn with\n(`points`, `seed`); its populations, each with the code its model points carry in the tiles, its density,\nlight and display colour; the spiral arms' rules; and the papers its numbers cite. Each\nnumber gives its value, unit, kind of value, uncertainty and its citation or the reason\nfor it."
           },
           "domain": {
             "description": "The scale domain its model points are tiled in: `galaxy_model`.",
@@ -1544,20 +1544,8 @@
             },
             "type": "array"
           },
-          "points": {
-            "description": "How many model points it was sampled into.",
-            "format": "int64",
-            "minimum": 0,
-            "type": "integer"
-          },
           "release": {
             "format": "int32",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "seed": {
-            "description": "The seed its sampling was drawn with.",
-            "format": "int64",
             "minimum": 0,
             "type": "integer"
           }
@@ -1565,8 +1553,6 @@
         "required": [
           "release",
           "domain",
-          "points",
-          "seed",
           "definition",
           "followed"
         ],
@@ -4094,6 +4080,13 @@
             "format": "int32",
             "minimum": 0,
             "type": "integer"
+          },
+          "covered_by": {
+            "description": "The scale domain whose objects cover its covered points, its counterparts' (`stars` or\n`galaxy_tracers`): a client drawing that domain hides them. A manifest written before\nmanifests named it gives none.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "id": {
             "description": "Its id in the Galaxy model's definition, such as `thin_disc`.",

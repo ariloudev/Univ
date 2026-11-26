@@ -53,7 +53,9 @@ pub use manifest::{
     TRACERS_ENCODING, TileManifest, rotations, sampling,
 };
 use manifest::{Laid, manifest_of};
-pub use model::{Galaxy, ModelDomain, SampledModel, build_model_domain, counts, fits, tile_model};
+pub use model::{
+    Galaxy, ModelDomain, SampledModel, build_model_domain, counts, fits, followed_of, tile_model,
+};
 pub use octree::{Node, Octree, Positioned, generator, root_box};
 pub use rules::{DEEPEST, MAX_SEED, TileRules};
 pub use write::{MANIFEST_FILE, tile_file, write_all};

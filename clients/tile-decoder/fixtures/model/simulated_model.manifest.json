@@ -71,32 +71,38 @@
       {
         "code": 1,
         "id": "thin_disc",
-        "name": "Thin disc"
+        "name": "Thin disc",
+        "covered_by": "stars"
       },
       {
         "code": 2,
         "id": "thick_disc",
-        "name": "Thick disc"
+        "name": "Thick disc",
+        "covered_by": "stars"
       },
       {
         "code": 3,
         "id": "bar_and_bulge",
-        "name": "Bar and bulge"
+        "name": "Bar and bulge",
+        "covered_by": "stars"
       },
       {
         "code": 4,
         "id": "stellar_halo",
-        "name": "Stellar halo"
+        "name": "Stellar halo",
+        "covered_by": "stars"
       },
       {
         "code": 5,
         "id": "young_stars",
-        "name": "Young stars of the arms"
+        "name": "Young stars of the arms",
+        "covered_by": "galaxy_tracers"
       },
       {
         "code": 6,
         "id": "star_forming_knots",
-        "name": "Star-forming knots of the arms"
+        "name": "Star-forming knots of the arms",
+        "covered_by": "galaxy_tracers"
       }
     ],
     "flags": "bit 0 (1) set where real objects cover the point, which a client drawing them hides"

@@ -1,0 +1,61 @@
+key: 01a2153b-edaf-74f1-b112-97f605588394
+id: plan
+versions:
+  - key: 01a2153b-edaf-74f1-b112-97f9585cac06
+    at: 2026-11-26T00:22:58Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Plan the server and explorer wave"
+    goal: "An approved plan: GET /v1/galaxy-model and the listing in Univ Server, and the Galaxy model drawn in Univ Explorer"
+    status: active
+blocks:
+  - key: 01a2153f-3ae1-7346-bce8-660b5d1bb5b1
+    id: wave-plan
+    kind: plan
+    versions:
+      - key: 01a2153f-3ae1-7346-bce8-660c4a15d8e3
+        at: 2026-11-26T00:26:35Z
+        revision: 2
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Wave 4 plan: serve and draw the Galaxy model"
+        markdown: |
+          # Wave 4 plan: serve and draw the Galaxy model (`stage/galaxy-model-4`, wave 3 inside it)
+
+          ## Univ Server
+
+          1. **The parameters' uncertainty.** The criterion asks each parameter's uncertainty, which `Parameter` lacks. It gains `uncertainty`, taken from a cited number's ± where its paper gives one, and *none reported* otherwise, for every choice too; never zero. Older rows read as none reported.
+          2. **`GET /v1/galaxy-model`** (`?release=`, latest by default):
+             - The response is `GalaxyModel { release, domain, points, seed, definition, followed }`, from the release's `galaxy_models` row (`valid_in`).
+             - A release without one answers **404** `urn:univ:problem:galaxy-model-not-found`, naming the release.
+             - Wired through `Endpoint`, `ROUTES` (34), `refusals`, the OpenAPI paths and roots, and the snapshot (additions only).
+          3. **The listing.** `galaxy_model` is already listed, from its `scale_domains` row. The testkit seeds one, and `the_listing_holds_each_scale_domain_with_its_radius_in_its_own_unit` comes back to AC-166.
+          4. **Tests.** Unit tests in univ-api on the SQLite testkit, and e2e tests on the fixture state, whose release 2 holds a 20,000-point model.
+
+          ## Univ Explorer
+
+          5. **Reading the model.** `api/galaxyModel.ts` reads `/v1/galaxy-model`: populations (code, colour, density form) and papers. A 404 means no model.
+          6. **Tiles.** `domainsOf` stops leaving the model out. A version 5 tile decodes with `decodeModelTile` into a `ModelBatch`: offsets, the colour bytes of each point's population from the definition, and which counterpart domain covers it (stars, young tracers, or none). Model batches are never pickable, so the pointer and clicks pass through them.
+          7. **Drawing as light.** A small second point program draws every model point at one brightness, additively, in its population's colour, with no dust dimming (the definition is intrinsic light). Source and kind switches don't touch it. A covered point is hidden while the domain of its counterparts is on: the young stars' and knots' points while Galaxy tracers is on, the others while stars is on.
+          8. **Key and credits.** The key shows *Galaxy model: a model, not observed stars*, with its count of points drawn kept apart from the objects. While the domain is on, the credits list each paper the definition cites.
+          9. **The arms view** turns on Galaxy tracers and the Galaxy model (AC-760). The test it waited on comes back, and the e2e test checks the model is on.
+          10. **Colours check.** A Rust test writes the repository's definition as a JSON fixture beside the tile fixtures. An explorer test checks that each derived sRGB is what `starColour` gives for its B−V.
+
+          ## Then
+
+          11. `/simplify` and `/code-review`, `cargo xtask check` and `cargo xtask integration`, and the trace linked: AC-166, AC-760, the new read and see criteria.
+          12. **Rebuild Milky Way release 6**, which adds the uncertainties, and run the explorer on it. Screenshots of the model in 3D are in the wave's end report.
+
+          No spec change is expected. Any that turns up comes to you at the wave's end, with the merge.
+    responses:
+      - key: 01a21540-1824-7672-92cc-f18ab2682dc9
+        at: 2026-11-26T00:27:31Z
+        revision: 3
+        by:
+          name: "Sergey Lobko-Lobanovsky"
+          email: "2330548+ariloudev@users.noreply.github.com"
+        channel: terminal
+        verdict: approved

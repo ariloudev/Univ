@@ -34,16 +34,22 @@ export function coveredHiddenOf(hidden: ReadonlySet<string>, held: readonly stri
   return bits;
 }
 
-/** How many of a model batch's points are drawn: those `inside` marks, where it marks any, but
- * the covered ones `hiddenBits` hides. */
-export function modelPointsShown(covered: Uint8Array, hiddenBits: number, inside?: Uint8Array): number {
-  let n = 0;
+/** A model batch's points by what covers them, `NOT_COVERED`, `COVERED_BY_STARS` and
+ * `COVERED_BY_TRACERS`: of those `inside` marks, where it marks any. */
+export function coversOf(covered: Uint8Array, inside?: Uint8Array): [number, number, number] {
+  const counts: [number, number, number] = [0, 0, 0];
   for (let i = 0; i < covered.length; i += 1) {
     if (inside !== undefined && inside[i] === 0) continue;
-    if (((hiddenBits >>> (covered[i] ?? 0)) & 1) === 0) n += 1;
+    const c = covered[i] ?? NOT_COVERED;
+    counts[c] = (counts[c] ?? 0) + 1;
   }
-  return n;
+  return counts;
 }
+
+/** Of a model batch's points counted by `covers`, those drawn: all but the covered ones
+ * `hiddenBits` hides. */
+export const modelPointsShown = (covers: readonly number[], hiddenBits: number): number =>
+  covers.reduce((n, count, c) => (((hiddenBits >>> c) & 1) === 0 ? n + count : n), 0);
 
 /** The opacity of a batch's points: its domain's, or that of a view culled to a volume, and of a
  * batch of the Galaxy model's light, `MODEL_OPACITY` of it. */

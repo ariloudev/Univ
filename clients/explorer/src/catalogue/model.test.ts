@@ -11,7 +11,7 @@ import { type GalaxyModel, galaxyModel } from "../api/galaxyModel.ts";
 import { NO_MASKS, masksOf } from "../scene/masks.ts";
 import { COVERED_BY_STARS, COVERED_BY_TRACERS, MODEL_OPACITY, NOT_COVERED, batchOpacity } from "../scene/model.ts";
 import { starBytes } from "../scene/starColour.ts";
-import { bytesOf, fixtureText, fixtureTiles } from "../test/fixtures.ts";
+import { bytesOf, fixtureText, fixtureTiles, manifestOf } from "../test/fixtures.ts";
 import { hiddenInAddress } from "../ui/hidden.ts";
 import { pickableOf } from "../ui/useWorld.ts";
 import { Catalogue } from "./catalogue.ts";
@@ -19,6 +19,9 @@ import { type Batch, batchOf, domainsOf, lookOf } from "./tiles.ts";
 
 /** The repository's definition as Univ Server answers for it. */
 const DEFINITION = JSON.parse(fixtureText("model/galaxy_model.json")) as GalaxyModel;
+
+/** The manifest of the fixture's model tiles. */
+const MANIFEST = manifestOf("model/simulated_model");
 
 /** The fixture of each domain the test server serves. */
 const FIXTURES: Record<string, string> = { stars: "stars", galaxy_model: "model/simulated_model" };
@@ -90,9 +93,17 @@ describe("the Galaxy model's definition", () => {
     expect(without.map((d) => d.name)).toEqual(["stars"]);
   });
 
-  it("covers the arms' populations by young tracers and the others by stars", () => {
-    const look = lookOf(DEFINITION);
+  it("left out where it cannot be read, the release's objects drawn without it", async () => {
+    const http = server();
+    const failing = { ...http, fetch: (url: string) => (url.includes("/v1/galaxy-model") ? Promise.resolve(Response.json({ status: 500 }, { status: 500 })) : http.fetch(url)) };
+    const domains = await domainsOf(10, { http: failing });
+    expect(domains.map((d) => d.name)).toEqual(["stars"]);
+  });
+
+  it("covers each population's points by the objects of the domain its manifest entry names", () => {
+    const look = lookOf(DEFINITION, MANIFEST);
     for (const p of DEFINITION.definition.populations) {
+      // The young stars and knots of the arms by the Galaxy tracers, the others by the stars.
       expect(look.cover[p.code], p.id).toBe(p.density.form === "arms" ? COVERED_BY_TRACERS : COVERED_BY_STARS);
       expect([...look.colours.subarray(p.code * 4, p.code * 4 + 3)]).toEqual(p.colour.srgb);
     }
@@ -102,15 +113,15 @@ describe("the Galaxy model's definition", () => {
 describe("the Galaxy model's points", () => {
   it("are each in its population's colour, with what covers it, and of no kind, source or id", async () => {
     const batches = await modelBatches();
-    const look = lookOf(DEFINITION);
+    const look = lookOf(DEFINITION, MANIFEST);
     const expected = fixtureTiles("model/simulated_model").flatMap((t) => t.points as unknown as { population: number; covered: boolean }[]);
     const points = batches.reduce((n, b) => n + b.covered!.length, 0);
     expect(points).toBe(expected.length);
     let covered = 0;
     for (const batch of batches) {
       const n = batch.covered!.length;
-      expect(batch.kinds).toEqual(new Uint8Array(n));
-      expect(batch.ids).toEqual(new Float64Array(n));
+      expect([batch.kinds.length, batch.sources.length, batch.ids.length]).toEqual([0, 0, 0]);
+      expect(batch.offsets.length).toBe(n * 3);
       for (let i = 0; i < n; i += 1) {
         const colour = [...(batch.colours?.subarray(i * 4, i * 4 + 4) ?? [])];
         const code = look.colours.findIndex((_, at) => at % 4 === 0 && at > 0 && colour.every((c, k) => look.colours[at + k] === c)) / 4;

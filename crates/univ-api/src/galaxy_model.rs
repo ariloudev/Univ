@@ -32,7 +32,7 @@ pub async fn get<B: Backend>(request: &Request, backend: &B) -> Result<Response,
     let rows = backend
         .releases(
             concat!(
-                "SELECT domain, points, seed, definition, followed FROM galaxy_models \
+                "SELECT domain, definition, followed FROM galaxy_models \
                  WHERE domain = ?2 AND ",
                 valid_in!("", "?1")
             ),
@@ -49,8 +49,6 @@ pub async fn get<B: Backend>(request: &Request, backend: &B) -> Result<Response,
     let model = GalaxyModel {
         release,
         domain: column(&row, "domain")?,
-        points: column(&row, "points")?,
-        seed: column(&row, "seed")?,
         definition: json_column(&row, "definition")?,
         followed: json_column(&row, "followed")?,
     };

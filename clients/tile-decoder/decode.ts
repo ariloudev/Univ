@@ -118,6 +118,9 @@ export interface PopulationCode {
   code: number;
   id: string;
   name: string;
+  /** The scale domain whose objects cover its covered points (`stars` or `galaxy_tracers`);
+   * none in a manifest written before manifests named it. */
+  covered_by?: string;
 }
 
 /** What a Galaxy tracer is, as its source names it. */

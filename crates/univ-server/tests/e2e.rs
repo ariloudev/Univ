@@ -179,7 +179,7 @@ fn the_galaxy_model_gives_its_definition_as_the_release_sampled_it() {
     assert_eq!(model["release"], 2);
     assert_eq!(model["domain"], "galaxy_model");
     // The fixture releases sample 20,000 model points; the production definition 10 million.
-    assert_eq!(model["points"], 20_000);
+    assert_eq!(model["definition"]["points"], 20_000);
     let populations = model["definition"]["populations"].as_array().unwrap();
     assert_eq!(populations.len(), 6);
     for p in populations {

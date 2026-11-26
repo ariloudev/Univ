@@ -81,8 +81,9 @@ fn the_model_gives_its_points_seed_domain_and_the_arms_it_followed() {
     let m = read(&db(), "");
     assert_eq!(m["release"], 2);
     assert_eq!(m["domain"], "galaxy_model");
-    assert_eq!(m["points"], 20_000);
-    assert_eq!(m["seed"], 16);
+    assert_eq!(m["definition"]["points"], 20_000);
+    assert_eq!(m["definition"]["seed"], 16);
+    assert!(m.get("points").is_none(), "given once, in the definition");
     assert_eq!(m["followed"], json!(["reid-2019-perseus-arm"]));
 }
 

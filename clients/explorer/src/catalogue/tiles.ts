@@ -40,24 +40,27 @@ export interface ModelLook {
   papers: readonly ModelPaper[];
 }
 
-/** How `model`'s points look: each population in its display colour, opaque, its light given by
- * the drawing; covered by young tracers for a population of the arms, by stars for any other. */
-export function lookOf(model: GalaxyModel): ModelLook {
+/** How `model`'s points look, its tiles' manifest `manifest`: each population in its display
+ * colour, opaque, its light given by the drawing; covered by the objects of the domain the
+ * manifest names for it, or by none where it names none. */
+export function lookOf(model: GalaxyModel, manifest: ExplorerManifest): ModelLook {
   const colours = new Uint8Array(256 * 4);
   const cover = new Uint8Array(256);
-  for (const p of model.definition.populations) {
-    colours.set([...p.colour.srgb, 255], p.code * 4);
-    cover[p.code] = p.density.form === "arms" ? COVERED_BY_TRACERS : COVERED_BY_STARS;
-  }
+  for (const p of model.definition.populations) colours.set([...p.colour.srgb, 255], p.code * 4);
+  for (const p of manifest.encoding.populations ?? []) cover[p.code] = COVERS[p.covered_by ?? ""] ?? NOT_COVERED;
   const populations = model.definition.populations.map((p) => ({ code: p.code, name: p.name, srgb: p.colour.srgb }));
   return { colours, cover, populations, papers: model.definition.papers };
 }
+
+/** What covers a model point, by the scale domain its population's manifest entry names. */
+const COVERS: Readonly<Record<string, number>> = { stars: COVERED_BY_STARS, galaxy_tracers: COVERED_BY_TRACERS };
 
 /** The points of one tile, ready to draw: offsets from its centre in megaparsecs. */
 export interface Batch {
   tile: DomainTile;
   offsets: Float32Array;
-  /** Each point's kind of value, as its index in `KINDS`. */
+  /** Each point's kind of value, as its index in `KINDS`; empty for a tile of the Galaxy model,
+   * whose points have none, as for `sources` and `ids`. */
   kinds: Uint8Array;
   /** Each point's index in the manifest's sources. */
   sources: Uint16Array;
@@ -167,16 +170,23 @@ function cumulativeOf(manifest: ExplorerManifest): number[] {
  * look, and left out where the release holds no definition for it. */
 export async function domainsOf(release: number, options: ReadOptions = {}): Promise<Domain[]> {
   const list = await readJson("/v1/scale-domains", DomainList, { ...options, release });
-  const model = list.domains.some((d) => d.name === MODEL_DOMAIN) ? await galaxyModel(release, options) : undefined;
-  const names = list.domains.map((d) => d.name).filter((name) => name !== MODEL_DOMAIN || model !== undefined);
-  return Promise.all(
-    names.map(async (name) => {
+  // Read beside the manifests, and kept for the release whichever view asked: so with no view's
+  // signal. A model that cannot be read leaves the model out, never the release's objects.
+  const reading = list.domains.some((d) => d.name === MODEL_DOMAIN)
+    ? galaxyModel(release, options.http === undefined ? {} : { http: options.http }).catch(() => undefined)
+    : Promise.resolve(undefined);
+  const [model, ...domains] = await Promise.all([
+    reading,
+    ...list.domains.map(async ({ name }) => {
       const path = `/v1/scale-domains/${encodeURIComponent(name)}/manifest`;
       const manifest = await readJson(path, ExplorerManifest, { ...options, release });
-      const look = name === MODEL_DOMAIN && model !== undefined ? lookOf(model) : undefined;
-      return { name, manifest, toMpc: MPC_PER[manifest.unit], tiles: tilesOf(name, manifest), model: look };
+      return { name, manifest, toMpc: MPC_PER[manifest.unit], tiles: tilesOf(name, manifest) };
     }),
-  );
+  ]);
+  return domains.flatMap((d): Domain[] => {
+    if (d.name !== MODEL_DOMAIN) return [d];
+    return model === undefined ? [] : [{ ...d, model: lookOf(model, d.manifest) }];
+  });
 }
 
 async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
@@ -223,8 +233,8 @@ function modelBatchOf(domain: Domain, tile: DomainTile, bytes: Uint8Array, look:
     colours.set(look.colours.subarray(code * 4, code * 4 + 4), i * 4);
     covered[i] = p.covered ? (look.cover[code] ?? NOT_COVERED) : NOT_COVERED;
   });
-  const n = points.length;
-  const none = { kinds: new Uint8Array(n), sources: new Uint16Array(n), ids: new Float64Array(n) };
+  // No kind, source or id: nothing reads them of a model point, which is never picked.
+  const none = { kinds: new Uint8Array(0), sources: new Uint16Array(0), ids: new Float64Array(0) };
   return { tile, offsets, ...none, colours, covered, extent: extentOf(offsets, tile.centre) };
 }
 

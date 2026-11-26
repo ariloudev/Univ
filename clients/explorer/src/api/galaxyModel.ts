@@ -23,7 +23,6 @@ const Paper = z.looseObject({ id: z.string(), reference: z.string(), doi: z.stri
 const GalaxyModel = z.looseObject({
   release: z.number(),
   domain: z.string(),
-  points: z.number(),
   definition: z.looseObject({ populations: z.array(Population), papers: z.array(Paper) }),
   followed: z.array(z.string()),
 });
