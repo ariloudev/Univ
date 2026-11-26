@@ -72,7 +72,9 @@ pub use files::{
     DirSink, RELEASES, list, parse_manifest, read_manifest, release_dir, verify, write_manifest,
 };
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
-pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
+pub use meta::{
+    SourceRows, StructureBounds, domain_rows, galaxy_model_rows, source_rows, structure_rows,
+};
 pub use objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 pub use outline::{
     Admitted, OUTLINE_CENTRE, Outlined, TestCatalogues, admitted, not_drawn, outlines_on,

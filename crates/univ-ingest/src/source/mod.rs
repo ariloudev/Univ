@@ -280,6 +280,9 @@ pub enum ScaleDomain {
     /// The tracers of the Galaxy's structure: clusters, pulsating stars and star-forming
     /// regions, in parsecs (give-the-galaxys-tracers-a-scale-domain).
     GalaxyTracers,
+    /// The Galaxy model's points, in parsecs (build-the-galaxy-model): no source's, which a
+    /// source definition naming it is refused for.
+    GalaxyModel,
 }
 
 /// A correction to a source as published.
@@ -354,6 +357,14 @@ impl SourceDefinition {
         }
         if let Some(clause) = &self.terms.share_alike {
             blank("terms.share_alike", clause)?;
+        }
+        if self.scale_domain == ScaleDomain::GalaxyModel {
+            return Err((
+                "scale_domain".to_owned(),
+                "is the Galaxy model's, whose points are sampled from its definition, not a \
+                 source's"
+                    .to_owned(),
+            ));
         }
         let tracers = self.scale_domain == ScaleDomain::GalaxyTracers;
         match self.object_kind {

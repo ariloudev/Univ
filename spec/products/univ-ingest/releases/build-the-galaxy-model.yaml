@@ -65,9 +65,9 @@ requirements:
       shall: "place the young stars and the star-forming knots of the arms along each spiral arm by the best published fit of each stretch of its azimuth."
     criteria:
       - key: 01a213c1-93e0-7343-9f8d-9bbc75cfbc04
-        name: "At each azimuth of an arm, the model follows the fit whose fitted range covers it, Reid et al. 2019's first, then each other paper's in the order the definition names them for that arm."
+        name: "Along each arm, the model follows the fitted ranges of its fits in the order the definition names them for that arm, Reid et al. 2019's first, leaving out each stretch of a later fit that runs alongside an earlier fit within the distance the definition gives for one stretch."
       - key: 01a213c1-93e0-7343-9f8d-9bbd9e6223e0
-        name: "At an azimuth that no fit of the arm covers, the model follows an extrapolation of one of its fits, in the same order, with the weight the definition gives an extrapolation."
+        name: "Where no fitted range of an arm reaches, the model follows the extrapolations of its fits, in the same order and leaving out the same stretches, with the weight the definition gives an extrapolation."
       - key: 01a213c1-93e0-7343-9f8d-9bbe211c23a8
         name: "Beyond every fit and every extrapolation of an arm, the model places none of that arm's young stars or star-forming knots."
       - key: 01a213c1-93e0-7343-9f8d-9bbfb0d5452a

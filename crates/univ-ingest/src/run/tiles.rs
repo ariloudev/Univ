@@ -9,7 +9,7 @@ use super::{RunReport, lock};
 use crate::crossmatch::CrossMatched;
 use crate::events::{Count, Event, EventSink, Stage};
 use crate::source::SourceDefinition;
-use crate::tiles::{Built, Context, DOMAINS, build_watched, name_of, write_all};
+use crate::tiles::{Built, Context, DOMAINS, Galaxy, build_watched, name_of, write_all};
 use crate::watch::Watch;
 
 /// Where the tiles stage writes, by default: the build directory of the cache.
@@ -78,6 +78,10 @@ pub async fn tiles_stage(
             cosmology: &crossed.cosmology,
             rules: &crossed.basis.tiles,
             definitions: &definitions,
+            galaxy: Some(Galaxy {
+                model: &crossed.basis.galaxy_model,
+                structures: &crossed.basis.structures,
+            }),
         };
         let step = |step| {
             events.emit(Event::Stepped {

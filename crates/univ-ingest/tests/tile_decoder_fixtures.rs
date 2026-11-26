@@ -15,21 +15,25 @@ mod release_fixture;
 mod simulated;
 
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
+use common::repository::repository_model;
 use common::{source_id, workspace};
 use release_fixture::{cross, fixture, tiles};
 use serde::Serialize;
 use simulated::tiles::{Lcg, context, rules};
 use univ_ingest::fetch::hex;
 use univ_ingest::source::ScaleDomain;
-use univ_ingest::tiles::{BuiltDomain, DomainPoint, assign, build_domain, name_of};
+use univ_ingest::tiles::{
+    BuiltDomain, DomainPoint, PopulationCode, assign, build_domain, name_of, tile_model,
+};
 use univ_model::cosmology::Cosmology;
 use univ_model::ids::ObjectId;
 use univ_model::object::ObjectKind;
 use univ_model::tile::manifest::{TileManifest, TileManifestIndex};
 use univ_model::tile::{
-    COLOUR_BANDS, ColourBands, KINDS, OBJECT_KINDS, PointColour, PointValue, decode,
+    COLOUR_BANDS, ColourBands, KINDS, ModelPoint, OBJECT_KINDS, PointColour, PointValue, decode,
+    decode_model,
 };
 use univ_model::value::KindOfValue;
 
@@ -47,18 +51,18 @@ const ABOUT: &str = "as the Rust encoder writes them, with each point's position
 
 /// A domain's tiles file.
 #[derive(Serialize)]
-struct DomainFile {
+struct DomainFile<P> {
     about: String,
     scale_domain: &'static str,
-    tiles: Vec<Tile>,
+    tiles: Vec<Tile<P>>,
 }
 
 /// A tile: its node's address, its bytes in hexadecimal, and its points in the order stored.
 #[derive(Serialize)]
-struct Tile {
+struct Tile<P> {
     address: String,
     hex: String,
-    points: Vec<Expected>,
+    points: Vec<P>,
 }
 
 /// What a point was built from.
@@ -100,6 +104,7 @@ fn release() -> Vec<Domain> {
     built
         .domains
         .into_iter()
+        .filter(|d| d.domain != ScaleDomain::GalaxyModel)
         .map(|built| {
             let p = assigned.domains.remove(&built.domain).unwrap_or_default();
             Domain {
@@ -197,6 +202,94 @@ fn simulated_tracers() -> Domain {
     }
 }
 
+/// A model point as it was tiled, before quantization.
+#[derive(Serialize)]
+struct ExpectedModel {
+    position: [f64; 3],
+    population: u8,
+    covered: bool,
+}
+
+/// The directory of the Galaxy model's fixtures, relative to the workspace: apart, since their
+/// points carry no object.
+const MODEL_DIR: &str = "clients/tile-decoder/fixtures/model";
+
+/// SIMULATED: 60 model points at made-up positions, every population among them and every fourth
+/// covered, split over several levels: version 5 tiles, with the manifest naming each population
+/// by its code as the repository's definition does.
+fn simulated_model() -> (BuiltDomain, Vec<ModelPoint>) {
+    let mut lcg = Lcg(31);
+    let points: Vec<ModelPoint> = (1..=60u8)
+        .map(|n| ModelPoint {
+            position: [0, 1, 2].map(|_| (2.0 * lcg.next() - 1.0) * 20_000.0),
+            population: n % 6 + 1,
+            covered: n % 4 == 0,
+        })
+        .collect();
+    let model = repository_model();
+    let populations = model.populations.iter().map(PopulationCode::from).collect();
+    let (cosmology, definitions) = (Cosmology::planck_2018(), common::read_sources());
+    let rules = rules(12, 8, 3, 5);
+    let built = tile_model(
+        &points,
+        populations,
+        model.seed,
+        &context(&rules, &cosmology, &definitions),
+    )
+    .unwrap();
+    (built, points)
+}
+
+/// The Galaxy model's files: its manifest and its tiles, each point with its position before
+/// quantization, found as the made-up point within half a step of it.
+fn model_files() -> Vec<(String, String)> {
+    let (built, points) = simulated_model();
+    let tiles: Vec<Tile<ExpectedModel>> = built
+        .nodes
+        .iter()
+        .map(|n| {
+            let step = n.bounds.step();
+            Tile {
+                address: n.address.clone(),
+                hex: hex(&n.tile),
+                points: decode_model(&n.tile)
+                    .unwrap()
+                    .points
+                    .iter()
+                    .map(|d| {
+                        let p = points
+                            .iter()
+                            .find(|p| (0..3).all(|i| (p.position[i] - d.position[i]).abs() <= step))
+                            .unwrap();
+                        assert_eq!((p.population, p.covered), (d.population, d.covered));
+                        ExpectedModel {
+                            position: p.position,
+                            population: p.population,
+                            covered: p.covered,
+                        }
+                    })
+                    .collect(),
+            }
+        })
+        .collect();
+    let file = DomainFile {
+        about: format!(
+            "SIMULATED Galaxy model tiles, version 5: made-up model points, built {ABOUT}"
+        ),
+        scale_domain: name_of(built.domain),
+        tiles,
+    };
+    let mut text = serde_json::to_string_pretty(&file).unwrap();
+    text.push('\n');
+    vec![
+        (
+            "simulated_model.manifest.json".to_owned(),
+            String::from_utf8(built.json).unwrap(),
+        ),
+        ("simulated_model.tiles.json".to_owned(), text),
+    ]
+}
+
 /// Every domain the fixtures hold.
 fn domains() -> Vec<Domain> {
     let mut domains = release();
@@ -259,29 +352,26 @@ fn files() -> Vec<(String, String)> {
     files
 }
 
-fn dir() -> PathBuf {
-    workspace().join(DIR)
-}
-
-#[test]
-fn the_tile_decoders_fixtures_are_what_ingest_builds() {
-    let files = files();
+/// Checks the fixtures of `dir`, relative to the workspace, against `files`, or rewrites them
+/// when asked to.
+fn check(dir: &str, files: &[(String, String)]) {
+    let at = workspace().join(dir);
     if std::env::var_os(UPDATE).is_some() {
-        std::fs::create_dir_all(dir()).unwrap();
-        for (name, text) in &files {
-            std::fs::write(dir().join(name), text).unwrap();
+        std::fs::create_dir_all(&at).unwrap();
+        for (name, text) in files {
+            std::fs::write(at.join(name), text).unwrap();
         }
         return;
     }
-    for (name, text) in &files {
-        let file = std::fs::read_to_string(dir().join(name)).unwrap_or_default();
+    for (name, text) in files {
+        let file = std::fs::read_to_string(at.join(name)).unwrap_or_default();
         assert!(
             file == *text,
-            "{DIR}/{name} differs from what ingest builds: run {UPDATE}=1 cargo test -p \
+            "{dir}/{name} differs from what ingest builds: run {UPDATE}=1 cargo test -p \
              univ-ingest --test tile_decoder_fixtures to rewrite it"
         );
     }
-    let mut present: Vec<String> = std::fs::read_dir(dir())
+    let mut present: Vec<String> = std::fs::read_dir(&at)
         .unwrap()
         .map(|e| e.unwrap().file_name().into_string().unwrap())
         .filter(|n| {
@@ -291,9 +381,23 @@ fn the_tile_decoders_fixtures_are_what_ingest_builds() {
         })
         .collect();
     present.sort();
-    let mut expected: Vec<String> = files.into_iter().map(|(n, _)| n).collect();
+    let mut expected: Vec<String> = files.iter().map(|(n, _)| n.clone()).collect();
     expected.sort();
-    assert_eq!(present, expected, "{DIR} holds no other fixture");
+    assert_eq!(present, expected, "{dir} holds no other fixture");
+}
+
+#[test]
+fn the_tile_decoders_fixtures_are_what_ingest_builds() {
+    check(DIR, &files());
+}
+
+#[test]
+fn the_galaxy_models_fixtures_are_what_ingest_builds() {
+    check(MODEL_DIR, &model_files());
+    let (built, _) = simulated_model();
+    assert!(built.nodes.len() > 1, "several levels");
+    let read: TileManifest = serde_json::from_slice(&built.json).unwrap();
+    assert_eq!(read, built.manifest);
 }
 
 #[test]

@@ -69,7 +69,11 @@ const points = decodeTile(bytes, node, manifest);
   - `objectKind`, in a version 4 tile where the point's object names one: what the Galaxy
     tracer is, such as `open_cluster`, `luminous_hot_star` or `molecular_cloud`, from
     `manifest.encoding.object_kinds`. Absent before version 4 and for one body.
-- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2, 3, 4]`.
+- `VERSIONS` lists the encoding versions the decoder knows: `[1, 2, 3, 4, 5]`.
+- `decodeModelTile(bytes, node, manifest)` reads a version 5 tile of the Galaxy model into its
+  model points: `x`, `y`, `z`, its `population` from `manifest.encoding.populations`, and
+  whether real objects cover it, `covered`. `decodeTile` refuses a version 5 tile, and
+  `decodeModelTile` any other.
 
 `decodeTile` throws an `Error` in these cases:
 

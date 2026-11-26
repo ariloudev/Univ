@@ -255,10 +255,10 @@ fn a_decoder_refuses_bad_input_with_an_error() {
     ));
 
     let mut version = good.clone();
-    version[4] = 5;
+    version[4] = 6;
     let error = decode(&version).unwrap_err();
-    assert_eq!(error, TileError::UnknownVersion(5));
-    assert!(error.to_string().contains("version 5"), "{error}");
+    assert_eq!(error, TileError::UnknownVersion(6));
+    assert!(error.to_string().contains("version 6"), "{error}");
 
     let mut magic = good.clone();
     magic[0] = b'X';
@@ -340,10 +340,10 @@ fn a_child_cube_halves_its_parent_and_takes_its_octant() {
 fn an_oversized_tile_of_an_unknown_version_is_refused_naming_its_version() {
     let mut bytes = vec![0; 1_048_577];
     bytes[..4].copy_from_slice(&MAGIC);
-    bytes[4..6].copy_from_slice(&5u16.to_le_bytes());
+    bytes[4..6].copy_from_slice(&6u16.to_le_bytes());
     let error = decode(&bytes).unwrap_err();
-    assert_eq!(error, TileError::UnknownVersion(5));
-    assert!(error.to_string().contains("version 5"), "{error}");
+    assert_eq!(error, TileError::UnknownVersion(6));
+    assert!(error.to_string().contains("version 6"), "{error}");
     bytes[..4].copy_from_slice(b"XXXX");
     assert_eq!(decode(&bytes), Err(TileError::Magic(*b"XXXX")));
     bytes[..4].copy_from_slice(&MAGIC);

@@ -132,11 +132,15 @@ function cumulativeOf(manifest: ExplorerManifest): number[] {
   return held;
 }
 
-/** The scale domains of `release` with their manifests. */
+/** The scale domain of the Galaxy model, whose version 5 tiles hold model points, not objects. */
+const MODEL_DOMAIN = "galaxy_model";
+
+/** The scale domains of `release` with their manifests: those of objects, every one but the
+ * Galaxy model's, which the catalogue of objects does not draw. */
 export async function domainsOf(release: number, options: ReadOptions = {}): Promise<Domain[]> {
   const list = await readJson("/v1/scale-domains", DomainList, { ...options, release });
   return Promise.all(
-    list.domains.map(async ({ name }) => {
+    list.domains.filter(({ name }) => name !== MODEL_DOMAIN).map(async ({ name }) => {
       const path = `/v1/scale-domains/${encodeURIComponent(name)}/manifest`;
       const manifest = await readJson(path, ExplorerManifest, { ...options, release });
       return { name, manifest, toMpc: MPC_PER[manifest.unit], tiles: tilesOf(name, manifest) };

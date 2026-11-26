@@ -8,6 +8,10 @@
               panic is the test failing, and `accept` and `keep` have the shapes of the hooks"
 )]
 
+pub mod repository;
+
+pub use repository::test_repository;
+
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::{Arc, LazyLock, Mutex, PoisonError};
@@ -305,12 +309,12 @@ pub fn copied(id: &str, dir: &Path, mirror: &str) -> SourceDefinition {
 }
 
 /// The `univ-ingest` binary run as `univ-ingest <subcommand> --offline --repository
-/// <workspace>`, then each flag of `extra_args` with its path.
+/// <the test repository>`, then each flag of `extra_args` with its path.
 pub fn run(subcommand: &str, extra_args: &[(&str, &Path)]) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_univ-ingest"));
     command
         .args([subcommand, "--offline", "--repository"])
-        .arg(workspace());
+        .arg(test_repository());
     for (flag, path) in extra_args {
         command.arg(flag).arg(path);
     }

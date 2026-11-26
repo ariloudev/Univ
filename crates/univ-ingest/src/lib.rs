@@ -9,6 +9,7 @@ pub mod display;
 pub mod events;
 pub mod fetch;
 pub mod fits;
+pub mod galaxy_model;
 pub mod grids;
 pub mod hash;
 pub mod ids;

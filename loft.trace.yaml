@@ -2144,7 +2144,13 @@ links:
         body: dc5b686da25a1bd173ad2c430c6e2edcc9cccae445ade7a4655663d163ae6b94
   - node: 01a19f23-636f-72bd-b194-152c99726521
     reviewed: 894f9628a81ca3c58026e9b62372c2c13aaefe8b151a669aacbc32285a36a886
-    unverified: "The specification of product/galaxy-model adds the Galaxy model's root in parsecs, which wave 2 (stage/galaxy-model-2) builds; it restores the tests \"each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs\" in crates/univ-ingest/tests/tiles.rs, which verify the rest."
+    tests:
+      - file: "crates/univ-ingest/tests/tiles.rs"
+        name: "each_scale_domain_has_its_own_root_stars_in_parsecs_galaxies_in_megaparsecs"
+        body: 51107d77c2a2e6e0b3096562577e8b192c867380353fe6b30c45936eb190534b
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_model_domain_is_in_parsecs_with_its_own_octree_and_only_its_tiles_take_version_5"
+        body: 285e4a1132df49390ccf61c073d412588bc6f81cda15d358088591a22df3394f
   - node: 01a19f23-636f-72bd-b194-152dec6f0f74
     reviewed: bb5baa11a69fb801df18b2c9108773ddc258c4e6f01dc0a7ea8a0ba393db8684
     tests:
@@ -2267,16 +2273,16 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/release_tracers.rs"
         name: "the_tracers_tiles_take_version_4_with_each_points_kind_and_other_domains_keep_version_3"
-        body: 8902b3333890a9493de059e1a2da064d0410097eb3c7f8c70cd603ac14bae046
+        body: ae47f5329215b181cb60667ee6711ad7b30f7bb9dfa10a5998a66d2921f60704
   - node: 01a19f23-636f-72bd-b194-153527b1bfc8
     reviewed: 01b394cf56e3be520717d6e3aedd5bd7dec4a53014e5dc281727ae06d8e532fd
     tests:
       - file: "crates/univ-ingest/tests/tiles_encoding.rs"
         name: "two_builds_from_the_same_inputs_and_seed_give_the_same_bytes"
-        body: 375d87ed294516dd46a2432041e40029417dd901de690a52965eba976d84736a
+        body: 21df4e750376ed2b4173381d683519757686e218d91e25af4b2765adc3e785c7
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3865bcea175091acc530652737068b37c56161d5aaacb67f6c3e96858d3d7369
+        body: 7cdfadc3da47264b5463d39e5749da07d8b08dbcd3334762b5e63cac0247b193
   - node: 01a19f23-636f-72bd-b194-1536b3b46eba
     reviewed: 3f558f7729869bcac13551d351b84e16571ee4843004754609970d9b08c111f3
     tests:
@@ -2471,7 +2477,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
-        body: 22565d1a9bb79784a7fbe602d0d3d8ba68069ceb51081dd50260342a3b981474
+        body: c7045028c92838937ad73fa1e2ee3abb195cec17ce8ad094c97583b042ca742e
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_bound_shard_given_the_tables_of_schema_5_is_brought_under_shared_rows_whenever_found"
         body: 7d19297629aded5438b50cfc0042e2f599a8813290ae2a1a45a19bb85f5152a0
@@ -2480,7 +2486,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
-        body: 22565d1a9bb79784a7fbe602d0d3d8ba68069ceb51081dd50260342a3b981474
+        body: c7045028c92838937ad73fa1e2ee3abb195cec17ce8ad094c97583b042ca742e
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_migration_stopped_while_it_deleted_the_old_keys_deletes_the_rest_when_run_again"
         body: c296837f573b1288353e3f014f57d2833e2e6862e181a3ace6a40f74f703d9a7
@@ -2489,7 +2495,7 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
-        body: 22565d1a9bb79784a7fbe602d0d3d8ba68069ceb51081dd50260342a3b981474
+        body: c7045028c92838937ad73fa1e2ee3abb195cec17ce8ad094c97583b042ca742e
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change"
         body: 2e5c4eb67f17d63c272f70c987e8fe2f81a48b73df83bfd6a6b6970c114695de
@@ -2498,10 +2504,169 @@ links:
     tests:
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_store_of_schema_5_is_brought_under_shared_rows_with_every_pinned_read_unchanged"
-        body: 22565d1a9bb79784a7fbe602d0d3d8ba68069ceb51081dd50260342a3b981474
+        body: c7045028c92838937ad73fa1e2ee3abb195cec17ce8ad094c97583b042ca742e
       - file: "crates/univ-ingest/tests/migrate_store.rs"
         name: "a_release_built_on_a_migrated_and_reindexed_store_publishes_onto_it_as_its_change"
         body: 2e5c4eb67f17d63c272f70c987e8fe2f81a48b73df83bfd6a6b6970c114695de
+  - node: 01a213c1-93e0-7343-9f8d-9bafb71adc50
+    reviewed: f7d0b5303b7809f6c6d08eb5e0432e4a96fd81fe849934ac6e34b1a8129d03c7
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
+        name: "each_number_of_the_definition_cites_its_paper_or_is_a_choice_with_its_reason"
+        body: a58b8a3a3dfc0c3298cbafe7319b18a0e377b8a6fc210d5e5293b1b88a00dffa
+  - node: 01a213c1-93e0-7343-9f8d-9bb0c0e51a9d
+    reviewed: 47088c543935bae5ff829d8b56b86a68f08cde5af7ec527f2bb76cf04b611ec6
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
+        name: "each_number_of_the_definition_cites_its_paper_or_is_a_choice_with_its_reason"
+        body: a58b8a3a3dfc0c3298cbafe7319b18a0e377b8a6fc210d5e5293b1b88a00dffa
+  - node: 01a213c1-93e0-7343-9f8d-9bb1aeebce25
+    reviewed: 5a12bae734109c0ac9643bd6820a748cca8bdb602e6209bee7f03a7ac6e5c58e
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
+        name: "the_definition_gives_six_populations_each_with_its_density_height_light_and_colour"
+        body: 8dc9f9fd439b85b66b49e573a610f463351a088559ac99176f666dfb651fa10f
+  - node: 01a213c1-93e0-7343-9f8d-9bb2d2a3511b
+    reviewed: 04b28d67af76da411fa730a6ad93c0eb671c3cf119029c6b70b94a0b2c5a597d
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
+        name: "the_definition_gives_six_populations_each_with_its_density_height_light_and_colour"
+        body: 8dc9f9fd439b85b66b49e573a610f463351a088559ac99176f666dfb651fa10f
+  - node: 01a213c1-93e0-7343-9f8d-9bb39faba952
+    reviewed: ba2ad8692d9f2199aaa24d36f4c055f54459540cf01950ff426948da8210713f
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
+        name: "the_definition_gives_six_populations_each_with_its_density_height_light_and_colour"
+        body: 8dc9f9fd439b85b66b49e573a610f463351a088559ac99176f666dfb651fa10f
+  - node: 01a213c1-93e0-7343-9f8d-9bb542535a8b
+    reviewed: 1f8d253f157d2c42bd96ab113aab9853570ad72001f7c3f379f9231194bbede8
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_file.rs"
+        name: "a_number_that_neither_cites_a_paper_nor_is_a_choice_is_refused_naming_it"
+        body: a0eddd243f160e140a3ef50ea23ce1617214787b7cebed189d6992ca39edbd1e
+  - node: 01a213c1-93e0-7343-9f8d-9bb7a4016439
+    reviewed: 722d83976a23c9e5e9b6491518d69410406401c3c7466a118bdbcc54a8475f7b
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "the_points_are_shared_by_light_and_add_up_exactly"
+        body: 566cb5e6005d785033fe2623024f8f4c2ed96b23619c4a89edc1cd4ac6bf55bd
+  - node: 01a213c1-93e0-7343-9f8d-9bb84543dd7a
+    reviewed: 34526672f9fd88366b7e7feef2219bf9ff302b28ddd99ad51a37dab5c0bd5096
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "an_exponential_disc_has_its_scale_length_and_height"
+        body: 1809a61438858dad251aa36c6c17df4febbc186053d83151d210e31556529f8b
+  - node: 01a213c1-93e0-7343-9f8d-9bb9af0bce6b
+    reviewed: c27f9ceea2169805bb26cc82ed71f72437a627cd06d3dba64b2f93e9589aeb31
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "the_galactic_centre_lies_8_15_kpc_toward_l_0_and_the_sun_above_the_plane"
+        body: 820eb646dab5035c0300165aa7ca4998b38bb0c37dcc16d4176aa3e5591468a7
+  - node: 01a213c1-93e0-7343-9f8d-9bba9db761af
+    reviewed: 6a9b0461ac03dc158a40cfaf122707a4bce0345cd4a3473ad28f2426f84dfa84
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "the_same_model_and_seed_give_the_same_points_in_the_same_order"
+        body: e888ada5771f4883808fa30205cb22b556660edf1ec8302c138ee11b64c1d2aa
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_model_seed_is_in_its_manifest_and_building_again_gives_the_same_tiles"
+        body: 075e4574269321991ef6055efd5c6d0b1c01566be3cc421ca768f9aff6ca6ad4
+  - node: 01a213c1-93e0-7343-9f8d-9bbc75cfbc04
+    reviewed: bdc686e9c221e3fc5ebe05bd99b367b101d3b9877986f36784fb9d953b03be68
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "a_later_fit_near_an_earlier_one_is_left_out_and_an_extrapolation_follows_the_fits"
+        body: d91b471e0a0d868378332ea11ce88c2004e182089ae51ded74e20f625e058571
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "a_fit_that_continues_another_starts_where_it_stops_without_a_gap"
+        body: 10190fd29f315ed532a1942db2bcbd93e677350ab621bf633c58434e831c5052
+  - node: 01a213c1-93e0-7343-9f8d-9bbd9e6223e0
+    reviewed: d6701b0e687efdce07b7f4834b3ade1b5308918912c1eaf4feeac7bd7ada1ae3
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "a_later_fit_near_an_earlier_one_is_left_out_and_an_extrapolation_follows_the_fits"
+        body: d91b471e0a0d868378332ea11ce88c2004e182089ae51ded74e20f625e058571
+  - node: 01a213c1-93e0-7343-9f8d-9bbe211c23a8
+    reviewed: a1e01f74f590f1ee8a2c15e2d19b9c4079a9a5d242a2b2fccf2621ce427a7b70
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "an_arm_population_lies_along_its_stretches_spread_by_the_arm_width"
+        body: 2840a73179668fb21afb3bb10a8c176223683b4eab405db307ae166ce9d0849c
+  - node: 01a213c1-93e0-7343-9f8d-9bbfb0d5452a
+    reviewed: 295fbea31d7feb0ab41bed9bb9041d25fe2df62e02b6e9c1e078fe1ac3a7adf8
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "an_arm_population_lies_along_its_stretches_spread_by_the_arm_width"
+        body: 2840a73179668fb21afb3bb10a8c176223683b4eab405db307ae166ce9d0849c
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "knots_gather_their_points_close_together"
+        body: 165a56b4a60b6428938422d676d17094cb2c59c754633c68615c3b5c578bf0fd
+  - node: 01a213c1-93e0-7343-9f8d-9bc09db31c03
+    reviewed: 8f353c36de395d4ac6f845a8db508de8843333e11f83a140fb8a19dd97afd915
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "the_thin_disc_is_denser_along_the_arms_by_its_contrast"
+        body: a5d15dcb8275abc10571301c8c54fdc5578f18b27d2448819dcc551e8ac52520
+  - node: 01a213c1-93e0-7343-9f8d-9bc2311c3ec6
+    reviewed: 62902a91820c1865a25c035c205443a3440f3d17f96458ea3d6cc3d21a3ef9bf
+    tests:
+      - file: "crates/univ-model/src/galaxy_model/tests.rs"
+        name: "the_first_points_of_a_population_in_a_cube_are_covered_as_many_as_its_counterparts"
+        body: b53d953929a3e71c239d3bb2650f974e83e1e6f7bad8854932875caed7dbc68c
+  - node: 01a213c1-93e0-7343-9f8d-9bc342e650c3
+    reviewed: 7b59668a2f2b4fe52c535ea221a150457b4fcfac95d2a3469f4a5a91debcb005
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_young_populations_count_young_tracers_and_the_others_count_stars"
+        body: 11616b5170a82e130e0b146988619046e791bcac8f8a84d7c0f219af8086b16e
+  - node: 01a213c1-93e0-7343-9f8d-9bc4c1df698a
+    reviewed: 5ce3b7b62f2e8b41de9b55553588b940e5d33b5f45f7bd6740c355366d2ec760
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_young_populations_count_young_tracers_and_the_others_count_stars"
+        body: 11616b5170a82e130e0b146988619046e791bcac8f8a84d7c0f219af8086b16e
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "covered_model_points_are_marked_and_stay_in_their_tiles"
+        body: 859193327225d939a9f5d2381ffd97989829bdb9d8fbbba5b24e1e36f0d92e02
+  - node: 01a213c1-93e0-7343-9f8d-9bc5e95311fd
+    reviewed: f052ecd87a5a88c34c13641df50969c905699aae73266a30ed4b88ef41d102d4
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "covered_model_points_are_marked_and_stay_in_their_tiles"
+        body: 859193327225d939a9f5d2381ffd97989829bdb9d8fbbba5b24e1e36f0d92e02
+  - node: 01a213c1-93e0-7343-9f8d-9bc7e4b77947
+    reviewed: d35d635a638f640f4dfed257364322b28b95a2b17bbde22a6144a58b43505d97
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_model_domain_is_in_parsecs_with_its_own_octree_and_only_its_tiles_take_version_5"
+        body: 285e4a1132df49390ccf61c073d412588bc6f81cda15d358088591a22df3394f
+  - node: 01a213c1-93e0-7343-9f8d-9bc87f205531
+    reviewed: d862e212e85c4a3368965c4db82c9a36b30caa8bd3a0c9e9c08634164729b402
+    tests:
+      - file: "crates/univ-model/src/tile/model_tests.rs"
+        name: "a_model_point_takes_its_position_population_and_covered_flag_in_8_bytes"
+        body: 38015cc4453ca8ed38d6ce0a3bdbe105f9f20f686d36d006fa783eff32ee43ff
+  - node: 01a213c1-93e0-7343-9f8d-9bc9e98850cd
+    reviewed: ceb0b5f64f7b94b82074c9afc447e6a724fb87d1514733d0a1d1a123c4004faa
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_model_domain_is_in_parsecs_with_its_own_octree_and_only_its_tiles_take_version_5"
+        body: 285e4a1132df49390ccf61c073d412588bc6f81cda15d358088591a22df3394f
+  - node: 01a213c1-93e0-7343-9f8d-9bcb236f6459
+    reviewed: e0bf852cdd9c909d7d96405bcf47edb3408d050c638186fb1b12c8dd182377c0
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_release_holds_the_definition_it_sampled_each_population_named_by_its_code"
+        body: 4652fc056782873dcbfd0428ccec0e2afd1ede201c639d3e906badbc7df4aeb6
+  - node: 01a213c1-93e0-7343-9f8d-9bcc817decda
+    reviewed: ebfd8ce15e55148fafa13b1d802df06f1883ae820d8e9846a3d24114ba05065b
+    tests:
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_manifest_names_each_population_by_the_code_its_points_carry"
+        body: b4a22ce659544507ccb893974da9d056767f1619c14bc7a14b3b3019b6b471e4
+      - file: "crates/univ-ingest/tests/galaxy_model_tiles.rs"
+        name: "the_release_holds_the_definition_it_sampled_each_population_named_by_its_code"
+        body: 4652fc056782873dcbfd0428ccec0e2afd1ede201c639d3e906badbc7df4aeb6
   - node: 01a19f22-b0bc-76da-bac8-977d3868a411
     reviewed: cc37beca30b495d7bc6ca64117e2a846be04474bbe21d4eebfcd6054cd9631a6
     tests:
@@ -2534,10 +2699,10 @@ links:
         body: bba61434f6d49da2d39e82e9e3efcd298358f76ddc7781f0c8da9f6e2c63b5a3
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3865bcea175091acc530652737068b37c56161d5aaacb67f6c3e96858d3d7369
+        body: 7cdfadc3da47264b5463d39e5749da07d8b08dbcd3334762b5e63cac0247b193
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c1d240988dd077b43d60f7a5654292d2c4d95061862bffb057097dab18b492a3
+        body: 968fedb3a6c8a5ccd7fd405bf41b32a0977c5c563f8ce4441be415445ec916f5
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
         body: 435d98a083f7eb1a153b38630dceeaaca68da936c9a3946fccf977954aaa91b4
@@ -2612,13 +2777,13 @@ links:
         body: c602d02b33b2de1ebbd637940c4eccc6b6b563686604d6ab7d284fd0baa259d2
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c1d240988dd077b43d60f7a5654292d2c4d95061862bffb057097dab18b492a3
+        body: 968fedb3a6c8a5ccd7fd405bf41b32a0977c5c563f8ce4441be415445ec916f5
       - file: "crates/univ-ingest/tests/crossmatch_cli.rs"
         name: "an_offline_match_of_recorded_answers_prints_the_stage_and_its_counts"
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3865bcea175091acc530652737068b37c56161d5aaacb67f6c3e96858d3d7369
+        body: 7cdfadc3da47264b5463d39e5749da07d8b08dbcd3334762b5e63cac0247b193
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "a_publish_and_a_prune_show_a_stage_a_step_per_file_and_a_summary_of_what_they_did"
         body: 435d98a083f7eb1a153b38630dceeaaca68da936c9a3946fccf977954aaa91b4
@@ -2639,10 +2804,10 @@ links:
         body: 5be9a4aced40c19615d6a9a112ce80799c1180b0376da263724929814a4a79fc
       - file: "crates/univ-ingest/tests/tiles_cli.rs"
         name: "an_offline_tiles_run_writes_tiles_the_decoder_reads_back_and_prints_its_counts"
-        body: 3865bcea175091acc530652737068b37c56161d5aaacb67f6c3e96858d3d7369
+        body: 7cdfadc3da47264b5463d39e5749da07d8b08dbcd3334762b5e63cac0247b193
       - file: "crates/univ-ingest/tests/release_cli.rs"
         name: "an_offline_build_writes_a_checked_release_and_names_it_in_the_summary"
-        body: c1d240988dd077b43d60f7a5654292d2c4d95061862bffb057097dab18b492a3
+        body: 968fedb3a6c8a5ccd7fd405bf41b32a0977c5c563f8ce4441be415445ec916f5
       - file: "crates/univ-ingest/tests/run_display.rs"
         name: "the_fetch_ends_with_what_it_got_hit_failed_and_fetched"
         body: 44d8528399883814e0094b13ce0eea119e8b54794b35e48c8976facd07a8139f
@@ -4163,7 +4328,16 @@ links:
         body: 0ba51e9026976bd28d8639f9efbff7f64de1389bd3c7c1fe65f9404f7ad16b23
   - node: 01a1a6e4-22e1-765d-b404-01feaa3330ef
     reviewed: 84121995e2433f4affea886c40cbf0d970db72e8e999124da5e786010ade8d59
-    unverified: "The specification of product/galaxy-model adds the reference decoder's encoding version 5, which wave 2 (stage/galaxy-model-2) builds; it restores the tests \"the decoder decodes tiles of encoding versions 1, 2, 3 and 4\" in clients/tile-decoder/decode.test.ts; \"a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours\" in crates/univ-model/src/tile/tests.rs, which verify the rest."
+    tests:
+      - file: "clients/tile-decoder/decode.test.ts"
+        name: "the decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5"
+        body: 4aea1c0f3b8e56c4d3626f35f3fc6fcd7a900693b69b494ae5afb03c3de850bb
+      - file: "crates/univ-model/src/tile/tests.rs"
+        name: "a_decoder_refuses_a_colour_its_bands_contradict_and_reads_version_1_without_colours"
+        body: ad2c71868ca94fcadde0711e39133d5e00e524853a96352cf8a5e248157f0e47
+      - file: "clients/tile-decoder/decode-model.test.ts"
+        name: "each model point of a version 5 tile gives its position, its population and whether it is covered"
+        body: 524035f7bfa894d8af9665e7bb219d7027a53a8e517680300a5ea114fa1ff745
   - node: 01a1a6e4-22e1-765d-b404-01ff442efb73
     reviewed: 279d1e3ce5238e28b0e8c711c9cbe69fe7cec4d115e2e9537e4ce6dd435dfa3c
     tests:
@@ -4188,6 +4362,15 @@ links:
       - file: "crates/univ-api/src/bulk_tests.rs"
         name: "the_tile_format_describes_version_4_beside_version_3_when_a_domain_uses_it"
         body: 8e6e8ef9a276d2cfc10fdb478a2b59a1385dc26953a0d590ff89a3200caa6276
+  - node: 01a213c1-93e0-7343-9f8d-9bcd54b44ccc
+    reviewed: 9c7241ea2f7e1315fbc4ee4a40a6e7e61882e96f7234475f580bb3fb0fece38d
+    tests:
+      - file: "clients/tile-decoder/decode-model.test.ts"
+        name: "each model point of a version 5 tile gives its position, its population and whether it is covered"
+        body: 524035f7bfa894d8af9665e7bb219d7027a53a8e517680300a5ea114fa1ff745
+      - file: "crates/univ-model/src/tile/model_tests.rs"
+        name: "the_object_decoder_refuses_a_model_tile_and_the_model_decoder_an_object_tile"
+        body: 22d40db8dcbb536f07bc4ff98fa22d13ec24590be5adabe4202c8a523dca4284
   - node: 01a19f20-8e6c-7039-b16f-ac0782b8bf64
     reviewed: cd3d5c598eb5768886cce5b75d25023538b1c09c500dc8d51e4db468635f4520
     tests:
@@ -6913,11 +7096,11 @@ links:
     reviewed: 2811142c91cb7826b8296d5fdb719551cbb9be65e013657b6e2ca3905e400cc4
     tests:
       - file: "crates/univ-model/src/release/tests.rs"
-        name: "version_8_keeps_json_out_of_every_table_per_object_or_per_entry"
-        body: 524c542e2038773d26dc80e6d7f4b4cf723d77bd8b47c8b4da2cce52f5a157f9
+        name: "the_schema_keeps_json_out_of_every_table_per_object_or_per_entry"
+        body: 01d253717f5f4f045b1af9c65303e7514dd4c5cea91a72c3fda4893ec39794ff
       - file: "crates/univ-ingest/tests/schema8.rs"
         name: "a_store_of_schema_7_reads_every_object_as_schema_8_once_migrated_and_again_changes_nothing"
-        body: 981877292588507f96ff190a452d5b47713e662b3924354197ec5f6c391ef5af
+        body: 6fe74acc9fe108ebc55f9991f026b1279c99e6f317849e969f4190e0b131011b
       - file: "xtask/src/json/tests.rs"
         name: "a_json_column_in_a_table_per_object_or_entry_is_refused_and_one_per_source_is_not"
         body: 4ad1ee545b3ab93c7f2b6296a9ca25f319cfa0e1480ba68afb7462f48ada858d

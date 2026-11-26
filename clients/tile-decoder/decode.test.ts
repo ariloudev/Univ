@@ -121,10 +121,11 @@ test("AC-283: each decoded point gives its object id, its source and its kind of
   }
 });
 
-test('the decoder decodes tiles of encoding versions 1, 2, 3 and 4', () => {
-  assert.deepEqual(VERSIONS, [1, 2, 3, 4]);
-  // The current fixtures: the Galaxy tracers' tiles at version 4, every other domain's at 3.
-  assert.ok(fixtures.every((f) => [3, 4].includes(f.manifest.encoding.version)));
+test('the decoder decodes tiles of encoding versions 1, 2, 3, 4 and 5', () => {
+  assert.deepEqual(VERSIONS, [1, 2, 3, 4, 5]);
+  // The current fixtures: the Galaxy tracers' tiles at version 4, the Galaxy model's at 5, every
+  // other domain's at 3.
+  assert.ok(fixtures.every((f) => [3, 4, 5].includes(f.manifest.encoding.version)));
   assert.deepEqual(version1.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 1]]);
   assert.deepEqual(version2.map((f) => [f.name, f.manifest.encoding.version]), [['simulated', 2]]);
   let checked = 0;
