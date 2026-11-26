@@ -19,6 +19,15 @@ versions:
     title: "Build the Galaxy model"
     goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition; the Milky Way release holds it"
     status: active
+  - key: 01a21528-4eb0-76c4-84d8-f90eb7729033
+    at: 2026-11-26T00:01:32Z
+    revision: 15
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Build the Galaxy model"
+    goal: "univ-model samples the cited Galaxy model and encodes tile version 5; Univ Ingest builds the galaxy_model domain with covered points marked and publishes the definition; the Milky Way release holds it"
+    status: done
 blocks:
   - key: 01a21499-e418-7114-ab74-6f815781eb9a
     id: t-v5
@@ -161,3 +170,21 @@ blocks:
         title: "Rebuild the Milky Way release and render the model"
         detail: "mw-build.sh, a face-on render of the v5 tiles, cargo xtask science."
         state: open
+      - key: 01a214d1-4b03-70ba-8cb0-8c6fd9de9c8c
+        at: 2026-11-25T22:26:30Z
+        revision: 12
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Rebuild the Milky Way release and render the model"
+        detail: "mw-build.sh, a face-on render of the v5 tiles, cargo xtask science."
+        state: active
+      - key: 01a21528-4eb0-76c4-84d8-f90fea90d686
+        at: 2026-11-26T00:01:32Z
+        revision: 15
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Build Milky Way release 5 and look at the model"
+        detail: "Release 5 built and published: galaxy model 1545 nodes, 10,000,000 points, 80 MB of tiles, about 20 s of a 31-minute build; 1,571,698 points covered near the Sun. Science: fingerprints match over 34 tables, every Milky Way and arm check passes. A face-on render of release 4 showed wedge gaps at each junction of two fits; fixed (4f3d930) and release 5 rebuilt."
+        state: done
