@@ -51,6 +51,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["src/test/setup.ts"],
+    // Node 25 and later give a global localStorage of their own, which hides jsdom's: the tests
+    // read the browser's, as the page does.
+    execArgv: ["--no-experimental-webstorage"],
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: { provider: "istanbul", reporter: ["text-summary", "json"], include: ["src/**"] },
   },

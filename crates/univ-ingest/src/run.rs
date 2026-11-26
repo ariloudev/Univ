@@ -50,6 +50,8 @@ pub struct FetchOptions {
     pub cache: PathBuf,
     /// The ids of the sources to fetch; all of them when empty.
     pub sources: Vec<String>,
+    /// The scale domains of the researched structures a build takes; all of them when empty.
+    pub structures_of: Vec<crate::source::ScaleDomain>,
 }
 
 /// The display of a run: the terminal one when standard error is a terminal, plain lines

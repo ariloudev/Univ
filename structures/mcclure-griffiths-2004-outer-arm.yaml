@@ -1,0 +1,113 @@
+# McClure-Griffiths et al. 2004's distant H I arm in the fourth quadrant, as the log spiral of the pitch they state, over the azimuths of their observed peaks.
+name: Distant fourth-quadrant arm (McClure-Griffiths 2004 model)
+alternative_names: [Outer arm in the fourth quadrant (McClure-Griffiths 2004)]
+kind: spiral_arm
+status: model
+scale_domain: galaxy_tracers
+papers:
+  - id: mcclure-griffiths-2004
+    reference: "McClure-Griffiths, Dickey, Gaensler & Green 2004, ApJ 607, L127"
+    title: "A Distant Extended Spiral Arm in the Fourth Quadrant of the Milky Way"
+    doi: 10.1086/422031
+    arxiv: "astro-ph/0404448"
+    read: "arXiv source (LaTeX) of astro-ph/0404448v1: the whole text and the captions, and Figure 3 (raster in the source) panel (a), whose crosses were read off its axes; journal reference and DOI from arXiv's metadata"
+  - id: mcclure-griffiths-2004-erratum
+    reference: "McClure-Griffiths, Dickey, Gaensler & Green 2004, ApJ 611, L145 (erratum)"
+    title: "Erratum: \"A Distant Extended Spiral Arm in the Fourth Quadrant of the Milky Way\""
+    doi: 10.1086/424007
+    read: "The journal's PDF, in full: it corrects Figure 3b only, the synthetic longitude-velocity diagram, and states that none of the Letter's conclusions were affected"
+  - id: minniti-2021
+    reference: "Minniti, Zoccali, Rojas-Arriagada et al. 2021, A&A 654, A138"
+    title: "Using classical Cepheids to study the far side of the Milky Way disk. II. The spiral structure in the first and fourth Galactic quadrants"
+    doi: 10.1051/0004-6361/202039512
+    arxiv: "2107.03464"
+    read: "arXiv source (LaTeX) of 2107.03464, the paragraph comparing their Outer arm with McClure-Griffiths et al. 2004"
+  - id: reid-2019
+    reference: "Reid, Menten, Brunthaler et al. 2019, ApJ 885, 131"
+    title: "Trigonometric Parallaxes of High-mass Star-forming Regions: Our View of the Milky Way"
+    doi: 10.3847/1538-4357/ab4a11
+    bibcode: 2019ApJ...885..131R
+    arxiv: "1910.03357"
+    read: "arXiv source (LaTeX) of 1910.03357, Section 5 (the Sun's height)"
+geometry:
+  kind: log_spiral
+  log_spiral:
+    extent: fitted
+    arm: outer
+    convention: >-
+      McClure-Griffiths et al. 2004 fit no log spiral of their own: they state the arm's pitch,
+      i ∼ 9°, from a synthetic four-arm model, and place the model's arm and their observed peaks
+      in a face-on frame (x, y) in kpc with the Galactic Centre at the origin and the Sun on the y axis at
+      y = 8.5 kpc (Figure 3a). Their crosses, which lie at the longitudes of the fourth
+      quadrant of their Figure 3b, fall at negative x, so x points the way of Galactic rotation
+      at the Sun, as in Cordes & Lazio's frame, whose arms they overlay. Converted here as
+      R = √(x² + y²) and β = atan2(x, y), Reid et al. 2019's azimuth. A pitch i of a trailing arm,
+      its radius growing against the sense of rotation, is a positive ψ in Reid's formula.
+    beta_kink:
+      value: -71.6
+      unit: degree
+      kind: estimated
+      uncertainty: { form: none_reported }
+      cite: { paper: mcclure-griffiths-2004, figure: "3", how: "The azimuth of the point (x, y) = (−18 kpc, 6 kpc) through which, by the text, the model arm of panel (a) that makes the distant ridge passes: β = atan2(x, y), in the frame of panel (a), with the Sun on its y axis at 8.5 kpc (see the convention)." }
+      note: "No kink: with one pitch on both sides, this is only the azimuth at which the radius is given."
+    r_kink:
+      { value: 18.97, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: mcclure-griffiths-2004, figure: "3", how: "The Galactocentric radius of the point (x, y) = (−18 kpc, 6 kpc) that the text gives on the model arm of panel (a): R = √(x² + y²)." } }
+    pitch_inside:
+      { value: 9, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: mcclure-griffiths-2004, sentence: "We compare the feature with a Galactic spiral model and show that it is well reproduced by a spiral arm of pitch angle, i ∼ 9°." },
+        note: "Approximate, as the paper gives it: the pitch of the synthetic model's arm, whose pitch the paper varies with radius, not a fit to the observed peaks." }
+    pitch_outside:
+      { value: 9, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: mcclure-griffiths-2004, sentence: "We compare the feature with a Galactic spiral model and show that it is well reproduced by a spiral arm of pitch angle, i ∼ 9°." } }
+    # width: the paper gives only an upper limit, about 2 kpc, on the arm's width along the line of sight, and its thickness in z; no intrinsic radial width; left out, never guessed.
+    fitted:
+      - { value: -121, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: mcclure-griffiths-2004, figure: "3", how: "The azimuth of the cross at the highest longitude among the crosses of panel (a), which mark the observed positions of peak brightness temperature along the arm, read off the panel's axes in kpc and converted as β = atan2(x, y), with the Sun on the y axis at 8.5 kpc." } }
+      - { value: -47, unit: degree, kind: estimated, uncertainty: { form: none_reported },
+          cite: { paper: mcclure-griffiths-2004, figure: "3", how: "The azimuth of the cross at the lowest longitude among the crosses of panel (a), read and converted in the same way." } }
+    r0:
+      { value: 8.5, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+        cite: { paper: mcclure-griffiths-2004, sentence: "Overlaid on Fig. 1 are lines of constant galactocentric radius at R_g = 16 kpc and 24 kpc, assuming a Brand & Blitz (1993) rotation curve with the IAU recommended values for the LSR, Θ0 = 220 km s−1, and Galactic center distance, R0 = 8.5 kpc." },
+        note: "The IAU value, adopted, not fitted; Figure 3 puts the Sun at the same distance." }
+    sun_height:
+      { value: 5.5, unit: parsec, kind: estimated, uncertainty: { form: symmetric, sigma: 5.8 },
+        cite: { paper: reid-2019, sentence: "We find that the orientation of the plane is consistent with the IAU-defined plane to within ±0.1°, and that the Sun is offset toward the north Galactic pole by Z⊙ = 5.5 ± 5.8 pc." },
+        note: "McClure-Griffiths et al. 2004 give no height of the Sun; Reid et al. 2019's, as their other spiral-arm files use." }
+values:
+  theta0:
+    { value: 220, unit: kilometre_per_second, kind: estimated, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "Overlaid on Fig. 1 are lines of constant galactocentric radius at R_g = 16 kpc and 24 kpc, assuming a Brand & Blitz (1993) rotation curve with the IAU recommended values for the LSR, Θ0 = 220 km s−1, and Galactic center distance, R0 = 8.5 kpc." },
+      note: "The circular speed of the LSR that the paper's kinematic radii assume, with a Brand & Blitz rotation curve." }
+  model_arm_x:
+    { value: -18, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "The ridge corresponds to the spiral arm in the face-on diagram that passes through (x,y)=(−18 kpc,6 kpc)." } }
+  model_arm_y:
+    { value: 6, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "The ridge corresponds to the spiral arm in the face-on diagram that passes through (x,y)=(−18 kpc,6 kpc)." } }
+  longitude_from:
+    { value: 253, unit: degree, kind: measured, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "The feature extends from l=253°, v=+102 km s−1 to at least l=321°, v=+88 km s−1, placing it at Galactic radii in excess of 18 kpc." } }
+  longitude_to:
+    { value: 321, unit: degree, kind: measured, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "The feature extends from l=253°, v=+102 km s−1 to at least l=321°, v=+88 km s−1, placing it at Galactic radii in excess of 18 kpc." },
+      note: "At least: the Results add that the ridge possibly extends further, to higher longitudes." }
+  radius_low_longitude_end:
+    { value: 17, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "The feature extends from about R_g = 17 kpc (heliocentric distance, d=16 kpc) at the low longitude end to about R_g =25 kpc (d = 26 kpc) at the high longitude end." },
+      note: "The radii and distances of this sentence do not agree with each other at the end longitudes for the R0 given here, nor with the abstract's 18 to 24 kpc; the crosses of Figure 3 put the low-longitude end nearer the Sun than 16 kpc, and the high-longitude end nearer the Galactic Centre than 25 kpc." }
+  radius_high_longitude_end:
+    { value: 25, unit: kiloparsec, kind: estimated, uncertainty: { form: none_reported },
+      cite: { paper: mcclure-griffiths-2004, sentence: "The feature extends from about R_g = 17 kpc (heliocentric distance, d=16 kpc) at the low longitude end to about R_g =25 kpc (d = 26 kpc) at the high longitude end." } }
+notes: >-
+  The distant H I arm that McClure-Griffiths et al. 2004 found in the Southern Galactic Plane
+  Survey: a thin ridge at the most extreme positive velocities of the fourth quadrant, which the
+  paper reads as a spiral arm near the edge of the H I disc. The paper fits no spiral to it; the
+  path here is the log spiral of the pitch it states through the point it gives on its model's
+  arm, over the azimuths of the observed peaks it plots, so every parameter is estimated. Its
+  own caption of Figure 1 calls the feature the outer arm, and Minniti et al. 2021 find the
+  outward extension of their Cepheids' Outer arm "roughly consistent (in terms of its
+  pitch-angle and spatial distribution) with the distant spiral arm in the fourth quadrant
+  reported in McClure-Griffiths et al. (2004)", so it is filed here as a stretch of the Outer
+  arm. The erratum corrects only the synthetic longitude-velocity diagram of Figure 3b; the
+  face-on panel and the crosses read here are unchanged. A model, not an observed outline.

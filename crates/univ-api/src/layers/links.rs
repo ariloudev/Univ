@@ -141,8 +141,7 @@ fn reach(id: u64, changes: &BTreeMap<u64, (u32, Vec<u64>)>, present: &BTreeSet<u
         }
         for to in changes
             .get(&next)
-            .map(|(_, into)| into.as_slice())
-            .unwrap_or_default()
+            .map_or_default(|(_, into)| into.as_slice())
         {
             if visited.insert(*to) {
                 pending.push(*to);

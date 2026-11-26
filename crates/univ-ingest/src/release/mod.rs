@@ -72,7 +72,9 @@ pub use files::{
     DirSink, RELEASES, list, parse_manifest, read_manifest, release_dir, verify, write_manifest,
 };
 pub use grids::{GridFiles, grid_files, is_grid, read as read_grid};
-pub use meta::{SourceRows, StructureBounds, domain_rows, source_rows, structure_rows};
+pub use meta::{
+    SourceRows, StructureBounds, domain_rows, galaxy_model_rows, source_rows, structure_rows,
+};
 pub use objects::{ObjectCounts, ObjectWriter, json, ledger_rows, snake};
 pub use outline::{
     Admitted, OUTLINE_CENTRE, Outlined, TestCatalogues, admitted, not_drawn, outlines_on,
@@ -113,16 +115,21 @@ pub struct Inputs<'a> {
 
 impl Inputs<'_> {
     /// What the build refuses before anything is written: a membership of a source that names
-    /// a structure the release does not hold, where the build takes the researched structures.
+    /// a structure the release does not hold, where the build takes the researched structures;
+    /// one naming a structure the build left out for its scale domain is left out, not refused.
     ///
     /// # Errors
     ///
     /// Names the source, the column, the value and the structure.
     pub fn check(&self) -> Result<(), String> {
-        let structures = &self.crossed.basis.structures;
+        let basis = &self.crossed.basis;
         crate::source::check_structures(
             self.definitions,
-            structures.iter().map(|(id, _)| id.as_str()),
+            basis
+                .structures
+                .iter()
+                .map(|(id, _)| id.as_str())
+                .chain(basis.left_out.iter().map(String::as_str)),
         )
     }
 }

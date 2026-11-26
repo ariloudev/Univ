@@ -41,6 +41,10 @@ pub enum Unit {
     /// The base-10 logarithm of a time in years, as catalogues publish cluster ages: a logarithm,
     /// which no factor turns into years.
     LogYear,
+    /// A mass in solar masses, as the Galaxy model's populations give their stellar masses.
+    SolarMass,
+    /// A mass-to-light ratio in solar masses per solar luminosity, in the band its value names.
+    SolarMassPerSolarLuminosity,
 }
 
 /// What a unit measures; units convert only within one dimension.
@@ -62,6 +66,8 @@ pub enum Dimension {
     /// The base-10 logarithm of a time in years, kept apart from time: it converts to years by
     /// a power of ten, never by a factor.
     LogTime,
+    Mass,
+    MassToLight,
 }
 
 /// A conversion that cannot be made.
@@ -92,6 +98,8 @@ impl Unit {
             Self::ExtinctionZgr23PerParsec => Dimension::ExtinctionZgr23Density,
             Self::Year => Dimension::Time,
             Self::LogYear => Dimension::LogTime,
+            Self::SolarMass => Dimension::Mass,
+            Self::SolarMassPerSolarLuminosity => Dimension::MassToLight,
         }
     }
 
@@ -115,7 +123,9 @@ impl Unit {
             | Self::Dimensionless
             | Self::ExtinctionZgr23PerParsec
             | Self::Year
-            | Self::LogYear => 1.0,
+            | Self::LogYear
+            | Self::SolarMass
+            | Self::SolarMassPerSolarLuminosity => 1.0,
         }
     }
 
@@ -145,13 +155,15 @@ pub const STARS_DOMAIN: &str = "stars";
 
 /// The name of the scale domain of the Galaxy's tracers, whose positions are in parsecs.
 pub const GALAXY_TRACERS_DOMAIN: &str = "galaxy_tracers";
+/// The name of the Galaxy model's scale domain.
+pub const GALAXY_MODEL_DOMAIN: &str = "galaxy_model";
 
 /// The unit of the positions of the scale domain named `domain` (`stars`, `galaxy_tracers`,
-/// `nearby_galaxies` or `cosmic_web`): parsecs for stars and Galaxy tracers, megaparsecs for
-/// every other.
+/// `galaxy_model`, `nearby_galaxies` or `cosmic_web`): parsecs for stars, Galaxy tracers and the
+/// Galaxy model, megaparsecs for every other.
 #[must_use]
 pub fn scale_domain_unit(domain: &str) -> Unit {
-    if domain == STARS_DOMAIN || domain == GALAXY_TRACERS_DOMAIN {
+    if domain == STARS_DOMAIN || domain == GALAXY_TRACERS_DOMAIN || domain == GALAXY_MODEL_DOMAIN {
         Unit::Parsec
     } else {
         Unit::Megaparsec

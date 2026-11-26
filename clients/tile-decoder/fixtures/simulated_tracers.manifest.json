@@ -79,7 +79,8 @@
       "classical_cepheid",
       "rr_lyrae_star",
       "star_forming_region",
-      "luminous_hot_star"
+      "luminous_hot_star",
+      "molecular_cloud"
     ]
   },
   "levels": [
@@ -144,7 +145,7 @@
       "points": 8,
       "sampled_from": 40,
       "bytes": 216,
-      "sha256": "3035bd63850c6c65e290114894778c7e40f9f7741fb78594189c5dee4543f4ae"
+      "sha256": "6cbecf93bb550319d6f593a8c4d54f84f2af09b4b4593b6b9a208e28c544ece9"
     },
     {
       "address": "r0",
@@ -164,7 +165,7 @@
       "points": 2,
       "sampled_from": 2,
       "bytes": 90,
-      "sha256": "01c317e7cff3d81a360885fd7913da557b5f2447a7fb5f944535d57d37bf6b20"
+      "sha256": "9c09ce0e254f14f6d5e8a62146d4cee852e3e2e771f42386a86c495ba15c3c41"
     },
     {
       "address": "r1",
@@ -204,7 +205,7 @@
       "points": 4,
       "sampled_from": 4,
       "bytes": 132,
-      "sha256": "bb32d14f86c28fc75007d8237dc8ce576c77b1b93b047fa402d61346be44c9a0"
+      "sha256": "2e7ef2f0b2d3d736aca27ae5437d25e922051a1bef21e6f62e4061a1e4744276"
     },
     {
       "address": "r3",
@@ -224,7 +225,7 @@
       "points": 2,
       "sampled_from": 2,
       "bytes": 90,
-      "sha256": "2c5c55e3bb128db133daa28ee73ef3a2cda1e46bf36c5927dd91b5ef36ea04df"
+      "sha256": "2d835cfe3ab8c94d70e7c85319d9de8d1bddd567b07856b3b0124eac9caec268"
     },
     {
       "address": "r4",
@@ -244,7 +245,7 @@
       "points": 10,
       "sampled_from": 10,
       "bytes": 258,
-      "sha256": "0194ac50e30ae7bbe4236fe10082fbc20c7237897076427cca2d0ddb04302db4"
+      "sha256": "2852d95bc692164e9f461867ed660120805458789bb6520ad9d2961a2abf1f3d"
     },
     {
       "address": "r5",
@@ -264,7 +265,7 @@
       "points": 5,
       "sampled_from": 5,
       "bytes": 153,
-      "sha256": "b22e30ba0d0b9f4199e92e8c50a4d703a7315871c5f8eae33c0fdb3da3a360ec"
+      "sha256": "bf1e9a055dafdfeb1e5d6a4f7d4cb1db88273da36825659f5f3b9dae28f4b084"
     },
     {
       "address": "r6",
@@ -284,7 +285,7 @@
       "points": 2,
       "sampled_from": 2,
       "bytes": 90,
-      "sha256": "ac12738bd7240b98c2dd4bb916eabaa778901577dd393549bc40836caace3a6d"
+      "sha256": "3ebca2d3fad9d5c4737fdc1eecb37e6bb067cd3f7d099e5ba7220c58e3166f55"
     },
     {
       "address": "r7",
@@ -304,7 +305,7 @@
       "points": 6,
       "sampled_from": 6,
       "bytes": 174,
-      "sha256": "2732542c50df6f4d988ac31d20482d6f79226d8e6db933069aa2acc2301e17d2"
+      "sha256": "707983b001595cdf54cde098ad913e0880ce7d1ae311db9b73f6a4d2f06ad22f"
     }
   ]
 }

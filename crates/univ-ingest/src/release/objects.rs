@@ -6,7 +6,7 @@
 //! chain's template and the release (see the schema). The build checks that they give it back
 //! for every object (`D1_DERIVED`), so nothing of it is lost.
 
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use serde::Serialize;
 use univ_model::cosmology::Cosmology;
@@ -31,6 +31,7 @@ use super::extras::{link_rows, membership_rows, relation_rows, replacement_rows}
 use crate::crossmatch::ReleaseObject;
 use crate::source::Membership;
 use crate::source::{ScaleDomain, SourceDefinition};
+use crate::structures::Structure;
 use crate::tiles::{domain_of, name_of};
 
 /// `value` as JSON.
@@ -72,6 +73,8 @@ pub struct ObjectWriter<'a> {
     cosmology: &'a Cosmology,
     domains: HashMap<&'a SourceId, ScaleDomain>,
     memberships: HashMap<&'a SourceId, &'a [Membership]>,
+    /// The ids of the researched structures the release holds, the only ones a membership names.
+    structures: HashSet<&'a str>,
 }
 
 /// A preferred measurement as (entry, quantity, n).
@@ -118,16 +121,20 @@ fn preferred_native(
 
 impl<'a> ObjectWriter<'a> {
     /// A writer of release `numbering.release`'s objects, placed under `cosmology`, each in the
-    /// scale domain `definitions` give its preferred distance's source.
+    /// scale domain `definitions` give its preferred distance's source, and a member of each of
+    /// `structures`, the release's researched structures, that its sources assign it to.
     #[must_use]
     pub fn new(
         numbering: Numbering,
         definitions: &'a [SourceDefinition],
         cosmology: &'a Cosmology,
+        structures: &'a [(String, Structure)],
     ) -> Self {
-        // A build that takes none of the researched structures records no membership.
-        let takes_structures = crate::source::takes_structures(definitions);
+        // A build that takes none of the researched structures records no membership, and one
+        // that takes some only the memberships of those.
+        let takes_structures = !structures.is_empty();
         Self {
+            structures: structures.iter().map(|(id, _)| id.as_str()).collect(),
             numbering,
             counts: ObjectCounts::default(),
             cosmology,
@@ -176,9 +183,10 @@ impl<'a> ObjectWriter<'a> {
                 .or_default() += 1;
         }
         let memberships = &self.memberships;
-        let members = membership_rows(&mut self.numbering, id, &object.entries, |source| {
+        let mut members = membership_rows(&mut self.numbering, id, &object.entries, |source| {
             memberships.get(source).copied().unwrap_or_default()
         });
+        members.retain(|m| self.structures.contains(m.structure.as_str()));
         w.add_all(&members)?;
         let release = self.numbering.release;
         let designations: BTreeSet<&Designation> = object.designations().collect();

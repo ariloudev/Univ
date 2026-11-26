@@ -17,11 +17,11 @@ use crate::problem::{CONTENT_TYPE, ProblemType};
 use crate::routes::{Endpoint, ROUTES};
 
 use ProblemType::{
-    GridFieldNotFound, GridNotFound, InternalError, InvalidBody, InvalidParameter, ItemConflict,
-    ItemInvalid, ItemNotFound, KeyNotFound, LayerNotFound, LayerRetired, NotLayerOwner,
-    ObjectNotFound, QueryInvalid, QueryLayersChanged, QuotaExceeded, RateLimited, ReleaseNotFound,
-    ReleasePruned, ScaleDomainNotFound, SourceNotFound, SourceRequired, StructureNotFound,
-    TileNotFound, Unauthorized, UnreadableBody,
+    GalaxyModelNotFound, GridFieldNotFound, GridNotFound, InternalError, InvalidBody,
+    InvalidParameter, ItemConflict, ItemInvalid, ItemNotFound, KeyNotFound, LayerNotFound,
+    LayerRetired, NotLayerOwner, ObjectNotFound, QueryInvalid, QueryLayersChanged, QuotaExceeded,
+    RateLimited, ReleaseNotFound, ReleasePruned, ScaleDomainNotFound, SourceNotFound,
+    SourceRequired, StructureNotFound, TileNotFound, Unauthorized, UnreadableBody,
 };
 
 /// What any route can answer: a key or owner secret that is not valid, a rate limit reached,
@@ -59,6 +59,7 @@ pub fn refusals(endpoint: Endpoint) -> Vec<ProblemType> {
         E::Sources | E::ScaleDomains | E::Grids | E::TileFormat | E::Structures => &[RELEASE],
         E::Source | E::SourceProvenance => &[RELEASE, &[SourceNotFound]],
         E::Structure => &[RELEASE, &[StructureNotFound]],
+        E::GalaxyModel => &[RELEASE, &[GalaxyModelNotFound]],
         E::Objects | E::Object => &[RELEASE, &[ObjectNotFound]],
         E::TileManifest => &[RELEASE, &[ScaleDomainNotFound]],
         E::Tile => &[RELEASE, &[ScaleDomainNotFound, TileNotFound]],

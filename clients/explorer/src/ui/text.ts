@@ -91,6 +91,7 @@ export const KIND_NOUNS: Readonly<Record<string, string>> = {
   rr_lyrae_star: "RR Lyrae star",
   star_forming_region: "star-forming region",
   luminous_hot_star: "luminous hot star",
+  molecular_cloud: "molecular cloud",
 };
 
 /** What the panel says an object is: its kind where it is not a body, and its scale domain. */

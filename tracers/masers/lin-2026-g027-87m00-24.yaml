@@ -1,0 +1,69 @@
+# G027.87−00.24(W), a far-side maser of Lin et al. 2026 (BeSSeL), assigned to the Perseus Arm.
+name: "G027.87-00.24"
+alternative_names: ["G027.87−00.24(W)"]
+kind: star_forming_region
+arm: perseus
+arm_cite:
+  paper: lin-2026
+  sentence: "Among them, G018.74−00.23(W), G030.32+00.07(W), G011.90−00.10(M), and G019.61−00.13(M) have the highest probabilities of being associated with the Sagittarius Arm, whereas G019.27+00.35(W), G027.87−00.24(W), and G015.09+00.19(M) are most likely associated with the Perseus Arm."
+papers:
+  - id: lin-2026
+    reference: "Lin, Xu, Reid, Li & Bian 2026, ApJS 287, 31"
+    title: "Trigonometric Parallaxes of Maser Sources toward the Far Side of the Milky Way"
+    doi: 10.3847/1538-4365/aead92
+    arxiv: "2609.34219"
+    read: "arXiv source (LaTeX) of 2609.34219v1 (accepted by ApJS), draft_en_vr2.tex: abstract, Sections 2–4, Table 1 (Parallaxes and Proper Motions), Table 2 (Spiral-arm assignments), Tables A2 (Positions and Brightnesses) and A3 (Detailed Results), Table B1; journal, volume, page and DOI from Crossref. Table numbers are the arXiv source's"
+position:
+  frame: fk5_j2000
+  ra:
+    value: 280.756492917
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "18h43m01.5583s"
+    cite: { paper: lin-2026, table: "A2", row: "G027.87−00.24(W)", column: "R.A. (J2000)", cell: "18 43 01.5583" }
+  dec:
+    value: -4.611830000
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "−04°36′42.588″"
+    cite: { paper: lin-2026, table: "A2", row: "G027.87−00.24(W)", column: "Decl. (J2000)", cell: "−04 36 42.588" }
+parallax:
+  value: 0.096
+  unit: milliarcsecond
+  kind: measured
+  uncertainty: { form: symmetric, sigma: 0.012 }
+  cite: { paper: lin-2026, table: "1", row: "G027.87−00.24(W)", column: "π", cell: "0.096 ± 0.012" }
+  distance_kind: parallax
+  method: "trigonometric parallax"
+distance:
+  value: 12.66
+  unit: kiloparsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 0.99 }
+  cite: { paper: lin-2026, table: "1", row: "G027.87−00.24(W)", column: "D", cell: "12.66 ± 0.99" }
+  distance_kind: secondary_indicator
+  method: "parallax combined with a three-dimensional kinematic distance"
+  assumes:
+    stated: "the Galactic rotation curve model of Hyland et al. 2026, Appendix A (R0 and Θ0 not printed)"
+    cite:
+      paper: lin-2026
+      sentence: "where d is in kpc, and x_i,RC is the value predicted by the adopted Galactic rotation curve (RC) model, calculated following the procedure described in Appendix A of Hyland et al. (2026)."
+velocity_lsr:
+  value: 20
+  unit: kilometre_per_second
+  kind: estimated
+  uncertainty: { form: symmetric, sigma: 5 }
+  cite: { paper: lin-2026, table: "1", row: "G027.87−00.24(W)", column: "V*_LSR", cell: "20 ± 5" }
+  note: "The systemic velocity V*_LSR; for a water maser, that of its associated methanol masers from the literature (Table 1's notes). The ±5 km/s is the floor the paper adopts for it."
+notes: >-
+  A water (H2O) maser of the BeSSeL Survey's VLBA program BL312. The position is that of the
+  strongest maser spot at the first epoch (Table A2), with no uncertainty given; velocity_lsr is
+  Table 1's systemic velocity V*_LSR, which differs a little from the velocity of that spot's
+  channel. Table 2 puts it most probably in the Perseus arm and next in the Sagittarius arm; the
+  probabilities compare its longitude, latitude and velocity with the far-side arm traces of Reid et
+  al., not its parallax. The distance is Table 1's D, the one the paper adopts: the Gaussian fitted
+  to the main peak of the product of the parallax likelihood and the kinematic likelihoods of its
+  velocity and both proper motions. Table 1 also gives a kinematic-only distance, D_3DKD, not
+  recorded. The paper prints no R0 or Θ0 for its rotation curve.

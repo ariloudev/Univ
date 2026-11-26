@@ -191,3 +191,6 @@ components:
       - key: 01a1a825-fb4e-702c-a84f-bf70efaf8d70
         name: "Researched star distances"
         body: "Distances of naked-eye stars that Hipparcos and Gaia leave without a usable one, read from their papers, with each number cited to the sentence or table cell it comes from."
+      - key: 01a213c1-93e0-7343-9f8d-9b739c9f85f2
+        name: "Researched arm tracers"
+        body: "Masers and molecular clouds that trace the Milky Way's spiral arms beyond the reach of Reid et al. 2019, on the far side of the Galactic Centre and in the outer disc, read from their papers, with each number cited to the sentence or table cell it comes from."

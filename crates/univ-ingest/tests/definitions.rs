@@ -10,7 +10,7 @@ use univ_ingest::structures::read_all_named;
 /// galaxies added for the second, the Hipparcos spectral types added for the eighth, and the
 /// galaxy surveys added for the tenth, the Galaxy tracers of the thirteenth and the luminous hot
 /// stars of the fifteenth.
-const SOURCES: [(&str, ScaleDomain); 37] = [
+const SOURCES: [(&str, ScaleDomain); 39] = [
     ("sdss-dr17-galaxies", ScaleDomain::CosmicWeb),
     ("boss-dr17-great-wall", ScaleDomain::CosmicWeb),
     ("sixdfgs-dr3", ScaleDomain::CosmicWeb),
@@ -52,6 +52,9 @@ const SOURCES: [(&str, ScaleDomain); 37] = [
     ("baumgardt-vasiliev-2021", ScaleDomain::GalaxyTracers),
     // Release 15's luminous hot stars, to show the Galaxy's spiral arms.
     ("zari-2021-luminous-hot-stars", ScaleDomain::GalaxyTracers),
+    // The researched tracers of the arms beyond Reid et al. 2019's reach.
+    ("researched-arm-masers", ScaleDomain::GalaxyTracers),
+    ("researched-arm-clouds", ScaleDomain::GalaxyTracers),
 ];
 
 #[test]
@@ -94,7 +97,7 @@ fn every_membership_names_a_structure_of_the_repository() {
     let named: std::collections::BTreeSet<&str> = masers.memberships[0]
         .structures
         .values()
-        .map(String::as_str)
+        .flat_map(|n| n.ids().iter().map(String::as_str))
         .collect();
     assert_eq!(
         (masers.memberships[0].structures.len(), named.len()),

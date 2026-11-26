@@ -74,7 +74,9 @@ requirements:
       - key: 01a1b07b-8157-7546-927e-2722e634b9b0
         name: "The top bar holds a switch that turns level of detail on and off, on when the page's address does not turn it off."
       - key: 01a1b07b-8157-7546-927e-272335750e5f
-        name: "With level of detail off, every tile of every scale domain is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget."
+        name: "With level of detail off, every tile of every scale domain but the Galaxy model's is fetched, the tiles of each level asked for before those of the level below, and no tile is dropped, whatever the view and the budget."
+      - key: 01a215a8-77d8-7398-8386-2ffb310268da
+        name: "The Galaxy model's tiles are held and drawn with level of detail whether it is on or off, within a budget of 6,000,000 of its points, since its points alone outnumber the budget."
       - key: 01a1b07b-8157-7546-927e-2724ac33dc33
         name: "Turned on again, level of detail drops the tiles the view does not need until the points held fit the budget."
       - key: 01a1b07b-8157-7546-927e-2725108d8df2
@@ -98,13 +100,15 @@ requirements:
       - key: 01a1b093-647d-7308-9b46-bdcc1ec02df7
         name: "A tile fades in over 0.3 seconds once its points arrive, and out over 0.3 seconds before they are drawn no more."
       - key: 01a1b093-647d-7308-9b46-bdcd4901ec3c
-        name: "With level of detail off, every point of every held tile is drawn."
+        name: "With level of detail off, every point of every held tile of a scale domain other than the Galaxy model's is drawn."
       - key: 01a1b0b8-3632-76bc-88e5-8dd265a1a28d
         name: "With level of detail on, a domain's points are drawn fully opaque while, at the eye's distance from the focus, the view still needs more of the domain than its root holds, since thinned they crowd no more as the eye withdraws."
       - key: 01a1b0c4-82ea-7058-b4c4-959c016ec0f3
         name: "With level of detail on, a domain's points fade beyond the distance where the view needs no more of it than its root holds, as they crowd again, never fainter than with level of detail off."
       - key: 01a1b0b8-5967-707c-ba41-c9e3bc5755a6
         name: "With level of detail off, points grow fainter as the eye withdraws beyond 1 gigaparsec, so that a whole catalogue seen from afar adds up to its shape rather than to white."
+      - key: 01a217af-677d-710d-bc8a-43082f33c3d2
+        name: "The stars domain's points grow fainter as the eye withdraws beyond 1 kiloparsec from the focus, in inverse proportion to its distance, down to a tenth of their opacity, so that the stars about the Sun seen from across the Galaxy do not add up to white."
       - key: 01a1b093-647d-7308-9b46-bdce5099b2f5
         name: "Only the points drawn can be pointed at or clicked."
   - key: 01a1a689-0b25-768a-9f1e-cc2b2734abc4
@@ -170,7 +174,8 @@ requirements:
         name: "The view names the frame whose axes it shows, the origin, the unit of its distances and the release cosmology."
   - key: 01a1c319-7860-76e8-92ac-c5e5caae2dff
     statement:
-      form: ubiquitous
+      form: state_driven
+      while: "the person has turned natural colours off"
       system: "Univ Explorer"
       shall: "draw each point of the Galaxy tracers domain in the colour of its kind of object, larger than a star's point."
     criteria:
@@ -184,6 +189,27 @@ requirements:
         name: "A point of a Galaxy tracers tile that gives no kind of object is drawn in one colour of its own, which the key names as a tracer of unknown kind."
       - key: 01a1c319-7860-76e8-92ac-c5e864b8c262
         name: "A point of the Galaxy tracers domain is drawn twice the size of a point of the stars domain at the same distance."
+      - key: 01a217aa-a805-760e-873f-455bb856f763
+        name: "A luminous hot star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd about the Sun they do not add up to white."
+      - key: 01a217b5-074b-72cd-a2ce-7d9d389f58c2
+        name: "An RR Lyrae star of the Galaxy tracers domain where more than 4 RR Lyrae stars of its tile share its cell, a 64th of the tile's edge, is drawn at 4 over their number of its opacity, never below a tenth, so that the bulge does not add up to white while the halo and the Sagittarius stream keep the other kinds' opacity."
+  - key: 01a217ba-46fa-73d1-8584-7bab30f4ae16
+    statement:
+      form: state_driven
+      while: "natural colours are on"
+      system: "Univ Explorer"
+      shall: "draw each point of the Galaxy tracers domain in the colour a star of its kind of object shows, larger than a star's point."
+    criteria:
+      - key: 01a217ba-46fa-73d1-8584-7bac65881b4d
+        name: "Natural colours are on unless the person turns them off, and the page's address keeps them off while they are off."
+      - key: 01a217ba-46fa-73d1-8584-7bad00feeb7a
+        name: "With natural colours on, a point of the Galaxy tracers domain is drawn in the hue a star of its kind's typical colour index B−V is drawn in, as bright as its kind's own colour: −0.30 for a luminous hot star, −0.10 for an open cluster, 0.35 for an RR Lyrae star, and 0.70 for a classical Cepheid or a globular cluster."
+      - key: 01a217ba-46fa-73d1-8584-7baefb1762b1
+        name: "With natural colours on, a star-forming region is drawn in the pink of hydrogen's Balmer emission, a molecular cloud in a dark dust brown, and a tracer of unknown kind in the grey of a star without a colour index."
+      - key: 01a217ba-46fa-73d1-8584-7baf496214a1
+        name: "Turning natural colours on or off changes neither a point's opacity nor the brightest channel of its colour."
+      - key: 01a217ba-46fa-73d1-8584-7bb0fbe1a489
+        name: "The key and the Show drawer show each kind of object of the Galaxy tracers domain in the colour its points are drawn in."
   - key: 01a1c319-7860-76e8-92ac-c5e9e544de53
     statement:
       form: ubiquitous

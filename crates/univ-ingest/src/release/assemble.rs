@@ -29,12 +29,12 @@ use super::outline::Outlined;
 use super::sharded::{Sharding, repeated_id, shard_manifests, write_shard_index};
 use super::terms::SourceIndex;
 use super::{
-    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, coverages, domain_rows, grid_files,
-    index_rows, object_cells, outlines_on, placements, read_grid, source_detail_rows, source_rows,
-    structure_detail_rows, structure_rows,
+    CellRows, Inputs, Placing, StructureBounds, TestCatalogues, coverages, domain_rows,
+    galaxy_model_rows, grid_files, index_rows, object_cells, outlines_on, placements, read_grid,
+    source_detail_rows, source_rows, structure_detail_rows, structure_rows,
 };
 use crate::crossmatch::RULES;
-use crate::tiles::{MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
+use crate::tiles::{Built, MANIFEST_VERSION as TILE_MANIFEST_VERSION, name_of, sha256};
 use crate::watch::Watch;
 
 /// A release written into its directory, with the failures of its checks.
@@ -73,6 +73,12 @@ fn tile_count(inputs: &Inputs<'_>) -> usize {
     inputs.tiles.domains.iter().map(|d| d.nodes.len()).sum()
 }
 
+/// The rows of the release's tiles: each scale domain's, and the Galaxy model's it sampled.
+fn tile_rows(writer: &mut D1Writer<'_>, number: u32, tiles: &Built) -> Result<(), String> {
+    writer.add_all(&domain_rows(number, tiles))?;
+    writer.add_all(&galaxy_model_rows(number, tiles)?)
+}
+
 /// What the D1 rows came to.
 struct D1Done {
     /// The catalogue database's estimate.
@@ -109,13 +115,14 @@ fn d1_rows(
         definitions: inputs.definitions,
         cosmology: &crossed.cosmology,
         cells: &cells,
+        structures: &crossed.basis.structures,
     };
     let budget = crossed.basis.config.shard_budget();
     let packing = sharding.plan(&crossed.objects, &numbering, budget, previous, watch)?;
     let files = file_rows(number, &sink.files);
     let mut writer = D1Writer::new(sink, packing.count())?;
     writer.compare_with(before, number)?;
-    let mut objects = ObjectWriter::new(numbering, inputs.definitions, &crossed.cosmology);
+    let mut objects = sharding.writer(numbering);
     sharding.write(&crossed.objects, &mut objects, &mut writer, &packing, watch)?;
     let ObjectWriter {
         numbering:
@@ -148,7 +155,7 @@ fn d1_rows(
     writer.add_all(&ledger.replacements)?;
     let (structures, bounds) =
         write_structures(&mut writer, inputs, number, release, grids, &index)?;
-    writer.add_all(&domain_rows(number, inputs.tiles))?;
+    tile_rows(&mut writer, number, inputs.tiles)?;
     writer.add_all(&grids.rows)?;
     writer.add_all(&files)?;
     drop(cells);

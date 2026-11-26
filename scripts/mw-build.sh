@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Builds a release that holds only the Milky Way: the sources of the `stars` and
-# `galaxy_tracers` scale domains, without the researched structures (most of them are of the
-# cosmic web) and without the satellite galaxies of `mcconnachie-2012`. The masers of Reid et
-# al. 2019 are kept as objects without their arm memberships, as Univ Ingest builds a release
-# that takes none of the researched structures.
+# `galaxy_tracers` scale domains, the researched structures of the Galaxy tracers domain alone
+# (the spiral arms of Reid et al. 2019 and of the far-side papers, with their extrapolations;
+# none of the cosmic web's), and not the satellite galaxies of `mcconnachie-2012`. The masers
+# and the researched arm tracers are members of their arms.
 #
 # The release has its own state and build output under `.cache/univ-ingest/milky-way/`, so its
 # ids never touch the real state's, and it shares the download cache with every other build.
@@ -39,6 +39,11 @@ sources=(
   skowron-2025-cepheids
   li-2023-rr-lyrae
   baumgardt-vasiliev-2021
+  # The arms' tracers beyond Reid et al. 2019's reach, read from their papers
+  researched-arm-masers
+  researched-arm-clouds
+  # The Galaxy's own researched structures, its spiral arms: taken with --structures-of
+  researched-structures
 )
 
 publish=false
@@ -64,7 +69,8 @@ cargo build --release --quiet --package univ-ingest
 ingest="$root/target/release/univ-ingest"
 
 echo "Building a Milky Way release of ${#sources[@]} sources into $out" >&2
-"$ingest" build "${source_args[@]}" --state "$state" --out "$out" ${build_args[@]+"${build_args[@]}"}
+"$ingest" build "${source_args[@]}" --structures-of galaxy_tracers --state "$state" --out "$out" \
+  ${build_args[@]+"${build_args[@]}"}
 
 latest="$(find "$out/releases" -mindepth 1 -maxdepth 1 -type d -name '[0-9]*' -exec basename {} \; \
   | sort -n | tail -n 1)"

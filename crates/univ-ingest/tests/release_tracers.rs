@@ -207,8 +207,12 @@ fn the_tracers_tiles_take_version_4_with_each_points_kind_and_other_domains_keep
     let built = tiles(&fixture, &crossed);
     let mut kinds = std::collections::BTreeSet::new();
     for domain in &built.domains {
-        let tracers = domain.domain == ScaleDomain::GalaxyTracers;
-        let version = if tracers { 4 } else { 3 };
+        let version = match domain.domain {
+            ScaleDomain::GalaxyTracers => 4,
+            ScaleDomain::GalaxyModel => 5,
+            _ => 3,
+        };
+        let tracers = version == 4;
         assert_eq!(
             domain.manifest.encoding.version, version,
             "{:?}",
@@ -220,6 +224,9 @@ fn the_tracers_tiles_take_version_4_with_each_points_kind_and_other_domains_keep
             "{:?}",
             domain.domain
         );
+        if domain.domain == ScaleDomain::GalaxyModel {
+            continue; // Model points, which tests/galaxy_model_tiles.rs decodes.
+        }
         for node in &domain.nodes {
             let tile = decode(&node.tile).unwrap();
             assert_eq!(tile.version, version);

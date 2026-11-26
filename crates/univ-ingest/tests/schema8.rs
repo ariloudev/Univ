@@ -205,7 +205,10 @@ fn a_store_of_schema_7_reads_every_object_as_schema_8_once_migrated_and_again_ch
     assert!(!holds_json(&new).unwrap());
     assert!(migrated(&old));
     assert!(!holds_json(&old).unwrap());
-    assert_eq!(int(&old, "SELECT MAX(version) FROM schema_version"), 8);
+    assert_eq!(
+        int(&old, "SELECT MAX(version) FROM schema_version"),
+        i64::from(univ_model::release::SCHEMA_VERSION)
+    );
     // Flags, spectral types and papers were JSON; they are rows now.
     assert!(int(&old, "SELECT COUNT(*) FROM entry_flags") > 0);
     assert_eq!(

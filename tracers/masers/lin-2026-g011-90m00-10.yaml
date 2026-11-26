@@ -1,0 +1,72 @@
+# G011.90−00.10(M), a far-side maser of Lin et al. 2026 (BeSSeL), assigned to the Sagittarius Arm.
+name: "G011.90-00.10"
+alternative_names: ["G011.90−00.10(M)"]
+kind: star_forming_region
+arm: sagittarius-carina
+arm_cite:
+  paper: lin-2026
+  sentence: "Among them, G018.74−00.23(W), G030.32+00.07(W), G011.90−00.10(M), and G019.61−00.13(M) have the highest probabilities of being associated with the Sagittarius Arm, whereas G019.27+00.35(W), G027.87−00.24(W), and G015.09+00.19(M) are most likely associated with the Perseus Arm."
+papers:
+  - id: lin-2026
+    reference: "Lin, Xu, Reid, Li & Bian 2026, ApJS 287, 31"
+    title: "Trigonometric Parallaxes of Maser Sources toward the Far Side of the Milky Way"
+    doi: 10.3847/1538-4365/aead92
+    arxiv: "2609.34219"
+    read: "arXiv source (LaTeX) of 2609.34219v1 (accepted by ApJS), draft_en_vr2.tex: abstract, Sections 2–4, Table 1 (Parallaxes and Proper Motions), Table 2 (Spiral-arm assignments), Tables A2 (Positions and Brightnesses) and A3 (Detailed Results), Table B1; journal, volume, page and DOI from Crossref. Table numbers are the arXiv source's"
+position:
+  frame: fk5_j2000
+  ra:
+    value: 273.011175833
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "18h12m02.6822s"
+    cite: { paper: lin-2026, table: "A2", row: "G011.90−00.10(M)", column: "R.A. (J2000)", cell: "18 12 02.6822" }
+  dec:
+    value: -18.673611667
+    unit: degree
+    kind: measured
+    uncertainty: { form: none_reported }
+    as_published: "−18°40′25.002″"
+    cite: { paper: lin-2026, table: "A2", row: "G011.90−00.10(M)", column: "Decl. (J2000)", cell: "−18 40 25.002" }
+parallax:
+  value: 0.133
+  unit: milliarcsecond
+  kind: measured
+  uncertainty: { form: symmetric, sigma: 0.030 }
+  cite: { paper: lin-2026, table: "1", row: "G011.90−00.10(M)", column: "π", cell: "0.133 ± 0.030" }
+  distance_kind: parallax
+  method: "trigonometric parallax"
+distance:
+  value: 12.88
+  unit: kiloparsec
+  kind: inferred
+  uncertainty: { form: symmetric, sigma: 1.10 }
+  cite: { paper: lin-2026, table: "1", row: "G011.90−00.10(M)", column: "D", cell: "12.88 ± 1.10" }
+  distance_kind: secondary_indicator
+  method: "parallax combined with a three-dimensional kinematic distance"
+  assumes:
+    stated: "the Galactic rotation curve model of Hyland et al. 2026, Appendix A (R0 and Θ0 not printed)"
+    cite:
+      paper: lin-2026
+      sentence: "where d is in kpc, and x_i,RC is the value predicted by the adopted Galactic rotation curve (RC) model, calculated following the procedure described in Appendix A of Hyland et al. (2026)."
+velocity_lsr:
+  value: 34
+  unit: kilometre_per_second
+  kind: estimated
+  uncertainty: { form: symmetric, sigma: 5 }
+  cite: { paper: lin-2026, table: "1", row: "G011.90−00.10(M)", column: "V*_LSR", cell: "34 ± 5" }
+  note: "The systemic velocity V*_LSR; for a water maser, that of its associated methanol masers from the literature (Table 1's notes). The ±5 km/s is the floor the paper adopts for it."
+notes: >-
+  A methanol (CH3OH) maser of the BeSSeL Survey's VLBA program BL312. The position is that of the
+  strongest maser spot at the first epoch (Table A2), with no uncertainty given; velocity_lsr is
+  Table 1's systemic velocity V*_LSR, which differs a little from the velocity of that spot's
+  channel. Table 2 puts it most probably in the Sagittarius arm and next in the Perseus arm; the
+  probabilities compare its longitude, latitude and velocity with the far-side arm traces of Reid et
+  al., not its parallax. The distance is Table 1's D, the one the paper adopts: the Gaussian fitted
+  to the main peak of the product of the parallax likelihood and the kinematic likelihoods of its
+  velocity and both proper motions. Table 1 also gives a kinematic-only distance, D_3DKD, not
+  recorded. The paper prints no R0 or Θ0 for its rotation curve. The paper's "Sagittarius Arm" on
+  the far side is the far part of the Sagittarius-Carina arm of Reid et al., hence the slug. Lin et
+  al. name it with G015.09+00.19 as the two whose arm-association probabilities do not strongly
+  exclude the alternative arm.

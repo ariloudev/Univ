@@ -7,6 +7,7 @@
 use std::path::Path;
 use std::process::{Command, Output};
 
+use crate::common::repository::MODEL_POINTS;
 use crate::common::{definition_of, normalized_fixture, source_id, workspace};
 use tempfile::TempDir;
 use univ_ingest::crossmatch::{Basis, CrossMatched, Inputs as MatchInputs, cross_match};
@@ -17,7 +18,7 @@ use univ_ingest::release::{BuildError, BuiltRelease, Inputs, build};
 use univ_ingest::source::SourceDefinition;
 use univ_ingest::state::State;
 use univ_ingest::structures::{Structure, read_all_named};
-use univ_ingest::tiles::{Built, Context, TileRules, build as build_tiles};
+use univ_ingest::tiles::{Built, Context, Galaxy, TileRules, build as build_tiles};
 use univ_model::derive::Release;
 use univ_model::release::manifest::Target;
 use univ_model::release::shards::Database;
@@ -39,6 +40,8 @@ pub struct Fixture {
     pub definitions: Vec<SourceDefinition>,
     pub normalized: Vec<Normalized>,
     pub structures: Vec<(String, Structure)>,
+    /// The scale domains of the researched structures the build takes; all where empty.
+    pub structures_of: Vec<univ_ingest::source::ScaleDomain>,
     pub cache: TempDir,
     pub state: TempDir,
     pub out: TempDir,
@@ -76,6 +79,7 @@ pub fn fixture_with(more: &[&str]) -> Fixture {
         definitions,
         normalized,
         structures: read_all_named(&workspace().join("structures")).unwrap(),
+        structures_of: vec![],
         cache,
         state: tempfile::tempdir().unwrap(),
         out: tempfile::tempdir().unwrap(),
@@ -95,8 +99,11 @@ pub fn cross(f: &Fixture) -> CrossMatched {
     let mut basis = Basis::read(&workspace().join("rules"), &[]).unwrap();
     basis.matching = basis.matching.with_object_kinds(&f.definitions);
     basis.structures.clone_from(&f.structures);
+    basis.keep_domains(&f.structures_of);
     // Small enough that the fixture's objects take more than one object shard.
     basis.config.shard_budget_bytes = Some(SHARD_BUDGET);
+    // A model of the fixture's size: only the production definition asks for 10 million points.
+    basis.galaxy_model.points = MODEL_POINTS;
     let release =
         Release::planck_2018().with_peculiar_velocity(basis.ranking.peculiar_velocity_km_s);
     let state = State::read(f.state.path()).unwrap();
@@ -125,6 +132,10 @@ pub fn tiles(f: &Fixture, crossed: &CrossMatched) -> Built {
         cosmology: &crossed.cosmology,
         rules: &rules,
         definitions: &f.definitions,
+        galaxy: Some(Galaxy {
+            model: &crossed.basis.galaxy_model,
+            structures: &crossed.basis.structures,
+        }),
     };
     build_tiles(&crossed.objects, &context).unwrap()
 }
@@ -145,6 +156,7 @@ pub fn built(
 ) -> Result<BuiltRelease, BuildError> {
     let mut crossed = crossed.clone();
     crossed.basis.structures = structures.to_vec();
+    crossed.basis.keep_domains(&f.structures_of);
     let inputs = Inputs {
         crossed: &crossed,
         tiles,

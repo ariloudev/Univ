@@ -41,12 +41,19 @@ fn field<'a>(layout: &'a EncodingLayout, name: &str) -> &'a HeaderField {
 
 #[test]
 fn every_listed_version_has_a_layout_and_no_other_does() {
-    assert_eq!(VERSIONS, [1, 2, 3, 4]);
+    assert_eq!(VERSIONS, [1, 2, 3, 4, 5]);
     for v in VERSIONS.map(u32::from) {
         assert_eq!(layout(v).unwrap().version, v);
     }
     assert!(layout(0).is_none());
-    assert!(layout(5).is_none());
+    assert!(layout(6).is_none());
+    // Version 5, the Galaxy model's: a position, a population and flags, 8 bytes a point, and
+    // no kind of value.
+    let five = layout(5).unwrap();
+    assert_eq!(five.point_bytes, 8);
+    let names: Vec<&str> = five.points.iter().map(|f| f.name.as_str()).collect();
+    assert_eq!(names, ["position", "population", "flags"]);
+    assert!(five.object_kinds.is_empty() && five.colour_bands.is_empty());
     // Version 1 is described as it was: 17 bytes a point and no colour.
     let one = layout(1).unwrap();
     assert_eq!(one.point_bytes, 17);

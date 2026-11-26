@@ -1,0 +1,52 @@
+key: 01a213bc-6148-7228-b0fc-442870098cb6
+id: wave-1
+versions:
+  - key: 01a213bc-6148-7228-b0fc-442e13da0e36
+    at: 2026-11-25T17:24:02Z
+    revision: 1
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 1: model and ingest"
+    goal: "Univ Ingest builds the far-side arms and tracers and the galaxy_model scale domain's tiles (encoding 5) from cited parameters, deterministically"
+    status: planned
+  - key: 01a213d9-ef16-725b-8970-d747183721c2
+    at: 2026-11-25T17:56:19Z
+    revision: 7
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 1: the arms' far side and the tracers"
+    goal: "Univ Ingest records the far-side arm fits as structures with an arm name, the researched arm tracers as objects (molecular clouds among them), and a science check measures each tracer's distance from its arm; merged from stage/galaxy-model-1"
+    status: active
+  - key: 01a21466-a2ed-774a-82a1-ebd6fbc7bf23
+    at: 2026-11-25T20:30:00Z
+    revision: 8
+    by:
+      host: claude-code
+      session: "c9af65fa-1703-4232-b229-662e70de7bff"
+    title: "Wave 1: the arms' far side and the tracers"
+    goal: "Univ Ingest records the far-side arm fits as structures with an arm name, the researched arm tracers as objects (molecular clouds among them), and a science check measures each tracer's distance from its arm; merged from stage/galaxy-model-1"
+    status: done
+blocks:
+  - key: 01a21466-a2ed-774a-82a1-ebd53351c092
+    id: wave-1-result
+    kind: note
+    versions:
+      - key: 01a21466-a2ed-774a-82a1-ebd79e2409fd
+        at: 2026-11-25T20:30:00Z
+        revision: 8
+        by:
+          host: claude-code
+          session: "c9af65fa-1703-4232-b229-662e70de7bff"
+        title: "Wave 1 merged"
+        markdown: |-
+          Merged `stage/galaxy-model-1` (commit `8edcdf6`).
+
+          - Far-side fits: Sun et al. 2024 (outer Scutum–Centaurus, Outer), Hyland et al. 2026 (Perseus to β ≈ 180°), McClure-Griffiths et al. 2004 (distant fourth-quadrant arm). Dame & Thaddeus 2008's far 3-kpc arm left out: no pitch stated.
+          - 18 researched arm tracers: Sanna 2017, Lin et al. 2026 (7), Dame & Thaddeus 2011 (10 CO clouds, the new molecular cloud kind).
+          - `univ-ingest build --structures-of galaxy_tracers`: the Milky Way release now holds the Galaxy's 22 arm structures.
+          - Science checks on Milky Way release 3: every tracer within 5 kpc of its arm (Lin 0.19–0.88, Sanna 1.96, Dame 1.45–4.82 kpc), every tracer placed on its arm.
+          - Spec changes approved during the wave: the tracer check's 5 kpc bound; `--structures-of`; a fit cited to a table, sentence or figure; molecular clouds among the tracer kinds.
+          - Environment: the gate now runs with rustup's toolchain first on the path (wasm32), cargo-machete and cargo-deny installed, `url` 2.5.9, humantime's unmaintained advisory ignored with its reason.
+        tone: success

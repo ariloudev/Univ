@@ -44,8 +44,11 @@ export function SearchBox({ release, onFound }: { release: number; onFound: (id:
           Find
         </button>
       </form>
+      {/* The results below the bar: fixed on a phone, whose bar scrolls and would clip them. */}
       {state.kind === "idle" ? null : (
-        <div className={`${FLOATING} top-full right-0 mt-2 max-h-[60vh] w-80 overflow-y-auto whitespace-normal`}>
+        <div
+          className={`${FLOATING} top-full right-0 mt-2 max-h-[60vh] w-80 overflow-y-auto whitespace-normal max-sm:fixed max-sm:top-11 max-sm:right-3 max-sm:left-3 max-sm:w-auto`}
+        >
           <button
             type="button"
             onClick={() => {

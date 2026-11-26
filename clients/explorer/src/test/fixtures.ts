@@ -31,6 +31,9 @@ export interface FixtureTile {
     log_age?: number;
     /** Its kind of object, in a version 4 tile; null for a point of none. */
     object_kind?: string | null;
+    /** A model point's population and whether real objects cover it, in a version 5 tile. */
+    population?: number;
+    covered?: boolean;
   }[];
 }
 

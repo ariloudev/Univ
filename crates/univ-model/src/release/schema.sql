@@ -1,4 +1,4 @@
--- The D1 schema of Univ releases, version 8 (univ_model::release::SCHEMA_VERSION).
+-- The D1 schema of Univ releases, version 9 (univ_model::release::SCHEMA_VERSION).
 --
 -- Version 3 adds source_details and structure_details and changes no table of version 2.
 -- Version 4 adds source_terms and changes no table of version 3.
@@ -13,6 +13,7 @@
 -- replaced an id become rows and columns (entry_flags, entry_references, measurement_details,
 -- object_links, object_relations, id_replacements), and memberships is added. A database of
 -- version 7 is brought to version 8 in place by `univ-ingest migrate`.
+-- Version 9 adds galaxy_models and changes no table of version 8.
 --
 -- Object shards (version 5). Every database, the catalogue database and each object shard, is
 -- given this whole schema, and holds only its own rows of each release: an object's rows in
@@ -737,4 +738,21 @@ CREATE TABLE IF NOT EXISTS release_files (
   sha256 TEXT NOT NULL,
   retired INTEGER,
   PRIMARY KEY (path, release)
+) WITHOUT ROWID;
+
+-- The Galaxy model a release sampled (version 9): its points, its seed and the scale domain its
+-- model points are tiled in; definition, JSON of its populations, densities, light, colours and
+-- arm rules, each number with its citation or its reason as this project's choice, and each
+-- population with the code its model points carry; followed, a JSON list of the ids of the
+-- structures of the arms it followed.
+-- Scale: per release.
+CREATE TABLE IF NOT EXISTS galaxy_models (
+  release INTEGER NOT NULL,
+  domain TEXT NOT NULL,
+  points INTEGER NOT NULL,
+  seed INTEGER NOT NULL,
+  definition TEXT NOT NULL,
+  followed TEXT NOT NULL,
+  retired INTEGER,
+  PRIMARY KEY (domain, release)
 ) WITHOUT ROWID;
