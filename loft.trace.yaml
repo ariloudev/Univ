@@ -4927,11 +4927,17 @@ links:
         name: "draws a tracer twice the size of a star, and every other point a star's size"
         body: 8aee334875665f2c25af9cfd4b83351420ca394b3d4c88dad357a239964693d4
   - node: 01a217aa-a805-760e-873f-455bb856f763
-    reviewed: ed1a9e2ffcdb8fac7e368f2278ac563e9da9004fb6ca8e2fca9f4e9953da9480
+    reviewed: 62e51180ac8358e930948b885a434fedd00c3f03927135c5c0cc1a3714ea3922
     tests:
       - file: "clients/explorer/src/scene/tracers.test.ts"
-        name: "draws the luminous hot stars and the RR Lyrae stars dark, at a tenth of the other kinds' opacity"
-        body: a468a782cffd2edf5496c109b4feca9a2633a042b583253c3417fa411de556dd
+        name: "draws the luminous hot stars dark, at a tenth of the other kinds' opacity"
+        body: ad0d78c58fe2170106ba2bd14de9f26694e4bd95cfad23855f714f6d7288f560
+  - node: 01a217b5-074b-72cd-a2ce-7d9d389f58c2
+    reviewed: 6fbb01883c71fa7ad823074a64b71756a8a927b771b3dd1021d7c915f7c4676b
+    tests:
+      - file: "clients/explorer/src/scene/tracers.test.ts"
+        name: "draws the RR Lyrae stars fainter where more than 4 of a tile share a 64th of its edge, never below a tenth"
+        body: aca2c7d44d007b7250d539aed82fe96487ba4039790e87d3ba3b0bd406d72022
   - node: 01a1c319-7860-76e8-92ac-c5ea87f31404
     reviewed: fa4f6dd35922db3353b711362c799c17215a793feeb2cca68ee49e98b11ac941
     tests:

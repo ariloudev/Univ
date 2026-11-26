@@ -9,7 +9,7 @@ import { DomainList, ExplorerManifest } from "../api/schemas.ts";
 import { KIND_INDEX } from "../scene/kinds.ts";
 import { MODEL_DOMAIN, NOT_COVERED, STARS_DOMAIN, brightnessOf, coverOf } from "../scene/model.ts";
 import { starBytes } from "../scene/starColour.ts";
-import { TRACERS_DOMAIN, objectIndex, tracerBytes } from "../scene/tracers.ts";
+import { TRACERS_DOMAIN, objectIndex, tracerColoursOf } from "../scene/tracers.ts";
 import { add, scale } from "../scene/vec.ts";
 import { type Extent, type Tile, extentOf, levelOfAddress } from "./lod.ts";
 import { shuffled } from "./shuffle.ts";
@@ -205,6 +205,9 @@ function offsetsOf(points: readonly { x: number; y: number; z: number }[], domai
   return offsets;
 }
 
+/** The edge of `tile` of `domain`, megaparsecs. */
+const edgeOf = (domain: Domain, tile: DomainTile): number => (tile.node.bounds.max[0] - tile.node.bounds.min[0]) * domain.toMpc;
+
 /** The model points of `bytes`, a version 5 tile of the Galaxy model, looking as `look` gives:
  * shuffled as any tile's, each in its population's colour and with what covers it; of no kind,
  * source or id. */
@@ -246,7 +249,7 @@ export async function batchOf(domain: Domain, tile: DomainTile, bytes: Uint8Arra
   const stars = domain.name === STARS_DOMAIN && names !== undefined ? starColoursOf(points, names) : undefined;
   const tracers = domain.name === TRACERS_DOMAIN;
   const objects = tracers ? Uint8Array.from(points, (p) => objectIndex(p.objectKind)) : undefined;
-  const colours = objects === undefined ? stars?.bytes : tracerBytes(objects);
+  const colours = objects === undefined ? stars?.bytes : tracerColoursOf(objects, offsets, edgeOf(domain, tile));
   // A tracers tile with no age carries none, so that no age choice acts on it.
   const ages = tracers && points.some((p) => p.logAge !== undefined) ? Float32Array.from(points, (p) => p.logAge ?? Number.NaN) : undefined;
   return { tile, offsets, kinds, sources, ids, stars, colours, objects, ages, extent: extentOf(offsets, tile.centre) };

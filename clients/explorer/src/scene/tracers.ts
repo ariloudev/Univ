@@ -17,23 +17,23 @@ export const TRACERS_DOMAIN = "galaxy_tracers";
 /** The diameter of a point, in device pixels. */
 export const POINT_SIZE = 2;
 
-/** The opacity of the crowded kinds of tracer, the luminous hot stars and the RR Lyrae stars,
- * hundreds of thousands between them: a tenth of the other kinds', so that drawn in dark colours
- * they do not add up to white where they crowd, about the Sun and toward the bulge. */
-const CROWDED_OPACITY = 0.1 * POINT_OPACITY;
+/** The opacity of a luminous hot star, the most numerous kind of tracer by far: a tenth of the
+ * other kinds', so that the hundreds of thousands about the Sun, drawn in a dark slate teal, do
+ * not add up to white. */
+const HOT_STAR_OPACITY = 0.1 * POINT_OPACITY;
 
 /** The tracers by object index, in the order of the key and of their switches: first those of no
  * kind, or of a kind this table does not hold (green), then each kind of object (slate teal, magenta,
- * lime, violet, dark forest green, crimson and umber), with what the key and the switches call them. The
+ * lime, violet, forest green, crimson and umber), with what the key and the switches call them. The
  * index is one more than the kind's place among the kinds, as a version 4 tile codes it, and 0,
  * which no switch turns off, is a tracer of no kind. */
 export const TRACER_OBJECTS = [
   { id: "unknown", title: "Tracers of unknown kind", colour: [0.3, 0.85, 0.35, POINT_OPACITY] },
-  { id: "luminous_hot_star", title: "Luminous hot stars", colour: [0.1, 0.4, 0.5, CROWDED_OPACITY] },
+  { id: "luminous_hot_star", title: "Luminous hot stars", colour: [0.1, 0.4, 0.5, HOT_STAR_OPACITY] },
   { id: "open_cluster", title: "Open clusters", colour: [0.95, 0.3, 0.85, POINT_OPACITY] },
   { id: "star_forming_region", title: "Star-forming regions", colour: [0.8, 0.95, 0.2, POINT_OPACITY] },
   { id: "classical_cepheid", title: "Classical Cepheids", colour: [0.65, 0.4, 1, POINT_OPACITY] },
-  { id: "rr_lyrae_star", title: "RR Lyrae stars", colour: [0.08, 0.4, 0.12, CROWDED_OPACITY] },
+  { id: "rr_lyrae_star", title: "RR Lyrae stars", colour: [0.1, 0.6, 0.15, POINT_OPACITY] },
   { id: "globular_cluster", title: "Globular clusters", colour: [0.9, 0.1, 0.35, POINT_OPACITY] },
   { id: "molecular_cloud", title: "Molecular clouds", colour: [0.55, 0.35, 0, POINT_OPACITY] },
 ] as const satisfies readonly { id: ObjectKind | "unknown"; title: string; colour: Rgba }[];
@@ -62,6 +62,42 @@ export function tracerBytes(objects: Uint8Array): Uint8Array {
   objects.forEach((object, i) => {
     const colour = BYTES[object] ?? BYTES[0];
     if (colour !== undefined) bytes.set(colour, i * 4);
+  });
+  return bytes;
+}
+
+/** The cells along each edge of a tile in which the RR Lyrae stars are counted. */
+const CROWD_CELLS = 64;
+/** How many RR Lyrae stars of a tile share a cell before they grow fainter. */
+const CROWD_LIMIT = 4;
+/** The faintest an RR Lyrae star grows where they crowd: a tenth of its opacity. */
+const CROWD_FLOOR = 0.1;
+
+/** The cell of a tile of edge `edge` an offset `at` from its centre lies in along one axis. */
+const cellAlong = (at: number, edge: number): number => Math.min(CROWD_CELLS - 1, Math.max(0, Math.floor((at / edge + 0.5) * CROWD_CELLS)));
+
+/** Each point's colour, as `tracerBytes` gives it, with the RR Lyrae stars, which crowd in the
+ * bulge but lie sparse in the halo and the Sagittarius stream, made fainter where more than
+ * `CROWD_LIMIT` of the tile's share a cell, a 64th of its edge `edge`: by `CROWD_LIMIT` over
+ * their number, never below a tenth. `offsets` are the points' places about the tile's centre,
+ * in the unit of `edge`. */
+export function tracerColoursOf(objects: Uint8Array, offsets: Float32Array, edge: number): Uint8Array {
+  const bytes = tracerBytes(objects);
+  const rrLyrae = objectIndex("rr_lyrae_star");
+  const cells = new Int32Array(objects.length).fill(-1);
+  const counts = new Map<number, number>();
+  objects.forEach((object, i) => {
+    if (object !== rrLyrae || !(edge > 0)) return;
+    const [x, y, z] = [0, 1, 2].map((axis) => cellAlong(offsets[i * 3 + axis] ?? 0, edge));
+    const cell = ((x ?? 0) * CROWD_CELLS + (y ?? 0)) * CROWD_CELLS + (z ?? 0);
+    cells[i] = cell;
+    counts.set(cell, (counts.get(cell) ?? 0) + 1);
+  });
+  cells.forEach((cell, i) => {
+    const n = counts.get(cell) ?? 0;
+    if (n <= CROWD_LIMIT) return;
+    const at = i * 4 + 3;
+    bytes[at] = Math.round((bytes[at] ?? 0) * Math.max(CROWD_FLOOR, CROWD_LIMIT / n));
   });
   return bytes;
 }

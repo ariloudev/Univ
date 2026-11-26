@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { KIND_COLOURS, POINT_OPACITY } from "./kinds.ts";
 import { NO_COLOUR_GREY, blackBodyColour } from "./starColour.ts";
-import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_OBJECTS, objectIndex, pointSizeOf, tracerBytes, tracerColour } from "./tracers.ts";
+import { POINT_SIZE, TRACERS_DOMAIN, TRACER_COLOURS, TRACER_KINDS, TRACER_OBJECTS, objectIndex, pointSizeOf, tracerBytes, tracerColour, tracerColoursOf } from "./tracers.ts";
 
 const distance = (a: readonly number[], b: readonly number[]) => Math.hypot(...[0, 1, 2].map((i) => (a[i] ?? 0) - (b[i] ?? 0)));
 
@@ -16,17 +16,38 @@ describe("the Galaxy's tracers", () => {
     }
   });
 
-  it("draws the luminous hot stars and the RR Lyrae stars dark, at a tenth of the other kinds' opacity", () => {
-    const crowded = [objectIndex("luminous_hot_star"), objectIndex("rr_lyrae_star")];
-    for (const [i, colour] of TRACER_COLOURS.entries()) {
-      if (!crowded.includes(i)) {
-        expect(colour[3]).toBe(POINT_OPACITY);
-        continue;
-      }
-      expect(colour[3]).toBeCloseTo(0.1 * POINT_OPACITY);
-      // Dark: no channel above half, where a star's colour or a galaxy's blue reaches full.
-      expect(Math.max(colour[0], colour[1], colour[2])).toBeLessThanOrEqual(0.5);
-    }
+  it("draws the luminous hot stars dark, at a tenth of the other kinds' opacity", () => {
+    const hot = objectIndex("luminous_hot_star");
+    for (const [i, colour] of TRACER_COLOURS.entries()) if (i !== hot) expect(colour[3]).toBe(POINT_OPACITY);
+    const colour = tracerColour(hot);
+    expect(colour[3]).toBeCloseTo(0.1 * POINT_OPACITY);
+    // Dark: no channel above half, where a star's colour or a galaxy's blue reaches full.
+    expect(Math.max(colour[0], colour[1], colour[2])).toBeLessThanOrEqual(0.5);
+  });
+
+  it("draws the RR Lyrae stars fainter where more than 4 of a tile share a 64th of its edge, never below a tenth", () => {
+    const rr = objectIndex("rr_lyrae_star");
+    const hot = objectIndex("luminous_hot_star");
+    const edge = 64;
+    // 8 RR Lyrae stars in one cell, 40 in another, 1 alone, 4 sharing a cell, and 8 hot stars crowded too.
+    const places: [number, [number, number, number]][] = [
+      ...Array.from({ length: 8 }, (): [number, [number, number, number]] => [rr, [0.2, 0.2, 0.2]]),
+      ...Array.from({ length: 40 }, (): [number, [number, number, number]] => [rr, [10.5, 10.5, 10.5]]),
+      [rr, [-20.5, 5.5, 5.5]],
+      ...Array.from({ length: 4 }, (): [number, [number, number, number]] => [rr, [-10.5, -10.5, -10.5]]),
+      ...Array.from({ length: 8 }, (): [number, [number, number, number]] => [hot, [0.2, 0.2, 0.2]]),
+    ];
+    const objects = Uint8Array.from(places, ([object]) => object);
+    const offsets = Float32Array.from(places.flatMap(([, at]) => at));
+    const bytes = tracerColoursOf(objects, offsets, edge);
+    const alpha = (i: number) => bytes[i * 4 + 3];
+    const full = tracerBytes(objects);
+    expect(alpha(0)).toBe(Math.round((full[3] ?? 0) * 0.5));
+    expect(alpha(8)).toBe(Math.round((full[3] ?? 0) * 0.1));
+    expect(alpha(48)).toBe(full[48 * 4 + 3]);
+    expect(alpha(49)).toBe(full[49 * 4 + 3]);
+    expect(alpha(53)).toBe(full[53 * 4 + 3]);
+    expect([...bytes.slice(0, 3)]).toEqual([...full.slice(0, 3)]);
   });
 
   it("has a colour for each kind of object of the tracers, and one for a tracer of unknown kind", () => {

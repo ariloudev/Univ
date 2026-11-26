@@ -189,7 +189,9 @@ requirements:
       - key: 01a1c319-7860-76e8-92ac-c5e864b8c262
         name: "A point of the Galaxy tracers domain is drawn twice the size of a point of the stars domain at the same distance."
       - key: 01a217aa-a805-760e-873f-455bb856f763
-        name: "A luminous hot star or an RR Lyrae star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd, about the Sun and toward the bulge, they do not add up to white."
+        name: "A luminous hot star of the Galaxy tracers domain is drawn in a dark colour at a tenth of the opacity of the other kinds' points, so that where they crowd about the Sun they do not add up to white."
+      - key: 01a217b5-074b-72cd-a2ce-7d9d389f58c2
+        name: "An RR Lyrae star of the Galaxy tracers domain where more than 4 RR Lyrae stars of its tile share its cell, a 64th of the tile's edge, is drawn at 4 over their number of its opacity, never below a tenth, so that the bulge does not add up to white while the halo and the Sagittarius stream keep the other kinds' opacity."
   - key: 01a1c319-7860-76e8-92ac-c5e9e544de53
     statement:
       form: ubiquitous
