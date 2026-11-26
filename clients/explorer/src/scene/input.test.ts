@@ -19,6 +19,10 @@ function bound() {
   const unbind = bindMouse(canvas, gestures);
   const fire = (type: string, init: PointerEventInit & MouseEventInit) => {
     const event = type === "wheel" ? new WheelEvent(type, { ...init, cancelable: true }) : new MouseEvent(type, init);
+    // jsdom has no PointerEvent: a pointer's id and type set on the mouse event.
+    for (const key of ["pointerId", "pointerType"] as const) {
+      if (init[key] !== undefined) Object.defineProperty(event, key, { value: init[key] });
+    }
     canvas.dispatchEvent(event);
   };
   return { seen, fire, unbind };
@@ -65,5 +69,41 @@ describe("the mouse on the view", () => {
     unbind();
     fire("dblclick", { clientX: 40, clientY: 50 });
     expect(seen).toEqual(["double 40 50"]);
+  });
+});
+
+describe("two fingers on the view", () => {
+  const finger = (pointerId: number, clientX: number, clientY = 100) => ({ pointerId, pointerType: "touch", clientX, clientY, button: 0 });
+
+  it("zoom in as they spread and out as they close, by the ratio of their spread", () => {
+    const { seen, fire } = bound();
+    fire("pointerdown", finger(1, 100));
+    fire("pointerdown", finger(2, 200));
+    // From 100 pixels apart to 115: in by one step of 1.15.
+    fire("pointermove", finger(2, 215));
+    fire("pointermove", finger(2, 200));
+    const steps = seen.filter((s) => s.startsWith("zoom")).map((s) => Number(s.split(" ")[1]));
+    expect(steps).toHaveLength(2);
+    expect(steps[0]).toBeCloseTo(1);
+    expect(steps[1]).toBeCloseTo(-1);
+  });
+
+  it("neither turn the view nor click, also as they lift", () => {
+    const { seen, fire } = bound();
+    fire("pointerdown", finger(1, 100));
+    fire("pointerdown", finger(2, 102));
+    fire("pointermove", finger(1, 90));
+    fire("pointerup", finger(2, 102));
+    fire("pointermove", finger(1, 60));
+    fire("pointerup", finger(1, 60));
+    expect(seen.some((s) => s.startsWith("turn") || s.startsWith("click"))).toBe(false);
+  });
+
+  it("leave one finger to turn the view as a drag does", () => {
+    const { seen, fire } = bound();
+    fire("pointerdown", finger(1, 100));
+    fire("pointermove", finger(1, 120));
+    fire("pointerup", finger(1, 120));
+    expect(seen).toEqual(["leave", "turn 20 0"]);
   });
 });

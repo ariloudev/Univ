@@ -25,6 +25,13 @@ export function wheelSteps(deltaY: number, deltaMode: number): number {
   return pixels / PIXELS_PER_STEP;
 }
 
+/** The zoom steps of a pinch whose fingers moved from `before` to `after` pixels apart: the
+ * distance to the focus divided by the ratio of the two, spreading moving the eye closer. */
+export function pinchSteps(before: number, after: number): number {
+  if (before <= 0 || after <= 0) return 0;
+  return Math.log(after / before) / Math.log(STEP_FACTOR);
+}
+
 /** Moves the eye toward the focus for positive `steps`, away for negative ones. */
 export function zoom(view: View, steps: number): View {
   return { ...view, distance: clampDistance(view.distance * STEP_FACTOR ** -steps) };

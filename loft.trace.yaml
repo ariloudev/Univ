@@ -4974,6 +4974,18 @@ links:
       - file: "clients/explorer/src/ui/Panels.test.tsx"
         name: "show the distance from the eye to the focus"
         body: 6848373d960e9ef56130b044ab6ba2a2a3101c1a9223e2a992b39fec2cdf7e1a
+  - node: 01a2158a-c920-75b6-a018-a17acf8bbb86
+    reviewed: bbf0bfaf884bcc9af3371ea431cb4b1dd330c00521cddcfaba2450cd4e28edbb
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "zoom in as they spread and out as they close, by the ratio of their spread"
+        body: 65d3b6054545dacda1dee55b8d67ef19c691da367ac4bee9513d2129bc50528a
+  - node: 01a2158a-c920-75b6-a018-a17bb25dfa8d
+    reviewed: 37d905e7a7bac43c55c4199895a952bdb25a4e2d3e8ec9a7a7dd5ee5ad80879a
+    tests:
+      - file: "clients/explorer/src/scene/input.test.ts"
+        name: "neither turn the view nor click, also as they lift"
+        body: 34bb65c8bdb7b79d1890a8c20158b76801c3993fdd1435e6f4296b027c66b2db
   - node: 01a1a497-e843-728a-bce8-401d23c750eb
     reviewed: c8ec4d70631fc753e86ec1a5edec63856a08fdce1788d89bf3b0e6507ff19623
     tests:

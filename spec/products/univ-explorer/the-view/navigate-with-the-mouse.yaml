@@ -31,6 +31,17 @@ requirements:
         name: "The distance from the eye to the focus stays between 0.1 parsec and 20 gigaparsecs."
       - key: 01a1a497-e843-728a-bce8-401b318a282a
         name: "The view shows the distance from the eye to the focus in parsecs, kiloparsecs, megaparsecs or gigaparsecs, whichever suits it, with light-years beside it."
+  - key: 01a2158a-c920-75b6-a018-a179e18ee323
+    statement:
+      form: event_driven
+      when: "the person pinches the view with two fingers on a touch screen"
+      system: "Univ Explorer"
+      shall: "move the eye toward the focus as the fingers spread and away from it as they close."
+    criteria:
+      - key: 01a2158a-c920-75b6-a018-a17acf8bbb86
+        name: "The distance from the eye to the focus changes in inverse proportion to the distance between the two fingers."
+      - key: 01a2158a-c920-75b6-a018-a17bb25dfa8d
+        name: "While two fingers touch the view, it does not turn, and lifting them is not a click."
   - key: 01a1a497-e843-728a-bce8-401c96d859c6
     statement:
       form: event_driven
